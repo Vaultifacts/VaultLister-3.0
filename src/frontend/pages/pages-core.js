@@ -6,19 +6,28 @@ const pages = {
     dashboard() {
         // Use API stats if available (from period selector), fallback to client-side
         const apiStats = store.state.dashboardStats;
-        const stats = apiStats ? {
-            inventory: apiStats.inventory?.total || 0,
-            listings: apiStats.listings?.active || 0,
-            sales: apiStats.sales?.total || 0,
-            revenue: apiStats.sales?.revenue || 0
-        } : {
-            inventory: (store.state.inventory || []).length,
-            listings: (store.state.listings || []).filter(l => l.status === 'active').length,
-            sales: (store.state.sales || []).length,
-            revenue: (store.state.sales || []).reduce((sum, s) => sum + (s.sale_price || 0), 0)
-        };
+        const stats = apiStats
+            ? {
+                  inventory: apiStats.inventory?.total || 0,
+                  listings: apiStats.listings?.active || 0,
+                  sales: apiStats.sales?.total || 0,
+                  revenue: apiStats.sales?.revenue || 0,
+              }
+            : {
+                  inventory: (store.state.inventory || []).length,
+                  listings: (store.state.listings || []).filter((l) => l.status === 'active').length,
+                  sales: (store.state.sales || []).length,
+                  revenue: (store.state.sales || []).reduce((sum, s) => sum + (s.sale_price || 0), 0),
+              };
         const activePeriod = store.state.dashboardPeriod || '30d';
-        const periodLabels = {'7d':'7 Days','30d':'30 Days','90d':'90 Days','6m':'6 Months','1y':'1 Year','all':'All Time'};
+        const periodLabels = {
+            '7d': '7 Days',
+            '30d': '30 Days',
+            '90d': '90 Days',
+            '6m': '6 Months',
+            '1y': '1 Year',
+            all: 'All Time',
+        };
 
         // Generate sparkline data from real history (last 7 days)
         const generateSparklineData = (dataType) => {
@@ -29,19 +38,29 @@ const pages = {
                 date.setDate(date.getDate() - i);
                 const dateStr = toLocalDate(date);
                 if (dataType === 'sales') {
-                    data.push((store.state.sales || []).filter(s => s.sold_at?.startsWith(dateStr)).length);
+                    data.push((store.state.sales || []).filter((s) => s.sold_at?.startsWith(dateStr)).length);
                 } else if (dataType === 'revenue') {
-                    data.push((store.state.sales || []).filter(s => s.sold_at?.startsWith(dateStr)).reduce((sum, s) => sum + (s.sale_price || 0), 0));
+                    data.push(
+                        (store.state.sales || [])
+                            .filter((s) => s.sold_at?.startsWith(dateStr))
+                            .reduce((sum, s) => sum + (s.sale_price || 0), 0),
+                    );
                 } else if (dataType === 'inventory') {
                     // Count items created on or before this date for a running total
                     const endOfDay = new Date(date);
                     endOfDay.setHours(23, 59, 59, 999);
-                    data.push((store.state.inventory || []).filter(item => new Date(item.created_at) <= endOfDay).length);
+                    data.push(
+                        (store.state.inventory || []).filter((item) => new Date(item.created_at) <= endOfDay).length,
+                    );
                 } else {
                     // Active listings: count items listed on or before this date
                     const endOfDay = new Date(date);
                     endOfDay.setHours(23, 59, 59, 999);
-                    data.push((store.state.listings || []).filter(l => l.status === 'active' && new Date(l.listed_at || l.created_at) <= endOfDay).length);
+                    data.push(
+                        (store.state.listings || []).filter(
+                            (l) => l.status === 'active' && new Date(l.listed_at || l.created_at) <= endOfDay,
+                        ).length,
+                    );
                 }
             }
             return data;
@@ -55,11 +74,11 @@ const pages = {
         const twoPeriodAgo = new Date();
         twoPeriodAgo.setDate(twoPeriodAgo.getDate() - compDays * 2);
 
-        const thisWeekSales = (store.state.sales || []).filter(s => {
+        const thisWeekSales = (store.state.sales || []).filter((s) => {
             const saleDate = new Date(s.sold_at);
             return saleDate >= periodAgo;
         });
-        const lastWeekSales = (store.state.sales || []).filter(s => {
+        const lastWeekSales = (store.state.sales || []).filter((s) => {
             const saleDate = new Date(s.sold_at);
             return saleDate >= twoPeriodAgo && saleDate < periodAgo;
         });
@@ -73,10 +92,20 @@ const pages = {
             return Math.round(((current - previous) / previous) * 100);
         };
 
-        const thisWeekInventory = (store.state.inventory || []).filter(i => new Date(i.created_at) >= periodAgo).length;
-        const lastWeekInventory = (store.state.inventory || []).filter(i => { const d = new Date(i.created_at); return d >= twoPeriodAgo && d < periodAgo; }).length;
-        const thisWeekListings = (store.state.listings || []).filter(l => l.status === 'active' && new Date(l.listed_at || l.created_at) >= periodAgo).length;
-        const lastWeekListings = (store.state.listings || []).filter(l => { const d = new Date(l.listed_at || l.created_at); return l.status === 'active' && d >= twoPeriodAgo && d < periodAgo; }).length;
+        const thisWeekInventory = (store.state.inventory || []).filter(
+            (i) => new Date(i.created_at) >= periodAgo,
+        ).length;
+        const lastWeekInventory = (store.state.inventory || []).filter((i) => {
+            const d = new Date(i.created_at);
+            return d >= twoPeriodAgo && d < periodAgo;
+        }).length;
+        const thisWeekListings = (store.state.listings || []).filter(
+            (l) => l.status === 'active' && new Date(l.listed_at || l.created_at) >= periodAgo,
+        ).length;
+        const lastWeekListings = (store.state.listings || []).filter((l) => {
+            const d = new Date(l.listed_at || l.created_at);
+            return l.status === 'active' && d >= twoPeriodAgo && d < periodAgo;
+        }).length;
 
         const inventoryChange = calcChange(thisWeekInventory, lastWeekInventory);
         const listingsChange = calcChange(thisWeekListings, lastWeekListings);
@@ -85,72 +114,93 @@ const pages = {
 
         // Monthly sales goal (configurable)
         const savedGoal = localStorage.getItem('vaultlister_monthly_goal');
-        const monthlyGoal = savedGoal ? parseInt(savedGoal) : (store.state.monthlySalesGoal || null);
-        const thisMonthRevenue = (store.state.sales || []).filter(s => {
-            const saleDate = new Date(s.sold_at);
-            const now = new Date();
-            return saleDate.getMonth() === now.getMonth() && saleDate.getFullYear() === now.getFullYear();
-        }).reduce((sum, s) => sum + (s.sale_price || 0), 0);
+        const monthlyGoal = savedGoal ? parseInt(savedGoal) : store.state.monthlySalesGoal || null;
+        const thisMonthRevenue = (store.state.sales || [])
+            .filter((s) => {
+                const saleDate = new Date(s.sold_at);
+                const now = new Date();
+                return saleDate.getMonth() === now.getMonth() && saleDate.getFullYear() === now.getFullYear();
+            })
+            .reduce((sum, s) => sum + (s.sale_price || 0), 0);
         const goalPercent = monthlyGoal ? Math.min(100, (thisMonthRevenue / monthlyGoal) * 100) : 0;
 
         // Generate activity feed with more comprehensive user actions
         const activities = [
-            ...(store.state.sales || []).slice(-6).map(s => ({
+            ...(store.state.sales || []).slice(-6).map((s) => ({
                 icon: 'sales',
                 title: 'Sale completed',
                 description: `${s.title} sold for C$${s.sale_price}`,
                 timestamp: s.sold_at,
-                type: 'sale'
+                type: 'sale',
             })),
-            ...(store.state.offers || []).filter(o => o.status === 'pending').slice(-4).map(o => ({
-                icon: 'offers',
-                title: 'New offer received',
-                description: `C$${o.amount} offer on ${o.listing_id}`,
-                timestamp: o.created_at,
-                type: 'offer'
-            })),
-            ...((store.state.inventory || []).slice(-4).map(i => ({
+            ...(store.state.offers || [])
+                .filter((o) => o.status === 'pending')
+                .slice(-4)
+                .map((o) => ({
+                    icon: 'offers',
+                    title: 'New offer received',
+                    description: `C$${o.amount} offer on ${o.listing_id}`,
+                    timestamp: o.created_at,
+                    type: 'offer',
+                })),
+            ...(store.state.inventory || []).slice(-4).map((i) => ({
                 icon: 'inventory',
                 title: 'Item added to inventory',
                 description: i.title,
                 timestamp: i.created_at,
-                type: 'inventory'
-            }))),
-            ...((store.state.listings || []).filter(l => l.last_relisted_at).slice(-4).map(l => ({
-                icon: 'list',
-                title: 'Listing refreshed',
-                description: l.title,
-                timestamp: l.last_relisted_at,
-                type: 'relist'
-            }))),
-            ...((store.state.listings || []).filter(l => l.listed_at).slice(-4).map(l => ({
-                icon: 'list',
-                title: 'Item listed',
-                description: `${l.title} on ${l.platform || 'marketplace'}`,
-                timestamp: l.listed_at,
-                type: 'listing'
-            }))),
-            ...(store.state.orders || []).filter(o => o.status === 'shipped').slice(-3).map(o => ({
-                icon: 'sales',
-                title: 'Order shipped',
-                description: `Order #${o.id} shipped`,
-                timestamp: o.shipped_at || o.updated_at,
-                type: 'shipped'
-            }))
-        ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 10);
+                type: 'inventory',
+            })),
+            ...(store.state.listings || [])
+                .filter((l) => l.last_relisted_at)
+                .slice(-4)
+                .map((l) => ({
+                    icon: 'list',
+                    title: 'Listing refreshed',
+                    description: l.title,
+                    timestamp: l.last_relisted_at,
+                    type: 'relist',
+                })),
+            ...(store.state.listings || [])
+                .filter((l) => l.listed_at)
+                .slice(-4)
+                .map((l) => ({
+                    icon: 'list',
+                    title: 'Item listed',
+                    description: `${l.title} on ${l.platform || 'marketplace'}`,
+                    timestamp: l.listed_at,
+                    type: 'listing',
+                })),
+            ...(store.state.orders || [])
+                .filter((o) => o.status === 'shipped')
+                .slice(-3)
+                .map((o) => ({
+                    icon: 'sales',
+                    title: 'Order shipped',
+                    description: `Order #${o.id} shipped`,
+                    timestamp: o.shipped_at || o.updated_at,
+                    type: 'shipped',
+                })),
+        ]
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+            .slice(0, 10);
 
         // Get recently relisted items (last 7 days)
-        const recentlyRelisted = (store.state.listings || []).filter(l => l.last_relisted_at).sort((a, b) =>
-            new Date(b.last_relisted_at) - new Date(a.last_relisted_at)
-        ).slice(0, 5);
+        const recentlyRelisted = (store.state.listings || [])
+            .filter((l) => l.last_relisted_at)
+            .sort((a, b) => new Date(b.last_relisted_at) - new Date(a.last_relisted_at))
+            .slice(0, 5);
 
         // Get stale listings (older than 30 days)
-        const staleListings = (store.state.listings || []).filter(l => {
-            if (l.status !== 'active') return false;
-            const lastRefresh = l.last_relisted_at || l.listed_at || l.created_at;
-            const daysSinceRefresh = Math.floor((Date.now() - new Date(lastRefresh).getTime()) / (1000 * 60 * 60 * 24));
-            return daysSinceRefresh >= 30;
-        }).slice(0, 5);
+        const staleListings = (store.state.listings || [])
+            .filter((l) => {
+                if (l.status !== 'active') return false;
+                const lastRefresh = l.last_relisted_at || l.listed_at || l.created_at;
+                const daysSinceRefresh = Math.floor(
+                    (Date.now() - new Date(lastRefresh).getTime()) / (1000 * 60 * 60 * 24),
+                );
+                return daysSinceRefresh >= 30;
+            })
+            .slice(0, 5);
 
         // Format relative time with better granularity
         const formatRelativeTime = (dateStr) => {
@@ -181,19 +231,19 @@ const pages = {
                 year: 'numeric',
                 hour: 'numeric',
                 minute: '2-digit',
-                hour12: true
+                hour12: true,
             });
         };
 
         // Format platform name nicely
         const formatPlatform = (platform) => {
             const names = {
-                'poshmark': 'Poshmark',
-                'ebay': 'eBay',
-                'whatnot': 'Whatnot',
-                'depop': 'Depop',
-                'shopify': 'Shopify',
-                'facebook': 'Facebook'
+                poshmark: 'Poshmark',
+                ebay: 'eBay',
+                whatnot: 'Whatnot',
+                depop: 'Depop',
+                shopify: 'Shopify',
+                facebook: 'Facebook',
             };
             return names[platform] || platform;
         };
@@ -229,20 +279,20 @@ const pages = {
 
         // Calculate today's stats
         const today = toLocalDate(new Date());
-        const todaySales = (store.state.sales || []).filter(s => s.sold_at?.startsWith(today));
+        const todaySales = (store.state.sales || []).filter((s) => s.sold_at?.startsWith(today));
         const todayRevenue = todaySales.reduce((sum, s) => sum + (s.sale_price || 0), 0);
-        const todayListings = (store.state.listings || []).filter(l => l.listed_at?.startsWith(today)).length;
-        const pendingOrders = (store.state.orders || []).filter(o => o.status === 'pending').length;
+        const todayListings = (store.state.listings || []).filter((l) => l.listed_at?.startsWith(today)).length;
+        const pendingOrders = (store.state.orders || []).filter((o) => o.status === 'pending').length;
 
         // Calculate platform breakdown
         const platformStats = {};
-        (store.state.sales || []).forEach(s => {
+        (store.state.sales || []).forEach((s) => {
             const platform = s.platform || 'other';
             if (!platformStats[platform]) {
                 platformStats[platform] = { sales: 0, revenue: 0 };
             }
             platformStats[platform].sales++;
-            platformStats[platform].revenue += (s.sale_price || 0);
+            platformStats[platform].revenue += s.sale_price || 0;
         });
         const sortedPlatforms = Object.entries(platformStats)
             .sort((a, b) => b[1].revenue - a[1].revenue)
@@ -257,7 +307,7 @@ const pages = {
             grailed: 'var(--grailed)',
             facebook: 'var(--facebook)',
             etsy: 'var(--etsy)',
-            other: 'var(--gray-500)'
+            other: 'var(--gray-500)',
         };
 
         return `
@@ -265,7 +315,7 @@ const pages = {
             <div class="dashboard-hero">
                 <div class="dashboard-hero-content">
                     <div class="dashboard-hero-greeting">
-                        <h1>${getGreeting()}, ${escapeHtml(store.state.user?.full_name ? store.state.user.full_name.split(' ')[0] : (store.state.user?.display_name || store.state.user?.username || 'Reseller'))}!</h1>
+                        <h1>${getGreeting()}, ${escapeHtml(store.state.user?.full_name ? store.state.user.full_name.split(' ')[0] : store.state.user?.display_name || store.state.user?.username || 'Reseller')}!</h1>
                         <p>Here's how your business is performing today</p>
                     </div>
                     <div class="dashboard-hero-today">
@@ -328,7 +378,9 @@ const pages = {
             ${showOnboarding ? components.onboardingChecklist(onboarding.steps) : ''}
 
             <!-- What's New Banner -->
-            ${!store.state.dismissedWhatsNew ? `
+            ${
+                !store.state.dismissedWhatsNew
+                    ? `
                 <div class="dashboard-whats-new-banner">
                     <div class="whats-new-banner-content">
                         <span class="whats-new-badge-pill">New in v1.6.0</span>
@@ -341,26 +393,32 @@ const pages = {
                         </button>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Stale Data Banner -->
             ${(() => {
                 const lastRefresh = store.state.dashboardLastRefresh;
-                const isStale = lastRefresh && (Date.now() - lastRefresh > 5 * 60 * 1000);
-                return isStale ? `
+                const isStale = lastRefresh && Date.now() - lastRefresh > 5 * 60 * 1000;
+                return isStale
+                    ? `
                     <div class="dashboard-stale-banner" id="stale-data-banner" hidden style="display: none;">
                         <span>${components.icon('alert-triangle', 14)} Dashboard data may be stale.</span>
                         <button class="btn btn-sm btn-warning" onclick="handlers.refreshDashboard()">Refresh now</button>
                         <button aria-label="Dismiss" class="btn btn-sm btn-ghost" onclick="document.getElementById('stale-data-banner').remove()" style="padding: 2px 6px;"><span aria-hidden="true">&times;</span></button>
                     </div>
-                ` : '';
+                `
+                    : '';
             })()}
 
             <!-- Unshipped Orders Alert Banner -->
             ${(() => {
-                const unshipped = (store.state.orders || []).filter(o => o.status === 'pending' || o.status === 'confirmed');
+                const unshipped = (store.state.orders || []).filter(
+                    (o) => o.status === 'pending' || o.status === 'confirmed',
+                );
                 if (unshipped.length === 0) return '';
-                const oldest = unshipped.reduce((o, c) => new Date(c.created_at) < new Date(o.created_at) ? c : o);
+                const oldest = unshipped.reduce((o, c) => (new Date(c.created_at) < new Date(o.created_at) ? c : o));
                 const daysOld = Math.floor((Date.now() - new Date(oldest.created_at)) / (1000 * 60 * 60 * 24));
                 const urgency = daysOld >= 3 ? 'error' : daysOld >= 1 ? 'warning' : 'info';
                 return `
@@ -382,9 +440,9 @@ const pages = {
                 <div style="display:inline-flex; align-items:center; gap:4px; position:relative;">
                     <label for="dashboard-period-select" class="sr-only">Date range for metrics</label>
                     <select id="dashboard-period-select" aria-label="Date range for metrics" class="dashboard-period-select" onchange="handlers.setDashboardPeriod(this.value)">
-                        ${['7d','30d','90d','6m','1y','all'].map(p => `<option value="${p}" ${(store.state.dashboardPeriod || '30d') === p ? 'selected' : ''}>${{'7d':'Last 7 Days','30d':'Last 30 Days','90d':'Last 90 Days','6m':'Last 6 Months','1y':'Last Year','all':'All Time'}[p]}</option>`).join('')}
+                        ${['7d', '30d', '90d', '6m', '1y', 'all'].map((p) => `<option value="${p}" ${(store.state.dashboardPeriod || '30d') === p ? 'selected' : ''}>${{ '7d': 'Last 7 Days', '30d': 'Last 30 Days', '90d': 'Last 90 Days', '6m': 'Last 6 Months', '1y': 'Last Year', all: 'All Time' }[p]}</option>`).join('')}
                     </select>
-                    ${(store.state.dashboardPeriod && store.state.dashboardPeriod !== '30d') ? `<span class="badge badge-primary badge-sm" style="pointer-events:none;">${{'7d':'7d','90d':'90d','6m':'6m','1y':'1y','all':'All'}[store.state.dashboardPeriod] || store.state.dashboardPeriod}</span>` : ''}
+                    ${store.state.dashboardPeriod && store.state.dashboardPeriod !== '30d' ? `<span class="badge badge-primary badge-sm" style="pointer-events:none;">${{ '7d': '7d', '90d': '90d', '6m': '6m', '1y': '1y', all: 'All' }[store.state.dashboardPeriod] || store.state.dashboardPeriod}</span>` : ''}
                 </div>
                 <button class="btn btn-secondary btn-sm" onclick="handlers.showDailySummary()">
                     ${components.icon('sun', 14)} Daily Summary
@@ -427,8 +485,12 @@ const pages = {
 
             <!-- All Dashboard Widgets -->
             <div class="dashboard-widgets-container mb-6" hidden style="display: none;">
-                ${safeWidget(() => `<!-- Platform Performance Widget -->
-                ${widgetManager.getWidgets().find(w => w.id === 'platform-performance')?.visible && sortedPlatforms.length > 0 ? `
+                ${safeWidget(
+                    () => `<!-- Platform Performance Widget -->
+                ${
+                    widgetManager.getWidgets().find((w) => w.id === 'platform-performance')?.visible &&
+                    sortedPlatforms.length > 0
+                        ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('platform-performance') ? 'collapsed' : ''}" draggable="true" data-widget-id="platform-performance" style="${widgetManager.getWidgetStyle('platform-performance', 100)}">
                     <div class="card-header flex justify-between items-center">
                         <h2 class="card-title">Platform Performance</h2>
@@ -439,7 +501,9 @@ const pages = {
                     </div>
                     <div class="card-body">
                         <div class="platform-performance-items">
-                            ${sortedPlatforms.map(([platform, data]) => `
+                            ${sortedPlatforms
+                                .map(
+                                    ([platform, data]) => `
                                 <div class="platform-performance-item">
                                     <div class="platform-perf-icon" style="background: ${platformColors[platform] || 'var(--gray-500)'}15; color: ${platformColors[platform] || 'var(--gray-500)'};">
                                         ${platform.charAt(0).toUpperCase()}
@@ -450,14 +514,23 @@ const pages = {
                                     </div>
                                     <div class="platform-perf-revenue">C$${data.revenue.toLocaleString()}</div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
                     </div>
                 </div>
-                ` : ''}`, 'Platform Performance')}
+                `
+                        : ''
+                }`,
+                    'Platform Performance',
+                )}
 
-            ${safeWidget(() => `<!-- Stats Overview Widget -->
-            ${widgetManager.getWidgets().find(w => w.id === 'stats')?.visible ? `
+            ${safeWidget(
+                () => `<!-- Stats Overview Widget -->
+            ${
+                widgetManager.getWidgets().find((w) => w.id === 'stats')?.visible
+                    ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('stats') ? 'collapsed' : ''}" draggable="true" data-widget-id="stats" style="${widgetManager.getWidgetStyle('stats', 100)}">
                     <div class="card-header flex justify-between items-center">
                         <h2 class="card-title">Stats Overview</h2>
@@ -472,9 +545,13 @@ const pages = {
                         </div>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
-                ${store.state.user?.is_admin ? `<!-- System Status Widget (admin only) -->
+                ${
+                    store.state.user?.is_admin
+                        ? `<!-- System Status Widget (admin only) -->
                 <div class="card dashboard-widget" id="system-status-card" style="width: 100%; margin-bottom: var(--space-4);" role="region" aria-label="System Status">
                     <div class="card-header flex justify-between items-center">
                         <h2 class="card-title">System Status</h2>
@@ -496,10 +573,14 @@ const pages = {
                             </div>
                         </div>
                     </div>
-                </div>` : ''}
+                </div>`
+                        : ''
+                }
 
                 <!-- Monthly Goal Widget -->
-                ${widgetManager.getWidgets().find(w => w.id === 'goals')?.visible ? `
+                ${
+                    widgetManager.getWidgets().find((w) => w.id === 'goals')?.visible
+                        ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('goals') ? 'collapsed' : ''}" draggable="true" data-widget-id="goals" role="button" tabindex="0" aria-label="Monthly Goal — click to edit" style="${widgetManager.getWidgetStyle('goals', 33)} cursor: pointer;" onclick="if(!event.target.closest('.widget-collapse-btn')&&!event.target.closest('button')) handlers.setMonthlyGoal()" onkeydown="if((event.key==='Enter'||event.key===' ')&&!event.target.closest('.widget-collapse-btn')){event.preventDefault();handlers.setMonthlyGoal();}" title="Click to edit goal">
                     <div class="card-header flex justify-between items-center">
                         <h2 class="card-title">Monthly Goal</h2>
@@ -509,25 +590,33 @@ const pages = {
                         </div>
                     </div>
                     <div class="card-body flex items-center justify-center gap-6">
-                        ${monthlyGoal ? `
+                        ${
+                            monthlyGoal
+                                ? `
                             ${components.progressRing(goalPercent, 80, 8, goalPercent >= 100 ? 'green' : 'primary', 'goal')}
                             <div>
                                 <div class="text-2xl font-bold">C$${thisMonthRevenue.toLocaleString()}</div>
                                 <div class="text-sm text-gray-500">of C$${monthlyGoal.toLocaleString()} goal</div>
                                 <div class="text-xs text-gray-400 mt-1">${Math.round(goalPercent)}% complete</div>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="text-center text-gray-400">
                                 <div class="text-sm mb-2">No goal set</div>
                                 <div class="text-xs">Click to set your monthly revenue goal</div>
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
-                ` : ''}
+                `
+                        : ''
+                }
 
                 <!-- Comparison Widget -->
-                ${widgetManager.getWidgets().find(w => w.id === 'comparison')?.visible ? `
+                ${
+                    widgetManager.getWidgets().find((w) => w.id === 'comparison')?.visible
+                        ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('comparison') ? 'collapsed' : ''}" draggable="true" data-widget-id="comparison" style="${widgetManager.getWidgetStyle('comparison', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h2 class="card-title">Weekly Comparison</h2>
@@ -546,10 +635,17 @@ const pages = {
                         ${components.comparisonBar(thisWeekRevenue, lastWeekRevenue, 'Revenue', 'green')}
                     </div>
                 </div>
-                ` : ''}`, 'Stats & Goals')}
+                `
+                        : ''
+                }`,
+                'Stats & Goals',
+            )}
 
-                ${safeWidget(() => `<!-- Activity Feed Widget -->
-                ${widgetManager.getWidgets().find(w => w.id === 'activity')?.visible ? `
+                ${safeWidget(
+                    () => `<!-- Activity Feed Widget -->
+                ${
+                    widgetManager.getWidgets().find((w) => w.id === 'activity')?.visible
+                        ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('activity') ? 'collapsed' : ''}" draggable="true" data-widget-id="activity" style="${widgetManager.getWidgetStyle('activity', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h2 class="card-title">Activity Feed</h2>
@@ -559,10 +655,14 @@ const pages = {
                         ${components.activityFeed(activities, 10)}
                     </div>
                 </div>
-                ` : ''}
+                `
+                        : ''
+                }
 
                 <!-- Quick Actions Widget -->
-                ${widgetManager.getWidgets().find(w => w.id === 'quick-actions')?.visible ? `
+                ${
+                    widgetManager.getWidgets().find((w) => w.id === 'quick-actions')?.visible
+                        ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('quick-actions') ? 'collapsed' : ''}" draggable="true" data-widget-id="quick-actions" style="${widgetManager.getWidgetStyle('quick-actions', 50)}">
                     <div class="card-header flex justify-between items-center">
                         <h2 class="card-title">Quick Actions</h2>
@@ -591,10 +691,17 @@ const pages = {
                         </div>
                     </div>
                 </div>
-                ` : ''}`, 'Activity & Actions')}
+                `
+                        : ''
+                }`,
+                    'Activity & Actions',
+                )}
 
-                ${safeWidget(() => `<!-- Stale Listings Widget -->
-                ${widgetManager.getWidgets().find(w => w.id === 'stale-listings')?.visible ? `
+                ${safeWidget(
+                    () => `<!-- Stale Listings Widget -->
+                ${
+                    widgetManager.getWidgets().find((w) => w.id === 'stale-listings')?.visible
+                        ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('stale-listings') ? 'collapsed' : ''}" draggable="true" data-widget-id="stale-listings" style="${widgetManager.getWidgetStyle('stale-listings', 50)}">
                     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                         <h2 class="card-title" style="color: var(--warning-600);">Stale Listings</h2>
@@ -604,12 +711,18 @@ const pages = {
                         </div>
                     </div>
                     <div class="card-body">
-                        ${staleListings.length > 0 ? `
+                        ${
+                            staleListings.length > 0
+                                ? `
                             <div class="space-y-2">
-                                ${staleListings.map(listing => {
-                                    const lastRefresh = listing.last_relisted_at || listing.listed_at || listing.created_at;
-                                    const daysSinceRefresh = Math.floor((Date.now() - new Date(lastRefresh).getTime()) / (1000 * 60 * 60 * 24));
-                                    return `
+                                ${staleListings
+                                    .map((listing) => {
+                                        const lastRefresh =
+                                            listing.last_relisted_at || listing.listed_at || listing.created_at;
+                                        const daysSinceRefresh = Math.floor(
+                                            (Date.now() - new Date(lastRefresh).getTime()) / (1000 * 60 * 60 * 24),
+                                        );
+                                        return `
                                         <div class="flex items-center justify-between p-3 rounded" style="background: var(--warning-50); border: 1px solid var(--warning-200);">
                                             <div style="flex: 1;">
                                                 <div class="text-sm font-medium">${escapeHtml(listing.title?.substring(0, 30) || 'Untitled')}${listing.title?.length > 30 ? '...' : ''}</div>
@@ -624,33 +737,43 @@ const pages = {
                                             </button>
                                         </div>
                                     `;
-                                }).join('')}
+                                    })
+                                    .join('')}
                             </div>
                             <button class="btn btn-secondary btn-sm w-full mt-3" onclick="handlers.refreshAllStaleListings()">
                                 Refresh All Stale Listings
                             </button>
-                        ` : `
+                        `
+                                : `
                             <div class="text-gray-500 text-sm text-center py-4">
                                 <div style="font-size: 24px; margin-bottom: 8px;">&#10003;</div>
                                 All listings are fresh!
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
-                ` : ''}
+                `
+                        : ''
+                }
 
                 <!-- Recently Relisted Widget -->
-                ${widgetManager.getWidgets().find(w => w.id === 'recent-relisted')?.visible ? `
+                ${
+                    widgetManager.getWidgets().find((w) => w.id === 'recent-relisted')?.visible
+                        ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('recent-relisted') ? 'collapsed' : ''}" draggable="true" data-widget-id="recent-relisted" style="${widgetManager.getWidgetStyle('recent-relisted', 50)}">
                     <div class="card-header flex justify-between items-center">
                         <h2 class="card-title">Recently Relisted</h2>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('recent-relisted')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('recent-relisted') ? 'false' : 'true'}">${widgetManager.isCollapsed('recent-relisted') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
-                        ${recentlyRelisted.length > 0 ? `
+                        ${
+                            recentlyRelisted.length > 0
+                                ? `
                             <div class="space-y-2">
-                                ${recentlyRelisted.map(listing => {
-                                    return `
+                                ${recentlyRelisted
+                                    .map((listing) => {
+                                        return `
                                         <div class="flex items-center justify-between p-3 rounded" style="background: var(--success-50); border: 1px solid var(--success-200);">
                                             <div style="flex: 1;">
                                                 <div class="text-sm font-medium">${escapeHtml(listing.title?.substring(0, 30) || 'Untitled')}${listing.title?.length > 30 ? '...' : ''}</div>
@@ -664,19 +787,26 @@ const pages = {
                                             </div>
                                         </div>
                                     `;
-                                }).join('')}
+                                    })
+                                    .join('')}
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="text-gray-500 text-sm text-center py-4">
                                 No recently relisted items
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
-                ` : ''}
+                `
+                        : ''
+                }
 
                 <!-- Recent Sales Widget -->
-                ${widgetManager.getWidgets().find(w => w.id === 'recent-sales')?.visible ? `
+                ${
+                    widgetManager.getWidgets().find((w) => w.id === 'recent-sales')?.visible
+                        ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('recent-sales') ? 'collapsed' : ''}" draggable="true" data-widget-id="recent-sales" style="${widgetManager.getWidgetStyle('recent-sales', 50)}">
                     <div class="card-header flex justify-between items-center">
                         <h2 class="card-title">Recent Sales</h2>
@@ -688,35 +818,35 @@ const pages = {
                             const activities = [];
 
                             // Recent sales
-                            (store.state.sales || []).slice(0, 3).forEach(sale => {
+                            (store.state.sales || []).slice(0, 3).forEach((sale) => {
                                 activities.push({
                                     icon: 'sales',
                                     color: 'var(--success-500)',
                                     text: `Sold "${(sale.listing_title || sale.inventory_title || 'Item').substring(0, 20)}..." on ${sale.platform}`,
                                     time: sale.created_at,
-                                    type: 'sale'
+                                    type: 'sale',
                                 });
                             });
 
                             // Recent inventory additions
-                            (store.state.inventory || []).slice(0, 3).forEach(item => {
+                            (store.state.inventory || []).slice(0, 3).forEach((item) => {
                                 activities.push({
                                     icon: 'inventory',
                                     color: 'var(--primary-500)',
                                     text: `Added "${(item.title || 'Item').substring(0, 25)}..." to inventory`,
                                     time: item.created_at,
-                                    type: 'inventory'
+                                    type: 'inventory',
                                 });
                             });
 
                             // Recent listings
-                            (store.state.listings || []).slice(0, 3).forEach(listing => {
+                            (store.state.listings || []).slice(0, 3).forEach((listing) => {
                                 activities.push({
                                     icon: 'upload',
                                     color: 'var(--info-500)',
                                     text: `Listed "${(listing.title || 'Item').substring(0, 20)}..." on ${listing.platform}`,
                                     time: listing.listed_at || listing.created_at,
-                                    type: 'listing'
+                                    type: 'listing',
                                 });
                             });
 
@@ -728,7 +858,11 @@ const pages = {
                                 return '<div class="text-gray-500 text-sm text-center py-4">No recent activity</div>';
                             }
 
-                            return '<div class="space-y-3">' + recentActivities.map(activity => `
+                            return (
+                                '<div class="space-y-3">' +
+                                recentActivities
+                                    .map(
+                                        (activity) => `
                                 <div class="flex items-start gap-3">
                                     <div style="width: 32px; height: 32px; border-radius: 50%; background: ${activity.color}15; color: ${activity.color}; display: flex; align-items: center; justify-content: center;">
                                         ${components.icon(activity.icon, 14)}
@@ -738,14 +872,25 @@ const pages = {
                                         <div class="text-xs text-gray-400">${formatRelativeTime(activity.time)}</div>
                                     </div>
                                 </div>
-                            `).join('') + '</div>';
+                            `,
+                                    )
+                                    .join('') +
+                                '</div>'
+                            );
                         })()}
                     </div>
                 </div>
-                ` : ''}`, 'Listings & Sales')}
+                `
+                        : ''
+                }`,
+                    'Listings & Sales',
+                )}
 
-                ${safeWidget(() => `<!-- Sales Forecast Widget -->
-                ${widgetManager.getWidgets().find(w => w.id === 'sales-forecast')?.visible ? `
+                ${safeWidget(
+                    () => `<!-- Sales Forecast Widget -->
+                ${
+                    widgetManager.getWidgets().find((w) => w.id === 'sales-forecast')?.visible
+                        ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('sales-forecast') ? 'collapsed' : ''}" draggable="true" data-widget-id="sales-forecast" style="${widgetManager.getWidgetStyle('sales-forecast', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h2 class="card-title">Sales Forecast</h2>
@@ -759,22 +904,31 @@ const pages = {
                                 const date = new Date();
                                 date.setDate(date.getDate() - i);
                                 const dateStr = toLocalDate(date);
-                                actualData.push((store.state.sales || []).filter(s => s.sold_at?.startsWith(dateStr)).length);
+                                actualData.push(
+                                    (store.state.sales || []).filter((s) => s.sold_at?.startsWith(dateStr)).length,
+                                );
                             }
                             const avg = actualData.reduce((a, b) => a + b, 0) / actualData.length;
                             const trend = (actualData[actualData.length - 1] - actualData[0]) / actualData.length;
                             for (let i = 1; i <= 3; i++) {
                                 predictedData.push(Math.max(0, Math.round(avg + trend * i)));
                             }
-                            return forecastChart.render({ actual: actualData, predicted: predictedData }, { width: 180, height: 50 });
+                            return forecastChart.render(
+                                { actual: actualData, predicted: predictedData },
+                                { width: 180, height: 50 },
+                            );
                         })()}
                         <div class="text-xs text-gray-500 mt-2 text-center">Last 7 days + 3-day forecast</div>
                     </div>
                 </div>
-                ` : ''}
+                `
+                        : ''
+                }
 
                 <!-- Conversion Funnel Widget -->
-                ${widgetManager.getWidgets().find(w => w.id === 'conversion-funnel')?.visible ? `
+                ${
+                    widgetManager.getWidgets().find((w) => w.id === 'conversion-funnel')?.visible
+                        ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('conversion-funnel') ? 'collapsed' : ''}" draggable="true" data-widget-id="conversion-funnel" style="${widgetManager.getWidgetStyle('conversion-funnel', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h2 class="card-title">Conversion Funnel</h2>
@@ -783,16 +937,23 @@ const pages = {
                     <div class="card-body">
                         ${salesFunnel.render([
                             { name: 'Inventory', value: (store.state.inventory || []).length },
-                            { name: 'Listed', value: (store.state.listings || []).filter(l => l.status === 'active').length },
+                            {
+                                name: 'Listed',
+                                value: (store.state.listings || []).filter((l) => l.status === 'active').length,
+                            },
                             { name: 'Offers', value: (store.state.offers || []).length },
-                            { name: 'Sold', value: (store.state.sales || []).length }
+                            { name: 'Sold', value: (store.state.sales || []).length },
                         ])}
                     </div>
                 </div>
-                ` : ''}
+                `
+                        : ''
+                }
 
                 <!-- Profit Margin Widget -->
-                ${widgetManager.getWidgets().find(w => w.id === 'profit-margin')?.visible ? `
+                ${
+                    widgetManager.getWidgets().find((w) => w.id === 'profit-margin')?.visible
+                        ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('profit-margin') ? 'collapsed' : ''}" draggable="true" data-widget-id="profit-margin" style="${widgetManager.getWidgetStyle('profit-margin', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h2 class="card-title">Profit Margin</h2>
@@ -800,17 +961,39 @@ const pages = {
                     </div>
                     <div class="card-body flex justify-center">
                         ${(() => {
-                            const totalRevenue = (store.state.sales || []).reduce((sum, s) => sum + (s.sale_price || 0), 0);
-                            const totalCost = (store.state.sales || []).reduce((sum, s) => sum + (s.cost_price || s.purchase_price || 0), 0);
+                            const totalRevenue = (store.state.sales || []).reduce(
+                                (sum, s) => sum + (s.sale_price || 0),
+                                0,
+                            );
+                            const totalCost = (store.state.sales || []).reduce(
+                                (sum, s) => sum + (s.cost_price || s.purchase_price || 0),
+                                0,
+                            );
                             const margin = totalRevenue > 0 ? ((totalRevenue - totalCost) / totalRevenue) * 100 : 0;
-                            return profitGauge.render(margin, 100, { size: 100, label: 'Margin', color: margin >= 30 ? 'var(--success-500)' : margin >= 15 ? 'var(--warning-500)' : 'var(--error-500)' });
+                            return profitGauge.render(margin, 100, {
+                                size: 100,
+                                label: 'Margin',
+                                color:
+                                    margin >= 30
+                                        ? 'var(--success-500)'
+                                        : margin >= 15
+                                          ? 'var(--warning-500)'
+                                          : 'var(--error-500)',
+                            });
                         })()}
                     </div>
                 </div>
-                ` : ''}`, 'Forecast & Analytics')}
+                `
+                        : ''
+                }`,
+                    'Forecast & Analytics',
+                )}
 
-                ${safeWidget(() => `<!-- Cash Flow Widget -->
-                ${widgetManager.getWidgets().find(w => w.id === 'cash-flow')?.visible ? `
+                ${safeWidget(
+                    () => `<!-- Cash Flow Widget -->
+                ${
+                    widgetManager.getWidgets().find((w) => w.id === 'cash-flow')?.visible
+                        ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('cash-flow') ? 'collapsed' : ''}" draggable="true" data-widget-id="cash-flow" style="${widgetManager.getWidgetStyle('cash-flow', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h2 class="card-title">Cash Flow</h2>
@@ -819,17 +1002,33 @@ const pages = {
                     <div class="card-body">
                         ${(() => {
                             const transactions = [
-                                ...(store.state.sales || []).slice(-5).map(s => ({ type: 'income', amount: s.sale_price || 0, description: s.title || 'Sale' })),
-                                ...(store.state.purchases || []).slice(-3).map(p => ({ type: 'expense', amount: p.amount || 0, description: p.vendor || 'Purchase' }))
-                            ].sort(() => Math.random() - 0.5).slice(0, 6);
-                            return transactions.length > 0 ? cashFlowTicker.render(transactions) : '<div class="text-gray-500 text-sm text-center">No recent transactions</div>';
+                                ...(store.state.sales || []).slice(-5).map((s) => ({
+                                    type: 'income',
+                                    amount: s.sale_price || 0,
+                                    description: s.title || 'Sale',
+                                })),
+                                ...(store.state.purchases || []).slice(-3).map((p) => ({
+                                    type: 'expense',
+                                    amount: p.amount || 0,
+                                    description: p.vendor || 'Purchase',
+                                })),
+                            ]
+                                .sort(() => Math.random() - 0.5)
+                                .slice(0, 6);
+                            return transactions.length > 0
+                                ? cashFlowTicker.render(transactions)
+                                : '<div class="text-gray-500 text-sm text-center">No recent transactions</div>';
                         })()}
                     </div>
                 </div>
-                ` : ''}
+                `
+                        : ''
+                }
 
                 <!-- Today's Tasks Widget -->
-                ${widgetManager.getWidgets().find(w => w.id === 'todays-tasks')?.visible ? `
+                ${
+                    widgetManager.getWidgets().find((w) => w.id === 'todays-tasks')?.visible
+                        ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('todays-tasks') ? 'collapsed' : ''}" draggable="true" data-widget-id="todays-tasks" style="${widgetManager.getWidgetStyle('todays-tasks', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h2 class="card-title">Today's Tasks</h2>
@@ -839,10 +1038,14 @@ const pages = {
                         ${tasksWidget.render(store.state.tasks || [])}
                     </div>
                 </div>
-                ` : ''}
+                `
+                        : ''
+                }
 
                 <!-- Ship Today Widget -->
-                ${widgetManager.getWidgets().find(w => w.id === 'ship-today')?.visible ? `
+                ${
+                    widgetManager.getWidgets().find((w) => w.id === 'ship-today')?.visible
+                        ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('ship-today') ? 'collapsed' : ''}" draggable="true" data-widget-id="ship-today" style="${widgetManager.getWidgetStyle('ship-today', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h2 class="card-title">Ship Today</h2>
@@ -852,10 +1055,14 @@ const pages = {
                         ${shippingQueue.render(store.state.orders || [])}
                     </div>
                 </div>
-                ` : ''}
+                `
+                        : ''
+                }
 
                 <!-- Milestones Widget -->
-                ${widgetManager.getWidgets().find(w => w.id === 'milestones')?.visible ? `
+                ${
+                    widgetManager.getWidgets().find((w) => w.id === 'milestones')?.visible
+                        ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('milestones') ? 'collapsed' : ''}" draggable="true" data-widget-id="milestones" style="${widgetManager.getWidgetStyle('milestones', 50)}">
                     <div class="card-header flex justify-between items-center">
                         <h2 class="card-title">Milestones</h2>
@@ -863,25 +1070,52 @@ const pages = {
                     </div>
                     <div class="card-body">
                         ${milestoneTracker.render([
-                            { name: 'First 100 Sales', current: Math.min((store.state.sales || []).length, 100), target: 100, icon: 'trophy' },
-                            { name: 'List 50 Items', current: Math.min((store.state.listings || []).length, 50), target: 50, icon: 'list' },
-                            { name: '$5K Revenue', current: Math.min((store.state.sales || []).reduce((sum, s) => sum + (s.sale_price || 0), 0), 5000), target: 5000, icon: 'dollar-sign' }
+                            {
+                                name: 'First 100 Sales',
+                                current: Math.min((store.state.sales || []).length, 100),
+                                target: 100,
+                                icon: 'trophy',
+                            },
+                            {
+                                name: 'List 50 Items',
+                                current: Math.min((store.state.listings || []).length, 50),
+                                target: 50,
+                                icon: 'list',
+                            },
+                            {
+                                name: '$5K Revenue',
+                                current: Math.min(
+                                    (store.state.sales || []).reduce((sum, s) => sum + (s.sale_price || 0), 0),
+                                    5000,
+                                ),
+                                target: 5000,
+                                icon: 'dollar-sign',
+                            },
                         ])}
                     </div>
                 </div>
-                ` : ''}`, 'Tasks & Shipping')}
+                `
+                        : ''
+                }`,
+                    'Tasks & Shipping',
+                )}
 
-                ${safeWidget(() => `<!-- Low Stock Alerts Widget -->
+                ${safeWidget(
+                    () => `<!-- Low Stock Alerts Widget -->
                 ${(() => {
-                    const lowStockAlertItems = (store.state.inventory || []).filter(item => {
-                        const qty = item.quantity != null ? item.quantity : 1;
-                        const threshold = item.low_stock_threshold || 5;
-                        return qty <= threshold;
-                    }).slice(0, 5);
-                    const outOfStockItems = lowStockAlertItems.filter(i => (i.quantity != null ? i.quantity : 1) === 0);
-                    const lowStockOnly = lowStockAlertItems.filter(i => (i.quantity != null ? i.quantity : 1) > 0);
+                    const lowStockAlertItems = (store.state.inventory || [])
+                        .filter((item) => {
+                            const qty = item.quantity != null ? item.quantity : 1;
+                            const threshold = item.low_stock_threshold || 5;
+                            return qty <= threshold;
+                        })
+                        .slice(0, 5);
+                    const outOfStockItems = lowStockAlertItems.filter(
+                        (i) => (i.quantity != null ? i.quantity : 1) === 0,
+                    );
+                    const lowStockOnly = lowStockAlertItems.filter((i) => (i.quantity != null ? i.quantity : 1) > 0);
 
-                    if (!widgetManager.getWidgets().find(w => w.id === 'low-stock-alerts')?.visible) return '';
+                    if (!widgetManager.getWidgets().find((w) => w.id === 'low-stock-alerts')?.visible) return '';
 
                     return `
                     <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('low-stock-alerts') ? 'collapsed' : ''}" draggable="true" data-widget-id="low-stock-alerts" style="${widgetManager.getWidgetStyle('low-stock-alerts', 33)}">
@@ -895,12 +1129,15 @@ const pages = {
                             </div>
                         </div>
                         <div class="card-body">
-                            ${lowStockAlertItems.length > 0 ? `
+                            ${
+                                lowStockAlertItems.length > 0
+                                    ? `
                                 <div class="space-y-2">
-                                    ${lowStockAlertItems.map(item => {
-                                        const qty = item.quantity != null ? item.quantity : 1;
-                                        const isOutOfStock = qty === 0;
-                                        return `
+                                    ${lowStockAlertItems
+                                        .map((item) => {
+                                            const qty = item.quantity != null ? item.quantity : 1;
+                                            const isOutOfStock = qty === 0;
+                                            return `
                                             <div class="flex items-center justify-between p-3 rounded" style="background: ${isOutOfStock ? 'var(--error-50)' : 'var(--warning-50)'}; border: 1px solid ${isOutOfStock ? 'var(--error-200)' : 'var(--warning-200)'};">
                                                 <div style="flex: 1;">
                                                     <div class="text-sm font-medium">${escapeHtml(item.title?.substring(0, 25) || 'Untitled')}${item.title?.length > 25 ? '...' : ''}</div>
@@ -917,24 +1154,29 @@ const pages = {
                                                 </button>
                                             </div>
                                         `;
-                                    }).join('')}
+                                        })
+                                        .join('')}
                                 </div>
                                 <button class="btn btn-secondary btn-sm w-full mt-3" onclick="router.navigate('inventory')">
                                     View All Inventory
                                 </button>
-                            ` : `
+                            `
+                                    : `
                                 <div class="text-gray-500 text-sm text-center py-4">
                                     <div style="font-size: 24px; margin-bottom: 8px;">✓</div>
                                     All items are well stocked!
                                 </div>
-                            `}
+                            `
+                            }
                         </div>
                     </div>
                     `;
                 })()}
 
                 <!-- Marketplace Price Trends Widget -->
-                ${widgetManager.getWidgets().find(w => w.id === 'price-trends')?.visible ? `
+                ${
+                    widgetManager.getWidgets().find((w) => w.id === 'price-trends')?.visible
+                        ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('price-trends') ? 'collapsed' : ''}" draggable="true" data-widget-id="price-trends" style="${widgetManager.getWidgetStyle('price-trends', 50)}">
                     <div class="card-header flex justify-between items-center">
                         <h2 class="card-title">${components.icon('trending-up', 16)} Price Trends</h2>
@@ -944,9 +1186,10 @@ const pages = {
                         ${(() => {
                             // Get top-selling items with price history
                             const salesByItem = {};
-                            (store.state.sales || []).forEach(s => {
+                            (store.state.sales || []).forEach((s) => {
                                 const key = s.inventory_title || s.listing_title || s.title || 'Unknown';
-                                if (!salesByItem[key]) salesByItem[key] = { title: key, prices: [], count: 0, platform: s.platform };
+                                if (!salesByItem[key])
+                                    salesByItem[key] = { title: key, prices: [], count: 0, platform: s.platform };
                                 salesByItem[key].prices.push(s.sale_price || 0);
                                 salesByItem[key].count++;
                             });
@@ -958,7 +1201,7 @@ const pages = {
 
                             // If no sales data, show from inventory
                             if (topItems.length === 0) {
-                                const inventoryItems = (store.state.inventory || []).slice(0, 5).map(item => ({
+                                const inventoryItems = (store.state.inventory || []).slice(0, 5).map((item) => ({
                                     title: item.title || 'Untitled',
                                     prices: [
                                         parseFloat(item.list_price || 0) * 0.9,
@@ -967,72 +1210,127 @@ const pages = {
                                         parseFloat(item.list_price || 0) * 1.02,
                                         parseFloat(item.list_price || 0) * 0.98,
                                         parseFloat(item.list_price || 0) * 1.05,
-                                        parseFloat(item.list_price || 0)
+                                        parseFloat(item.list_price || 0),
                                     ],
                                     count: 0,
                                     platform: 'inventory',
-                                    currentPrice: parseFloat(item.list_price || 0)
+                                    currentPrice: parseFloat(item.list_price || 0),
                                 }));
 
                                 if (inventoryItems.length === 0) {
                                     return '<div class="text-gray-500 text-sm text-center py-4">Add inventory items to see price trends</div>';
                                 }
 
-                                return '<div class="space-y-3">' + inventoryItems.map(item => {
-                                    const sparkData = item.prices;
-                                    const current = item.currentPrice;
-                                    const first = sparkData[0] || 0;
-                                    const change = first > 0 ? ((current - first) / first * 100).toFixed(1) : 0;
-                                    const isUp = change >= 0;
-                                    return '<div class="flex items-center gap-3 p-2 rounded" style="background: var(--gray-50);">' +
-                                        '<div style="flex: 1; min-width: 0;">' +
-                                            '<div class="text-sm font-medium" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' + escapeHtml(item.title.substring(0, 28)) + (item.title.length > 28 ? '...' : '') + '</div>' +
-                                            '<div class="text-xs text-gray-400">$' + current.toFixed(2) + '</div>' +
-                                        '</div>' +
-                                        '<div style="width: 80px;">' + priceTrendSparkline.render(sparkData, 80, 24) + '</div>' +
-                                        '<div style="width: 55px; text-align: right;">' +
-                                            '<span class="text-xs font-medium" style="color: ' + (isUp ? 'var(--success)' : 'var(--error)') + ';">' + (isUp ? '+' : '') + change + '%</span>' +
-                                        '</div>' +
-                                    '</div>';
-                                }).join('') + '</div>';
+                                return (
+                                    '<div class="space-y-3">' +
+                                    inventoryItems
+                                        .map((item) => {
+                                            const sparkData = item.prices;
+                                            const current = item.currentPrice;
+                                            const first = sparkData[0] || 0;
+                                            const change =
+                                                first > 0 ? (((current - first) / first) * 100).toFixed(1) : 0;
+                                            const isUp = change >= 0;
+                                            return (
+                                                '<div class="flex items-center gap-3 p-2 rounded" style="background: var(--gray-50);">' +
+                                                '<div style="flex: 1; min-width: 0;">' +
+                                                '<div class="text-sm font-medium" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' +
+                                                escapeHtml(item.title.substring(0, 28)) +
+                                                (item.title.length > 28 ? '...' : '') +
+                                                '</div>' +
+                                                '<div class="text-xs text-gray-400">$' +
+                                                current.toFixed(2) +
+                                                '</div>' +
+                                                '</div>' +
+                                                '<div style="width: 80px;">' +
+                                                priceTrendSparkline.render(sparkData, 80, 24) +
+                                                '</div>' +
+                                                '<div style="width: 55px; text-align: right;">' +
+                                                '<span class="text-xs font-medium" style="color: ' +
+                                                (isUp ? 'var(--success)' : 'var(--error)') +
+                                                ';">' +
+                                                (isUp ? '+' : '') +
+                                                change +
+                                                '%</span>' +
+                                                '</div>' +
+                                                '</div>'
+                                            );
+                                        })
+                                        .join('') +
+                                    '</div>'
+                                );
                             }
 
-                            return '<div class="space-y-3">' + topItems.map(item => {
-                                const avgPrice = item.prices.reduce((a, b) => a + b, 0) / item.prices.length;
-                                const latestPrice = item.prices[item.prices.length - 1];
-                                const firstPrice = item.prices[0];
-                                const change = firstPrice > 0 ? ((latestPrice - firstPrice) / firstPrice * 100).toFixed(1) : 0;
-                                const isUp = change >= 0;
-                                // Pad sparkline data to 7 points
-                                const sparkData = item.prices.length >= 7 ? item.prices.slice(-7) : [...Array(7 - item.prices.length).fill(avgPrice), ...item.prices];
-                                return '<div class="flex items-center gap-3 p-2 rounded" style="background: var(--gray-50);">' +
-                                    '<div style="flex: 1; min-width: 0;">' +
-                                        '<div class="text-sm font-medium" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' + escapeHtml(item.title.substring(0, 28)) + (item.title.length > 28 ? '...' : '') + '</div>' +
-                                        '<div class="text-xs text-gray-400">' + item.count + ' sale' + (item.count !== 1 ? 's' : '') + ' · ' + (item.platform || 'multi') + '</div>' +
-                                    '</div>' +
-                                    '<div style="width: 80px;">' + priceTrendSparkline.render(sparkData, 80, 24) + '</div>' +
-                                    '<div style="width: 55px; text-align: right;">' +
-                                        '<span class="text-xs font-medium" style="color: ' + (isUp ? 'var(--success)' : 'var(--error)') + ';">' + (isUp ? '+' : '') + change + '%</span>' +
-                                    '</div>' +
-                                '</div>';
-                            }).join('') + '</div>';
+                            return (
+                                '<div class="space-y-3">' +
+                                topItems
+                                    .map((item) => {
+                                        const avgPrice = item.prices.reduce((a, b) => a + b, 0) / item.prices.length;
+                                        const latestPrice = item.prices[item.prices.length - 1];
+                                        const firstPrice = item.prices[0];
+                                        const change =
+                                            firstPrice > 0
+                                                ? (((latestPrice - firstPrice) / firstPrice) * 100).toFixed(1)
+                                                : 0;
+                                        const isUp = change >= 0;
+                                        // Pad sparkline data to 7 points
+                                        const sparkData =
+                                            item.prices.length >= 7
+                                                ? item.prices.slice(-7)
+                                                : [...Array(7 - item.prices.length).fill(avgPrice), ...item.prices];
+                                        return (
+                                            '<div class="flex items-center gap-3 p-2 rounded" style="background: var(--gray-50);">' +
+                                            '<div style="flex: 1; min-width: 0;">' +
+                                            '<div class="text-sm font-medium" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' +
+                                            escapeHtml(item.title.substring(0, 28)) +
+                                            (item.title.length > 28 ? '...' : '') +
+                                            '</div>' +
+                                            '<div class="text-xs text-gray-400">' +
+                                            item.count +
+                                            ' sale' +
+                                            (item.count !== 1 ? 's' : '') +
+                                            ' · ' +
+                                            (item.platform || 'multi') +
+                                            '</div>' +
+                                            '</div>' +
+                                            '<div style="width: 80px;">' +
+                                            priceTrendSparkline.render(sparkData, 80, 24) +
+                                            '</div>' +
+                                            '<div style="width: 55px; text-align: right;">' +
+                                            '<span class="text-xs font-medium" style="color: ' +
+                                            (isUp ? 'var(--success)' : 'var(--error)') +
+                                            ';">' +
+                                            (isUp ? '+' : '') +
+                                            change +
+                                            '%</span>' +
+                                            '</div>' +
+                                            '</div>'
+                                        );
+                                    })
+                                    .join('') +
+                                '</div>'
+                            );
                         })()}
                         <button class="btn btn-ghost btn-sm w-full mt-2" onclick="router.navigate('predictions')">
                             ${components.icon('bar-chart-2', 14)} View Full Analysis
                         </button>
                     </div>
                 </div>
-                ` : ''}
+                `
+                        : ''
+                }
 
-                `, 'Alerts & Trends')}
+                `,
+                    'Alerts & Trends',
+                )}
 
                 ${safeWidget(() => {
                     // Upcoming Calendar Events Preview Widget
                     const calEvents = (store.state.calendarEvents || [])
-                        .filter(e => new Date(e.date || e.start) >= new Date())
+                        .filter((e) => new Date(e.date || e.start) >= new Date())
                         .sort((a, b) => new Date(a.date || a.start) - new Date(b.date || b.start))
                         .slice(0, 5);
-                    if (!widgetManager.getWidgets().find(w => w.id === 'upcoming-events')?.visible) return '';
+                    if (!widgetManager.getWidgets().find((w) => w.id === 'upcoming-events')?.visible) return '';
                     return `
                     <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('upcoming-events') ? 'collapsed' : ''}" draggable="true" data-widget-id="upcoming-events" style="${widgetManager.getWidgetStyle('upcoming-events', 33)}">
                         <div class="card-header flex justify-between items-center">
@@ -1043,9 +1341,13 @@ const pages = {
                             </div>
                         </div>
                         <div class="card-body">
-                            ${calEvents.length > 0 ? `
+                            ${
+                                calEvents.length > 0
+                                    ? `
                                 <div class="space-y-2">
-                                    ${calEvents.map(evt => `
+                                    ${calEvents
+                                        .map(
+                                            (evt) => `
                                         <button type="button" class="flex items-center gap-3 p-2 rounded" style="background: var(--gray-50); cursor: pointer; width: 100%; text-align: left;" onclick="router.navigate('calendar')">
                                             <div style="width: 40px; text-align: center;">
                                                 <div class="text-xs text-gray-400">${new Date(evt.date || evt.start).toLocaleDateString('en-US', { month: 'short' })}</div>
@@ -1056,14 +1358,18 @@ const pages = {
                                                 <div class="text-xs text-gray-400">${evt.type ? `<span class="badge badge-sm">${escapeHtml(evt.type)}</span>` : ''}</div>
                                             </div>
                                         </button>
-                                    `).join('')}
+                                    `,
+                                        )
+                                        .join('')}
                                 </div>
-                            ` : `
+                            `
+                                    : `
                                 <div class="text-gray-500 text-sm text-center py-4">
                                     No upcoming events
                                     <br><button class="btn btn-sm btn-secondary mt-2" onclick="modals.addCalendarEvent()">Add Event</button>
                                 </div>
-                            `}
+                            `
+                            }
                         </div>
                     </div>
                     `;
@@ -1071,7 +1377,7 @@ const pages = {
 
                 ${safeWidget(() => {
                     // Recent Items Strip Widget
-                    if (!widgetManager.getWidgets().find(w => w.id === 'recent-items')?.visible) return '';
+                    if (!widgetManager.getWidgets().find((w) => w.id === 'recent-items')?.visible) return '';
                     const recentItems = [...(store.state.inventory || [])]
                         .sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at))
                         .slice(0, 5);
@@ -1085,12 +1391,21 @@ const pages = {
                             </div>
                         </div>
                         <div class="card-body">
-                            ${recentItems.length > 0 ? `
+                            ${
+                                recentItems.length > 0
+                                    ? `
                                 <div class="recent-items-strip">
-                                    ${recentItems.map(item => {
-                                        const images = (() => { try { return JSON.parse(item.images || '[]'); } catch { return []; } })();
-                                        const thumb = images[0] || '';
-                                        return `
+                                    ${recentItems
+                                        .map((item) => {
+                                            const images = (() => {
+                                                try {
+                                                    return JSON.parse(item.images || '[]');
+                                                } catch {
+                                                    return [];
+                                                }
+                                            })();
+                                            const thumb = images[0] || '';
+                                            return `
                                             <button type="button" class="recent-item-card" onclick="router.navigate('inventory'); setTimeout(() => handlers.editItem('${item.id}'), 100)" title="${escapeHtml(item.title || 'Untitled')}">
                                                 <div class="recent-item-thumb">
                                                     ${thumb ? `<img src="${escapeHtml(thumb)}" alt="" loading="lazy"/>` : `<div class="recent-item-placeholder">${components.icon('package', 24)}</div>`}
@@ -1101,11 +1416,14 @@ const pages = {
                                                 </div>
                                             </button>
                                         `;
-                                    }).join('')}
+                                        })
+                                        .join('')}
                                 </div>
-                            ` : `
+                            `
+                                    : `
                                 <div class="text-gray-500 text-sm text-center py-4">No inventory items yet</div>
-                            `}
+                            `
+                            }
                         </div>
                     </div>
                     `;
@@ -1113,12 +1431,12 @@ const pages = {
 
                 ${safeWidget(() => {
                     // Mini P&L Snapshot Widget
-                    if (!widgetManager.getWidgets().find(w => w.id === 'mini-pnl')?.visible) return '';
+                    if (!widgetManager.getWidgets().find((w) => w.id === 'mini-pnl')?.visible) return '';
                     const sales = store.state.sales || [];
                     const revenue = sales.reduce((sum, s) => sum + (s.sale_price || 0), 0);
                     const cogs = sales.reduce((sum, s) => {
-                        const inv = (store.state.inventory || []).find(i => i.id === s.inventory_id);
-                        return sum + (inv ? (parseFloat(inv.purchase_price || inv.cost_price) || 0) : 0);
+                        const inv = (store.state.inventory || []).find((i) => i.id === s.inventory_id);
+                        return sum + (inv ? parseFloat(inv.purchase_price || inv.cost_price) || 0 : 0);
                     }, 0);
                     const fees = sales.reduce((sum, s) => sum + (s.platform_fee || (s.sale_price || 0) * 0.13), 0);
                     const net = revenue - cogs - fees;
@@ -1137,31 +1455,31 @@ const pages = {
                                 <div class="mini-pnl-row">
                                     <span class="mini-pnl-label">Revenue</span>
                                     <div class="mini-pnl-bar-track">
-                                        <div class="mini-pnl-bar" style="width: ${(revenue / maxVal * 100).toFixed(1)}%; background: var(--success);"></div>
+                                        <div class="mini-pnl-bar" style="width: ${((revenue / maxVal) * 100).toFixed(1)}%; background: var(--success);"></div>
                                     </div>
-                                    <span class="mini-pnl-value" style="color: var(--success);">C$${revenue.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
+                                    <span class="mini-pnl-value" style="color: var(--success);">C$${revenue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
                                 </div>
                                 <div class="mini-pnl-row">
                                     <span class="mini-pnl-label">COGS</span>
                                     <div class="mini-pnl-bar-track">
-                                        <div class="mini-pnl-bar" style="width: ${(cogs / maxVal * 100).toFixed(1)}%; background: var(--error);"></div>
+                                        <div class="mini-pnl-bar" style="width: ${((cogs / maxVal) * 100).toFixed(1)}%; background: var(--error);"></div>
                                     </div>
-                                    <span class="mini-pnl-value" style="color: var(--error);">-C$${cogs.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
+                                    <span class="mini-pnl-value" style="color: var(--error);">-C$${cogs.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
                                 </div>
                                 <div class="mini-pnl-row">
                                     <span class="mini-pnl-label">Fees</span>
                                     <div class="mini-pnl-bar-track">
-                                        <div class="mini-pnl-bar" style="width: ${(fees / maxVal * 100).toFixed(1)}%; background: var(--warning-500);"></div>
+                                        <div class="mini-pnl-bar" style="width: ${((fees / maxVal) * 100).toFixed(1)}%; background: var(--warning-500);"></div>
                                     </div>
-                                    <span class="mini-pnl-value" style="color: var(--warning-600);">-C$${fees.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
+                                    <span class="mini-pnl-value" style="color: var(--warning-600);">-C$${fees.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
                                 </div>
                                 <div class="mini-pnl-divider"></div>
                                 <div class="mini-pnl-row mini-pnl-net">
                                     <span class="mini-pnl-label">Net Profit</span>
                                     <div class="mini-pnl-bar-track">
-                                        <div class="mini-pnl-bar" style="width: ${(Math.abs(net) / maxVal * 100).toFixed(1)}%; background: ${net >= 0 ? 'var(--primary-500)' : 'var(--error)'};"></div>
+                                        <div class="mini-pnl-bar" style="width: ${((Math.abs(net) / maxVal) * 100).toFixed(1)}%; background: ${net >= 0 ? 'var(--primary-500)' : 'var(--error)'};"></div>
                                     </div>
-                                    <span class="mini-pnl-value" style="color: ${net >= 0 ? 'var(--primary-600)' : 'var(--error)'}; font-weight: 700;">C$${net.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
+                                    <span class="mini-pnl-value" style="color: ${net >= 0 ? 'var(--primary-600)' : 'var(--error)'}; font-weight: 700;">C$${net.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
                                 </div>
                             </div>
                         </div>
@@ -1171,9 +1489,9 @@ const pages = {
 
                 ${safeWidget(() => {
                     // Pending Offers Urgency Widget
-                    if (!widgetManager.getWidgets().find(w => w.id === 'pending-offers')?.visible) return '';
+                    if (!widgetManager.getWidgets().find((w) => w.id === 'pending-offers')?.visible) return '';
                     const pendingOffers = (store.state.offers || [])
-                        .filter(o => o.status === 'pending')
+                        .filter((o) => o.status === 'pending')
                         .sort((a, b) => {
                             if (a.expires_at && b.expires_at) return new Date(a.expires_at) - new Date(b.expires_at);
                             if (a.expires_at) return -1;
@@ -1191,68 +1509,101 @@ const pages = {
                             </div>
                         </div>
                         <div class="card-body">
-                            ${pendingOffers.length > 0 ? `
+                            ${
+                                pendingOffers.length > 0
+                                    ? `
                                 <div class="space-y-2">
-                                    ${pendingOffers.map(offer => {
-                                        const listing = (store.state.listings || []).find(l => l.id === offer.listing_id);
-                                        const title = listing ? listing.title : offer.listing_id || 'Unknown Item';
-                                        let countdown = '';
-                                        let isUrgent = false;
-                                        if (offer.expires_at) {
-                                            const remaining = new Date(offer.expires_at) - new Date();
-                                            if (remaining <= 0) {
-                                                countdown = '<span class="offer-countdown expired">Expired</span>';
+                                    ${pendingOffers
+                                        .map((offer) => {
+                                            const listing = (store.state.listings || []).find(
+                                                (l) => l.id === offer.listing_id,
+                                            );
+                                            const title = listing ? listing.title : offer.listing_id || 'Unknown Item';
+                                            let countdown = '';
+                                            let isUrgent = false;
+                                            if (offer.expires_at) {
+                                                const remaining = new Date(offer.expires_at) - new Date();
+                                                if (remaining <= 0) {
+                                                    countdown = '<span class="offer-countdown expired">Expired</span>';
+                                                } else {
+                                                    const hours = Math.floor(remaining / 3600000);
+                                                    const mins = Math.floor((remaining % 3600000) / 60000);
+                                                    isUrgent = hours < 24;
+                                                    countdown =
+                                                        '<span class="offer-countdown ' +
+                                                        (isUrgent ? 'urgent' : '') +
+                                                        '">' +
+                                                        (hours > 0 ? hours + 'h ' : '') +
+                                                        mins +
+                                                        'm left</span>';
+                                                }
                                             } else {
-                                                const hours = Math.floor(remaining / 3600000);
-                                                const mins = Math.floor((remaining % 3600000) / 60000);
-                                                isUrgent = hours < 24;
-                                                countdown = '<span class="offer-countdown ' + (isUrgent ? 'urgent' : '') + '">' + (hours > 0 ? hours + 'h ' : '') + mins + 'm left</span>';
+                                                countdown = '<span class="offer-countdown">No expiration</span>';
                                             }
-                                        } else {
-                                            countdown = '<span class="offer-countdown">No expiration</span>';
-                                        }
-                                        return '<div class="offers-urgency-item' + (isUrgent ? ' urgent' : '') + '">' +
-                                            '<div style="flex: 1; min-width: 0;">' +
-                                                '<div class="text-sm font-medium" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' + escapeHtml(title.substring(0, 30)) + (title.length > 30 ? '...' : '') + '</div>' +
-                                                '<div class="text-xs text-gray-400">' + escapeHtml(offer.buyer || 'Unknown') + ' · ' + escapeHtml(offer.platform || '') + '</div>' +
-                                            '</div>' +
-                                            '<div style="text-align: right;">' +
-                                                '<div class="text-sm font-bold" style="color: var(--success);">$' + (offer.amount || 0).toLocaleString() + '</div>' +
+                                            return (
+                                                '<div class="offers-urgency-item' +
+                                                (isUrgent ? ' urgent' : '') +
+                                                '">' +
+                                                '<div style="flex: 1; min-width: 0;">' +
+                                                '<div class="text-sm font-medium" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' +
+                                                escapeHtml(title.substring(0, 30)) +
+                                                (title.length > 30 ? '...' : '') +
+                                                '</div>' +
+                                                '<div class="text-xs text-gray-400">' +
+                                                escapeHtml(offer.buyer || 'Unknown') +
+                                                ' · ' +
+                                                escapeHtml(offer.platform || '') +
+                                                '</div>' +
+                                                '</div>' +
+                                                '<div style="text-align: right;">' +
+                                                '<div class="text-sm font-bold" style="color: var(--success);">$' +
+                                                (offer.amount || 0).toLocaleString() +
+                                                '</div>' +
                                                 countdown +
-                                            '</div>' +
-                                        '</div>';
-                                    }).join('')}
+                                                '</div>' +
+                                                '</div>'
+                                            );
+                                        })
+                                        .join('')}
                                 </div>
                                 <button class="btn btn-ghost btn-sm w-full mt-3" onclick="router.navigate('offers')">
                                     View All Offers
                                 </button>
-                            ` : `
+                            `
+                                    : `
                                 <div class="text-gray-500 text-sm text-center py-4">
                                     No pending offers
                                     <br><button class="btn btn-sm btn-secondary mt-2" onclick="router.navigate('listings')">View Listings</button>
                                 </div>
-                            `}
+                            `
+                            }
                         </div>
                     </div>
                     `;
                 }, 'Pending Offers')}
 
                 ${safeWidget(() => {
-                    if (!widgetManager.getWidgets().find(w => w.id === 'poshmark-closet')?.visible) return '';
+                    if (!widgetManager.getWidgets().find((w) => w.id === 'poshmark-closet')?.visible) return '';
                     const pm = store.state.poshmarkMonitoring || null;
                     const checkedAt = pm?.checked_at ? new Date(pm.checked_at) : null;
                     const minutesAgo = checkedAt ? Math.floor((Date.now() - checkedAt.getTime()) / 60000) : null;
                     const history = Array.isArray(pm?.closet_value_history) ? pm.closet_value_history : [];
 
-                    const sparkline = history.length >= 2 ? (() => {
-                        const max = Math.max(...history.map(h => h.value || 0)) || 1;
-                        return `<div class="poshmark-sparkline" role="img" aria-label="Closet value trend" style="display:flex;align-items:flex-end;gap:3px;height:32px;margin-top:8px;">
-                            ${history.slice(-12).map(h => {
-                                const pct = Math.max(4, Math.round(((h.value || 0) / max) * 100));
-                                return `<div style="flex:1;background:var(--primary-400);border-radius:2px 2px 0 0;height:${pct}%;min-height:4px;" title="C$${(h.value||0).toLocaleString()} on ${escapeHtml(h.date||'')}"></div>`;
-                            }).join('')}
+                    const sparkline =
+                        history.length >= 2
+                            ? (() => {
+                                  const max = Math.max(...history.map((h) => h.value || 0)) || 1;
+                                  return `<div class="poshmark-sparkline" role="img" aria-label="Closet value trend" style="display:flex;align-items:flex-end;gap:3px;height:32px;margin-top:8px;">
+                            ${history
+                                .slice(-12)
+                                .map((h) => {
+                                    const pct = Math.max(4, Math.round(((h.value || 0) / max) * 100));
+                                    return `<div style="flex:1;background:var(--primary-400);border-radius:2px 2px 0 0;height:${pct}%;min-height:4px;" title="C$${(h.value || 0).toLocaleString()} on ${escapeHtml(h.date || '')}"></div>`;
+                                })
+                                .join('')}
                         </div>`;
-                    })() : '';
+                              })()
+                            : '';
 
                     return `
                     <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('poshmark-closet') ? 'collapsed' : ''}" draggable="true" data-widget-id="poshmark-closet" style="${widgetManager.getWidgetStyle('poshmark-closet', 50)}">
@@ -1264,7 +1615,9 @@ const pages = {
                             </div>
                         </div>
                         <div class="card-body">
-                            ${pm ? `
+                            ${
+                                pm
+                                    ? `
                                 <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:4px;">
                                     <div class="stat-item" style="text-align:center;">
                                         <div class="text-2xl font-bold">${escapeHtml(String(pm.total_listings ?? '—'))}</div>
@@ -1291,11 +1644,13 @@ const pages = {
                                 <div class="text-xs text-gray-400 mt-2" style="text-align:right;">
                                     Last checked: ${minutesAgo === 0 ? 'just now' : minutesAgo === 1 ? '1 minute ago' : minutesAgo != null ? escapeHtml(String(minutesAgo)) + ' minutes ago' : 'unknown'}
                                 </div>
-                            ` : `
+                            `
+                                    : `
                                 <div class="text-gray-500 text-sm text-center py-6">
                                     No monitoring data — click Check Now to start
                                 </div>
-                            `}
+                            `
+                            }
                         </div>
                     </div>
                     `;
@@ -1319,7 +1674,14 @@ const pages = {
                 hiddenTabs = [];
             }
         }
-        const removedAnalyticsTabs = new Set(['live', 'performance', 'reports', 'profitability', 'sales-analytics', 'purchases-analytics']);
+        const removedAnalyticsTabs = new Set([
+            'live',
+            'performance',
+            'reports',
+            'profitability',
+            'sales-analytics',
+            'purchases-analytics',
+        ]);
         const requestedTab = store.state.analyticsTab || 'graphs';
         const currentTab = removedAnalyticsTabs.has(requestedTab) ? 'graphs' : requestedTab;
 
@@ -1334,16 +1696,19 @@ const pages = {
         const sellThrough = Math.round((soldItems / totalInventory) * 100);
 
         // Prepare chart data - Sales trend (last 30 days)
-        const salesTrendData = (salesAnalytics.salesData || []).slice(0, 30).reverse().map(d => ({
-            label: new Date(d.period).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-            value: d.revenue || 0
-        }));
+        const salesTrendData = (salesAnalytics.salesData || [])
+            .slice(0, 30)
+            .reverse()
+            .map((d) => ({
+                label: new Date(d.period).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                value: d.revenue || 0,
+            }));
 
         // Platform comparison data - fixed format: separate quantity from platform name
-        const platformData = (salesAnalytics.byPlatform || []).map(p => ({
+        const platformData = (salesAnalytics.byPlatform || []).map((p) => ({
             label: p.platform.charAt(0).toUpperCase() + p.platform.slice(1),
             value: p.revenue || 0,
-            count: p.sales || 0
+            count: p.sales || 0,
         }));
 
         // Get period label based on current state
@@ -1353,7 +1718,7 @@ const pages = {
             '90d': 'last 90 days',
             '6m': 'last 6 months',
             '1y': 'last year',
-            'custom': 'custom date range'
+            custom: 'custom date range',
         };
         const currentPeriod = store.state.analyticsPeriod || '30d';
         const periodLabel = periodLabels[currentPeriod] || 'last 30 days';
@@ -1365,8 +1730,14 @@ const pages = {
             totalRevenue: salesList.reduce((sum, s) => sum + (s.sale_price || 0), 0),
             totalProfit: salesList.reduce((sum, s) => sum + (s.net_profit || 0), 0),
             totalFees: salesList.reduce((sum, s) => sum + (s.platform_fee || 0), 0),
-            avgSalePrice: salesList.length > 0 ? salesList.reduce((sum, s) => sum + (s.sale_price || 0), 0) / salesList.length : 0,
-            avgProfit: salesList.length > 0 ? salesList.reduce((sum, s) => sum + (s.net_profit || 0), 0) / salesList.length : 0
+            avgSalePrice:
+                salesList.length > 0
+                    ? salesList.reduce((sum, s) => sum + (s.sale_price || 0), 0) / salesList.length
+                    : 0,
+            avgProfit:
+                salesList.length > 0
+                    ? salesList.reduce((sum, s) => sum + (s.net_profit || 0), 0) / salesList.length
+                    : 0,
         };
 
         // Sales tab content with new columns
@@ -1412,13 +1783,16 @@ const pages = {
                     </div>
                 </div>
                 <div class="card-body">
-                    ${(store.state.sales || []).length === 0 ? `
+                    ${
+                        (store.state.sales || []).length === 0
+                            ? `
                         <div class="empty-state">
                             <div class="empty-state-icon">${components.icon('sales', 48)}</div>
                             <h2 class="empty-state-title">No sales yet</h2>
                             <p class="empty-state-description">Sales will appear here with detailed tracking</p>
                         </div>
-                    ` : `
+                    `
+                            : `
                         <table class="data-table">
                             <thead>
                                 <tr>
@@ -1434,7 +1808,9 @@ const pages = {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${(store.state.sales || []).map(s => `
+                                ${(store.state.sales || [])
+                                    .map(
+                                        (s) => `
                                     <tr>
                                         <td>${new Date(s.created_at).toLocaleDateString()}</td>
                                         <td class="font-medium">${escapeHtml(s.listing_title || s.inventory_title || 'N/A')}</td>
@@ -1446,10 +1822,13 @@ const pages = {
                                         <td class="text-gray-600">C$${(s.platform_fee || 0).toFixed(2)}</td>
                                         <td class="font-medium ${(s.net_profit || 0) >= 0 ? 'text-success' : 'text-error'}">C$${(s.net_profit || 0).toFixed(2)}</td>
                                     </tr>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </tbody>
                         </table>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
@@ -1459,11 +1838,16 @@ const pages = {
                     <h2 class="card-title">Sales by Platform</h2>
                 </div>
                 <div class="card-body">
-                    ${platformData.length === 0 ? `
+                    ${
+                        platformData.length === 0
+                            ? `
                         <p class="text-gray-500 text-center py-4">No platform sales data</p>
-                    ` : `
+                    `
+                            : `
                         <div class="flex flex-col gap-3">
-                            ${platformData.map(p => `
+                            ${platformData
+                                .map(
+                                    (p) => `
                                 <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                                     <div class="flex items-center gap-3">
                                         <span class="font-medium">${p.label}</span>
@@ -1471,9 +1855,12 @@ const pages = {
                                     </div>
                                     <span class="font-bold text-success">Total: C$${(p.value || 0).toFixed(2)}</span>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
         `;
@@ -1488,7 +1875,7 @@ const pages = {
             { name: 'Marketing', spent: 0, budget: 200 },
             { name: 'Shipping', spent: 0, budget: 500 },
             { name: 'Supplies', spent: 0, budget: 300 },
-            { name: 'Fees', spent: 0, budget: 400 }
+            { name: 'Fees', spent: 0, budget: 400 },
         ];
 
         const financialsAnalyticsTabContent = `
@@ -1507,13 +1894,21 @@ const pages = {
                     ${[
                         { label: 'Revenue', value: finRevenue, color: 'var(--success)' },
                         { label: 'Expenses', value: -finExpenses, color: 'var(--error)' },
-                        { label: 'Net', value: finCashFlow, color: finCashFlow >= 0 ? 'var(--success)' : 'var(--error)' }
-                    ].map(item => `
+                        {
+                            label: 'Net',
+                            value: finCashFlow,
+                            color: finCashFlow >= 0 ? 'var(--success)' : 'var(--error)',
+                        },
+                    ]
+                        .map(
+                            (item) => `
                         <div class="flex justify-between items-center p-2 rounded" style="background:var(--gray-50)">
                             <span class="text-sm">${item.label}</span>
                             <span class="font-bold" style="color:${item.color}">C$${Math.abs(item.value).toFixed(2)}</span>
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
             </div>
         </div>
@@ -1526,14 +1921,18 @@ const pages = {
                     ${[
                         { label: 'Gross Margin', value: finRevenue > 0 ? finProfitMargin + '%' : 'N/A' },
                         { label: 'Current Ratio', value: '0.00' },
-                        { label: 'Debt-to-Equity', value: 'N/A' }
-                    ].map(r => `
+                        { label: 'Debt-to-Equity', value: 'N/A' },
+                    ]
+                        .map(
+                            (r) => `
                         <div class="text-center p-3" style="background:var(--gray-50);border-radius:8px;">
                             <div class="text-xl font-bold text-primary">${r.value}</div>
                             <div class="text-xs text-gray-500">${r.label}</div>
                             <div class="text-xs text-warning mt-1">Review</div>
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
             </div>
         </div>
@@ -1541,17 +1940,21 @@ const pages = {
             <div class="card-header"><h2 class="card-title">${components.icon('pie-chart', 18)} Budget Progress</h2></div>
             <div class="card-body">
                 <div class="flex flex-col gap-3">
-                    ${budgetCategories.map(cat => `
+                    ${budgetCategories
+                        .map(
+                            (cat) => `
                         <div>
                             <div class="flex justify-between text-sm mb-1">
                                 <span>${cat.name}</span>
                                 <span class="text-gray-500">C$${cat.spent} / C$${cat.budget}</span>
                             </div>
                             <div style="height:6px;background:var(--gray-200);border-radius:3px;">
-                                <div style="width:${Math.min(100, (cat.spent/cat.budget)*100)}%;height:100%;background:var(--primary);border-radius:3px;"></div>
+                                <div style="width:${Math.min(100, (cat.spent / cat.budget) * 100)}%;height:100%;background:var(--primary);border-radius:3px;"></div>
                             </div>
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
             </div>
         </div>
@@ -1559,9 +1962,12 @@ const pages = {
 `;
 
         const inventoryItemsForAnalytics = store.state.inventory || [];
-        const inventoryActive = inventoryItemsForAnalytics.filter(i => i.status === 'active').length;
-        const inventoryLow = inventoryItemsForAnalytics.filter(i => { const q = i.quantity != null ? i.quantity : 1; return q <= (i.low_stock_threshold || 5) && q > 0; }).length;
-        const inventoryOut = inventoryItemsForAnalytics.filter(i => Number(i.quantity) === 0).length;
+        const inventoryActive = inventoryItemsForAnalytics.filter((i) => i.status === 'active').length;
+        const inventoryLow = inventoryItemsForAnalytics.filter((i) => {
+            const q = i.quantity != null ? i.quantity : 1;
+            return q <= (i.low_stock_threshold || 5) && q > 0;
+        }).length;
+        const inventoryOut = inventoryItemsForAnalytics.filter((i) => Number(i.quantity) === 0).length;
 
         const inventoryAnalyticsTabContent = `
     <div class="stats-grid mb-6">
@@ -1577,13 +1983,17 @@ const pages = {
                 ${[
                     { label: 'In Stock', count: inventoryActive - inventoryLow, color: 'var(--success)' },
                     { label: 'Low Stock', count: inventoryLow, color: 'var(--warning)' },
-                    { label: 'Out of Stock', count: inventoryOut, color: 'var(--error)' }
-                ].map(s => `
+                    { label: 'Out of Stock', count: inventoryOut, color: 'var(--error)' },
+                ]
+                    .map(
+                        (s) => `
                     <div class="text-center">
                         <div class="text-3xl font-bold" style="color:${s.color}">${s.count}</div>
                         <div class="text-sm text-gray-500">${s.label}</div>
                     </div>
-                `).join('')}
+                `,
+                    )
+                    .join('')}
             </div>
         </div>
     </div>
@@ -1592,9 +2002,9 @@ const pages = {
         const salesAnalyticsTabContent = salesTabContent;
 
         const purchases = store.state.purchases || [];
-        const purchasesTotal = purchases.reduce((sum, p) => sum + (parseFloat(p.total_cost || p.cost || 0)), 0);
+        const purchasesTotal = purchases.reduce((sum, p) => sum + parseFloat(p.total_cost || p.cost || 0), 0);
         const purchasesByPlatform = {};
-        purchases.forEach(p => {
+        purchases.forEach((p) => {
             const pl = p.platform || p.source || 'Other';
             purchasesByPlatform[pl] = (purchasesByPlatform[pl] || 0) + parseFloat(p.total_cost || p.cost || 0);
         });
@@ -1608,16 +2018,24 @@ const pages = {
     <div class="card">
         <div class="card-header"><h2 class="card-title">Spend by Source</h2></div>
         <div class="card-body">
-            ${Object.keys(purchasesByPlatform).length === 0 ? `<p class="text-gray-500 text-center py-4">No purchase data yet</p>` : `
+            ${
+                Object.keys(purchasesByPlatform).length === 0
+                    ? `<p class="text-gray-500 text-center py-4">No purchase data yet</p>`
+                    : `
                 <div class="flex flex-col gap-3">
-                    ${Object.entries(purchasesByPlatform).map(([pl, amt]) => `
+                    ${Object.entries(purchasesByPlatform)
+                        .map(
+                            ([pl, amt]) => `
                         <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                             <span class="font-medium">${escapeHtml(pl)}</span>
                             <span class="font-bold text-primary">C$${amt.toFixed(2)}</span>
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
-            `}
+            `
+            }
         </div>
     </div>
 `;
@@ -1627,45 +2045,56 @@ const pages = {
         const sales = store.state.sales || [];
 
         // Calculate performance metrics
-        const soldItemsList = inventory.filter(i => i.status === 'sold');
-        const activeItems = inventory.filter(i => i.status === 'active');
+        const soldItemsList = inventory.filter((i) => i.status === 'sold');
+        const activeItems = inventory.filter((i) => i.status === 'active');
 
         // Average days to sell (for sold items with created_at and sold_at dates)
-        const itemsWithSellTime = sales.filter(s => s.created_at);
-        const avgDaysToSell = itemsWithSellTime.length > 0
-            ? Math.round(itemsWithSellTime.reduce((sum, s) => {
-                const listDate = new Date(s.listed_at || s.created_at);
-                const saleDate = new Date(s.created_at);
-                return sum + Math.max(0, (saleDate - listDate) / (1000 * 60 * 60 * 24));
-            }, 0) / itemsWithSellTime.length)
-            : 0;
+        const itemsWithSellTime = sales.filter((s) => s.created_at);
+        const avgDaysToSell =
+            itemsWithSellTime.length > 0
+                ? Math.round(
+                      itemsWithSellTime.reduce((sum, s) => {
+                          const listDate = new Date(s.listed_at || s.created_at);
+                          const saleDate = new Date(s.created_at);
+                          return sum + Math.max(0, (saleDate - listDate) / (1000 * 60 * 60 * 24));
+                      }, 0) / itemsWithSellTime.length,
+                  )
+                : 0;
 
         // Inventory turnover rate (sold / avg inventory)
-        const turnoverRate = inventory.length > 0
-            ? ((soldItems.length / inventory.length) * 100).toFixed(1)
-            : 0;
+        const turnoverRate = inventory.length > 0 ? ((soldItems.length / inventory.length) * 100).toFixed(1) : 0;
 
         // Best sellers by platform
-        const listingsMap = Object.fromEntries((store.state.listings || []).map(l => [l.id, l]));
-        const inventoryMap = Object.fromEntries((inventory || []).map(i => [i.id, i]));
+        const listingsMap = Object.fromEntries((store.state.listings || []).map((l) => [l.id, l]));
+        const inventoryMap = Object.fromEntries((inventory || []).map((i) => [i.id, i]));
         const salesByItem = {};
-        sales.forEach(s => {
+        sales.forEach((s) => {
             const listing = listingsMap[s.listing_id];
             const invItem = listing ? inventoryMap[listing.inventory_id] : null;
-            const key = listing?.title || invItem?.title || s.listing_title || s.inventory_title || (s.platform ? s.platform.charAt(0).toUpperCase() + s.platform.slice(1) + ' Sale' : 'Sale');
+            const key =
+                listing?.title ||
+                invItem?.title ||
+                s.listing_title ||
+                s.inventory_title ||
+                (s.platform ? s.platform.charAt(0).toUpperCase() + s.platform.slice(1) + ' Sale' : 'Sale');
             if (!salesByItem[key]) {
                 salesByItem[key] = { title: key, count: 0, revenue: 0, platform: s.platform };
             }
             salesByItem[key].count++;
-            salesByItem[key].revenue += (s.sale_price || 0);
+            salesByItem[key].revenue += s.sale_price || 0;
         });
-        const bestSellers = Object.values(salesByItem).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
+        const bestSellers = Object.values(salesByItem)
+            .sort((a, b) => b.revenue - a.revenue)
+            .slice(0, 5);
 
         // Build price trend data from real price history
-        bestSellers.forEach(item => {
+        bestSellers.forEach((item) => {
             const avgPrice = item.count > 0 ? item.revenue / item.count : 0;
-            const invItem = (store.state.inventory || []).find(i => (i.title || '') === item.title);
-            const priceHistory = invItem && Array.isArray(invItem.price_history) ? invItem.price_history.map(h => h.price || h).filter(Number.isFinite) : [];
+            const invItem = (store.state.inventory || []).find((i) => (i.title || '') === item.title);
+            const priceHistory =
+                invItem && Array.isArray(invItem.price_history)
+                    ? invItem.price_history.map((h) => h.price || h).filter(Number.isFinite)
+                    : [];
             const trend = priceHistory.length >= 2 ? priceHistory.slice(-7) : [];
             item.priceTrend = trend;
             item.avgPrice = avgPrice;
@@ -1673,31 +2102,37 @@ const pages = {
         });
 
         // Error stats shared between Performance and Reports tabs
-        const perfErrorSales = sales.filter(s => s.status === 'failed' || s.status === 'error');
+        const perfErrorSales = sales.filter((s) => s.status === 'failed' || s.status === 'error');
         const perfTotalErrors = perfErrorSales.length;
         const perfErrorRate = sales.length > 0 ? ((perfTotalErrors / sales.length) * 100).toFixed(1) : '0';
-        const perfMostCommonError = perfTotalErrors === 0 ? 'None' : (() => {
-            const freq = {};
-            perfErrorSales.forEach(s => { const t = s.error_type || s.status || 'Error'; freq[t] = (freq[t] || 0) + 1; });
-            return Object.entries(freq).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Error';
-        })();
+        const perfMostCommonError =
+            perfTotalErrors === 0
+                ? 'None'
+                : (() => {
+                      const freq = {};
+                      perfErrorSales.forEach((s) => {
+                          const t = s.error_type || s.status || 'Error';
+                          freq[t] = (freq[t] || 0) + 1;
+                      });
+                      return Object.entries(freq).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Error';
+                  })();
 
         // Slowest moving inventory (oldest active items)
-        const slowMovers = [...activeItems]
-            .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
-            .slice(0, 5);
+        const slowMovers = [...activeItems].sort((a, b) => new Date(a.created_at) - new Date(b.created_at)).slice(0, 5);
 
         // Category performance
         const categoryPerf = {};
-        sales.forEach(s => {
+        sales.forEach((s) => {
             const cat = s.category || 'Uncategorized';
             if (!categoryPerf[cat]) {
                 categoryPerf[cat] = { category: cat, sales: 0, revenue: 0 };
             }
             categoryPerf[cat].sales++;
-            categoryPerf[cat].revenue += (s.sale_price || 0);
+            categoryPerf[cat].revenue += s.sale_price || 0;
         });
-        const topCategories = Object.values(categoryPerf).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
+        const topCategories = Object.values(categoryPerf)
+            .sort((a, b) => b.revenue - a.revenue)
+            .slice(0, 5);
 
         const performanceTabContent = `
             <!-- Performance Metrics Cards -->
@@ -1716,11 +2151,16 @@ const pages = {
                         <span class="text-xs text-gray-500">with market price trends</span>
                     </div>
                     <div class="card-body">
-                        ${bestSellers.length === 0 ? `
+                        ${
+                            bestSellers.length === 0
+                                ? `
                             <p class="text-gray-500 text-center py-4">No sales data yet</p>
-                        ` : `
+                        `
+                                : `
                             <div class="flex flex-col gap-3">
-                                ${bestSellers.map((item, i) => `
+                                ${bestSellers
+                                    .map(
+                                        (item, i) => `
                                     <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg best-seller-row">
                                         <div class="flex items-center gap-3">
                                             <span class="font-bold text-primary">#${i + 1}</span>
@@ -1736,9 +2176,12 @@ const pages = {
                                             <span class="font-bold text-success" style="min-width: 70px; text-align: right;">C$${item.revenue.toFixed(2)}</span>
                                         </div>
                                     </div>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
 
@@ -1749,13 +2192,19 @@ const pages = {
                         <p class="text-xs text-gray-500">Items listed longest without selling</p>
                     </div>
                     <div class="card-body">
-                        ${slowMovers.length === 0 ? `
+                        ${
+                            slowMovers.length === 0
+                                ? `
                             <p class="text-gray-500 text-center py-4">No active inventory</p>
-                        ` : `
+                        `
+                                : `
                             <div class="flex flex-col gap-3">
-                                ${slowMovers.map(item => {
-                                    const daysListed = Math.floor((Date.now() - new Date(item.created_at)) / (1000 * 60 * 60 * 24));
-                                    return `
+                                ${slowMovers
+                                    .map((item) => {
+                                        const daysListed = Math.floor(
+                                            (Date.now() - new Date(item.created_at)) / (1000 * 60 * 60 * 24),
+                                        );
+                                        return `
                                         <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                                             <div>
                                                 <div class="font-medium">${escapeHtml((item.title || 'Untitled').substring(0, 30))}${(item.title || '').length > 30 ? '...' : ''}</div>
@@ -1764,9 +2213,11 @@ const pages = {
                                             <span class="font-medium">C$${(item.listing_price || item.cost_price || 0).toFixed(2)}</span>
                                         </div>
                                     `;
-                                }).join('')}
+                                    })
+                                    .join('')}
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
             </div>
@@ -1777,19 +2228,27 @@ const pages = {
                     <h2 class="card-title">Performance by Category</h2>
                 </div>
                 <div class="card-body">
-                    ${topCategories.length === 0 ? `
+                    ${
+                        topCategories.length === 0
+                            ? `
                         <p class="text-gray-500 text-center py-4">No category data available</p>
-                    ` : `
+                    `
+                            : `
                         <div class="grid grid-cols-5 gap-4">
-                            ${topCategories.map(cat => `
+                            ${topCategories
+                                .map(
+                                    (cat) => `
                                 <div class="text-center p-4 bg-gray-50 rounded-lg">
                                     <div class="text-2xl font-bold text-primary">${cat.sales}</div>
                                     <div class="text-sm font-medium">${escapeHtml(cat.category)}</div>
                                     <div class="text-xs text-gray-500">C$${cat.revenue.toFixed(2)}</div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
@@ -1818,17 +2277,23 @@ const pages = {
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>Date</th>
-                                    <th>Platform</th>
-                                    <th>Item</th>
-                                    <th>Error Type</th>
-                                    <th>Status</th>
+                                    <th scope="col">Date</th>
+                                    <th scope="col">Platform</th>
+                                    <th scope="col">Item</th>
+                                    <th scope="col">Error Type</th>
+                                    <th scope="col">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${perfErrorSales.length === 0 ? `
+                                ${
+                                    perfErrorSales.length === 0
+                                        ? `
                                     <tr><td colspan="5" class="text-center text-gray-400 py-4">No errors recorded</td></tr>
-                                ` : perfErrorSales.slice(0, 10).map(s => `
+                                `
+                                        : perfErrorSales
+                                              .slice(0, 10)
+                                              .map(
+                                                  (s) => `
                                     <tr>
                                         <td>${new Date(s.sale_date || s.created_at).toLocaleDateString()}</td>
                                         <td><span class="badge badge-gray">${escapeHtml(s.platform || 'Unknown')}</span></td>
@@ -1836,7 +2301,10 @@ const pages = {
                                         <td>${escapeHtml(s.error_type || s.status || 'Error')}</td>
                                         <td><span class="badge ${s.resolved ? 'badge-success' : 'badge-warning'}">${s.resolved ? 'Resolved' : 'Pending'}</span></td>
                                     </tr>
-                                `).join('')}
+                                `,
+                                              )
+                                              .join('')
+                                }
                             </tbody>
                         </table>
                     </div>
@@ -1844,12 +2312,14 @@ const pages = {
             </div>
         `;
 
-
         // Ratio Analysis tab content - calculate ratios
-        const totalInventoryValue = (store.state.inventory || []).reduce((sum, item) => sum + ((item.cost_price || 0) * (item.quantity || 1)), 0);
+        const totalInventoryValue = (store.state.inventory || []).reduce(
+            (sum, item) => sum + (item.cost_price || 0) * (item.quantity || 1),
+            0,
+        );
         const avgInventoryValue = totalInventoryValue > 0 ? totalInventoryValue : 1;
         const totalRevenue2 = (store.state.sales || []).reduce((sum, s) => sum + (s.sale_price || 0), 0);
-        const soldItemsCount = (store.state.inventory || []).filter(i => i.status === 'sold').length;
+        const soldItemsCount = (store.state.inventory || []).filter((i) => i.status === 'sold').length;
         const totalListedItems = (store.state.inventory || []).length || 1;
         const netProfit = (store.state.sales || []).reduce((sum, s) => sum + (s.net_profit || 0), 0);
         const totalInvestment = totalInventoryValue;
@@ -1936,10 +2406,13 @@ const pages = {
         `;
 
         // Profitability Analysis tab content
-        const totalCOGS = (store.state.sales || []).reduce((sum, s) => sum + ((s.item_cost || 0) || 0), 0);
+        const totalCOGS = (store.state.sales || []).reduce((sum, s) => sum + (s.item_cost || 0 || 0), 0);
         const grossProfit = totalRevenue2 - totalCOGS;
         const platformFees = (store.state.sales || []).reduce((sum, s) => sum + (s.platform_fee || 0), 0);
-        const shippingCosts = (store.state.sales || []).reduce((sum, s) => sum + ((s.shipping_cost || 0) + (s.customer_shipping || 0)), 0);
+        const shippingCosts = (store.state.sales || []).reduce(
+            (sum, s) => sum + ((s.shipping_cost || 0) + (s.customer_shipping || 0)),
+            0,
+        );
         const netProfit2 = totalRevenue2 - totalCOGS - platformFees - shippingCosts;
 
         const profitabilityTabContent = `
@@ -1985,25 +2458,25 @@ const pages = {
         // Product Analysis tab content - table of products sorted by performance
         const productPerformance = (() => {
             const products = {};
-            (store.state.sales || []).forEach(sale => {
+            (store.state.sales || []).forEach((sale) => {
                 const title = sale.listing_title || sale.inventory_title || 'Unknown';
                 if (!products[title]) {
                     products[title] = {
                         title: title,
                         unitsSold: 0,
                         revenue: 0,
-                        platform: sale.platform
+                        platform: sale.platform,
                     };
                 }
                 products[title].unitsSold++;
-                products[title].revenue += (sale.sale_price || 0);
+                products[title].revenue += sale.sale_price || 0;
             });
 
             return Object.values(products)
-                .map(p => ({
+                .map((p) => ({
                     ...p,
                     avgPrice: p.unitsSold > 0 ? (p.revenue / p.unitsSold).toFixed(2) : 0,
-                    salesVelocity: p.unitsSold
+                    salesVelocity: p.unitsSold,
                 }))
                 .sort((a, b) => b.revenue - a.revenue);
         })();
@@ -2015,9 +2488,12 @@ const pages = {
                     <p class="text-xs text-gray-500">Products sorted by revenue</p>
                 </div>
                 <div class="card-body">
-                    ${productPerformance.length === 0 ? `
+                    ${
+                        productPerformance.length === 0
+                            ? `
                         <div class="text-center text-gray-500 py-8">No product data available</div>
-                    ` : `
+                    `
+                            : `
                         <div class="table-container">
                             <table class="table">
                                 <thead>
@@ -2031,12 +2507,14 @@ const pages = {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${productPerformance.slice(0, 20).map(p => {
-                                        let rating = 'poor';
-                                        if (p.salesVelocity >= 5) rating = 'good';
-                                        else if (p.salesVelocity >= 2) rating = 'average';
+                                    ${productPerformance
+                                        .slice(0, 20)
+                                        .map((p) => {
+                                            let rating = 'poor';
+                                            if (p.salesVelocity >= 5) rating = 'good';
+                                            else if (p.salesVelocity >= 2) rating = 'average';
 
-                                        return `
+                                            return `
                                             <tr>
                                                 <td class="font-medium">${escapeHtml(p.title.substring(0, 40))}${p.title.length > 40 ? '...' : ''}</td>
                                                 <td>${p.unitsSold}</td>
@@ -2046,32 +2524,45 @@ const pages = {
                                                 <td><span class="badge ${rating === 'good' ? 'badge-success' : rating === 'average' ? 'badge-warning' : 'badge-error'}">${rating.charAt(0).toUpperCase() + rating.slice(1)}</span></td>
                                             </tr>
                                         `;
-                                    }).join('')}
+                                        })
+                                        .join('')}
                                 </tbody>
                             </table>
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
         `;
 
         // KPI data for dashboard
         const kpiData = [
-            { label: 'Revenue', value: 'C$' + totalRevenue.toFixed(0), change: 0, target: totalRevenue * 1.2, actual: totalRevenue },
-            { label: 'Sales Count', value: totalSales.toString(), change: 0, target: Math.ceil(totalSales * 1.15), actual: totalSales },
+            {
+                label: 'Revenue',
+                value: 'C$' + totalRevenue.toFixed(0),
+                change: 0,
+                target: totalRevenue * 1.2,
+                actual: totalRevenue,
+            },
+            {
+                label: 'Sales Count',
+                value: totalSales.toString(),
+                change: 0,
+                target: Math.ceil(totalSales * 1.15),
+                actual: totalSales,
+            },
             { label: 'Profit Margin', value: profitMargin + '%', change: 0, target: 35, actual: profitMargin },
-            { label: 'Sell-Through', value: sellThrough + '%', change: 0, target: 40, actual: sellThrough }
+            { label: 'Sell-Through', value: sellThrough + '%', change: 0, target: 40, actual: sellThrough },
         ];
-
 
         // Calculate performance trends
         const prevPeriodRevenue = 0; // No historical comparison data
-        const revenueGrowth = prevPeriodRevenue > 0 ? ((totalRevenue - prevPeriodRevenue) / prevPeriodRevenue * 100) : 0;
+        const revenueGrowth =
+            prevPeriodRevenue > 0 ? ((totalRevenue - prevPeriodRevenue) / prevPeriodRevenue) * 100 : 0;
         const avgOrderValue = totalSales > 0 ? totalRevenue / totalSales : 0;
 
         // Performance indicators
-        const performanceLevel = revenueGrowth >= 10 ? 'growing' :
-                                revenueGrowth >= 0 ? 'stable' : 'declining';
+        const performanceLevel = revenueGrowth >= 10 ? 'growing' : revenueGrowth >= 0 ? 'stable' : 'declining';
 
         return `
             <div class="page-header">
@@ -2096,7 +2587,7 @@ const pages = {
                         <button aria-haspopup="menu" class="btn btn-secondary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                             ${components.icon('more-horizontal', 16)} More
                         </button>
-                        <div class="dropdown-menu" style="right: 0; min-width: 160px;">
+                        <div class="dropdown-menu" style="right: 0; min-width: 160px;" aria-hidden="true">
                             <button class="dropdown-item" onclick="handlers.showCustomMetricBuilder()">
                                 ${components.icon('sliders', 16)} Custom KPIs
                             </button>
@@ -2138,35 +2629,59 @@ const pages = {
                 if (customMetrics.length === 0) return '';
                 const analyticsStats = analyticsData.stats || {};
                 const metricValues = {
-                    'revenue': analyticsStats.sales?.revenue || 0,
-                    'profit': analyticsStats.sales?.profit || 0,
-                    'orders': analyticsStats.sales?.total || 0,
-                    'inventory_value': analyticsStats.inventory?.totalValue || 0,
-                    'items_sold': analyticsStats.inventory?.sold || 0,
-                    'active_listings': analyticsStats.listings?.active || 0,
-                    'avg_sale': (analyticsStats.sales?.revenue || 0) / Math.max(analyticsStats.sales?.total || 1, 1),
-                    'total_views': analyticsStats.listings?.views || 0
+                    revenue: analyticsStats.sales?.revenue || 0,
+                    profit: analyticsStats.sales?.profit || 0,
+                    orders: analyticsStats.sales?.total || 0,
+                    inventory_value: analyticsStats.inventory?.totalValue || 0,
+                    items_sold: analyticsStats.inventory?.sold || 0,
+                    active_listings: analyticsStats.listings?.active || 0,
+                    avg_sale: (analyticsStats.sales?.revenue || 0) / Math.max(analyticsStats.sales?.total || 1, 1),
+                    total_views: analyticsStats.listings?.views || 0,
                 };
                 const calcMetric = (m) => {
                     const a = metricValues[m.metric_a] || 0;
                     const b = metricValues[m.metric_b] || 1;
-                    switch(m.operation) {
-                        case 'add': return a + b;
-                        case 'subtract': return a - b;
-                        case 'multiply': return a * b;
-                        case 'divide': return b !== 0 ? a / b : 0;
-                        default: return a;
+                    switch (m.operation) {
+                        case 'add':
+                            return a + b;
+                        case 'subtract':
+                            return a - b;
+                        case 'multiply':
+                            return a * b;
+                        case 'divide':
+                            return b !== 0 ? a / b : 0;
+                        default:
+                            return a;
                     }
                 };
                 const formatVal = (val, fmt) => {
-                    if (fmt === 'currency') return 'C$' + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    if (fmt === 'currency')
+                        return (
+                            'C$' + val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                        );
                     if (fmt === 'percentage') return val.toFixed(1) + '%';
                     return Math.round(val).toLocaleString();
                 };
-                return '<div class="custom-kpi-grid mb-6">' + customMetrics.map(m => {
-                    const val = calcMetric(m);
-                    return '<div class="custom-kpi-card"><div class="custom-kpi-value">' + formatVal(val, m.display_format) + '</div><div class="custom-kpi-name">' + escapeHtml(m.name) + '</div><button class="btn btn-icon btn-xs custom-kpi-delete" onclick="handlers.deleteCustomMetric(\'' + m.id + '\')" title="Remove">' + components.icon('x', 12) + '</button></div>';
-                }).join('') + '</div>';
+                return (
+                    '<div class="custom-kpi-grid mb-6">' +
+                    customMetrics
+                        .map((m) => {
+                            const val = calcMetric(m);
+                            return (
+                                '<div class="custom-kpi-card"><div class="custom-kpi-value">' +
+                                formatVal(val, m.display_format) +
+                                '</div><div class="custom-kpi-name">' +
+                                escapeHtml(m.name) +
+                                '</div><button class="btn btn-icon btn-xs custom-kpi-delete" onclick="handlers.deleteCustomMetric(\'' +
+                                m.id +
+                                '\')" title="Remove">' +
+                                components.icon('x', 12) +
+                                '</button></div>'
+                            );
+                        })
+                        .join('') +
+                    '</div>'
+                );
             })()}
 
             <!-- Analytics Hero Section -->
@@ -2178,9 +2693,13 @@ const pages = {
                             <span class="period-text">${periodLabel.charAt(0).toUpperCase() + periodLabel.slice(1)}</span>
                         </div>
                         <div class="performance-indicator ${performanceLevel}">
-                            ${performanceLevel === 'growing' ? components.icon('trending-up', 16) :
-                              performanceLevel === 'stable' ? components.icon('minus', 16) :
-                              components.icon('trending-down', 16)}
+                            ${
+                                performanceLevel === 'growing'
+                                    ? components.icon('trending-up', 16)
+                                    : performanceLevel === 'stable'
+                                      ? components.icon('minus', 16)
+                                      : components.icon('trending-down', 16)
+                            }
                             <span>${performanceLevel.charAt(0).toUpperCase() + performanceLevel.slice(1)}</span>
                         </div>
                     </div>
@@ -2242,29 +2761,43 @@ const pages = {
                 </div>
 
                 <div class="analytics-quick-insights">
-                    ${bestSellers.length > 0 ? `
+                    ${
+                        bestSellers.length > 0
+                            ? `
                         <div class="quick-insight">
                             ${components.icon('star', 14)}
                             <span>Best seller: <strong>${bestSellers[0].title.substring(0, 25)}${bestSellers[0].title.length > 25 ? '...' : ''}</strong> (C$${bestSellers[0].revenue.toFixed(2)})</span>
                         </div>
-                    ` : ''}
-                    ${slowMovers.length > 0 ? `
+                    `
+                            : ''
+                    }
+                    ${
+                        slowMovers.length > 0
+                            ? `
                         <div class="quick-insight warning">
                             ${components.icon('clock', 14)}
                             <span>${slowMovers.length} item${slowMovers.length !== 1 ? 's' : ''} listed for 60+ days need attention</span>
                         </div>
-                    ` : ''}
-                    ${totalRevenue > 0 ? (profitMargin < 15 ? `
+                    `
+                            : ''
+                    }
+                    ${
+                        totalRevenue > 0
+                            ? profitMargin < 15
+                                ? `
                         <div class="quick-insight alert">
                             ${components.icon('alert-circle', 14)}
                             <span>Profit margin below target (15%). Review pricing strategy.</span>
                         </div>
-                    ` : `
+                    `
+                                : `
                         <div class="quick-insight success">
                             ${components.icon('check-circle', 14)}
                             <span>Profit margin is healthy at ${profitMargin}%</span>
                         </div>
-                    `) : ''}
+                    `
+                            : ''
+                    }
                 </div>
             </div>
 
@@ -2274,38 +2807,55 @@ const pages = {
             </div>
 
             <!-- Analytics Tabs -->
-            <div class="tabs mb-6" role="tablist" style="overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;">
-                ${!hiddenTabs.includes('graphs') ? `<button class="tab ${currentTab === 'graphs' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'graphs' ? 'true' : 'false'}" tabindex="${currentTab === 'graphs' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('graphs')">Graphs</button>` : ''}
-                ${!hiddenTabs.includes('heatmaps') ? `<button class="tab ${currentTab === 'heatmaps' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'heatmaps' ? 'true' : 'false'}" tabindex="${currentTab === 'heatmaps' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('heatmaps')">Heatmaps</button>` : ''}
-                ${!hiddenTabs.includes('predictions') ? `<button class="tab ${currentTab === 'predictions' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'predictions' ? 'true' : 'false'}" tabindex="${currentTab === 'predictions' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('predictions')">Predictions</button>` : ''}
-                ${!hiddenTabs.includes('ratio-analysis') ? `<button class="tab ${currentTab === 'ratio-analysis' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'ratio-analysis' ? 'true' : 'false'}" tabindex="${currentTab === 'ratio-analysis' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('ratio-analysis')">Ratio Analysis</button>` : ''}
-                ${!hiddenTabs.includes('product-analysis') ? `<button class="tab ${currentTab === 'product-analysis' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'product-analysis' ? 'true' : 'false'}" tabindex="${currentTab === 'product-analysis' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('product-analysis')">Product Analysis</button>` : ''}
-                ${!hiddenTabs.includes('market-intel') ? `<button class="tab ${currentTab === 'market-intel' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'market-intel' ? 'true' : 'false'}" tabindex="${currentTab === 'market-intel' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('market-intel')">Market Intel</button>` : ''}
-                ${!hiddenTabs.includes('sourcing') ? `<button class="tab ${currentTab === 'sourcing' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'sourcing' ? 'true' : 'false'}" tabindex="${currentTab === 'sourcing' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('sourcing')">Supplier Analytics</button>` : ''}
-                ${!hiddenTabs.includes('financials-analytics') ? `<button class="tab ${currentTab === 'financials-analytics' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'financials-analytics' ? 'true' : 'false'}" tabindex="${currentTab === 'financials-analytics' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('financials-analytics')">Financials Analytics</button>` : ''}
-                ${!hiddenTabs.includes('inventory-analytics') ? `<button class="tab ${currentTab === 'inventory-analytics' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'inventory-analytics' ? 'true' : 'false'}" tabindex="${currentTab === 'inventory-analytics' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('inventory-analytics')">Inventory</button>` : ''}
+            <div class="tabs mb-6" style="overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;">
+                <div role="tablist" style="display:contents;">
+                    ${!hiddenTabs.includes('graphs') ? `<button class="tab ${currentTab === 'graphs' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'graphs' ? 'true' : 'false'}" tabindex="${currentTab === 'graphs' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('graphs')">Graphs</button>` : ''}
+                    ${!hiddenTabs.includes('heatmaps') ? `<button class="tab ${currentTab === 'heatmaps' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'heatmaps' ? 'true' : 'false'}" tabindex="${currentTab === 'heatmaps' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('heatmaps')">Heatmaps</button>` : ''}
+                    ${!hiddenTabs.includes('predictions') ? `<button class="tab ${currentTab === 'predictions' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'predictions' ? 'true' : 'false'}" tabindex="${currentTab === 'predictions' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('predictions')">Predictions</button>` : ''}
+                    ${!hiddenTabs.includes('ratio-analysis') ? `<button class="tab ${currentTab === 'ratio-analysis' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'ratio-analysis' ? 'true' : 'false'}" tabindex="${currentTab === 'ratio-analysis' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('ratio-analysis')">Ratio Analysis</button>` : ''}
+                    ${!hiddenTabs.includes('product-analysis') ? `<button class="tab ${currentTab === 'product-analysis' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'product-analysis' ? 'true' : 'false'}" tabindex="${currentTab === 'product-analysis' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('product-analysis')">Product Analysis</button>` : ''}
+                    ${!hiddenTabs.includes('market-intel') ? `<button class="tab ${currentTab === 'market-intel' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'market-intel' ? 'true' : 'false'}" tabindex="${currentTab === 'market-intel' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('market-intel')">Market Intel</button>` : ''}
+                    ${!hiddenTabs.includes('sourcing') ? `<button class="tab ${currentTab === 'sourcing' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'sourcing' ? 'true' : 'false'}" tabindex="${currentTab === 'sourcing' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('sourcing')">Supplier Analytics</button>` : ''}
+                    ${!hiddenTabs.includes('financials-analytics') ? `<button class="tab ${currentTab === 'financials-analytics' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'financials-analytics' ? 'true' : 'false'}" tabindex="${currentTab === 'financials-analytics' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('financials-analytics')">Financials Analytics</button>` : ''}
+                    ${!hiddenTabs.includes('inventory-analytics') ? `<button class="tab ${currentTab === 'inventory-analytics' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'inventory-analytics' ? 'true' : 'false'}" tabindex="${currentTab === 'inventory-analytics' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('inventory-analytics')">Inventory</button>` : ''}
+                </div>
                 <button class="btn btn-ghost btn-sm ml-auto" onclick="handlers.showAnalyticsCustomization()" title="Customize Analytics">
                     ${components.icon('settings', 16)}
                 </button>
             </div>
 
-            ${currentTab === 'market-intel' ? (typeof pages.marketIntel === 'function' ? pages.marketIntel() : '<div class="empty-state"><p>Market Intel data will appear here. Navigate to load data.</p></div>')
-            : currentTab === 'sourcing' ? (typeof pages.suppliers === 'function' ? pages.suppliers() : '<div class="empty-state"><p>Sourcing data will appear here. Navigate to load data.</p></div>')
-            : currentTab === 'live' ? (() => {
-                const orders = store.state.orders || [];
-                const sales = store.state.sales || [];
-                const inventory = store.state.inventory || [];
-                const today = toLocalDate(new Date());
-                const todaySales = sales.filter(s => s.created_at && s.created_at.startsWith(today));
-                const pendingOrders = orders.filter(o => o.status === 'pending');
-                const shippedOrders = orders.filter(o => o.status === 'shipped');
-                const todayRevenue = todaySales.reduce((sum, s) => sum + (parseFloat(s.sale_price) || 0), 0);
-                const activeListings = (store.state.listings || []).filter(l => l.status === 'active').length;
-                const lowStockItems = inventory.filter(i => (i.quantity || 0) <= 2 && (i.quantity || 0) > 0).length;
-                const refreshInterval = store.state.liveRefreshInterval || 30;
-                const isLivePaused = store.state.liveAnalyticsPaused || false;
+            ${
+                currentTab === 'market-intel'
+                    ? typeof pages.marketIntel === 'function'
+                        ? pages.marketIntel()
+                        : '<div class="empty-state"><p>Market Intel data will appear here. Navigate to load data.</p></div>'
+                    : currentTab === 'sourcing'
+                      ? typeof pages.suppliers === 'function'
+                          ? pages.suppliers()
+                          : '<div class="empty-state"><p>Sourcing data will appear here. Navigate to load data.</p></div>'
+                      : currentTab === 'live'
+                        ? (() => {
+                              const orders = store.state.orders || [];
+                              const sales = store.state.sales || [];
+                              const inventory = store.state.inventory || [];
+                              const today = toLocalDate(new Date());
+                              const todaySales = sales.filter((s) => s.created_at && s.created_at.startsWith(today));
+                              const pendingOrders = orders.filter((o) => o.status === 'pending');
+                              const shippedOrders = orders.filter((o) => o.status === 'shipped');
+                              const todayRevenue = todaySales.reduce(
+                                  (sum, s) => sum + (parseFloat(s.sale_price) || 0),
+                                  0,
+                              );
+                              const activeListings = (store.state.listings || []).filter(
+                                  (l) => l.status === 'active',
+                              ).length;
+                              const lowStockItems = inventory.filter(
+                                  (i) => (i.quantity || 0) <= 2 && (i.quantity || 0) > 0,
+                              ).length;
+                              const refreshInterval = store.state.liveRefreshInterval || 30;
+                              const isLivePaused = store.state.liveAnalyticsPaused || false;
 
-                return `
+                              return `
                 <div class="live-analytics-dashboard">
                     <div class="live-header">
                         <div class="live-indicator ${isLivePaused ? 'paused' : ''}">
@@ -2369,7 +2919,12 @@ const pages = {
                                 <h2 class="card-title">${components.icon('shopping-bag', 16)} Recent Sales</h2>
                             </div>
                             <div class="card-body" style="max-height: 300px; overflow-y: auto;">
-                                ${sales.slice(0, 8).length > 0 ? sales.slice(0, 8).map(s => `
+                                ${
+                                    sales.slice(0, 8).length > 0
+                                        ? sales
+                                              .slice(0, 8)
+                                              .map(
+                                                  (s) => `
                                     <div class="flex justify-between items-center py-2 border-b border-gray-100">
                                         <div>
                                             <div class="font-medium text-sm">${escapeHtml(s.item_title || 'Unknown')}</div>
@@ -2377,7 +2932,11 @@ const pages = {
                                         </div>
                                         <div class="font-semibold text-success">C$${(parseFloat(s.sale_price) || 0).toFixed(2)}</div>
                                     </div>
-                                `).join('') : '<div class="text-center text-gray-400 py-4">No recent sales</div>'}
+                                `,
+                                              )
+                                              .join('')
+                                        : '<div class="text-center text-gray-400 py-4">No recent sales</div>'
+                                }
                             </div>
                         </div>
                         <div class="card">
@@ -2385,7 +2944,12 @@ const pages = {
                                 <h2 class="card-title">${components.icon('alert-triangle', 16)} Needs Attention</h2>
                             </div>
                             <div class="card-body" style="max-height: 300px; overflow-y: auto;">
-                                ${pendingOrders.length > 0 ? pendingOrders.slice(0, 5).map(o => `
+                                ${
+                                    pendingOrders.length > 0
+                                        ? pendingOrders
+                                              .slice(0, 5)
+                                              .map(
+                                                  (o) => `
                                     <div class="flex justify-between items-center py-2 border-b border-gray-100">
                                         <div>
                                             <div class="font-medium text-sm">${escapeHtml(o.item_title || 'Order')}</div>
@@ -2393,8 +2957,14 @@ const pages = {
                                         </div>
                                         <button class="btn btn-xs btn-primary" onclick="handlers.viewOrderDetails('${o.id}')">View</button>
                                     </div>
-                                `).join('') : ''}
-                                ${lowStockItems > 0 ? `
+                                `,
+                                              )
+                                              .join('')
+                                        : ''
+                                }
+                                ${
+                                    lowStockItems > 0
+                                        ? `
                                     <div class="flex justify-between items-center py-2 border-b border-gray-100">
                                         <div>
                                             <div class="font-medium text-sm">${lowStockItems} item(s) low on stock</div>
@@ -2402,44 +2972,142 @@ const pages = {
                                         </div>
                                         <button class="btn btn-xs btn-secondary" onclick="router.navigate('inventory')">View</button>
                                     </div>
-                                ` : ''}
+                                `
+                                        : ''
+                                }
                                 ${pendingOrders.length === 0 && lowStockItems === 0 ? '<div class="text-center text-gray-400 py-4">All clear! Nothing needs attention.</div>' : ''}
                             </div>
                         </div>
                     </div>
                 </div>
                 `;
-            })() : currentTab === 'performance' ? performanceTabContent : currentTab === 'reports' ? `<div class="card"><div class="card-body text-center py-8"><p class="text-gray-500 mb-4">Detailed reports have moved to the Reports page.</p><button class="btn btn-primary" onclick="router.navigate('reports')">${components.icon('bar-chart', 16)} Go to Reports</button></div></div>` : currentTab === 'ratio-analysis' ? ratioAnalysisTabContent : currentTab === 'profitability' ? profitabilityTabContent : currentTab === 'product-analysis' ? productAnalysisTabContent : currentTab === 'heatmaps' ? (() => {
-                // Generate heatmap data
-                const heatmapRows = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => {
-                    const cells = Array.from({length: 24}, (_, h) => {
-                        const intensity = 0;
-                        const color = intensity > 0.7 ? 'var(--success-500)' : intensity > 0.4 ? 'var(--warning-400)' : intensity > 0.2 ? 'var(--warning-200)' : 'var(--gray-100)';
-                        const views = Math.floor(intensity * 100);
-                        return '<div style="background: ' + color + '; padding: 4px; border-radius: 2px; text-align: center; cursor: pointer;" title="' + day + ' ' + h + ':00 - ' + views + ' views">' + (views > 50 ? views : '') + '</div>';
-                    }).join('');
-                    return '<div style="padding-right: 8px; color: var(--gray-600);">' + day + '</div>' + cells;
-                }).join('');
+                          })()
+                        : currentTab === 'performance'
+                          ? performanceTabContent
+                          : currentTab === 'reports'
+                            ? `<div class="card"><div class="card-body text-center py-8"><p class="text-gray-500 mb-4">Detailed reports have moved to the Reports page.</p><button class="btn btn-primary" onclick="router.navigate('reports')">${components.icon('bar-chart', 16)} Go to Reports</button></div></div>`
+                            : currentTab === 'ratio-analysis'
+                              ? ratioAnalysisTabContent
+                              : currentTab === 'profitability'
+                                ? profitabilityTabContent
+                                : currentTab === 'product-analysis'
+                                  ? productAnalysisTabContent
+                                  : currentTab === 'heatmaps'
+                                    ? (() => {
+                                          // Generate heatmap data
+                                          const heatmapRows = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+                                              .map((day) => {
+                                                  const cells = Array.from({ length: 24 }, (_, h) => {
+                                                      const intensity = 0;
+                                                      const color =
+                                                          intensity > 0.7
+                                                              ? 'var(--success-500)'
+                                                              : intensity > 0.4
+                                                                ? 'var(--warning-400)'
+                                                                : intensity > 0.2
+                                                                  ? 'var(--warning-200)'
+                                                                  : 'var(--gray-100)';
+                                                      const views = Math.floor(intensity * 100);
+                                                      return (
+                                                          '<div style="background: ' +
+                                                          color +
+                                                          '; padding: 4px; border-radius: 2px; text-align: center; cursor: pointer;" title="' +
+                                                          day +
+                                                          ' ' +
+                                                          h +
+                                                          ':00 - ' +
+                                                          views +
+                                                          ' views">' +
+                                                          (views > 50 ? views : '') +
+                                                          '</div>'
+                                                      );
+                                                  }).join('');
+                                                  return (
+                                                      '<div style="padding-right: 8px; color: var(--gray-600);">' +
+                                                      day +
+                                                      '</div>' +
+                                                      cells
+                                                  );
+                                              })
+                                              .join('');
 
-                const platformRows = ['Poshmark', 'eBay', 'Whatnot', 'Depop', 'Shopify', 'Facebook'].map(platform => {
-                    const views = 0;
-                    const likes = 0;
-                    const shares = 0;
-                    const sales = 0;
-                    return '<div style="display: grid; grid-template-columns: 80px repeat(4, 1fr); gap: 4px; align-items: center;"><span class="font-medium text-sm">' + platform + '</span><div style="background: hsl(120, 60%, ' + (80 - views/10) + '%); padding: 8px; border-radius: 4px; text-align: center;"><div class="text-sm font-bold">' + views + '</div><div class="text-xs opacity-75">Views</div></div><div style="background: hsl(200, 60%, ' + (80 - likes/2) + '%); padding: 8px; border-radius: 4px; text-align: center;"><div class="text-sm font-bold">' + likes + '</div><div class="text-xs opacity-75">Likes</div></div><div style="background: hsl(280, 60%, ' + (80 - shares) + '%); padding: 8px; border-radius: 4px; text-align: center;"><div class="text-sm font-bold">' + shares + '</div><div class="text-xs opacity-75">Shares</div></div><div style="background: hsl(45, 80%, ' + (80 - sales*3) + '%); padding: 8px; border-radius: 4px; text-align: center;"><div class="text-sm font-bold">' + sales + '</div><div class="text-xs opacity-75">Sales</div></div></div>';
-                }).join('');
+                                          const platformRows = [
+                                              'Poshmark',
+                                              'eBay',
+                                              'Whatnot',
+                                              'Depop',
+                                              'Shopify',
+                                              'Facebook',
+                                          ]
+                                              .map((platform) => {
+                                                  const views = 0;
+                                                  const likes = 0;
+                                                  const shares = 0;
+                                                  const sales = 0;
+                                                  return (
+                                                      '<div style="display: grid; grid-template-columns: 80px repeat(4, 1fr); gap: 4px; align-items: center;"><span class="font-medium text-sm">' +
+                                                      platform +
+                                                      '</span><div style="background: hsl(120, 60%, ' +
+                                                      (80 - views / 10) +
+                                                      '%); padding: 8px; border-radius: 4px; text-align: center;"><div class="text-sm font-bold">' +
+                                                      views +
+                                                      '</div><div class="text-xs opacity-75">Views</div></div><div style="background: hsl(200, 60%, ' +
+                                                      (80 - likes / 2) +
+                                                      '%); padding: 8px; border-radius: 4px; text-align: center;"><div class="text-sm font-bold">' +
+                                                      likes +
+                                                      '</div><div class="text-xs opacity-75">Likes</div></div><div style="background: hsl(280, 60%, ' +
+                                                      (80 - shares) +
+                                                      '%); padding: 8px; border-radius: 4px; text-align: center;"><div class="text-sm font-bold">' +
+                                                      shares +
+                                                      '</div><div class="text-xs opacity-75">Shares</div></div><div style="background: hsl(45, 80%, ' +
+                                                      (80 - sales * 3) +
+                                                      '%); padding: 8px; border-radius: 4px; text-align: center;"><div class="text-sm font-bold">' +
+                                                      sales +
+                                                      '</div><div class="text-xs opacity-75">Sales</div></div></div>'
+                                                  );
+                                              })
+                                              .join('');
 
-                const categoryRows = ['Tops', 'Bottoms', 'Dresses', 'Shoes', 'Bags', 'Accessories'].map(cat => {
-                    const cells = Array.from({length: 7}, () => {
-                        const sales = 0;
-                        const bg = sales > 6 ? 'var(--primary-500)' : sales > 3 ? 'var(--primary-300)' : sales > 0 ? 'var(--primary-100)' : 'var(--gray-50)';
-                        const text = sales > 6 ? 'white' : 'var(--gray-700)';
-                        return '<div style="background: ' + bg + '; color: ' + text + '; padding: 8px; border-radius: 4px; text-align: center;">' + sales + '</div>';
-                    }).join('');
-                    return '<div style="font-weight: 500; color: var(--gray-700);">' + cat + '</div>' + cells;
-                }).join('');
+                                          const categoryRows = [
+                                              'Tops',
+                                              'Bottoms',
+                                              'Dresses',
+                                              'Shoes',
+                                              'Bags',
+                                              'Accessories',
+                                          ]
+                                              .map((cat) => {
+                                                  const cells = Array.from({ length: 7 }, () => {
+                                                      const sales = 0;
+                                                      const bg =
+                                                          sales > 6
+                                                              ? 'var(--primary-500)'
+                                                              : sales > 3
+                                                                ? 'var(--primary-300)'
+                                                                : sales > 0
+                                                                  ? 'var(--primary-100)'
+                                                                  : 'var(--gray-50)';
+                                                      const text = sales > 6 ? 'white' : 'var(--gray-700)';
+                                                      return (
+                                                          '<div style="background: ' +
+                                                          bg +
+                                                          '; color: ' +
+                                                          text +
+                                                          '; padding: 8px; border-radius: 4px; text-align: center;">' +
+                                                          sales +
+                                                          '</div>'
+                                                      );
+                                                  }).join('');
+                                                  return (
+                                                      '<div style="font-weight: 500; color: var(--gray-700);">' +
+                                                      cat +
+                                                      '</div>' +
+                                                      cells
+                                                  );
+                                              })
+                                              .join('');
 
-                return `
+                                          return `
             <!-- Heatmaps Tab -->
             <div class="grid grid-cols-2 gap-6">
                 <div class="card">
@@ -2447,7 +3115,7 @@ const pages = {
                     <div class="card-body">
                         <div class="heatmap-grid" style="display: grid; grid-template-columns: auto repeat(24, 1fr); gap: 2px; font-size: 10px;">
                             <div></div>
-                            ${Array.from({length: 24}, (_, h) => '<div style="text-align: center; color: var(--gray-500);">' + h + '</div>').join('')}
+                            ${Array.from({ length: 24 }, (_, h) => '<div style="text-align: center; color: var(--gray-500);">' + h + '</div>').join('')}
                             ${heatmapRows}
                         </div>
                         <div class="flex justify-center gap-4 mt-4">
@@ -2469,48 +3137,114 @@ const pages = {
                     <div class="card-body">
                         <div class="heatmap-category" style="display: grid; grid-template-columns: 120px repeat(7, 1fr); gap: 4px; font-size: 12px;">
                             <div></div>
-                            ${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => '<div style="text-align: center; font-weight: 500; color: var(--gray-600);">' + d + '</div>').join('')}
+                            ${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => '<div style="text-align: center; font-weight: 500; color: var(--gray-600);">' + d + '</div>').join('')}
                             ${categoryRows}
                         </div>
                     </div>
                 </div>
             </div>`;
-            })() : currentTab === 'predictions' ? (() => {
-                const forecastBars = Array.from({length: 30}, (_, i) => {
-                    const base = 50 + Math.sin(i/5) * 20;
-                    const trend = i * 1.5;
-                    const random = 0;
-                    const height = Math.max(20, base + trend + random);
-                    const isProjected = i > 14;
-                    return '<div style="width: 8px; height: ' + height + '%; background: ' + (isProjected ? 'var(--primary-200)' : 'var(--primary-500)') + '; border-radius: 2px;" title="Day ' + (i+1) + ': $' + Math.floor(height * 10) + '"></div>';
-                }).join('');
+                                      })()
+                                    : currentTab === 'predictions'
+                                      ? (() => {
+                                            const forecastBars = Array.from({ length: 30 }, (_, i) => {
+                                                const base = 50 + Math.sin(i / 5) * 20;
+                                                const trend = i * 1.5;
+                                                const random = 0;
+                                                const height = Math.max(20, base + trend + random);
+                                                const isProjected = i > 14;
+                                                return (
+                                                    '<div style="width: 8px; height: ' +
+                                                    height +
+                                                    '%; background: ' +
+                                                    (isProjected ? 'var(--primary-200)' : 'var(--primary-500)') +
+                                                    '; border-radius: 2px;" title="Day ' +
+                                                    (i + 1) +
+                                                    ': $' +
+                                                    Math.floor(height * 10) +
+                                                    '"></div>'
+                                                );
+                                            }).join('');
 
-                const bestTimes = [
-                    { platform: 'Poshmark', time: 'Thu-Sun, 7-9 PM EST', score: 95 },
-                    { platform: 'eBay', time: 'Sun, 6-8 PM EST', score: 92 },
-                    { platform: 'Whatnot', time: 'Fri-Sat, 8-11 PM EST', score: 88 },
-                    { platform: 'Depop', time: 'Tue-Wed, 4-6 PM EST', score: 85 },
-                    { platform: 'Facebook', time: 'Sat-Sun, 10 AM-2 PM', score: 82 }
-                ].map(p => '<div style="display: flex; align-items: center; gap: 12px;"><span style="min-width: 80px; font-weight: 500;">' + p.platform + '</span><div style="flex: 1; background: var(--gray-100); height: 24px; border-radius: 12px; overflow: hidden;"><div style="width: ' + p.score + '%; height: 100%; background: linear-gradient(90deg, var(--primary-400), var(--primary-600)); display: flex; align-items: center; padding-left: 8px;"><span class="text-xs text-white font-medium">' + p.score + '%</span></div></div><span class="text-xs text-gray-600" style="min-width: 140px;">' + p.time + '</span></div>').join('');
+                                            const bestTimes = [
+                                                { platform: 'Poshmark', time: 'Thu-Sun, 7-9 PM EST', score: 95 },
+                                                { platform: 'eBay', time: 'Sun, 6-8 PM EST', score: 92 },
+                                                { platform: 'Whatnot', time: 'Fri-Sat, 8-11 PM EST', score: 88 },
+                                                { platform: 'Depop', time: 'Tue-Wed, 4-6 PM EST', score: 85 },
+                                                { platform: 'Facebook', time: 'Sat-Sun, 10 AM-2 PM', score: 82 },
+                                            ]
+                                                .map(
+                                                    (p) =>
+                                                        '<div style="display: flex; align-items: center; gap: 12px;"><span style="min-width: 80px; font-weight: 500;">' +
+                                                        p.platform +
+                                                        '</span><div style="flex: 1; background: var(--gray-100); height: 24px; border-radius: 12px; overflow: hidden;"><div style="width: ' +
+                                                        p.score +
+                                                        '%; height: 100%; background: linear-gradient(90deg, var(--primary-400), var(--primary-600)); display: flex; align-items: center; padding-left: 8px;"><span class="text-xs text-white font-medium">' +
+                                                        p.score +
+                                                        '%</span></div></div><span class="text-xs text-gray-600" style="min-width: 140px;">' +
+                                                        p.time +
+                                                        '</span></div>',
+                                                )
+                                                .join('');
 
-                const trendingCats = [
-                    { name: 'Vintage Denim', trend: '+45%', status: 'hot' },
-                    { name: 'Designer Bags', trend: '+32%', status: 'rising' },
-                    { name: 'Athletic Wear', trend: '+28%', status: 'rising' },
-                    { name: 'Y2K Fashion', trend: '+22%', status: 'stable' },
-                    { name: 'Sneakers', trend: '+18%', status: 'stable' },
-                    { name: 'Formal Wear', trend: '-12%', status: 'declining' }
-                ].map(c => '<div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg mb-2"><span class="font-medium">' + c.name + '</span><div class="flex items-center gap-2"><span class="' + (c.trend.startsWith('+') ? 'text-success' : 'text-error') + ' font-bold">' + c.trend + '</span><span class="badge ' + (c.status === 'hot' ? 'badge-error' : c.status === 'rising' ? 'badge-success' : c.status === 'stable' ? 'badge-warning' : 'badge-gray') + '">' + c.status + '</span></div></div>').join('');
+                                            const trendingCats = [
+                                                { name: 'Vintage Denim', trend: '+45%', status: 'hot' },
+                                                { name: 'Designer Bags', trend: '+32%', status: 'rising' },
+                                                { name: 'Athletic Wear', trend: '+28%', status: 'rising' },
+                                                { name: 'Y2K Fashion', trend: '+22%', status: 'stable' },
+                                                { name: 'Sneakers', trend: '+18%', status: 'stable' },
+                                                { name: 'Formal Wear', trend: '-12%', status: 'declining' },
+                                            ]
+                                                .map(
+                                                    (c) =>
+                                                        '<div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg mb-2"><span class="font-medium">' +
+                                                        c.name +
+                                                        '</span><div class="flex items-center gap-2"><span class="' +
+                                                        (c.trend.startsWith('+') ? 'text-success' : 'text-error') +
+                                                        ' font-bold">' +
+                                                        c.trend +
+                                                        '</span><span class="badge ' +
+                                                        (c.status === 'hot'
+                                                            ? 'badge-error'
+                                                            : c.status === 'rising'
+                                                              ? 'badge-success'
+                                                              : c.status === 'stable'
+                                                                ? 'badge-warning'
+                                                                : 'badge-gray') +
+                                                        '">' +
+                                                        c.status +
+                                                        '</span></div></div>',
+                                                )
+                                                .join('');
 
-                const priceSuggestions = (store.state.listings || []).slice(0, 5).map(l => {
-                    const currentPrice = l.listing_price || 0;
-                    const suggestedChange = 0;
-                    const suggestedPrice = currentPrice;
-                    const reason = 'AI analysis pending';
-                    return '<div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg mb-2"><div><div class="font-medium text-sm">' + escapeHtml((l.title || 'Untitled').substring(0, 30)) + '...</div><div class="text-xs text-gray-500">' + reason + '</div></div><div class="text-right"><div class="text-sm"><span class="text-gray-400">$' + currentPrice.toFixed(0) + '</span> → <span class="font-bold text-primary">$' + suggestedPrice.toFixed(0) + '</span></div><div class="text-xs ' + (suggestedChange > 0 ? 'text-success' : 'text-error') + '">' + (suggestedChange > 0 ? '+' : '') + suggestedChange + '%</div></div></div>';
-                }).join('') || '<div class="text-center text-gray-500 py-4">No listings to analyze</div>';
+                                            const priceSuggestions =
+                                                (store.state.listings || [])
+                                                    .slice(0, 5)
+                                                    .map((l) => {
+                                                        const currentPrice = l.listing_price || 0;
+                                                        const suggestedChange = 0;
+                                                        const suggestedPrice = currentPrice;
+                                                        const reason = 'AI analysis pending';
+                                                        return (
+                                                            '<div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg mb-2"><div><div class="font-medium text-sm">' +
+                                                            escapeHtml((l.title || 'Untitled').substring(0, 30)) +
+                                                            '...</div><div class="text-xs text-gray-500">' +
+                                                            reason +
+                                                            '</div></div><div class="text-right"><div class="text-sm"><span class="text-gray-400">$' +
+                                                            currentPrice.toFixed(0) +
+                                                            '</span> → <span class="font-bold text-primary">$' +
+                                                            suggestedPrice.toFixed(0) +
+                                                            '</span></div><div class="text-xs ' +
+                                                            (suggestedChange > 0 ? 'text-success' : 'text-error') +
+                                                            '">' +
+                                                            (suggestedChange > 0 ? '+' : '') +
+                                                            suggestedChange +
+                                                            '%</div></div></div>'
+                                                        );
+                                                    })
+                                                    .join('') ||
+                                                '<div class="text-center text-gray-500 py-4">No listings to analyze</div>';
 
-                return `
+                                            return `
             <!-- Predictions Tab -->
             <div class="grid grid-cols-2 gap-6">
                 <div class="card">
@@ -2554,11 +3288,16 @@ const pages = {
                     <div class="card-body"><div class="price-suggestions">${priceSuggestions}</div></div>
                 </div>
             </div>`;
-            })() : currentTab === 'financials-analytics' ? financialsAnalyticsTabContent
-            : currentTab === 'inventory-analytics' ? inventoryAnalyticsTabContent
-            : currentTab === 'sales-analytics' ? salesAnalyticsTabContent
-            : currentTab === 'purchases-analytics' ? purchasesAnalyticsTabContent
-            : `
+                                        })()
+                                      : currentTab === 'financials-analytics'
+                                        ? financialsAnalyticsTabContent
+                                        : currentTab === 'inventory-analytics'
+                                          ? inventoryAnalyticsTabContent
+                                          : currentTab === 'sales-analytics'
+                                            ? salesAnalyticsTabContent
+                                            : currentTab === 'purchases-analytics'
+                                              ? purchasesAnalyticsTabContent
+                                              : `
 
             <!-- Custom date picker (hidden by default) -->
             <div id="custom-date-picker" class="hidden" style="margin-bottom: 24px; padding: 16px; background: var(--gray-50); border-radius: 8px;">
@@ -2589,17 +3328,25 @@ const pages = {
                     </div>
                     <div class="card-body">
                         ${(() => {
-                            if (salesTrendData.length === 0) return '<div class="text-center text-gray-500 py-12">No sales data available yet</div>';
+                            if (salesTrendData.length === 0)
+                                return '<div class="text-center text-gray-500 py-12">No sales data available yet</div>';
 
                             const chartOpts = { color: 'var(--primary-500)' };
 
                             if (store.state.analyticsCompareMode) {
                                 // Generate comparison data from previous period
-                                const compData = salesTrendData.map(d => ({
+                                const compData = salesTrendData.map((d) => ({
                                     label: d.label,
-                                    value: 0
+                                    value: 0,
                                 }));
-                                const compPeriodLabels = { '7d': 'Prev 7 Days', '30d': 'Prev 30 Days', '90d': 'Prev 90 Days', '6m': 'Prev 6 Months', '1y': 'Prev Year', 'custom': 'Prev Period' };
+                                const compPeriodLabels = {
+                                    '7d': 'Prev 7 Days',
+                                    '30d': 'Prev 30 Days',
+                                    '90d': 'Prev 90 Days',
+                                    '6m': 'Prev 6 Months',
+                                    '1y': 'Prev Year',
+                                    custom: 'Prev Period',
+                                };
                                 chartOpts.comparisonData = compData;
                                 chartOpts.comparisonLabel = compPeriodLabels[currentPeriod] || 'Previous';
                             }
@@ -2608,29 +3355,32 @@ const pages = {
                         })()}
                     </div>
                 </div>
-                ${store.state.analyticsCompareMode ? (() => {
-                // Only show comparison if there is actual prior-period data to compare against
-                const hasPriorData = (salesAnalytics.previousPeriod?.revenue || 0) > 0;
-                if (!hasPriorData) {
-                    return `
+                ${
+                    store.state.analyticsCompareMode
+                        ? (() => {
+                              // Only show comparison if there is actual prior-period data to compare against
+                              const hasPriorData = (salesAnalytics.previousPeriod?.revenue || 0) > 0;
+                              if (!hasPriorData) {
+                                  return `
                     <div class="analytics-compare-summary">
                         <div class="compare-no-data" style="text-align:center;padding:16px;color:var(--gray-500);font-size:14px;">
                             No prior-period data available for comparison. Make some sales to see compare mode.
                         </div>
                     </div>`;
-                }
-                const prevRevenue = salesAnalytics.previousPeriod.revenue;
-                const prevSales = salesAnalytics.previousPeriod.salesCount || 0;
-                const prevAvgOrder = prevSales > 0 ? prevRevenue / prevSales : 0;
-                const prevProfit = salesAnalytics.previousPeriod.profit || 0;
-                const prevProfitMargin = prevRevenue > 0 ? (prevProfit / prevRevenue * 100) : 0;
+                              }
+                              const prevRevenue = salesAnalytics.previousPeriod.revenue;
+                              const prevSales = salesAnalytics.previousPeriod.salesCount || 0;
+                              const prevAvgOrder = prevSales > 0 ? prevRevenue / prevSales : 0;
+                              const prevProfit = salesAnalytics.previousPeriod.profit || 0;
+                              const prevProfitMargin = prevRevenue > 0 ? (prevProfit / prevRevenue) * 100 : 0;
 
-                const revenueChangePct = prevRevenue > 0 ? ((totalRevenue - prevRevenue) / prevRevenue * 100) : 0;
-                const salesVolChange = prevSales > 0 ? (totalSales - prevSales) : 0;
-                const avgOrderChange = prevAvgOrder > 0 ? (avgOrderValue - prevAvgOrder) : 0;
-                const profitMarginChange = prevProfitMargin > 0 ? (profitMargin - prevProfitMargin) : 0;
+                              const revenueChangePct =
+                                  prevRevenue > 0 ? ((totalRevenue - prevRevenue) / prevRevenue) * 100 : 0;
+                              const salesVolChange = prevSales > 0 ? totalSales - prevSales : 0;
+                              const avgOrderChange = prevAvgOrder > 0 ? avgOrderValue - prevAvgOrder : 0;
+                              const profitMarginChange = prevProfitMargin > 0 ? profitMargin - prevProfitMargin : 0;
 
-                return `
+                              return `
                     <div class="analytics-compare-summary">
                         <div class="compare-stat">
                             <span class="compare-stat-label">Revenue Change</span>
@@ -2649,7 +3399,9 @@ const pages = {
                             <span class="compare-stat-value ${profitMarginChange >= 0 ? 'positive' : 'negative'}">${profitMarginChange >= 0 ? '+' : ''}${profitMarginChange.toFixed(1)}%</span>
                         </div>
                     </div>`;
-            })() : ''}
+                          })()
+                        : ''
+                }
             </div>
 
             <!-- Gross Margin and COGS Trends -->
@@ -2661,17 +3413,23 @@ const pages = {
                     </div>
                     <div class="card-body">
                         ${(() => {
-                            const marginData = (salesAnalytics.salesData || []).slice(0, 30).reverse().map(d => {
-                                const revenue = d.revenue || 0;
-                                const cogs = d.cogs || 0;
-                                const margin = revenue > 0 ? ((revenue - cogs) / revenue * 100) : 0;
-                                return {
-                                    label: new Date(d.period).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-                                    value: Math.round(margin * 10) / 10  // Round to 1 decimal
-                                };
-                            });
+                            const marginData = (salesAnalytics.salesData || [])
+                                .slice(0, 30)
+                                .reverse()
+                                .map((d) => {
+                                    const revenue = d.revenue || 0;
+                                    const cogs = d.cogs || 0;
+                                    const margin = revenue > 0 ? ((revenue - cogs) / revenue) * 100 : 0;
+                                    return {
+                                        label: new Date(d.period).toLocaleDateString('en-US', {
+                                            month: 'short',
+                                            day: 'numeric',
+                                        }),
+                                        value: Math.round(margin * 10) / 10, // Round to 1 decimal
+                                    };
+                                });
 
-                            if (marginData.length === 0 || marginData.every(d => d.value === 0)) {
+                            if (marginData.length === 0 || marginData.every((d) => d.value === 0)) {
                                 return '<div class="text-center text-gray-500 py-12">No margin data available yet</div>';
                             }
 
@@ -2687,12 +3445,18 @@ const pages = {
                     </div>
                     <div class="card-body">
                         ${(() => {
-                            const cogsData = (salesAnalytics.salesData || []).slice(0, 30).reverse().map(d => ({
-                                label: new Date(d.period).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-                                value: d.cogs || 0
-                            }));
+                            const cogsData = (salesAnalytics.salesData || [])
+                                .slice(0, 30)
+                                .reverse()
+                                .map((d) => ({
+                                    label: new Date(d.period).toLocaleDateString('en-US', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                    }),
+                                    value: d.cogs || 0,
+                                }));
 
-                            if (cogsData.length === 0 || cogsData.every(d => d.value === 0)) {
+                            if (cogsData.length === 0 || cogsData.every((d) => d.value === 0)) {
                                 return '<div class="text-center text-gray-500 py-12">No COGS data available yet</div>';
                             }
 
@@ -2714,15 +3478,16 @@ const pages = {
                         </div>
                     </div>
                     <div class="card-body">
-                        ${platformData.length > 0
-                            ? (store.state.chartDisplayModes.platformRevenue === 'pie'
-                                ? components.pieChart(platformData, {
-                                    colors: ['#AC1A2F', '#E53238', '#FF3B58', '#FF0000', '#000000', '#1877F2']
-                                })
-                                : components.barChart(platformData, {
-                                    color: ['#AC1A2F', '#E53238', '#FF3B58', '#FF0000', '#000000', '#1877F2']
-                                }))
-                            : '<div class="text-center text-gray-500 py-12">No platform sales yet</div>'
+                        ${
+                            platformData.length > 0
+                                ? store.state.chartDisplayModes.platformRevenue === 'pie'
+                                    ? components.pieChart(platformData, {
+                                          colors: ['#AC1A2F', '#E53238', '#FF3B58', '#FF0000', '#000000', '#1877F2'],
+                                      })
+                                    : components.barChart(platformData, {
+                                          color: ['#AC1A2F', '#E53238', '#FF3B58', '#FF0000', '#000000', '#1877F2'],
+                                      })
+                                : '<div class="text-center text-gray-500 py-12">No platform sales yet</div>'
                         }
                     </div>
                 </div>
@@ -2734,10 +3499,24 @@ const pages = {
                     <div class="card-body">
                         <div class="flex flex-col gap-4">
                             ${[
-                                { label: 'Active', value: analyticsData.stats?.inventory?.active || 0, color: 'var(--success)' },
-                                { label: 'Draft', value: analyticsData.stats?.inventory?.draft || 0, color: 'var(--gray-400)' },
-                                { label: 'Sold', value: analyticsData.stats?.inventory?.sold || 0, color: 'var(--primary-500)' }
-                            ].map(item => `
+                                {
+                                    label: 'Active',
+                                    value: analyticsData.stats?.inventory?.active || 0,
+                                    color: 'var(--success)',
+                                },
+                                {
+                                    label: 'Draft',
+                                    value: analyticsData.stats?.inventory?.draft || 0,
+                                    color: 'var(--gray-400)',
+                                },
+                                {
+                                    label: 'Sold',
+                                    value: analyticsData.stats?.inventory?.sold || 0,
+                                    color: 'var(--primary-500)',
+                                },
+                            ]
+                                .map(
+                                    (item) => `
                                 <div class="flex items-center gap-3">
                                     <div style="width: 12px; height: 12px; background: ${item.color}; border-radius: 50%;"></div>
                                     <div class="flex-1">
@@ -2745,11 +3524,13 @@ const pages = {
                                             <span class="text-sm font-medium">${item.label} ${item.value}</span>
                                         </div>
                                         <div class="progress-bar" style="background: var(--gray-200); height: 8px; border-radius: 4px; overflow: hidden;">
-                                            <div style="width: ${(item.value / totalInventory * 100).toFixed(1)}%; height: 100%; background: ${item.color};"></div>
+                                            <div style="width: ${((item.value / totalInventory) * 100).toFixed(1)}%; height: 100%; background: ${item.color};"></div>
                                         </div>
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
                     </div>
                 </div>
@@ -2773,7 +3554,7 @@ const pages = {
                             const allSales = store.state.sales || [];
                             const soldByPlatform = {};
 
-                            allSales.forEach(sale => {
+                            allSales.forEach((sale) => {
                                 if (!soldByPlatform[sale.platform]) {
                                     soldByPlatform[sale.platform] = 0;
                                 }
@@ -2783,7 +3564,7 @@ const pages = {
                             // Convert to array format for chart
                             const soldItemsData = Object.entries(soldByPlatform).map(([platform, count]) => ({
                                 label: platform.charAt(0).toUpperCase() + platform.slice(1),
-                                value: count
+                                value: count,
                             }));
 
                             if (soldItemsData.length === 0) {
@@ -2809,31 +3590,35 @@ const pages = {
                                 const allSales = store.state.sales || [];
                                 const platformStats = {};
 
-                                allSales.forEach(sale => {
+                                allSales.forEach((sale) => {
                                     if (!platformStats[sale.platform]) {
                                         platformStats[sale.platform] = {
                                             count: 0,
-                                            revenue: 0
+                                            revenue: 0,
                                         };
                                     }
                                     platformStats[sale.platform].count += 1;
-                                    platformStats[sale.platform].revenue += (sale.sale_price || 0);
+                                    platformStats[sale.platform].revenue += sale.sale_price || 0;
                                 });
 
-                                const platformArray = Object.entries(platformStats).map(([platform, stats]) => ({
-                                    platform,
-                                    count: stats.count,
-                                    revenue: stats.revenue,
-                                    avgSalePrice: stats.revenue / stats.count
-                                })).sort((a, b) => b.count - a.count);
+                                const platformArray = Object.entries(platformStats)
+                                    .map(([platform, stats]) => ({
+                                        platform,
+                                        count: stats.count,
+                                        revenue: stats.revenue,
+                                        avgSalePrice: stats.revenue / stats.count,
+                                    }))
+                                    .sort((a, b) => b.count - a.count);
 
                                 if (platformArray.length === 0) {
                                     return '<div class="text-center text-gray-500 py-8">No sales data available yet</div>';
                                 }
 
-                                const maxCount = Math.max(...platformArray.map(p => p.count));
+                                const maxCount = Math.max(...platformArray.map((p) => p.count));
 
-                                return platformArray.map(item => `
+                                return platformArray
+                                    .map(
+                                        (item) => `
                                     <div class="flex items-center gap-3">
                                         <div style="width: 40px;">${components.platformBadge(item.platform)}</div>
                                         <div class="flex-1">
@@ -2842,12 +3627,14 @@ const pages = {
                                                 <span class="text-sm font-medium">${item.count} ${item.count === 1 ? 'sale' : 'sales'}</span>
                                             </div>
                                             <div class="progress-bar" style="background: var(--gray-200); height: 8px; border-radius: 4px; overflow: hidden;">
-                                                <div style="width: ${(item.count / maxCount * 100).toFixed(1)}%; height: 100%; background: var(--primary-500);"></div>
+                                                <div style="width: ${((item.count / maxCount) * 100).toFixed(1)}%; height: 100%; background: var(--primary-500);"></div>
                                             </div>
                                             <div class="text-xs text-gray-500 mt-1">Total: C$${item.revenue.toFixed(2)}</div>
                                         </div>
                                     </div>
-                                `).join('');
+                                `,
+                                    )
+                                    .join('');
                             })()}
                         </div>
                     </div>
@@ -2866,22 +3653,24 @@ const pages = {
                         const allSales = store.state.sales || [];
                         const revenueByItem = {};
 
-                        allSales.forEach(sale => {
+                        allSales.forEach((sale) => {
                             if (!revenueByItem[sale.inventory_id]) {
                                 revenueByItem[sale.inventory_id] = {
                                     inventoryId: sale.inventory_id,
                                     totalRevenue: 0,
                                     totalProfit: 0,
-                                    salesCount: 0
+                                    salesCount: 0,
                                 };
                             }
-                            revenueByItem[sale.inventory_id].totalRevenue += (sale.sale_price || 0);
-                            revenueByItem[sale.inventory_id].totalProfit += (sale.net_profit || 0);
+                            revenueByItem[sale.inventory_id].totalRevenue += sale.sale_price || 0;
+                            revenueByItem[sale.inventory_id].totalProfit += sale.net_profit || 0;
                             revenueByItem[sale.inventory_id].salesCount += 1;
                         });
 
                         // Convert to array and sort by revenue (highest first)
-                        const revenueArray = Object.values(revenueByItem).sort((a, b) => b.totalRevenue - a.totalRevenue);
+                        const revenueArray = Object.values(revenueByItem).sort(
+                            (a, b) => b.totalRevenue - a.totalRevenue,
+                        );
 
                         if (revenueArray.length === 0) {
                             return '<div class="text-center text-gray-500 py-12">No sales data available yet</div>';
@@ -2904,12 +3693,15 @@ const pages = {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${topItems.map((item, index) => {
-                                            const inventoryItem = (store.state.inventory || []).find(i => i.id === item.inventoryId);
-                                            const itemTitle = inventoryItem ? inventoryItem.title : 'Unknown Item';
-                                            const avgSalePrice = item.totalRevenue / item.salesCount;
+                                        ${topItems
+                                            .map((item, index) => {
+                                                const inventoryItem = (store.state.inventory || []).find(
+                                                    (i) => i.id === item.inventoryId,
+                                                );
+                                                const itemTitle = inventoryItem ? inventoryItem.title : 'Unknown Item';
+                                                const avgSalePrice = item.totalRevenue / item.salesCount;
 
-                                            return `
+                                                return `
                                                 <tr>
                                                     <td>
                                                         <div style="width: 32px; height: 32px; border-radius: 50%; background: ${index < 3 ? 'var(--primary-100)' : 'var(--gray-100)'}; color: ${index < 3 ? 'var(--primary-600)' : 'var(--gray-600)'}; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px;">
@@ -2926,7 +3718,8 @@ const pages = {
                                                     <td class="text-gray-600">C$${avgSalePrice.toFixed(2)}</td>
                                                 </tr>
                                             `;
-                                        }).join('')}
+                                            })
+                                            .join('')}
                                     </tbody>
                                 </table>
                             </div>
@@ -2934,7 +3727,8 @@ const pages = {
                     })()}
                 </div>
             </div>
-            `}
+            `
+            }
 
             <!-- Business FAB -->
             ${businessFAB.render()}
@@ -3255,9 +4049,13 @@ const pages = {
                         <div class="email-verify-icon" style="color:${iconColor}">${icon}</div>
                         <h1 class="text-2xl font-bold mb-2">${escapeHtml(title)}</h1>
                         <p class="text-gray-600 mb-6">${escapeHtml(message || '')}</p>
-                        ${success ? `<button class="btn btn-primary w-full" onclick="router.navigate('login')">Sign In</button>` : `
+                        ${
+                            success
+                                ? `<button class="btn btn-primary w-full" onclick="router.navigate('login')">Sign In</button>`
+                                : `
                         <button class="btn btn-secondary w-full mb-3" onclick="router.navigate('email-verification')">Resend Verification</button>
-                        <button class="btn btn-ghost w-full" onclick="router.navigate('login')">Back to Sign In</button>`}
+                        <button class="btn btn-ghost w-full" onclick="router.navigate('login')">Back to Sign In</button>`
+                        }
                     </div>
                 </div>
             </div>
@@ -3283,5 +4081,5 @@ const pages = {
                 </div>
             </div>
         `;
-    }
+    },
 };

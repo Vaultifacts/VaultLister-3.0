@@ -24,13 +24,27 @@ Object.assign(pages, {
 
         const categoryLabel = (name) => {
             const prefix = name.split('.')[0];
-            const labels = { ui: 'UI', automation: 'Automation', ai: 'AI', integration: 'Integration', beta: 'Beta', perf: 'Performance' };
+            const labels = {
+                ui: 'UI',
+                automation: 'Automation',
+                ai: 'AI',
+                integration: 'Integration',
+                beta: 'Beta',
+                perf: 'Performance',
+            };
             return labels[prefix] || prefix;
         };
 
         const categoryColor = (name) => {
             const prefix = name.split('.')[0];
-            const colors = { ui: 'badge-info', automation: 'badge-warning', ai: 'badge-success', integration: 'badge-primary', beta: 'badge-danger', perf: 'badge-secondary' };
+            const colors = {
+                ui: 'badge-info',
+                automation: 'badge-warning',
+                ai: 'badge-success',
+                integration: 'badge-primary',
+                beta: 'badge-danger',
+                perf: 'badge-secondary',
+            };
             return colors[prefix] || 'badge-secondary';
         };
 
@@ -51,27 +65,37 @@ Object.assign(pages, {
                 </div>
             </div>
 
-            ${isLoading && !flags ? `
+            ${
+                isLoading && !flags
+                    ? `
                 <div style="display:flex;align-items:center;gap:12px;padding:24px 0;color:var(--text-secondary);">
                     <div class="loading-spinner"></div>
                     <span>Loading flags...</span>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
-            ${!flags && !isLoading ? `
+            ${
+                !flags && !isLoading
+                    ? `
                 <div class="card">
                     <div class="card-body text-center" style="padding: 48px; color: var(--text-secondary);">
                         No feature flag data. <button class="btn btn-primary btn-sm" onclick="handlers.loadFeatureFlags()">Load Flags</button>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
-            ${flags ? (() => {
-                const entries = Object.entries(flags);
-                if (entries.length === 0) {
-                    return `<div class="card"><div class="card-body" style="padding:32px;text-align:center;color:var(--text-secondary);">No flags defined.</div></div>`;
-                }
-                return `
+            ${
+                flags
+                    ? (() => {
+                          const entries = Object.entries(flags);
+                          if (entries.length === 0) {
+                              return `<div class="card"><div class="card-body" style="padding:32px;text-align:center;color:var(--text-secondary);">No flags defined.</div></div>`;
+                          }
+                          return `
                     <div class="card">
                         <div class="card-body" style="padding: 0;">
                             <table class="table" aria-label="Feature flags">
@@ -84,11 +108,12 @@ Object.assign(pages, {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${entries.map(([name, config]) => {
-                                        const enabled = config?.enabled ?? false;
-                                        const rollout = config?.rolloutPercentage ?? 100;
-                                        const safeId = escapeHtml(name).replace(/\./g, '-');
-                                        return `
+                                    ${entries
+                                        .map(([name, config]) => {
+                                            const enabled = config?.enabled ?? false;
+                                            const rollout = config?.rolloutPercentage ?? 100;
+                                            const safeId = escapeHtml(name).replace(/\./g, '-');
+                                            return `
                                             <tr>
                                                 <td>
                                                     <code style="font-size:13px;color:var(--primary-600);">${escapeHtml(name)}</code>
@@ -107,13 +132,16 @@ Object.assign(pages, {
                                                 </td>
                                             </tr>
                                         `;
-                                    }).join('')}
+                                        })
+                                        .join('')}
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 `;
-            })() : ''}
+                      })()
+                    : ''
+            }
         `;
     },
 
@@ -147,7 +175,15 @@ Object.assign(pages, {
         }
 
         const luStr = bm?.lastUpdated
-            ? new Date(bm.lastUpdated).toLocaleString('en-CA', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Edmonton' })
+            ? new Date(bm.lastUpdated).toLocaleString('en-CA', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: 'numeric',
+                  minute: '2-digit',
+                  hour12: true,
+                  timeZone: 'America/Edmonton',
+              })
             : 'Loading…';
 
         // Helper: derive traffic-light status from value vs target
@@ -156,19 +192,20 @@ Object.assign(pages, {
             if (dir === 'gte') return val >= target ? 'On Target' : val >= target * 0.7 ? 'Watch' : 'Action Needed';
             return val <= target ? 'On Target' : val <= target * 1.5 ? 'Watch' : 'Action Needed';
         };
-        const fmtPct = (n) => n != null ? `${n}%` : '—';
-        const fmtN   = (n) => n != null ? String(n) : '—';
+        const fmtPct = (n) => (n != null ? `${n}%` : '—');
+        const fmtN = (n) => (n != null ? String(n) : '—');
 
         // Real metrics (null when not yet loaded)
-        const acq  = bm?.acquisition  || {};
-        const actv = bm?.activation   || {};
-        const conv = bm?.conversion   || {};
-        const ret  = bm?.retention    || {};
-        const abus = bm?.abuse        || {};
+        const acq = bm?.acquisition || {};
+        const actv = bm?.activation || {};
+        const conv = bm?.conversion || {};
+        const ret = bm?.retention || {};
+        const abus = bm?.abuse || {};
 
         // Mock data definitions with status evaluation
         const mkRow = (metric, current, target, status, checkpoint) => {
-            const badgeClass = status === 'On Target' ? 'badge-success' : status === 'Watch' ? 'badge-warning' : 'badge-danger';
+            const badgeClass =
+                status === 'On Target' ? 'badge-success' : status === 'Watch' ? 'badge-warning' : 'badge-danger';
             return `
                 <tr style="border-bottom: 1px solid var(--gray-100);">
                     <td style="padding: 10px 16px; font-size: 13px; font-weight: 500;">${escapeHtml(metric)}</td>
@@ -203,62 +240,124 @@ Object.assign(pages, {
                 label: 'Acquisition',
                 icon: 'users',
                 rows: [
-                    mkRow('New Signups (30d)', fmtN(acq.newUsers30d), '≥ 10', statusFromVal(acq.newUsers30d, 10), '<5/mo — investigate landing page and referral sources'),
-                    mkRow('MoM Growth Rate', fmtPct(acq.growthRate), '≥ 20%', statusFromVal(acq.growthRate, 20), '<0% — review channels, ads, SEO'),
-                ]
+                    mkRow(
+                        'New Signups (30d)',
+                        fmtN(acq.newUsers30d),
+                        '≥ 10',
+                        statusFromVal(acq.newUsers30d, 10),
+                        '<5/mo — investigate landing page and referral sources',
+                    ),
+                    mkRow(
+                        'MoM Growth Rate',
+                        fmtPct(acq.growthRate),
+                        '≥ 20%',
+                        statusFromVal(acq.growthRate, 20),
+                        '<0% — review channels, ads, SEO',
+                    ),
+                ],
             },
             {
                 id: 'activation',
                 label: 'Activation',
                 icon: 'zap',
                 rows: [
-                    mkRow('Listed Within 7d of Signup (%)', fmtPct(actv.activationRate), '≥ 50%', statusFromVal(actv.activationRate, 50), '<20% — onboarding flow issue'),
-                    mkRow('Marketplace Connected Within 7d (%)', fmtPct(actv.connectionRate), '≥ 30%', statusFromVal(actv.connectionRate, 30), '<10% — connection flow broken or confusing'),
-                ]
+                    mkRow(
+                        'Listed Within 7d of Signup (%)',
+                        fmtPct(actv.activationRate),
+                        '≥ 50%',
+                        statusFromVal(actv.activationRate, 50),
+                        '<20% — onboarding flow issue',
+                    ),
+                    mkRow(
+                        'Marketplace Connected Within 7d (%)',
+                        fmtPct(actv.connectionRate),
+                        '≥ 30%',
+                        statusFromVal(actv.connectionRate, 30),
+                        '<10% — connection flow broken or confusing',
+                    ),
+                ],
             },
             {
                 id: 'conversion',
                 label: 'Conversion',
                 icon: 'dollar',
                 rows: [
-                    mkRow('Paid Users (% of total)', fmtPct(conv.paidConvRate), '≥ 5%', statusFromVal(conv.paidConvRate, 5), '<2% — pricing page or trial experience issue'),
-                    mkRow('Total Paid Users', fmtN(conv.paidUsers), '≥ 1', statusFromVal(conv.paidUsers, 1), '0 — no conversions yet'),
-                ]
+                    mkRow(
+                        'Paid Users (% of total)',
+                        fmtPct(conv.paidConvRate),
+                        '≥ 5%',
+                        statusFromVal(conv.paidConvRate, 5),
+                        '<2% — pricing page or trial experience issue',
+                    ),
+                    mkRow(
+                        'Total Paid Users',
+                        fmtN(conv.paidUsers),
+                        '≥ 1',
+                        statusFromVal(conv.paidUsers, 1),
+                        '0 — no conversions yet',
+                    ),
+                ],
             },
             {
                 id: 'retention',
                 label: 'Retention',
                 icon: 'refresh-cw',
                 rows: [
-                    mkRow('DAU/MAU Ratio', fmtPct(ret.dauMauRatio), '≥ 20%', statusFromVal(ret.dauMauRatio, 20), '<5% — engagement or value problem'),
-                    mkRow('Daily Active Users', fmtN(ret.dau), '≥ 5', statusFromVal(ret.dau, 5), '0 — no active sessions today'),
-                ]
+                    mkRow(
+                        'DAU/MAU Ratio',
+                        fmtPct(ret.dauMauRatio),
+                        '≥ 20%',
+                        statusFromVal(ret.dauMauRatio, 20),
+                        '<5% — engagement or value problem',
+                    ),
+                    mkRow(
+                        'Daily Active Users',
+                        fmtN(ret.dau),
+                        '≥ 5',
+                        statusFromVal(ret.dau, 5),
+                        '0 — no active sessions today',
+                    ),
+                ],
             },
             {
                 id: 'abuse',
                 label: 'Abuse',
                 icon: 'alert-triangle',
                 rows: [
-                    mkRow('Unverified Signups (30d)', fmtN(abus.unverifiedSignups30d), '≤ 20% of new', statusFromVal(abus.unverifiedSignups30d, (acq.newUsers30d || 0) * 0.2, 'lte'), '>50% of signups unverified — add friction or email verification gate'),
-                    mkRow('Monthly Active Users (30d)', fmtN(ret.mau), '≥ 5', statusFromVal(ret.mau, 5), '0 — no user activity tracked'),
-                ]
-            }
+                    mkRow(
+                        'Unverified Signups (30d)',
+                        fmtN(abus.unverifiedSignups30d),
+                        '≤ 20% of new',
+                        statusFromVal(abus.unverifiedSignups30d, (acq.newUsers30d || 0) * 0.2, 'lte'),
+                        '>50% of signups unverified — add friction or email verification gate',
+                    ),
+                    mkRow(
+                        'Monthly Active Users (30d)',
+                        fmtN(ret.mau),
+                        '≥ 5',
+                        statusFromVal(ret.mau, 5),
+                        '0 — no user activity tracked',
+                    ),
+                ],
+            },
         ];
 
-        const allStatuses = categories.flatMap(c => c.rows.map(r => {
-            const m = r.match(/badge-(success|warning|danger)/);
-            return m ? m[1] : 'warning';
-        }));
+        const allStatuses = categories.flatMap((c) =>
+            c.rows.map((r) => {
+                const m = r.match(/badge-(success|warning|danger)/);
+                return m ? m[1] : 'warning';
+            }),
+        );
         const totalMetrics = allStatuses.length;
-        const onTargetCount = allStatuses.filter(s => s === 'success').length;
-        const watchCount = allStatuses.filter(s => s === 'warning').length;
-        const actionNeededCount = allStatuses.filter(s => s === 'danger').length;
+        const onTargetCount = allStatuses.filter((s) => s === 'success').length;
+        const watchCount = allStatuses.filter((s) => s === 'warning').length;
+        const actionNeededCount = allStatuses.filter((s) => s === 'danger').length;
 
         const iconSvg = (name, size = 16) => {
             const icons = {
-                'users': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
-                'zap': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
-                'dollar': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
+                users: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+                zap: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
+                dollar: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
                 'refresh-cw': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>`,
                 'alert-triangle': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
                 'bar-chart': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>`,
@@ -306,7 +405,9 @@ Object.assign(pages, {
                 </div>
             </div>
 
-            ${categories.map(cat => `
+            ${categories
+                .map(
+                    (cat) => `
             <div class="card mb-6" aria-labelledby="bm-${escapeHtml(cat.id)}-title">
                 <div class="card-header">
                     <h2 class="card-title" id="bm-${escapeHtml(cat.id)}-title" style="display:flex; align-items:center; gap:8px;">
@@ -315,7 +416,9 @@ Object.assign(pages, {
                 </div>
                 ${mkTable(cat.rows)}
             </div>
-            `).join('')}
+            `,
+                )
+                .join('')}
 
         `;
     },
@@ -370,7 +473,13 @@ Object.assign(pages, {
             if (!ts) return '--';
             const d = new Date(ts);
             if (isNaN(d.getTime())) return '--';
-            return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
+            return d.toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true,
+            });
         };
 
         const summary = metrics?.summary || {};
@@ -382,15 +491,17 @@ Object.assign(pages, {
         const memUsed = system.memoryUsed != null ? system.memoryUsed : null;
         const memTotal = system.memoryTotal != null ? system.memoryTotal : null;
         const memRss = system.memoryRss != null ? system.memoryRss : null;
-        const memPct = (memUsed != null && memTotal && memTotal > 0) ? Math.round((memUsed / memTotal) * 100) : null;
+        const memPct = memUsed != null && memTotal && memTotal > 0 ? Math.round((memUsed / memTotal) * 100) : null;
         const uptimeSeconds = system.uptime != null ? system.uptime : null;
 
         const totalRequests = summary.totalRequests != null ? summary.totalRequests.toLocaleString() : '--';
         const totalErrors = summary.totalErrors != null ? summary.totalErrors.toLocaleString() : '--';
-        const avgResponseTime = summary.avgResponseTime != null ? parseFloat(summary.avgResponseTime).toFixed(1) + ' ms' : '--';
-        const errorRate = (summary.totalRequests && summary.totalErrors != null)
-            ? ((summary.totalErrors / summary.totalRequests) * 100).toFixed(1) + '%'
-            : '--';
+        const avgResponseTime =
+            summary.avgResponseTime != null ? parseFloat(summary.avgResponseTime).toFixed(1) + ' ms' : '--';
+        const errorRate =
+            summary.totalRequests && summary.totalErrors != null
+                ? ((summary.totalErrors / summary.totalRequests) * 100).toFixed(1) + '%'
+                : '--';
 
         const healthStatusColor = (status) => {
             if (!status) return 'var(--gray-400)';
@@ -440,23 +551,31 @@ Object.assign(pages, {
                 </div>
             </div>
 
-            ${isLoading && !metrics ? `
+            ${
+                isLoading && !metrics
+                    ? `
                 <div style="display:flex;align-items:center;gap:12px;padding:24px 0;color:var(--text-secondary);">
                     <div class="loading-spinner"></div>
                     <span>Loading metrics...</span>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- System Health Card -->
             <div class="card mb-6" aria-labelledby="system-health-title">
                 <div class="card-header">
                     <h2 class="card-title" id="system-health-title">System Health</h2>
-                    ${metrics ? `
+                    ${
+                        metrics
+                            ? `
                         <span style="color: ${healthStatusColor(metrics.status)}; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
                             <span style="width: 8px; height: 8px; border-radius: 50%; background: ${healthStatusColor(metrics.status)}; display: inline-block;" aria-hidden="true"></span>
                             ${escapeHtml((metrics.status || 'unknown').charAt(0).toUpperCase() + (metrics.status || 'unknown').slice(1))}
                         </span>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                 </div>
                 <div class="card-body">
                     <div class="grid grid-cols-4 gap-4">
@@ -465,11 +584,15 @@ Object.assign(pages, {
                             <div style="font-size: 28px; font-weight: 700; color: ${cpuPct != null && cpuPct > 80 ? 'var(--danger)' : cpuPct != null && cpuPct > 60 ? 'var(--warning)' : 'var(--text-primary)'};">
                                 ${cpuPct != null ? cpuPct + '%' : '--'}
                             </div>
-                            ${cpuPct != null ? `
+                            ${
+                                cpuPct != null
+                                    ? `
                                 <div style="margin-top: 8px; height: 4px; background: var(--gray-200); border-radius: 2px; overflow: hidden;" role="progressbar" aria-valuenow="${cpuPct}" aria-valuemin="0" aria-valuemax="100" aria-label="CPU usage">
                                     <div style="height: 100%; width: ${cpuPct}%; background: ${cpuPct > 80 ? 'var(--danger)' : cpuPct > 60 ? 'var(--warning)' : 'var(--success)'}; border-radius: 2px;"></div>
                                 </div>
-                            ` : ''}
+                            `
+                                    : ''
+                            }
                         </div>
                         <div style="padding: 16px; background: var(--gray-50); border-radius: 8px;">
                             <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">Memory</div>
@@ -479,11 +602,15 @@ Object.assign(pages, {
                             <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
                                 ${memUsed != null ? formatBytes(memUsed) : '--'} used / ${memRss != null ? formatBytes(memRss) : '--'} RSS
                             </div>
-                            ${memPct != null ? `
+                            ${
+                                memPct != null
+                                    ? `
                                 <div style="margin-top: 8px; height: 4px; background: var(--gray-200); border-radius: 2px; overflow: hidden;" role="progressbar" aria-valuenow="${memPct}" aria-valuemin="0" aria-valuemax="100" aria-label="Memory usage">
                                     <div style="height: 100%; width: ${memPct}%; background: ${memPct > 85 ? 'var(--danger)' : memPct > 70 ? 'var(--warning)' : 'var(--success)'}; border-radius: 2px;"></div>
                                 </div>
-                            ` : ''}
+                            `
+                                    : ''
+                            }
                         </div>
                         <div style="padding: 16px; background: var(--gray-50); border-radius: 8px;">
                             <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">Uptime</div>
@@ -532,11 +659,14 @@ Object.assign(pages, {
                     <h2 class="card-title" id="top-endpoints-title">Top Endpoints by Request Count</h2>
                 </div>
                 <div class="card-body" style="padding: 0;">
-                    ${endpoints.length === 0 ? `
+                    ${
+                        endpoints.length === 0
+                            ? `
                         <div style="padding: 32px; text-align: center; color: var(--text-secondary);">
                             No endpoint data available.
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div style="overflow-x: auto;">
                             <table class="table" aria-label="Top endpoints by request count">
                                 <thead>
@@ -549,10 +679,16 @@ Object.assign(pages, {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${endpoints.slice(0, 15).map(ep => {
-                                        const epErrorRate = ep.requests > 0 ? ((ep.errors / ep.requests) * 100).toFixed(1) : '0.0';
-                                        const epAvg = ep.avgResponseTime != null ? parseFloat(ep.avgResponseTime).toFixed(0) + ' ms' : '--';
-                                        return `
+                                    ${endpoints
+                                        .slice(0, 15)
+                                        .map((ep) => {
+                                            const epErrorRate =
+                                                ep.requests > 0 ? ((ep.errors / ep.requests) * 100).toFixed(1) : '0.0';
+                                            const epAvg =
+                                                ep.avgResponseTime != null
+                                                    ? parseFloat(ep.avgResponseTime).toFixed(0) + ' ms'
+                                                    : '--';
+                                            return `
                                             <tr>
                                                 <td><code style="font-size: 13px; color: var(--primary-600);">${escapeHtml(ep.endpoint || '--')}</code></td>
                                                 <td style="text-align: right; font-variant-numeric: tabular-nums;">${(ep.requests || 0).toLocaleString()}</td>
@@ -563,11 +699,13 @@ Object.assign(pages, {
                                                 </td>
                                             </tr>
                                         `;
-                                    }).join('')}
+                                        })
+                                        .join('')}
                                 </tbody>
                             </table>
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
@@ -580,11 +718,17 @@ Object.assign(pages, {
                         ${alerts.length > 0 ? `<span class="badge badge-warning">${alerts.length}</span>` : ''}
                     </div>
                     <div class="card-body" style="padding: 0; max-height: 360px; overflow-y: auto;">
-                        ${alerts.length === 0 ? `
+                        ${
+                            alerts.length === 0
+                                ? `
                             <div style="padding: 32px; text-align: center; color: var(--text-secondary);">
                                 No alerts in the last 7 days.
                             </div>
-                        ` : alerts.slice(0, 20).map(alert => `
+                        `
+                                : alerts
+                                      .slice(0, 20)
+                                      .map(
+                                          (alert) => `
                             <div style="padding: 12px 16px; border-bottom: 1px solid var(--gray-100); display: flex; align-items: flex-start; gap: 10px;">
                                 <div style="flex: 1; min-width: 0;">
                                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap;">
@@ -596,13 +740,20 @@ Object.assign(pages, {
                                     </div>
                                     <div style="font-size: 11px; color: var(--text-secondary);">${formatTimestamp(alert.created_at)}</div>
                                 </div>
-                                ${!alert.acknowledged ? `
+                                ${
+                                    !alert.acknowledged
+                                        ? `
                                     <button class="btn btn-sm btn-secondary" style="flex-shrink: 0; min-height: 44px;" onclick="handlers.acknowledgeAlert('${escapeHtml(alert.id)}')" aria-label="Acknowledge alert">
                                         Ack
                                     </button>
-                                ` : ''}
+                                `
+                                        : ''
+                                }
                             </div>
-                        `).join('')}
+                        `,
+                                      )
+                                      .join('')
+                        }
                     </div>
                 </div>
 
@@ -613,11 +764,17 @@ Object.assign(pages, {
                         ${errors.length > 0 ? `<span class="badge badge-danger">${errors.length}</span>` : ''}
                     </div>
                     <div class="card-body" style="padding: 0; max-height: 360px; overflow-y: auto;">
-                        ${errors.length === 0 ? `
+                        ${
+                            errors.length === 0
+                                ? `
                             <div style="padding: 32px; text-align: center; color: var(--text-secondary);">
                                 No errors in the last 24 hours.
                             </div>
-                        ` : errors.slice(0, 20).map(err => `
+                        `
+                                : errors
+                                      .slice(0, 20)
+                                      .map(
+                                          (err) => `
                             <div style="padding: 12px 16px; border-bottom: 1px solid var(--gray-100);">
                                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap;">
                                     <span class="badge badge-danger" style="font-size: 11px;">${escapeHtml(err.error_type || 'error')}</span>
@@ -627,7 +784,10 @@ Object.assign(pages, {
                                 </div>
                                 <div style="font-size: 11px; color: var(--text-secondary);">${formatTimestamp(err.created_at)}</div>
                             </div>
-                        `).join('')}
+                        `,
+                                      )
+                                      .join('')
+                        }
                     </div>
                 </div>
             </div>
@@ -638,18 +798,28 @@ Object.assign(pages, {
                     <h2 class="card-title" id="security-events-title">Security Events (24h)</h2>
                 </div>
                 <div class="card-body">
-                    ${!securityEvents ? `
+                    ${
+                        !securityEvents
+                            ? `
                         <div style="text-align: center; color: var(--text-secondary); padding: 16px;">No security event data available.</div>
-                    ` : `
+                    `
+                            : `
                         <div class="grid grid-cols-4 gap-4 mb-6">
-                            ${Object.entries(secCounters).slice(0, 8).map(([key, val]) => `
+                            ${Object.entries(secCounters)
+                                .slice(0, 8)
+                                .map(
+                                    ([key, val]) => `
                                 <div style="padding: 12px 16px; background: var(--gray-50); border-radius: 8px;">
                                     <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em;">${escapeHtml(key.replace(/_/g, ' '))}</div>
                                     <div style="font-size: 22px; font-weight: 700; color: ${val > 0 && (key.includes('fail') || key.includes('block') || key.includes('attack')) ? 'var(--danger)' : 'var(--text-primary)'};">${val != null ? Number(val).toLocaleString() : '0'}</div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
-                        ${recentSecEvents.length > 0 ? `
+                        ${
+                            recentSecEvents.length > 0
+                                ? `
                             <h2 style="font-size: 13px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;">Recent Events</h2>
                             <div style="overflow-x: auto;">
                                 <table class="table" aria-label="Recent security events">
@@ -662,7 +832,10 @@ Object.assign(pages, {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${recentSecEvents.slice(0, 15).map(ev => `
+                                        ${recentSecEvents
+                                            .slice(0, 15)
+                                            .map(
+                                                (ev) => `
                                             <tr>
                                                 <td><span class="badge badge-warning" style="font-size: 11px;">${escapeHtml(ev.event_type || '--')}</span></td>
                                                 <td style="font-size: 13px; font-family: monospace;">${escapeHtml(ev.ip_or_user || '--')}</td>
@@ -671,12 +844,17 @@ Object.assign(pages, {
                                                 </td>
                                                 <td style="font-size: 12px; color: var(--text-secondary); white-space: nowrap;">${formatTimestamp(ev.created_at)}</td>
                                             </tr>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </tbody>
                                 </table>
                             </div>
-                        ` : ''}
-                    `}
+                        `
+                                : ''
+                        }
+                    `
+                    }
                 </div>
             </div>
 
@@ -685,5 +863,5 @@ Object.assign(pages, {
                 ${store.state.adminMetricsLastUpdated ? `Last updated: ${formatTimestamp(store.state.adminMetricsLastUpdated)}` : ''}
             </div>
         `;
-    }
+    },
 });

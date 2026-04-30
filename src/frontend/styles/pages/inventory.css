@@ -249,7 +249,7 @@
     gap: 8px;
 }
 
-.thumbnail-slider input[type="range"] {
+.thumbnail-slider input[type='range'] {
     width: 80px;
 }
 
@@ -463,9 +463,15 @@
     transition: width 0.3s;
 }
 
-.stock-level-fill.high { background: var(--green-500); }
-.stock-level-fill.medium { background: var(--yellow-500); }
-.stock-level-fill.low { background: var(--red-500); }
+.stock-level-fill.high {
+    background: var(--green-500);
+}
+.stock-level-fill.medium {
+    background: var(--yellow-500);
+}
+.stock-level-fill.low {
+    background: var(--red-500);
+}
 
 .completeness-ring {
     position: relative;

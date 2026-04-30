@@ -20,7 +20,14 @@ export function extractQueryInfo(sqlStr) {
 
 export function recordQueryMetric(sqlStr, duration, requestId) {
     const { operation, table } = extractQueryInfo(sqlStr);
-    queryLog.push({ sql: sqlStr.substring(0, 200), duration, table, operation, requestId: requestId || null, timestamp: Date.now() });
+    queryLog.push({
+        sql: sqlStr.substring(0, 200),
+        duration,
+        table,
+        operation,
+        requestId: requestId || null,
+        timestamp: Date.now(),
+    });
     // Prune entries older than the retention window
     const cutoff = Date.now() - METRICS_RETENTION_MS;
     while (queryLog.length > 0 && queryLog[0].timestamp < cutoff) queryLog.shift();
@@ -32,7 +39,7 @@ export function recordQueryMetric(sqlStr, duration, requestId) {
  */
 export function getQueryMetrics() {
     const cutoff = Date.now() - METRICS_RETENTION_MS;
-    const recent = queryLog.filter(r => r.timestamp >= cutoff);
+    const recent = queryLog.filter((r) => r.timestamp >= cutoff);
 
     const slowest = [...recent]
         .sort((a, b) => b.duration - a.duration)
@@ -49,7 +56,13 @@ export function getQueryMetrics() {
         entry.totalDuration += r.duration;
     }
     const avgByPattern = [...byPattern.entries()]
-        .map(([sql, s]) => ({ sql, operation: s.operation, table: s.table, count: s.count, avgDuration: Math.round(s.totalDuration / s.count * 100) / 100 }))
+        .map(([sql, s]) => ({
+            sql,
+            operation: s.operation,
+            table: s.table,
+            count: s.count,
+            avgDuration: Math.round((s.totalDuration / s.count) * 100) / 100,
+        }))
         .sort((a, b) => b.avgDuration - a.avgDuration)
         .slice(0, 10);
 

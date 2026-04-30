@@ -7,7 +7,6 @@ import { getGrokResponse, getChatbotMode, streamResponse } from '../services/gro
 import { logger } from '../shared/logger.js';
 import { safeJsonParse } from '../shared/utils.js';
 
-
 /**
  * Chatbot router
  */
@@ -28,7 +27,7 @@ export async function chatbotRouter(ctx) {
             await query.run(
                 `INSERT INTO chat_conversations (id, user_id, title, created_at, updated_at)
                  VALUES (?, ?, ?, ?, ?)`,
-                [conversationId, user.id, body.title || 'New Chat', now, now]
+                [conversationId, user.id, body.title || 'New Chat', now, now],
             );
 
             // Add system welcome message
@@ -46,14 +45,7 @@ What can I help you with today?`;
             await query.run(
                 `INSERT INTO chat_messages (id, conversation_id, user_id, role, content, metadata, created_at)
                  VALUES (?, ?, ?, 'assistant', ?, ?, ?)`,
-                [
-                    welcomeMessageId,
-                    conversationId,
-                    user.id,
-                    welcomeMessage,
-                    '{"is_welcome":true}',
-                    now
-                ]
+                [welcomeMessageId, conversationId, user.id, welcomeMessage, '{"is_welcome":true}', now],
             );
 
             return {
@@ -63,15 +55,15 @@ What can I help you with today?`;
                     conversation: {
                         id: conversationId,
                         title: body.title || 'New Chat',
-                        created_at: new Date().toISOString()
-                    }
-                }
+                        created_at: new Date().toISOString(),
+                    },
+                },
             };
         } catch (error) {
             logger.error('[Chatbot] Error creating conversation', user?.id, { detail: error?.message });
             return {
                 status: 500,
-                data: { error: 'Failed to create conversation' }
+                data: { error: 'Failed to create conversation' },
             };
         }
     }
@@ -93,18 +85,18 @@ What can I help you with today?`;
                  WHERE c.user_id = ?
                  ORDER BY c.updated_at DESC
                  LIMIT 500`,
-                [user.id]
+                [user.id],
             );
 
             return {
                 status: 200,
-                data: { conversations }
+                data: { conversations },
             };
         } catch (error) {
             logger.error('[Chatbot] Error fetching conversations', user?.id, { detail: error?.message });
             return {
                 status: 500,
-                data: { error: 'Failed to fetch conversations' }
+                data: { error: 'Failed to fetch conversations' },
             };
         }
     }
@@ -119,13 +111,13 @@ What can I help you with today?`;
                 `SELECT id, title, created_at, updated_at
                  FROM chat_conversations
                  WHERE id = ? AND user_id = ?`,
-                [conversationId, user.id]
+                [conversationId, user.id],
             );
 
             if (!conversation) {
                 return {
                     status: 404,
-                    data: { error: 'Conversation not found' }
+                    data: { error: 'Conversation not found' },
                 };
             }
 
@@ -136,11 +128,11 @@ What can I help you with today?`;
                  WHERE conversation_id = ?
                  ORDER BY created_at ASC
                  LIMIT 500`,
-                [conversationId]
+                [conversationId],
             );
 
             // Parse metadata JSON
-            messages.forEach(msg => {
+            messages.forEach((msg) => {
                 msg.metadata = safeJsonParse(msg.metadata, {});
             });
 
@@ -148,14 +140,14 @@ What can I help you with today?`;
                 status: 200,
                 data: {
                     conversation,
-                    messages
-                }
+                    messages,
+                },
             };
         } catch (error) {
             logger.error('[Chatbot] Error fetching conversation', user?.id, { detail: error?.message });
             return {
                 status: 500,
-                data: { error: 'Failed to fetch conversation' }
+                data: { error: 'Failed to fetch conversation' },
             };
         }
     }
@@ -167,7 +159,7 @@ What can I help you with today?`;
         if (!conversation_id || !message) {
             return {
                 status: 400,
-                data: { error: 'conversation_id and message are required' }
+                data: { error: 'conversation_id and message are required' },
             };
         }
 
@@ -177,15 +169,15 @@ What can I help you with today?`;
 
         try {
             // Verify conversation belongs to user
-            const conversation = await query.get(
-                `SELECT id FROM chat_conversations WHERE id = ? AND user_id = ?`,
-                [conversation_id, user.id]
-            );
+            const conversation = await query.get(`SELECT id FROM chat_conversations WHERE id = ? AND user_id = ?`, [
+                conversation_id,
+                user.id,
+            ]);
 
             if (!conversation) {
                 return {
                     status: 404,
-                    data: { error: 'Conversation not found' }
+                    data: { error: 'Conversation not found' },
                 };
             }
 
@@ -195,31 +187,34 @@ What can I help you with today?`;
             await query.run(
                 `INSERT INTO chat_messages (id, conversation_id, user_id, role, content, created_at)
                  VALUES (?, ?, ?, 'user', ?, ?)`,
-                [userMessageId, conversation_id, user.id, message, messageTimestamp]
+                [userMessageId, conversation_id, user.id, message, messageTimestamp],
             );
 
             // Auto-generate title from first user message if still default
             const conv = await query.get(
                 `SELECT title, (SELECT COUNT(*) FROM chat_messages WHERE conversation_id = ? AND role = 'user') as user_msg_count
                  FROM chat_conversations WHERE id = ?`,
-                [conversation_id, conversation_id]
+                [conversation_id, conversation_id],
             );
             if (conv?.title === 'New Chat' && conv?.user_msg_count <= 1) {
                 const autoTitle = message.slice(0, 60).trim() + (message.length > 60 ? '…' : '');
-                await query.run(
-                    `UPDATE chat_conversations SET title = ?, updated_at = ? WHERE id = ?`,
-                    [autoTitle, new Date().toISOString(), conversation_id]
-                );
+                await query.run(`UPDATE chat_conversations SET title = ?, updated_at = ? WHERE id = ?`, [
+                    autoTitle,
+                    new Date().toISOString(),
+                    conversation_id,
+                ]);
             }
 
             // Get conversation history (last 20 messages for context)
-            const historyMessages = (await query.all(
-                `SELECT role, content FROM chat_messages
+            const historyMessages = (
+                await query.all(
+                    `SELECT role, content FROM chat_messages
                  WHERE conversation_id = ? AND NOT (metadata @> '{"is_welcome":true}'::jsonb)
                  ORDER BY created_at DESC
                  LIMIT 20`,
-                [conversation_id]
-            )).reverse();
+                    [conversation_id],
+                )
+            ).reverse();
 
             // --- Streaming branch ---
             if (body.stream) {
@@ -228,11 +223,16 @@ What can I help you with today?`;
                     async start(controller) {
                         let fullContent = '';
                         let closed = false;
-                        const safeClose = () => { if (!closed) { closed = true; controller.close(); } };
+                        const safeClose = () => {
+                            if (!closed) {
+                                closed = true;
+                                controller.close();
+                            }
+                        };
                         try {
                             for await (const chunk of streamResponse(
-                                historyMessages.map(m => ({ role: m.role, content: m.content })),
-                                { userId: user.id }
+                                historyMessages.map((m) => ({ role: m.role, content: m.content })),
+                                { userId: user.id },
                             )) {
                                 if (chunk.type === 'delta') {
                                     fullContent += chunk.content;
@@ -241,34 +241,55 @@ What can I help you with today?`;
                                     const assistantMessageId = `msg_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
                                     const metadata = { source: chunk.source, quickActions: chunk.quickActions || [] };
                                     // Send done frame BEFORE DB writes — client gets content even if DB fails
-                                    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'done', messageId: assistantMessageId, quickActions: chunk.quickActions || [] })}\n\n`));
+                                    controller.enqueue(
+                                        encoder.encode(
+                                            `data: ${JSON.stringify({ type: 'done', messageId: assistantMessageId, quickActions: chunk.quickActions || [] })}\n\n`,
+                                        ),
+                                    );
                                     safeClose();
                                     const ts = new Date().toISOString();
                                     try {
                                         await query.run(
                                             `INSERT INTO chat_messages (id, conversation_id, user_id, role, content, metadata, created_at) VALUES (?, ?, ?, 'assistant', ?, ?, ?)`,
-                                            [assistantMessageId, conversation_id, user.id, fullContent, JSON.stringify(metadata), ts]
+                                            [
+                                                assistantMessageId,
+                                                conversation_id,
+                                                user.id,
+                                                fullContent,
+                                                JSON.stringify(metadata),
+                                                ts,
+                                            ],
                                         );
                                         await query.run(
                                             `UPDATE chat_conversations SET updated_at = ? WHERE id = ? AND user_id = ?`,
-                                            [ts, conversation_id, user.id]
+                                            [ts, conversation_id, user.id],
                                         );
                                     } catch (dbErr) {
-                                        logger.error('[Chatbot] DB write failed after stream done', user?.id, { detail: dbErr?.message });
+                                        logger.error('[Chatbot] DB write failed after stream done', user?.id, {
+                                            detail: dbErr?.message,
+                                        });
                                     }
                                 } else if (chunk.type === 'error') {
-                                    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'error', error: chunk.error || 'Stream failed' })}\n\n`));
+                                    controller.enqueue(
+                                        encoder.encode(
+                                            `data: ${JSON.stringify({ type: 'error', error: chunk.error || 'Stream failed' })}\n\n`,
+                                        ),
+                                    );
                                     safeClose();
                                 }
                             }
                         } catch (err) {
                             logger.error('[Chatbot] Stream error', user?.id, { detail: err?.message });
                             if (!closed) {
-                                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'error', error: 'Stream failed' })}\n\n`));
+                                controller.enqueue(
+                                    encoder.encode(
+                                        `data: ${JSON.stringify({ type: 'error', error: 'Stream failed' })}\n\n`,
+                                    ),
+                                );
                             }
                             safeClose();
                         }
-                    }
+                    },
                 });
                 return {
                     isStream: true,
@@ -276,17 +297,17 @@ What can I help you with today?`;
                     headers: {
                         'Content-Type': 'text/event-stream',
                         'Cache-Control': 'no-cache',
-                        'Connection': 'keep-alive',
+                        Connection: 'keep-alive',
                         'X-Accel-Buffering': 'no',
-                    }
+                    },
                 };
             }
             // --- End streaming branch ---
 
             // Get response from Grok (or mock)
             const grokResponse = await getGrokResponse(
-                historyMessages.map(m => ({ role: m.role, content: m.content })),
-                { userId: user.id }
+                historyMessages.map((m) => ({ role: m.role, content: m.content })),
+                { userId: user.id },
             );
 
             // Save assistant message
@@ -294,21 +315,29 @@ What can I help you with today?`;
             const metadata = {
                 source: grokResponse.source,
                 category: grokResponse.category,
-                quickActions: grokResponse.quickActions || []
+                quickActions: grokResponse.quickActions || [],
             };
 
             const responseTimestamp = new Date().toISOString();
             await query.run(
                 `INSERT INTO chat_messages (id, conversation_id, user_id, role, content, metadata, created_at)
                  VALUES (?, ?, ?, 'assistant', ?, ?, ?)`,
-                [assistantMessageId, conversation_id, user.id, grokResponse.content, JSON.stringify(metadata), responseTimestamp]
+                [
+                    assistantMessageId,
+                    conversation_id,
+                    user.id,
+                    grokResponse.content,
+                    JSON.stringify(metadata),
+                    responseTimestamp,
+                ],
             );
 
             // Update conversation timestamp
-            await query.run(
-                `UPDATE chat_conversations SET updated_at = ? WHERE id = ? AND user_id = ?`,
-                [responseTimestamp, conversation_id, user.id]
-            );
+            await query.run(`UPDATE chat_conversations SET updated_at = ? WHERE id = ? AND user_id = ?`, [
+                responseTimestamp,
+                conversation_id,
+                user.id,
+            ]);
 
             return {
                 status: 200,
@@ -319,16 +348,16 @@ What can I help you with today?`;
                         role: 'assistant',
                         content: grokResponse.content,
                         metadata,
-                        created_at: new Date().toISOString()
+                        created_at: new Date().toISOString(),
                     },
-                    chatbot_mode: getChatbotMode()
-                }
+                    chatbot_mode: getChatbotMode(),
+                },
             };
         } catch (error) {
             logger.error('[Chatbot] Error sending message', user?.id, { detail: error?.message });
             return {
                 status: 500,
-                data: { error: 'Failed to send message' }
+                data: { error: 'Failed to send message' },
             };
         }
     }
@@ -340,14 +369,14 @@ What can I help you with today?`;
         if (!message_id || rating === undefined) {
             return {
                 status: 400,
-                data: { error: 'message_id and rating are required' }
+                data: { error: 'message_id and rating are required' },
             };
         }
 
         if (rating < 1 || rating > 5) {
             return {
                 status: 400,
-                data: { error: 'rating must be between 1 and 5' }
+                data: { error: 'rating must be between 1 and 5' },
             };
         }
 
@@ -358,31 +387,32 @@ What can I help you with today?`;
                  FROM chat_messages m
                  JOIN chat_conversations c ON m.conversation_id = c.id
                  WHERE m.id = ? AND c.user_id = ?`,
-                [message_id, user.id]
+                [message_id, user.id],
             );
 
             if (!message) {
                 return {
                     status: 404,
-                    data: { error: 'Message not found' }
+                    data: { error: 'Message not found' },
                 };
             }
 
             // Update rating
-            await query.run(
-                `UPDATE chat_messages SET helpful_rating = ? WHERE id = ? AND user_id = ?`,
-                [rating, message_id, user.id]
-            );
+            await query.run(`UPDATE chat_messages SET helpful_rating = ? WHERE id = ? AND user_id = ?`, [
+                rating,
+                message_id,
+                user.id,
+            ]);
 
             return {
                 status: 200,
-                data: { success: true }
+                data: { success: true },
             };
         } catch (error) {
             logger.error('[Chatbot] Error rating message', user?.id, { detail: error?.message });
             return {
                 status: 500,
-                data: { error: 'Failed to rate message' }
+                data: { error: 'Failed to rate message' },
             };
         }
     }
@@ -400,17 +430,19 @@ What can I help you with today?`;
         }
 
         try {
-            const conversation = await query.get(
-                `SELECT id FROM chat_conversations WHERE id = ? AND user_id = ?`,
-                [conversationId, user.id]
-            );
+            const conversation = await query.get(`SELECT id FROM chat_conversations WHERE id = ? AND user_id = ?`, [
+                conversationId,
+                user.id,
+            ]);
             if (!conversation) {
                 return { status: 404, data: { error: 'Conversation not found' } };
             }
-            await query.run(
-                `UPDATE chat_conversations SET title = ?, updated_at = ? WHERE id = ? AND user_id = ?`,
-                [title.trim(), new Date().toISOString(), conversationId, user.id]
-            );
+            await query.run(`UPDATE chat_conversations SET title = ?, updated_at = ? WHERE id = ? AND user_id = ?`, [
+                title.trim(),
+                new Date().toISOString(),
+                conversationId,
+                user.id,
+            ]);
             return { status: 200, data: { success: true, title: title.trim() } };
         } catch (error) {
             logger.error('[Chatbot] Error renaming conversation', user?.id, { detail: error?.message });
@@ -424,45 +456,42 @@ What can I help you with today?`;
 
         try {
             // Verify ownership
-            const conversation = await query.get(
-                `SELECT id FROM chat_conversations WHERE id = ? AND user_id = ?`,
-                [conversationId, user.id]
-            );
+            const conversation = await query.get(`SELECT id FROM chat_conversations WHERE id = ? AND user_id = ?`, [
+                conversationId,
+                user.id,
+            ]);
 
             if (!conversation) {
                 return {
                     status: 404,
-                    data: { error: 'Conversation not found' }
+                    data: { error: 'Conversation not found' },
                 };
             }
 
             // Delete messages first (foreign key constraint)
             await query.run(
                 `DELETE FROM chat_messages WHERE conversation_id = ? AND conversation_id IN (SELECT id FROM chat_conversations WHERE user_id = ?)`,
-                [conversationId, user.id]
+                [conversationId, user.id],
             );
 
             // Delete conversation
-            await query.run(
-                `DELETE FROM chat_conversations WHERE id = ? AND user_id = ?`,
-                [conversationId, user.id]
-            );
+            await query.run(`DELETE FROM chat_conversations WHERE id = ? AND user_id = ?`, [conversationId, user.id]);
 
             return {
                 status: 200,
-                data: { success: true }
+                data: { success: true },
             };
         } catch (error) {
             logger.error('[Chatbot] Error deleting conversation', user?.id, { detail: error?.message });
             return {
                 status: 500,
-                data: { error: 'Failed to delete conversation' }
+                data: { error: 'Failed to delete conversation' },
             };
         }
     }
 
     return {
         status: 404,
-        data: { error: 'Not found' }
+        data: { error: 'Not found' },
     };
 }

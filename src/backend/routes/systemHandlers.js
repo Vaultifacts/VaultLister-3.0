@@ -62,8 +62,8 @@ export async function docsRouter(ctx) {
             specUrl: '/api-docs/openapi.yaml',
             uiUrl: '/api-docs/index.html',
             format: 'OpenAPI 3.0',
-            description: 'VaultLister API specification — visit specUrl for the raw YAML or uiUrl for Swagger UI'
-        }
+            description: 'VaultLister API specification — visit specUrl for the raw YAML or uiUrl for Swagger UI',
+        },
     };
 }
 

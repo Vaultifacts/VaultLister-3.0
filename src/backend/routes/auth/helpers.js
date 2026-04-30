@@ -40,7 +40,7 @@ const COOKIE_BASE = `HttpOnly; SameSite=Strict${SECURE_FLAG}`;
 function authCookies(token, refreshToken) {
     return [
         `vl_access=${token}; Path=/; Max-Age=900; ${COOKIE_BASE}`,
-        `vl_refresh=${refreshToken}; Path=/api/auth/refresh; Max-Age=604800; ${COOKIE_BASE}`
+        `vl_refresh=${refreshToken}; Path=/api/auth/refresh; Max-Age=604800; ${COOKIE_BASE}`,
     ];
 }
 
@@ -48,7 +48,7 @@ function authCookies(token, refreshToken) {
 function clearAuthCookies() {
     return [
         `vl_access=; Path=/; Max-Age=0; ${COOKIE_BASE}`,
-        `vl_refresh=; Path=/api/auth/refresh; Max-Age=0; ${COOKIE_BASE}`
+        `vl_refresh=; Path=/api/auth/refresh; Max-Age=0; ${COOKIE_BASE}`,
     ];
 }
 
@@ -100,13 +100,16 @@ async function checkLoginAttempts(email, ip) {
     try {
         const windowStart = new Date(Date.now() - LOCKOUT_DURATION_MINUTES * 60 * 1000);
         const masked = maskEmail(email.toLowerCase());
-        const attempts = await query.all(`
+        const attempts = await query.all(
+            `
             SELECT created_at FROM security_logs
             WHERE (details ILIKE ? ESCAPE '\\' OR ip_or_user = ?)
             AND event_type = 'login_failed'
             AND created_at > ?
             ORDER BY created_at ASC
-        `, [`%${escapeLike(masked)}%`, ip, windowStart.toISOString()]);
+        `,
+            [`%${escapeLike(masked)}%`, ip, windowStart.toISOString()],
+        );
 
         if (attempts.length >= MAX_LOGIN_ATTEMPTS) {
             const oldestAttempt = new Date(attempts[0].created_at);
@@ -124,10 +127,13 @@ async function checkLoginAttempts(email, ip) {
 // SECURITY: Log failed login attempt — stores masked email, never raw PII.
 async function logFailedLogin(email, ip, userAgent) {
     try {
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO security_logs (event_type, ip_or_user, details, created_at)
             VALUES ('login_failed', ?, ?, NOW())
-        `, [ip, JSON.stringify({ email: maskEmail(email.toLowerCase()), userAgent: userAgent || 'unknown' })]);
+        `,
+            [ip, JSON.stringify({ email: maskEmail(email.toLowerCase()), userAgent: userAgent || 'unknown' })],
+        );
     } catch (e) {
         logger.error('[auth] Failed to log security event', null, { detail: e.message });
     }
@@ -138,12 +144,15 @@ async function clearLoginAttempts(email, ip) {
     try {
         const lockoutEnd = new Date(Date.now() - LOCKOUT_DURATION_MINUTES * 60 * 1000);
         const masked = maskEmail(email.toLowerCase());
-        await query.run(`
+        await query.run(
+            `
             DELETE FROM security_logs
             WHERE (details ILIKE ? ESCAPE '\\' OR ip_or_user = ?)
             AND event_type = 'login_failed'
             AND created_at > ?
-        `, [`%${escapeLike(masked)}%`, ip, lockoutEnd.toISOString()]);
+        `,
+            [`%${escapeLike(masked)}%`, ip, lockoutEnd.toISOString()],
+        );
     } catch (e) {
         // Non-critical, just log
         logger.error('[auth] Failed to clear login attempts', null, { detail: e.message });
@@ -178,23 +187,26 @@ async function ensureTestDemoUser() {
 
     let existing = await query.get(
         'SELECT id, email, username, full_name, password_hash, is_active, email_verified, mfa_enabled, subscription_tier, stripe_customer_id, created_at FROM users WHERE email = ?',
-        [demoEmail]
+        [demoEmail],
     );
 
     if (!existing) {
         const id = uuidv4();
         const passwordHash = await bcrypt.hash(demoPassword, BCRYPT_ROUNDS);
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO users (id, email, password_hash, username, full_name, is_active)
             VALUES (?, ?, ?, ?, ?, 1)
-        `, [id, demoEmail, passwordHash, demoUsername, demoFullName]);
+        `,
+            [id, demoEmail, passwordHash, demoUsername, demoFullName],
+        );
     } else if (!existing.is_active) {
         await query.run('UPDATE users SET is_active = TRUE WHERE id = ?', [existing.id]);
     }
 
     return await query.get(
         'SELECT id, email, username, full_name, password_hash, is_active, email_verified, mfa_enabled, subscription_tier, stripe_customer_id, created_at FROM users WHERE email = ? AND is_active = TRUE',
-        [demoEmail]
+        [demoEmail],
     );
 }
 
@@ -205,18 +217,21 @@ async function enforceSessionLimit(userId) {
     try {
         const sessionCount = await query.get(
             'SELECT COUNT(*) as count FROM sessions WHERE user_id = ? AND is_valid = 1',
-            [userId]
+            [userId],
         );
         if (sessionCount && sessionCount.count >= 10) {
             const excess = sessionCount.count - 9; // keep 9, caller inserts the 10th
-            await query.run(`
+            await query.run(
+                `
                 DELETE FROM sessions WHERE id IN (
                     SELECT id FROM sessions
                     WHERE user_id = ? AND is_valid = 1
                     ORDER BY created_at ASC
                     LIMIT ?
                 )
-            `, [userId, excess]);
+            `,
+                [userId, excess],
+            );
             logger.info(`[auth] Pruned ${excess} oldest session(s) for user ${userId}`);
         }
     } catch (e) {
@@ -243,5 +258,5 @@ export {
     clearLoginAttempts,
     demoPasswordMatch,
     ensureTestDemoUser,
-    enforceSessionLimit
+    enforceSessionLimit,
 };

@@ -42,14 +42,15 @@ function buildEasyPostShipmentPayload(body) {
                 weight: positiveNumber(body.weight_oz),
                 length: positiveNumber(body.length ?? body.length_in, 12),
                 width: positiveNumber(body.width ?? body.width_in, 9),
-                height: positiveNumber(body.height ?? body.height_in, 4)
-            }
-        }
+                height: positiveNumber(body.height ?? body.height_in, 4),
+            },
+        },
     };
 }
 
 function getEasyPostAuthHeader() {
-    return `Basic ${Buffer.from(`${process.env.EASYPOST_API_KEY}:`).toString('base64')}`;
+    const token = `${process.env.EASYPOST_API_KEY}:`;
+    return `Basic ${Buffer.from(token).toString('base64')}`;
 }
 
 async function readEasyPostError(response) {
@@ -72,7 +73,7 @@ function mapEasyPostRate(shipment, rate, rowId = null) {
         shipment_id: shipment.id,
         rate_id: rate.id,
         easypost_rate_id: rate.id,
-        provider: 'easypost'
+        provider: 'easypost',
     };
 }
 
@@ -80,8 +81,8 @@ async function fetchEasyPostRates(body, user, { persist = false } = {}) {
     const response = await fetch(EASYPOST_SHIPMENTS_URL, {
         method: 'POST',
         signal: AbortSignal.timeout(30000),
-        headers: { 'Authorization': getEasyPostAuthHeader(), 'Content-Type': 'application/json' },
-        body: JSON.stringify(buildEasyPostShipmentPayload(body))
+        headers: { Authorization: getEasyPostAuthHeader(), 'Content-Type': 'application/json' },
+        body: JSON.stringify(buildEasyPostShipmentPayload(body)),
     });
 
     if (!response.ok) {
@@ -92,7 +93,7 @@ async function fetchEasyPostRates(body, user, { persist = false } = {}) {
 
     const shipment = await response.json();
     const rates = [];
-    for (const rate of (shipment.rates || [])) {
+    for (const rate of shipment.rates || []) {
         const amount = Number.parseFloat(rate.rate);
         if (!Number.isFinite(amount)) continue;
 
@@ -113,8 +114,8 @@ async function fetchEasyPostRates(body, user, { persist = false } = {}) {
                     mapped.currency,
                     mapped.delivery_days,
                     mapped.delivery_date,
-                    mapped.rate_id
-                ]
+                    mapped.rate_id,
+                ],
             );
         }
 
@@ -129,8 +130,8 @@ async function buyEasyPostShipment(shipmentId, rateId, user) {
     const response = await fetch(`${EASYPOST_SHIPMENTS_URL}/${shipmentId}/buy`, {
         method: 'POST',
         signal: AbortSignal.timeout(30000),
-        headers: { 'Authorization': getEasyPostAuthHeader(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rate: { id: rateId } })
+        headers: { Authorization: getEasyPostAuthHeader(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rate: { id: rateId } }),
     });
 
     if (!response.ok) {
@@ -171,17 +172,19 @@ export async function shippingLabelsRouter(ctx) {
             }
 
             sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
-            params.push(parseIntSafe(limit, { min: 1, max: 200, fallback: 50 }), parseIntSafe(offset, { min: 0, fallback: 0 }));
+            params.push(
+                parseIntSafe(limit, { min: 1, max: 200, fallback: 50 }),
+                parseIntSafe(offset, { min: 0, fallback: 0 }),
+            );
 
             const labels = await query.all(sql, params);
-            const { count } = await query.get(
-                'SELECT COUNT(*) as count FROM shipping_labels WHERE user_id = ?',
-                [user.id]
-            );
+            const { count } = await query.get('SELECT COUNT(*) as count FROM shipping_labels WHERE user_id = ?', [
+                user.id,
+            ]);
 
             return {
                 status: 200,
-                data: { labels, total: count }
+                data: { labels, total: count },
             };
         } catch (error) {
             logger.error('[ShippingLabels] Error listing labels', user?.id, { detail: error.message });
@@ -191,12 +194,18 @@ export async function shippingLabelsRouter(ctx) {
 
     // GET /api/shipping-labels/:id - Get single label
     const getLabelMatch = path.match(/^\/([a-f0-9-]+)$/i);
-    if (method === 'GET' && getLabelMatch && !path.startsWith('/addresses') && !path.startsWith('/batches') && !path.startsWith('/rates')) {
+    if (
+        method === 'GET' &&
+        getLabelMatch &&
+        !path.startsWith('/addresses') &&
+        !path.startsWith('/batches') &&
+        !path.startsWith('/rates')
+    ) {
         try {
-            const label = await query.get(
-                'SELECT * FROM shipping_labels WHERE id = ? AND user_id = ?',
-                [getLabelMatch[1], user.id]
-            );
+            const label = await query.get('SELECT * FROM shipping_labels WHERE id = ? AND user_id = ?', [
+                getLabelMatch[1],
+                user.id,
+            ]);
 
             if (!label) {
                 return { status: 404, data: { error: 'Label not found' } };
@@ -213,22 +222,59 @@ export async function shippingLabelsRouter(ctx) {
     if (method === 'POST' && (path === '/' || path === '')) {
         try {
             const {
-                order_id, sale_id, carrier, service_type,
-                weight_oz, length_in, width_in, height_in, package_type = 'package',
-                from_name, from_company, from_street1, from_street2, from_city, from_state, from_zip, from_country = 'US', from_phone,
-                to_name, to_company, to_street1, to_street2, to_city, to_state, to_zip, to_country = 'US', to_phone, to_email,
-                label_format = 'pdf', label_size = '4x6',
-                notes
+                order_id,
+                sale_id,
+                carrier,
+                service_type,
+                weight_oz,
+                length_in,
+                width_in,
+                height_in,
+                package_type = 'package',
+                from_name,
+                from_company,
+                from_street1,
+                from_street2,
+                from_city,
+                from_state,
+                from_zip,
+                from_country = 'US',
+                from_phone,
+                to_name,
+                to_company,
+                to_street1,
+                to_street2,
+                to_city,
+                to_state,
+                to_zip,
+                to_country = 'US',
+                to_phone,
+                to_email,
+                label_format = 'pdf',
+                label_size = '4x6',
+                notes,
             } = body;
 
-            if (!carrier || !from_name || !from_street1 || !from_city || !from_state || !from_zip ||
-                !to_name || !to_street1 || !to_city || !to_state || !to_zip) {
+            if (
+                !carrier ||
+                !from_name ||
+                !from_street1 ||
+                !from_city ||
+                !from_state ||
+                !from_zip ||
+                !to_name ||
+                !to_street1 ||
+                !to_city ||
+                !to_state ||
+                !to_zip
+            ) {
                 return { status: 400, data: { error: 'Carrier and complete from/to addresses are required' } };
             }
 
             const id = uuidv4();
 
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO shipping_labels (
                     id, user_id, order_id, sale_id, carrier, service_type,
                     weight_oz, length_in, width_in, height_in, package_type,
@@ -236,13 +282,43 @@ export async function shippingLabelsRouter(ctx) {
                     to_name, to_company, to_street1, to_street2, to_city, to_state, to_zip, to_country, to_phone, to_email,
                     label_format, label_size, notes
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `, [
-                id, user.id, order_id, sale_id, carrier, service_type,
-                weight_oz, length_in, width_in, height_in, package_type,
-                from_name, from_company, from_street1, from_street2, from_city, from_state, from_zip, from_country, from_phone,
-                to_name, to_company, to_street1, to_street2, to_city, to_state, to_zip, to_country, to_phone, to_email,
-                label_format, label_size, notes
-            ]);
+            `,
+                [
+                    id,
+                    user.id,
+                    order_id,
+                    sale_id,
+                    carrier,
+                    service_type,
+                    weight_oz,
+                    length_in,
+                    width_in,
+                    height_in,
+                    package_type,
+                    from_name,
+                    from_company,
+                    from_street1,
+                    from_street2,
+                    from_city,
+                    from_state,
+                    from_zip,
+                    from_country,
+                    from_phone,
+                    to_name,
+                    to_company,
+                    to_street1,
+                    to_street2,
+                    to_city,
+                    to_state,
+                    to_zip,
+                    to_country,
+                    to_phone,
+                    to_email,
+                    label_format,
+                    label_size,
+                    notes,
+                ],
+            );
 
             return { status: 201, data: { message: 'Label created', id } };
         } catch (error) {
@@ -257,7 +333,10 @@ export async function shippingLabelsRouter(ctx) {
         try {
             const id = patchLabelMatch[1];
 
-            const existing = await query.get('SELECT id FROM shipping_labels WHERE id = ? AND user_id = ?', [id, user.id]);
+            const existing = await query.get('SELECT id FROM shipping_labels WHERE id = ? AND user_id = ?', [
+                id,
+                user.id,
+            ]);
             if (!existing) {
                 return { status: 404, data: { error: 'Label not found' } };
             }
@@ -266,17 +345,51 @@ export async function shippingLabelsRouter(ctx) {
             const params = [];
 
             const fields = [
-                'order_id', 'sale_id', 'tracking_number', 'carrier', 'service_type',
-                'weight_oz', 'length_in', 'width_in', 'height_in', 'package_type',
-                'from_name', 'from_company', 'from_street1', 'from_street2', 'from_city', 'from_state', 'from_zip', 'from_country', 'from_phone',
-                'to_name', 'to_company', 'to_street1', 'to_street2', 'to_city', 'to_state', 'to_zip', 'to_country', 'to_phone', 'to_email',
-                'label_format', 'label_size', 'label_url', 'label_data',
-                'postage_cost', 'insurance_cost', 'total_cost',
-                'status', 'notes', 'batch_id',
-                'external_label_id', 'external_shipment_id', 'rate_id'
+                'order_id',
+                'sale_id',
+                'tracking_number',
+                'carrier',
+                'service_type',
+                'weight_oz',
+                'length_in',
+                'width_in',
+                'height_in',
+                'package_type',
+                'from_name',
+                'from_company',
+                'from_street1',
+                'from_street2',
+                'from_city',
+                'from_state',
+                'from_zip',
+                'from_country',
+                'from_phone',
+                'to_name',
+                'to_company',
+                'to_street1',
+                'to_street2',
+                'to_city',
+                'to_state',
+                'to_zip',
+                'to_country',
+                'to_phone',
+                'to_email',
+                'label_format',
+                'label_size',
+                'label_url',
+                'label_data',
+                'postage_cost',
+                'insurance_cost',
+                'total_cost',
+                'status',
+                'notes',
+                'batch_id',
+                'external_label_id',
+                'external_shipment_id',
+                'rate_id',
             ];
 
-            fields.forEach(field => {
+            fields.forEach((field) => {
                 if (body[field] !== undefined) {
                     updates.push(`${field} = ?`);
                     params.push(body[field]);
@@ -316,13 +429,17 @@ export async function shippingLabelsRouter(ctx) {
     const deleteLabelMatch = path.match(/^\/([a-f0-9-]+)$/i);
     if (method === 'DELETE' && deleteLabelMatch && !path.startsWith('/addresses') && !path.startsWith('/batches')) {
         try {
-            const result = await query.run(
-                'DELETE FROM shipping_labels WHERE id = ? AND user_id = ? AND status = ?',
-                [deleteLabelMatch[1], user.id, 'draft']
-            );
+            const result = await query.run('DELETE FROM shipping_labels WHERE id = ? AND user_id = ? AND status = ?', [
+                deleteLabelMatch[1],
+                user.id,
+                'draft',
+            ]);
 
             if (result.changes === 0) {
-                return { status: 404, data: { error: 'Label not found or cannot be deleted (only draft labels can be deleted)' } };
+                return {
+                    status: 404,
+                    data: { error: 'Label not found or cannot be deleted (only draft labels can be deleted)' },
+                };
             }
 
             return { status: 200, data: { message: 'Label deleted' } };
@@ -341,7 +458,7 @@ export async function shippingLabelsRouter(ctx) {
         try {
             const addresses = await query.all(
                 'SELECT * FROM return_addresses WHERE user_id = ? ORDER BY is_default DESC, created_at DESC',
-                [user.id]
+                [user.id],
             );
 
             return { status: 200, data: { addresses } };
@@ -354,7 +471,18 @@ export async function shippingLabelsRouter(ctx) {
     // POST /api/shipping-labels/addresses - Create return address
     if (method === 'POST' && path === '/addresses') {
         try {
-            const { name, company, street1, street2, city, state, zip, country = 'US', phone, is_default = false } = body;
+            const {
+                name,
+                company,
+                street1,
+                street2,
+                city,
+                state,
+                zip,
+                country = 'US',
+                phone,
+                is_default = false,
+            } = body;
 
             if (!name || !street1 || !city || !state || !zip) {
                 return { status: 400, data: { error: 'Name, street, city, state, and zip are required' } };
@@ -366,10 +494,13 @@ export async function shippingLabelsRouter(ctx) {
                 await query.run('UPDATE return_addresses SET is_default = FALSE WHERE user_id = ?', [user.id]);
             }
 
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO return_addresses (id, user_id, name, company, street1, street2, city, state, zip, country, phone, is_default)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `, [id, user.id, name, company, street1, street2, city, state, zip, country, phone, is_default ? 1 : 0]);
+            `,
+                [id, user.id, name, company, street1, street2, city, state, zip, country, phone, is_default ? 1 : 0],
+            );
 
             return { status: 201, data: { message: 'Address created', id } };
         } catch (error) {
@@ -383,7 +514,10 @@ export async function shippingLabelsRouter(ctx) {
     if (method === 'PATCH' && patchAddrMatch) {
         try {
             const id = patchAddrMatch[1];
-            const existing = await query.get('SELECT id FROM return_addresses WHERE id = ? AND user_id = ?', [id, user.id]);
+            const existing = await query.get('SELECT id FROM return_addresses WHERE id = ? AND user_id = ?', [
+                id,
+                user.id,
+            ]);
             if (!existing) {
                 return { status: 404, data: { error: 'Address not found' } };
             }
@@ -391,7 +525,7 @@ export async function shippingLabelsRouter(ctx) {
             const updates = [];
             const params = [];
 
-            ['name', 'company', 'street1', 'street2', 'city', 'state', 'zip', 'country', 'phone'].forEach(field => {
+            ['name', 'company', 'street1', 'street2', 'city', 'state', 'zip', 'country', 'phone'].forEach((field) => {
                 if (body[field] !== undefined) {
                     updates.push(`${field} = ?`);
                     params.push(body[field]);
@@ -421,10 +555,10 @@ export async function shippingLabelsRouter(ctx) {
     const deleteAddrMatch = path.match(/^\/addresses\/([a-f0-9-]+)$/i);
     if (method === 'DELETE' && deleteAddrMatch) {
         try {
-            const result = await query.run(
-                'DELETE FROM return_addresses WHERE id = ? AND user_id = ?',
-                [deleteAddrMatch[1], user.id]
-            );
+            const result = await query.run('DELETE FROM return_addresses WHERE id = ? AND user_id = ?', [
+                deleteAddrMatch[1],
+                user.id,
+            ]);
 
             if (result.changes === 0) {
                 return { status: 404, data: { error: 'Address not found' } };
@@ -446,7 +580,7 @@ export async function shippingLabelsRouter(ctx) {
         try {
             const batches = await query.all(
                 'SELECT * FROM label_batches WHERE user_id = ? ORDER BY created_at DESC LIMIT 50',
-                [user.id]
+                [user.id],
             );
 
             return { status: 200, data: { batches } };
@@ -467,17 +601,21 @@ export async function shippingLabelsRouter(ctx) {
 
             const id = uuidv4();
 
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO label_batches (id, user_id, name, total_labels)
                 VALUES (?, ?, ?, ?)
-            `, [id, user.id, name || `Batch ${new Date().toLocaleDateString()}`, label_ids.length]);
+            `,
+                [id, user.id, name || `Batch ${new Date().toLocaleDateString()}`, label_ids.length],
+            );
 
             // Associate labels with batch
             for (const labelId of label_ids) {
-                await query.run(
-                    'UPDATE shipping_labels SET batch_id = ? WHERE id = ? AND user_id = ?',
-                    [id, labelId, user.id]
-                );
+                await query.run('UPDATE shipping_labels SET batch_id = ? WHERE id = ? AND user_id = ?', [
+                    id,
+                    labelId,
+                    user.id,
+                ]);
             }
 
             return { status: 201, data: { message: 'Batch created', id } };
@@ -490,47 +628,44 @@ export async function shippingLabelsRouter(ctx) {
     // POST /api/shipping-labels/batches/:id/process - Process batch
     const processBatchMatch = path.match(/^\/batches\/([a-f0-9-]+)\/process$/i);
     if (method === 'POST' && processBatchMatch) {
-      try {
-        const batchId = processBatchMatch[1];
+        try {
+            const batchId = processBatchMatch[1];
 
-        const batch = await query.get(
-            'SELECT * FROM label_batches WHERE id = ? AND user_id = ?',
-            [batchId, user.id]
-        );
+            const batch = await query.get('SELECT * FROM label_batches WHERE id = ? AND user_id = ?', [
+                batchId,
+                user.id,
+            ]);
 
-        if (!batch) {
-            return { status: 404, data: { error: 'Batch not found' } };
-        }
+            if (!batch) {
+                return { status: 404, data: { error: 'Batch not found' } };
+            }
 
-        await query.run(
-            "UPDATE label_batches SET status = 'processing' WHERE id = ?",
-            [batchId]
-        );
+            await query.run("UPDATE label_batches SET status = 'processing' WHERE id = ?", [batchId]);
 
-        const labels = await query.all(
-            "SELECT * FROM shipping_labels WHERE batch_id = ? AND user_id = ? AND status = 'draft'",
-            [batchId, user.id]
-        );
+            const labels = await query.all(
+                "SELECT * FROM shipping_labels WHERE batch_id = ? AND user_id = ? AND status = 'draft'",
+                [batchId, user.id],
+            );
 
-        let completed = 0;
-        let failed = 0;
-        let totalPostage = 0;
+            let completed = 0;
+            let failed = 0;
+            let totalPostage = 0;
 
-        for (const label of labels) {
-            try {
-                let postage = label.postage_cost || 0;
+            for (const label of labels) {
+                try {
+                    let postage = label.postage_cost || 0;
 
-                if (process.env.EASYPOST_API_KEY && label.external_shipment_id && label.rate_id) {
-                    const purchase = await buyEasyPostShipment(label.external_shipment_id, label.rate_id, user);
-                    if (purchase.status !== 200) {
-                        throw new Error(purchase.data.detail || purchase.data.error || 'EasyPost purchase failed');
-                    }
-                    const shipment = purchase.data.shipment;
-                    const purchasedRate = Number.parseFloat(shipment.selected_rate?.rate);
-                    if (Number.isFinite(purchasedRate)) postage = purchasedRate;
-                    const postageLabel = shipment.postage_label || {};
-                    await query.run(
-                        `UPDATE shipping_labels
+                    if (process.env.EASYPOST_API_KEY && label.external_shipment_id && label.rate_id) {
+                        const purchase = await buyEasyPostShipment(label.external_shipment_id, label.rate_id, user);
+                        if (purchase.status !== 200) {
+                            throw new Error(purchase.data.detail || purchase.data.error || 'EasyPost purchase failed');
+                        }
+                        const shipment = purchase.data.shipment;
+                        const purchasedRate = Number.parseFloat(shipment.selected_rate?.rate);
+                        if (Number.isFinite(purchasedRate)) postage = purchasedRate;
+                        const postageLabel = shipment.postage_label || {};
+                        await query.run(
+                            `UPDATE shipping_labels
                          SET status = 'purchased',
                              purchased_at = CURRENT_TIMESTAMP,
                              tracking_number = ?,
@@ -539,55 +674,58 @@ export async function shippingLabelsRouter(ctx) {
                              total_cost = ?,
                              currency = ?
                          WHERE id = ? AND user_id = ?`,
-                        [
-                            shipment.tracking_code || null,
-                            postageLabel.label_url || null,
-                            postageLabel.id || null,
-                            postage,
-                            shipment.selected_rate?.currency || label.currency || 'USD',
-                            label.id,
-                            user.id
-                        ]
-                    );
-                } else {
-                    await query.run(
-                        "UPDATE shipping_labels SET status = 'purchased', purchased_at = CURRENT_TIMESTAMP, total_cost = COALESCE(postage_cost, 0) + COALESCE(insurance_cost, 0) WHERE id = ? AND user_id = ?",
-                        [label.id, user.id]
-                    );
+                            [
+                                shipment.tracking_code || null,
+                                postageLabel.label_url || null,
+                                postageLabel.id || null,
+                                postage,
+                                shipment.selected_rate?.currency || label.currency || 'USD',
+                                label.id,
+                                user.id,
+                            ],
+                        );
+                    } else {
+                        await query.run(
+                            "UPDATE shipping_labels SET status = 'purchased', purchased_at = CURRENT_TIMESTAMP, total_cost = COALESCE(postage_cost, 0) + COALESCE(insurance_cost, 0) WHERE id = ? AND user_id = ?",
+                            [label.id, user.id],
+                        );
+                    }
+
+                    totalPostage += postage;
+                    completed++;
+                } catch (error) {
+                    await query.run("UPDATE shipping_labels SET status = 'draft' WHERE id = ? AND user_id = ?", [
+                        label.id,
+                        user.id,
+                    ]);
+                    failed++;
                 }
-
-                totalPostage += postage;
-                completed++;
-            } catch (error) {
-                await query.run(
-                    "UPDATE shipping_labels SET status = 'draft' WHERE id = ? AND user_id = ?",
-                    [label.id, user.id]
-                );
-                failed++;
             }
-        }
 
-        const finalStatus = failed === labels.length ? 'failed' : (failed > 0 ? 'partial' : 'completed');
+            const finalStatus = failed === labels.length ? 'failed' : failed > 0 ? 'partial' : 'completed';
 
-        await query.run(`
+            await query.run(
+                `
             UPDATE label_batches
             SET status = ?, completed_labels = ?, failed_labels = ?, total_postage = ?, completed_at = CURRENT_TIMESTAMP
             WHERE id = ?
-        `, [finalStatus, completed, failed, totalPostage, batchId]);
+        `,
+                [finalStatus, completed, failed, totalPostage, batchId],
+            );
 
-        return {
-            status: 200,
-            data: {
-                message: `Batch processed: ${completed} completed, ${failed} failed`,
-                completed,
-                failed,
-                total_postage: totalPostage
-            }
-        };
-      } catch (error) {
-          logger.error('[ShippingLabels] Error processing label batch', user?.id, { detail: error.message });
-          return { status: 500, data: { error: 'Internal server error' } };
-      }
+            return {
+                status: 200,
+                data: {
+                    message: `Batch processed: ${completed} completed, ${failed} failed`,
+                    completed,
+                    failed,
+                    total_postage: totalPostage,
+                },
+            };
+        } catch (error) {
+            logger.error('[ShippingLabels] Error processing label batch', user?.id, { detail: error.message });
+            return { status: 500, data: { error: 'Internal server error' } };
+        }
     }
 
     // ============================================
@@ -597,9 +735,7 @@ export async function shippingLabelsRouter(ctx) {
     // POST /api/shipping-labels/rates - Get shipping rates
     if (method === 'POST' && path === '/rates') {
         try {
-            const {
-                weight_oz, from_zip, to_zip
-            } = body || {};
+            const { weight_oz, from_zip, to_zip } = body || {};
 
             if (!positiveNumber(weight_oz) || !from_zip || !to_zip) {
                 return { status: 400, data: { error: 'Weight, from_zip, and to_zip are required' } };
@@ -610,8 +746,8 @@ export async function shippingLabelsRouter(ctx) {
                     status: 503,
                     data: {
                         error: 'EasyPost not configured',
-                        message: 'Set EASYPOST_API_KEY in .env to enable real shipping rates.'
-                    }
+                        message: 'Set EASYPOST_API_KEY in .env to enable real shipping rates.',
+                    },
                 };
             }
 
@@ -637,11 +773,14 @@ export async function shippingLabelsRouter(ctx) {
 
             let printed = 0;
             for (const labelId of label_ids) {
-                const result = await query.run(`
+                const result = await query.run(
+                    `
                     UPDATE shipping_labels
                     SET printed_at = NOW(), label_format = ?, status = CASE WHEN status = 'purchased' THEN 'printed' ELSE status END
                     WHERE id = ? AND user_id = ?
-                `, [format, labelId, user.id]);
+                `,
+                    [format, labelId, user.id],
+                );
                 if (result.changes > 0) printed++;
             }
 
@@ -650,8 +789,8 @@ export async function shippingLabelsRouter(ctx) {
                 data: {
                     message: `${printed} label(s) marked as printed`,
                     printed,
-                    format
-                }
+                    format,
+                },
             };
         } catch (error) {
             logger.error('[ShippingLabels] Error marking labels as printed', user?.id, { detail: error.message });
@@ -672,7 +811,7 @@ export async function shippingLabelsRouter(ctx) {
             const placeholders = ids.map(() => '?').join(',');
             const labels = await query.all(
                 `SELECT id, label_url, label_data, carrier, tracking_number FROM shipping_labels WHERE id IN (${placeholders}) AND user_id = ?`,
-                [...ids, user.id]
+                [...ids, user.id],
             );
 
             return {
@@ -681,8 +820,8 @@ export async function shippingLabelsRouter(ctx) {
                     labels,
                     total: labels.length,
                     format,
-                    download_ready: labels.every(l => l.label_url || l.label_data)
-                }
+                    download_ready: labels.every((l) => l.label_url || l.label_data),
+                },
             };
         } catch (error) {
             logger.error('[ShippingLabels] Error fetching batch download info', user?.id, { detail: error.message });
@@ -700,14 +839,17 @@ export async function shippingLabelsRouter(ctx) {
             }
 
             const placeholders = label_ids.map(() => '?').join(',');
-            const labels = await query.all(`
+            const labels = await query.all(
+                `
                 SELECT id, to_name, to_company, to_street1, to_street2, to_city, to_state, to_zip, to_country,
                        from_name, from_company, from_street1, from_city, from_state, from_zip,
                        carrier, service_type, tracking_number, weight_oz, total_cost, label_url, label_data,
                        created_at
                 FROM shipping_labels
                 WHERE id IN (${placeholders}) AND user_id = ?
-            `, [...label_ids, user.id]);
+            `,
+                [...label_ids, user.id],
+            );
 
             if (labels.length === 0) {
                 return { status: 404, data: { error: 'No labels found' } };
@@ -717,7 +859,7 @@ export async function shippingLabelsRouter(ctx) {
             const formatSettings = {
                 thermal_4x6: { width: 4, height: 6, unit: 'in' },
                 letter_8x11: { width: 8.5, height: 11, unit: 'in' },
-                a4: { width: 210, height: 297, unit: 'mm' }
+                a4: { width: 210, height: 297, unit: 'mm' },
             };
 
             const settings = formatSettings[format] || formatSettings.thermal_4x6;
@@ -727,7 +869,7 @@ export async function shippingLabelsRouter(ctx) {
                 format,
                 settings,
                 layout, // 'single' = one label per page, 'grid' = multiple per page
-                labels: labels.map(label => ({
+                labels: labels.map((label) => ({
                     id: label.id,
                     recipient: {
                         name: label.to_name,
@@ -737,7 +879,7 @@ export async function shippingLabelsRouter(ctx) {
                         city: label.to_city,
                         state: label.to_state,
                         zip: label.to_zip,
-                        country: label.to_country || 'US'
+                        country: label.to_country || 'US',
                     },
                     sender: {
                         name: label.from_name,
@@ -745,39 +887,42 @@ export async function shippingLabelsRouter(ctx) {
                         street1: label.from_street1,
                         city: label.from_city,
                         state: label.from_state,
-                        zip: label.from_zip
+                        zip: label.from_zip,
                     },
                     shipping: {
                         carrier: label.carrier,
                         service: label.service_type,
                         tracking: label.tracking_number,
                         weight: label.weight_oz,
-                        cost: label.total_cost
+                        cost: label.total_cost,
                     },
                     label_url: label.label_url,
                     label_data: label.label_data,
-                    created_at: label.created_at
+                    created_at: label.created_at,
                 })),
                 generated_at: new Date().toISOString(),
                 total_labels: labels.length,
-                total_postage: labels.reduce((sum, l) => sum + (l.total_cost || 0), 0)
+                total_postage: labels.reduce((sum, l) => sum + (l.total_cost || 0), 0),
             };
 
             // Mark labels as part of a batch PDF
             const batchId = `pdf-${Date.now()}`;
-            await query.run(`
+            await query.run(
+                `
                 UPDATE shipping_labels
                 SET batch_id = ?, updated_at = NOW()
                 WHERE id IN (${placeholders}) AND user_id = ?
-            `, [batchId, ...label_ids, user.id]);
+            `,
+                [batchId, ...label_ids, user.id],
+            );
 
             return {
                 status: 200,
                 data: {
                     pdf_data: pdfData,
                     batch_id: batchId,
-                    message: `PDF data generated for ${labels.length} label(s)`
-                }
+                    message: `PDF data generated for ${labels.length} label(s)`,
+                },
             };
         } catch (error) {
             logger.error('[ShippingLabels] Error generating PDF data', user?.id, { detail: error.message });
@@ -793,30 +938,50 @@ export async function shippingLabelsRouter(ctx) {
 
         try {
             const stats = {
-                total_labels: Number((await query.get(
-                    'SELECT COUNT(*) as count FROM shipping_labels WHERE user_id = ? AND created_at BETWEEN ? AND ?',
-                    [user.id, dateStart, dateEnd + 'T23:59:59']
-                ))?.count) || 0,
-                printed_labels: Number((await query.get(
-                    'SELECT COUNT(*) as count FROM shipping_labels WHERE user_id = ? AND printed_at IS NOT NULL AND created_at BETWEEN ? AND ?',
-                    [user.id, dateStart, dateEnd + 'T23:59:59']
-                ))?.count) || 0,
-                shipped_labels: Number((await query.get(
-                    "SELECT COUNT(*) as count FROM shipping_labels WHERE user_id = ? AND status = 'shipped' AND created_at BETWEEN ? AND ?",
-                    [user.id, dateStart, dateEnd + 'T23:59:59']
-                ))?.count) || 0,
-                total_postage: Number((await query.get(
-                    'SELECT SUM(total_cost) as total FROM shipping_labels WHERE user_id = ? AND created_at BETWEEN ? AND ?',
-                    [user.id, dateStart, dateEnd + 'T23:59:59']
-                ))?.total) || 0,
+                total_labels:
+                    Number(
+                        (
+                            await query.get(
+                                'SELECT COUNT(*) as count FROM shipping_labels WHERE user_id = ? AND created_at BETWEEN ? AND ?',
+                                [user.id, dateStart, dateEnd + 'T23:59:59'],
+                            )
+                        )?.count,
+                    ) || 0,
+                printed_labels:
+                    Number(
+                        (
+                            await query.get(
+                                'SELECT COUNT(*) as count FROM shipping_labels WHERE user_id = ? AND printed_at IS NOT NULL AND created_at BETWEEN ? AND ?',
+                                [user.id, dateStart, dateEnd + 'T23:59:59'],
+                            )
+                        )?.count,
+                    ) || 0,
+                shipped_labels:
+                    Number(
+                        (
+                            await query.get(
+                                "SELECT COUNT(*) as count FROM shipping_labels WHERE user_id = ? AND status = 'shipped' AND created_at BETWEEN ? AND ?",
+                                [user.id, dateStart, dateEnd + 'T23:59:59'],
+                            )
+                        )?.count,
+                    ) || 0,
+                total_postage:
+                    Number(
+                        (
+                            await query.get(
+                                'SELECT SUM(total_cost) as total FROM shipping_labels WHERE user_id = ? AND created_at BETWEEN ? AND ?',
+                                [user.id, dateStart, dateEnd + 'T23:59:59'],
+                            )
+                        )?.total,
+                    ) || 0,
                 by_carrier: await query.all(
                     'SELECT carrier, COUNT(*) as count, SUM(total_cost) as cost FROM shipping_labels WHERE user_id = ? AND created_at BETWEEN ? AND ? GROUP BY carrier',
-                    [user.id, dateStart, dateEnd + 'T23:59:59']
+                    [user.id, dateStart, dateEnd + 'T23:59:59'],
                 ),
                 by_status: await query.all(
                     'SELECT status, COUNT(*) as count FROM shipping_labels WHERE user_id = ? AND created_at BETWEEN ? AND ? GROUP BY status',
-                    [user.id, dateStart, dateEnd + 'T23:59:59']
-                )
+                    [user.id, dateStart, dateEnd + 'T23:59:59'],
+                ),
             };
 
             return { status: 200, data: { stats } };
@@ -833,7 +998,13 @@ export async function shippingLabelsRouter(ctx) {
             return { status: 400, data: { error: 'from_zip, to_zip, and weight_oz are required' } };
         }
         if (!process.env.EASYPOST_API_KEY) {
-            return { status: 503, data: { error: 'EasyPost not configured', message: 'Set EASYPOST_API_KEY in .env to enable EasyPost rates.' } };
+            return {
+                status: 503,
+                data: {
+                    error: 'EasyPost not configured',
+                    message: 'Set EASYPOST_API_KEY in .env to enable EasyPost rates.',
+                },
+            };
         }
         try {
             return await fetchEasyPostRates(body, user);
@@ -850,7 +1021,13 @@ export async function shippingLabelsRouter(ctx) {
             return { status: 400, data: { error: 'shipment_id and rate_id are required' } };
         }
         if (!process.env.EASYPOST_API_KEY) {
-            return { status: 503, data: { error: 'EasyPost not configured', message: 'Set EASYPOST_API_KEY in .env to enable EasyPost label purchase.' } };
+            return {
+                status: 503,
+                data: {
+                    error: 'EasyPost not configured',
+                    message: 'Set EASYPOST_API_KEY in .env to enable EasyPost label purchase.',
+                },
+            };
         }
         try {
             const purchase = await buyEasyPostShipment(shipment_id, rate_id, user);
@@ -866,23 +1043,33 @@ export async function shippingLabelsRouter(ctx) {
                     total_cost, currency, external_label_id, external_shipment_id, rate_id, status, purchased_at
                 )
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'purchased', NOW())`,
-                [labelId, user.id, order_id || null, sale_id || null,
-                 shipment.selected_rate?.carrier || 'EasyPost',
-                 shipment.selected_rate?.service || null,
-                 tracking, postageLabel.label_url || null, Number.isFinite(cost) ? cost : 0,
-                 shipment.selected_rate?.currency || 'USD',
-                 postageLabel.id || null,
-                 shipment.id || shipment_id,
-                 rate_id]
+                [
+                    labelId,
+                    user.id,
+                    order_id || null,
+                    sale_id || null,
+                    shipment.selected_rate?.carrier || 'EasyPost',
+                    shipment.selected_rate?.service || null,
+                    tracking,
+                    postageLabel.label_url || null,
+                    Number.isFinite(cost) ? cost : 0,
+                    shipment.selected_rate?.currency || 'USD',
+                    postageLabel.id || null,
+                    shipment.id || shipment_id,
+                    rate_id,
+                ],
             );
-            return { status: 200, data: {
-                label_id: labelId,
-                label_url: postageLabel.label_url || null,
-                tracking_number: tracking,
-                carrier: shipment.selected_rate?.carrier,
-                service: shipment.selected_rate?.service,
-                cost: Number.isFinite(cost) ? cost : 0
-            }};
+            return {
+                status: 200,
+                data: {
+                    label_id: labelId,
+                    label_url: postageLabel.label_url || null,
+                    tracking_number: tracking,
+                    carrier: shipment.selected_rate?.carrier,
+                    service: shipment.selected_rate?.service,
+                    cost: Number.isFinite(cost) ? cost : 0,
+                },
+            };
         } catch (error) {
             logger.error('[EasyPost] Error purchasing label', user?.id, { detail: error?.message });
             return { status: 500, data: { error: 'Failed to purchase EasyPost label' } };
@@ -897,10 +1084,12 @@ export async function shippingLabelsRouter(ctx) {
             return { status: 503, data: { error: 'EasyPost not configured' } };
         }
         try {
-            const auth = Buffer.from(`${process.env.EASYPOST_API_KEY}:`).toString('base64');
-            const res = await fetch(`https://api.easypost.com/v2/trackers?tracking_code=${encodeURIComponent(trackingCode)}`, {
-                headers: { 'Authorization': `Basic ${auth}` }
-            });
+            const res = await fetch(
+                `https://api.easypost.com/v2/trackers?tracking_code=${encodeURIComponent(trackingCode)}`,
+                {
+                    headers: { Authorization: getEasyPostAuthHeader() },
+                },
+            );
             if (!res.ok) {
                 return { status: 502, data: { error: 'EasyPost tracking error' } };
             }

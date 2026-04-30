@@ -1,138 +1,158 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VaultLister REST API — Full Reference Documentation</title>
-    <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.32.1/swagger-ui.css" integrity="sha384-F7uqyyVZgBbuOv+8gNy6ZGJB8Rf12CczPWm130Pxrau0cyZlj1Dl18cDOWpQSrGh" crossorigin="anonymous">
-    <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png">
-    <style>
-        html {
-            box-sizing: border-box;
-            overflow-y: scroll;
-        }
-        *, *:before, *:after {
-            box-sizing: inherit;
-        }
-        body {
-            margin: 0;
-            background: #ffffff;
-            color: #111827;
-            font-family: Inter, system-ui, -apple-system, sans-serif;
-        }
-        .swagger-ui { color: #111827; }
-        .swagger-ui .topbar {
-            background-color: #18181B;
-        }
-        .swagger-ui .topbar .download-url-wrapper .select-label {
-            color: #fff;
-        }
-        .swagger-ui .info .title {
-            color: #18181B;
-        }
-        .swagger-ui .info .title small.version-stamp {
-            background-color: #f59e0b;
-        }
-        .swagger-ui .opblock.opblock-post {
-            border-color: #10b981;
-            background: rgba(16, 185, 129, 0.1);
-        }
-        .swagger-ui .opblock.opblock-post .opblock-summary-method {
-            background: #10b981;
-        }
-        .swagger-ui .opblock.opblock-get {
-            border-color: #f59e0b;
-            background: rgba(245, 158, 11, 0.1);
-        }
-        .swagger-ui .opblock.opblock-get .opblock-summary-method {
-            background: #f59e0b;
-        }
-        .swagger-ui .opblock.opblock-put {
-            border-color: #f59e0b;
-            background: rgba(245, 158, 11, 0.1);
-        }
-        .swagger-ui .opblock.opblock-put .opblock-summary-method {
-            background: #f59e0b;
-        }
-        .swagger-ui .opblock.opblock-delete {
-            border-color: #ef4444;
-            background: rgba(239, 68, 68, 0.1);
-        }
-        .swagger-ui .opblock.opblock-delete .opblock-summary-method {
-            background: #ef4444;
-        }
-        .swagger-ui .btn.execute {
-            background-color: #f59e0b;
-            border-color: #f59e0b;
-        }
-        .swagger-ui .btn.execute:hover {
-            background-color: #d97706;
-        }
-        /* Custom header */
-        .api-header {
-            background: #ffffff;
-            color: #111827;
-            padding: 2rem;
-            text-align: center;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        .api-header h1 {
-            margin: 0 0 0.5rem 0;
-            font-size: 2rem;
-            color: #111827;
-        }
-        .api-header p {
-            margin: 0;
-            color: #595959;
-        }
-        .api-header a {
-            color: #d97706;
-            text-decoration: none;
-        }
-        .api-header a:hover {
-            text-decoration: underline;
-            color: #b45309;
-        }
-    </style>
-</head>
-<body>
-<a href="#main-content" class="skip-link">Skip to main content</a>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>VaultLister REST API — Full Reference Documentation</title>
+        <link
+            rel="stylesheet"
+            type="text/css"
+            href="https://unpkg.com/swagger-ui-dist@5.32.1/swagger-ui.css"
+            integrity="sha384-F7uqyyVZgBbuOv+8gNy6ZGJB8Rf12CczPWm130Pxrau0cyZlj1Dl18cDOWpQSrGh"
+            crossorigin="anonymous"
+        />
+        <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png" />
+        <style>
+            html {
+                box-sizing: border-box;
+                overflow-y: scroll;
+            }
+            *,
+            *:before,
+            *:after {
+                box-sizing: inherit;
+            }
+            body {
+                margin: 0;
+                background: #ffffff;
+                color: #111827;
+                font-family:
+                    Inter,
+                    system-ui,
+                    -apple-system,
+                    sans-serif;
+            }
+            .swagger-ui {
+                color: #111827;
+            }
+            .swagger-ui .topbar {
+                background-color: #18181b;
+            }
+            .swagger-ui .topbar .download-url-wrapper .select-label {
+                color: #fff;
+            }
+            .swagger-ui .info .title {
+                color: #18181b;
+            }
+            .swagger-ui .info .title small.version-stamp {
+                background-color: #f59e0b;
+            }
+            .swagger-ui .opblock.opblock-post {
+                border-color: #10b981;
+                background: rgba(16, 185, 129, 0.1);
+            }
+            .swagger-ui .opblock.opblock-post .opblock-summary-method {
+                background: #10b981;
+            }
+            .swagger-ui .opblock.opblock-get {
+                border-color: #f59e0b;
+                background: rgba(245, 158, 11, 0.1);
+            }
+            .swagger-ui .opblock.opblock-get .opblock-summary-method {
+                background: #f59e0b;
+            }
+            .swagger-ui .opblock.opblock-put {
+                border-color: #f59e0b;
+                background: rgba(245, 158, 11, 0.1);
+            }
+            .swagger-ui .opblock.opblock-put .opblock-summary-method {
+                background: #f59e0b;
+            }
+            .swagger-ui .opblock.opblock-delete {
+                border-color: #ef4444;
+                background: rgba(239, 68, 68, 0.1);
+            }
+            .swagger-ui .opblock.opblock-delete .opblock-summary-method {
+                background: #ef4444;
+            }
+            .swagger-ui .btn.execute {
+                background-color: #f59e0b;
+                border-color: #f59e0b;
+            }
+            .swagger-ui .btn.execute:hover {
+                background-color: #d97706;
+            }
+            /* Custom header */
+            .api-header {
+                background: #ffffff;
+                color: #111827;
+                padding: 2rem;
+                text-align: center;
+                border-bottom: 1px solid #e5e7eb;
+            }
+            .api-header h1 {
+                margin: 0 0 0.5rem 0;
+                font-size: 2rem;
+                color: #111827;
+            }
+            .api-header p {
+                margin: 0;
+                color: #595959;
+            }
+            .api-header a {
+                color: #d97706;
+                text-decoration: none;
+            }
+            .api-header a:hover {
+                text-decoration: underline;
+                color: #b45309;
+            }
+        </style>
+    </head>
+    <body>
+        <a href="#main-content" class="skip-link">Skip to main content</a>
 
-<main id="main-content">
-    <div class="api-header">
-        <h1>VaultLister API</h1>
-        <p>Interactive API documentation &bull; <a href="/">Back to App</a> &bull; <a href="/api-docs/openapi.yaml" download>Download OpenAPI Spec</a></p>
-    </div>
-    <div id="swagger-ui"></div>
+        <main id="main-content">
+            <div class="api-header">
+                <h1>VaultLister API</h1>
+                <p>
+                    Interactive API documentation &bull; <a href="/">Back to App</a> &bull;
+                    <a href="/api-docs/openapi.yaml" download>Download OpenAPI Spec</a>
+                </p>
+            </div>
+            <div id="swagger-ui"></div>
 
-    <script src="https://unpkg.com/swagger-ui-dist@5.32.1/swagger-ui-bundle.js" integrity="sha384-SlhRXPBpOIwNajIYH/STl3rsa6P/qCR82bZVQk1pDmWr/+Mh9g/RhaUJ1JBmM99R" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/swagger-ui-dist@5.32.1/swagger-ui-standalone-preset.js" integrity="sha384-49fpFaVrAWI/qdgl9Vv5E/4NXxRUiJX5vGuLws1NUpTWGtEqzWEx8gHTw2UTehFK" crossorigin="anonymous"></script>
-    <script>
-        window.onload = function() {
-            window.ui = SwaggerUIBundle({
-                url: "/api-docs/openapi.yaml",
-                dom_id: '#swagger-ui',
-                deepLinking: true,
-                presets: [
-                    SwaggerUIBundle.presets.apis,
-                    SwaggerUIStandalonePreset
-                ],
-                plugins: [
-                    SwaggerUIBundle.plugins.DownloadUrl
-                ],
-                layout: "StandaloneLayout",
-                persistAuthorization: true,
-                displayRequestDuration: true,
-                filter: true,
-                showExtensions: true,
-                showCommonExtensions: true,
-                syntaxHighlight: {
-                    activate: true,
-                    theme: "monokai"
-                }
-            });
-        };
-    </script>
-</main>
-</body>
+            <script
+                src="https://unpkg.com/swagger-ui-dist@5.32.1/swagger-ui-bundle.js"
+                integrity="sha384-SlhRXPBpOIwNajIYH/STl3rsa6P/qCR82bZVQk1pDmWr/+Mh9g/RhaUJ1JBmM99R"
+                crossorigin="anonymous"
+            ></script>
+            <script
+                src="https://unpkg.com/swagger-ui-dist@5.32.1/swagger-ui-standalone-preset.js"
+                integrity="sha384-49fpFaVrAWI/qdgl9Vv5E/4NXxRUiJX5vGuLws1NUpTWGtEqzWEx8gHTw2UTehFK"
+                crossorigin="anonymous"
+            ></script>
+            <script>
+                window.onload = function () {
+                    window.ui = SwaggerUIBundle({
+                        url: '/api-docs/openapi.yaml',
+                        dom_id: '#swagger-ui',
+                        deepLinking: true,
+                        presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+                        plugins: [SwaggerUIBundle.plugins.DownloadUrl],
+                        layout: 'StandaloneLayout',
+                        persistAuthorization: true,
+                        displayRequestDuration: true,
+                        filter: true,
+                        showExtensions: true,
+                        showCommonExtensions: true,
+                        syntaxHighlight: {
+                            activate: true,
+                            theme: 'monokai',
+                        },
+                    });
+                };
+            </script>
+        </main>
+    </body>
 </html>

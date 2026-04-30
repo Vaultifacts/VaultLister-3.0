@@ -4,16 +4,13 @@
 import { query } from '../db/database.js';
 import { safeJsonParse } from '../shared/utils.js';
 
-
 export async function settingsRouter(ctx) {
     const { method, path, body, user } = ctx;
 
     // GET /api/settings/announcement - Public: fetch active announcement
     if (method === 'GET' && path === '/announcement') {
         try {
-            const row = await query.get(
-                `SELECT value FROM app_settings WHERE key = 'announcement' LIMIT 1`
-            );
+            const row = await query.get(`SELECT value FROM app_settings WHERE key = 'announcement' LIMIT 1`);
             if (!row || !row.value) {
                 return { status: 200, data: { announcement: null } };
             }
@@ -43,7 +40,7 @@ export async function settingsRouter(ctx) {
             `INSERT INTO app_settings (key, value, updated_at)
              VALUES ('announcement', ?, CURRENT_TIMESTAMP)
              ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
-            [value]
+            [value],
         );
         return { status: 200, data: { success: true, announcement: { text: text.trim(), color: color || 'primary' } } };
     }

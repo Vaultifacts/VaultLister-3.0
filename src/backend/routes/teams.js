@@ -5,7 +5,6 @@ import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import { safeJsonParse } from '../shared/utils.js';
 
-
 // Role hierarchy and permissions
 const ROLE_HIERARCHY = ['viewer', 'member', 'manager', 'admin', 'owner'];
 
@@ -16,7 +15,7 @@ const ROLE_PERMISSIONS = {
         view_sales: true,
         view_financials: true,
         manage_team: true,
-        delete_team: true
+        delete_team: true,
     },
     admin: {
         view_inventory: true,
@@ -24,7 +23,7 @@ const ROLE_PERMISSIONS = {
         view_sales: true,
         view_financials: true,
         manage_team: true,
-        delete_team: false
+        delete_team: false,
     },
     manager: {
         view_inventory: true,
@@ -32,7 +31,7 @@ const ROLE_PERMISSIONS = {
         view_sales: true,
         view_financials: false,
         manage_team: false,
-        delete_team: false
+        delete_team: false,
     },
     member: {
         view_inventory: true,
@@ -40,7 +39,7 @@ const ROLE_PERMISSIONS = {
         view_sales: false,
         view_financials: false,
         manage_team: false,
-        delete_team: false
+        delete_team: false,
     },
     viewer: {
         view_inventory: true,
@@ -48,15 +47,15 @@ const ROLE_PERMISSIONS = {
         view_sales: false,
         view_financials: false,
         manage_team: false,
-        delete_team: false
-    }
+        delete_team: false,
+    },
 };
 
 const TIER_LIMITS = {
     free: { max_members: 3, max_teams: 1 },
     starter: { max_members: 5, max_teams: 3 },
     pro: { max_members: 15, max_teams: 10 },
-    enterprise: { max_members: 100, max_teams: 50 }
+    enterprise: { max_members: 100, max_teams: 50 },
 };
 
 export async function teamsRouter(ctx) {
@@ -65,18 +64,21 @@ export async function teamsRouter(ctx) {
     // GET /api/teams - List user's teams
     if (method === 'GET' && (path === '/' || path === '')) {
         try {
-            const teams = await query.all(`
+            const teams = await query.all(
+                `
                 SELECT t.*, tm.role as user_role,
                        (SELECT COUNT(*) FROM team_members WHERE team_id = t.id AND status = 'active') as member_count
                 FROM teams t
                 JOIN team_members tm ON t.id = tm.team_id
                 WHERE tm.user_id = ? AND tm.status = 'active'
                 ORDER BY t.created_at DESC
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             return {
                 status: 200,
-                data: { teams }
+                data: { teams },
             };
         } catch (error) {
             logger.error('[Teams] Error listing teams', user?.id, { detail: error.message });
@@ -91,20 +93,23 @@ export async function teamsRouter(ctx) {
         if (!name || typeof name !== 'string' || name.trim().length < 2) {
             return {
                 status: 400,
-                data: { error: 'Team name must be at least 2 characters' }
+                data: { error: 'Team name must be at least 2 characters' },
             };
         }
         if (name.trim().length > 100) {
             return {
                 status: 400,
-                data: { error: 'Team name must be 100 characters or fewer' }
+                data: { error: 'Team name must be 100 characters or fewer' },
             };
         }
 
         // Check team limit
-        const teamCount = await query.get(`
+        const teamCount = await query.get(
+            `
             SELECT COUNT(*) as count FROM teams WHERE owner_user_id = ?
-        `, [user.id]);
+        `,
+            [user.id],
+        );
 
         const userTier = user.subscription_tier || 'free';
         const limits = TIER_LIMITS[userTier] || TIER_LIMITS.free;
@@ -114,8 +119,8 @@ export async function teamsRouter(ctx) {
                 status: 403,
                 data: {
                     error: 'Team limit reached',
-                    message: `Your ${userTier} plan allows up to ${limits.max_teams} team(s). Upgrade to create more.`
-                }
+                    message: `Your ${userTier} plan allows up to ${limits.max_teams} team(s). Upgrade to create more.`,
+                },
             };
         }
 
@@ -124,16 +129,22 @@ export async function teamsRouter(ctx) {
 
         try {
             // Create team
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO teams (id, name, description, owner_user_id, subscription_tier, max_members)
                 VALUES (?, ?, ?, ?, ?, ?)
-            `, [teamId, name.trim(), description || null, user.id, userTier, limits.max_members]);
+            `,
+                [teamId, name.trim(), description || null, user.id, userTier, limits.max_members],
+            );
 
             // Add owner as team member
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO team_members (id, team_id, user_id, role, status, accepted_at)
                 VALUES (?, ?, ?, 'owner', 'active', NOW())
-            `, [memberId, teamId, user.id]);
+            `,
+                [memberId, teamId, user.id],
+            );
 
             // Log activity
             logTeamActivity(teamId, user.id, 'team_created', 'team', teamId, { name }, ctx.ip);
@@ -147,14 +158,14 @@ export async function teamsRouter(ctx) {
                         name: name.trim(),
                         description,
                         owner_user_id: user.id,
-                        user_role: 'owner'
-                    }
-                }
+                        user_role: 'owner',
+                    },
+                },
             };
         } catch (error) {
             return {
                 status: 500,
-                data: { error: 'Failed to create team' }
+                data: { error: 'Failed to create team' },
             };
         }
     }
@@ -166,10 +177,13 @@ export async function teamsRouter(ctx) {
             const teamId = getTeamMatch[1];
 
             // Check membership
-            const membership = await query.get(`
+            const membership = await query.get(
+                `
                 SELECT role FROM team_members
                 WHERE team_id = ? AND user_id = ? AND status = 'active'
-            `, [teamId, user.id]);
+            `,
+                [teamId, user.id],
+            );
 
             if (!membership) {
                 return { status: 403, data: { error: 'Not a member of this team' } };
@@ -179,18 +193,22 @@ export async function teamsRouter(ctx) {
             const suspendedCheck = checkTeamActive(teamId);
             if (suspendedCheck) return suspendedCheck;
 
-            const team = await query.get(`
+            const team = await query.get(
+                `
                 SELECT t.*,
                        (SELECT COUNT(*) FROM team_members WHERE team_id = t.id AND status = 'active') as member_count
                 FROM teams t WHERE t.id = ?
-            `, [teamId]);
+            `,
+                [teamId],
+            );
 
             if (!team) {
                 return { status: 404, data: { error: 'Team not found' } };
             }
 
             // Get members
-            const members = await query.all(`
+            const members = await query.all(
+                `
                 SELECT tm.*, u.email, u.full_name as user_name
                 FROM team_members tm
                 LEFT JOIN users u ON tm.user_id = u.id
@@ -203,16 +221,21 @@ export async function teamsRouter(ctx) {
                         WHEN 'member' THEN 4
                         WHEN 'viewer' THEN 5
                     END
-            `, [teamId]);
+            `,
+                [teamId],
+            );
 
             // Get pending invitations if user has permission
             let invitations = [];
             if (hasPermission(membership.role, 'manage_team')) {
-                invitations = await query.all(`
+                invitations = await query.all(
+                    `
                     SELECT * FROM team_invitations
                     WHERE team_id = ? AND status = 'pending' AND expires_at > NOW()
                     ORDER BY created_at DESC
-                `, [teamId]);
+                `,
+                    [teamId],
+                );
             }
 
             return {
@@ -221,11 +244,11 @@ export async function teamsRouter(ctx) {
                     team: {
                         ...team,
                         user_role: membership.role,
-                        permissions: ROLE_PERMISSIONS[membership.role]
+                        permissions: ROLE_PERMISSIONS[membership.role],
                     },
                     members,
-                    invitations
-                }
+                    invitations,
+                },
             };
         } catch (error) {
             logger.error('[Teams] Error fetching team details', user?.id, { detail: error.message });
@@ -241,10 +264,13 @@ export async function teamsRouter(ctx) {
             const { name, description, settings } = body;
 
             // Check permission
-            const membership = await query.get(`
+            const membership = await query.get(
+                `
                 SELECT role FROM team_members
                 WHERE team_id = ? AND user_id = ? AND status = 'active'
-            `, [teamId, user.id]);
+            `,
+                [teamId, user.id],
+            );
 
             if (!membership || !hasPermission(membership.role, 'manage_team')) {
                 return { status: 403, data: { error: 'Permission denied' } };
@@ -283,7 +309,7 @@ export async function teamsRouter(ctx) {
 
             return {
                 status: 200,
-                data: { message: 'Team updated successfully' }
+                data: { message: 'Team updated successfully' },
             };
         } catch (error) {
             logger.error('[Teams] Error updating team', user?.id, { detail: error.message });
@@ -310,7 +336,7 @@ export async function teamsRouter(ctx) {
 
             return {
                 status: 200,
-                data: { message: 'Team deleted successfully' }
+                data: { message: 'Team deleted successfully' },
             };
         } catch (error) {
             logger.error('[Teams] Error deleting team', user?.id, { detail: error.message });
@@ -325,7 +351,12 @@ export async function teamsRouter(ctx) {
             const teamId = inviteMatch[1];
             const { email, role = 'member', message } = body;
 
-            if (!email || typeof email !== 'string' || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            if (
+                !email ||
+                typeof email !== 'string' ||
+                email.length > 254 ||
+                !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+            ) {
                 return { status: 400, data: { error: 'Valid email is required' } };
             }
 
@@ -336,10 +367,13 @@ export async function teamsRouter(ctx) {
             }
 
             // Check permission
-            const membership = await query.get(`
+            const membership = await query.get(
+                `
                 SELECT role FROM team_members
                 WHERE team_id = ? AND user_id = ? AND status = 'active'
-            `, [teamId, user.id]);
+            `,
+                [teamId, user.id],
+            );
 
             if (!membership || !hasPermission(membership.role, 'manage_team')) {
                 return { status: 403, data: { error: 'Permission denied' } };
@@ -361,19 +395,28 @@ export async function teamsRouter(ctx) {
 
             // Check team member limit
             const team = await query.get('SELECT max_members FROM teams WHERE id = ?', [teamId]);
-            const memberCount = await query.get(`
+            const memberCount = await query.get(
+                `
                 SELECT COUNT(*) as count FROM team_members WHERE team_id = ? AND status = 'active'
-            `, [teamId]);
+            `,
+                [teamId],
+            );
 
             if (memberCount.count >= (team?.max_members || 5)) {
-                return { status: 403, data: { error: 'Team member limit reached. Upgrade your plan to add more members.' } };
+                return {
+                    status: 403,
+                    data: { error: 'Team member limit reached. Upgrade your plan to add more members.' },
+                };
             }
 
             // Check if already invited or member
-            const existing = await query.get(`
+            const existing = await query.get(
+                `
                 SELECT * FROM team_invitations
                 WHERE team_id = ? AND email = ? AND status = 'pending'
-            `, [teamId, email.toLowerCase()]);
+            `,
+                [teamId, email.toLowerCase()],
+            );
 
             if (existing) {
                 return { status: 409, data: { error: 'Invitation already sent to this email' } };
@@ -382,9 +425,12 @@ export async function teamsRouter(ctx) {
             // Check if already a member
             const existingUser = await query.get('SELECT id FROM users WHERE email = ?', [email.toLowerCase()]);
             if (existingUser) {
-                const existingMember = await query.get(`
+                const existingMember = await query.get(
+                    `
                     SELECT * FROM team_members WHERE team_id = ? AND user_id = ?
-                `, [teamId, existingUser.id]);
+                `,
+                    [teamId, existingUser.id],
+                );
                 if (existingMember) {
                     return { status: 409, data: { error: 'User is already a team member' } };
                 }
@@ -395,10 +441,13 @@ export async function teamsRouter(ctx) {
             const token = crypto.randomBytes(32).toString('hex');
             const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days
 
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO team_invitations (id, team_id, email, role, token, invited_by, message, expires_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            `, [invitationId, teamId, email.toLowerCase(), role, token, user.id, message || null, expiresAt]);
+            `,
+                [invitationId, teamId, email.toLowerCase(), role, token, user.id, message || null, expiresAt],
+            );
 
             logTeamActivity(teamId, user.id, 'member_invited', 'invitation', invitationId, { email, role }, ctx.ip);
 
@@ -411,9 +460,9 @@ export async function teamsRouter(ctx) {
                         email,
                         role,
                         expires_at: expiresAt,
-                        invite_link: `/join-team?token=${token}`
-                    }
-                }
+                        invite_link: `/join-team?token=${token}`,
+                    },
+                },
             };
         } catch (error) {
             logger.error('[Teams] Error inviting team member', user?.id, { detail: error.message });
@@ -430,12 +479,15 @@ export async function teamsRouter(ctx) {
                 return { status: 400, data: { error: 'Invitation token is required' } };
             }
 
-            const invitation = await query.get(`
+            const invitation = await query.get(
+                `
                 SELECT ti.*, t.name as team_name
                 FROM team_invitations ti
                 JOIN teams t ON ti.team_id = t.id
                 WHERE ti.token = ? AND ti.status = 'pending' AND ti.expires_at > NOW()
-            `, [token]);
+            `,
+                [token],
+            );
 
             if (!invitation) {
                 return { status: 404, data: { error: 'Invalid or expired invitation' } };
@@ -452,45 +504,71 @@ export async function teamsRouter(ctx) {
 
             // Re-check team member limit before accepting
             const team = await query.get('SELECT max_members FROM teams WHERE id = ?', [invitation.team_id]);
-            const currentCount = await query.get(`
+            const currentCount = await query.get(
+                `
                 SELECT COUNT(*) as count FROM team_members WHERE team_id = ? AND status = 'active'
-            `, [invitation.team_id]);
+            `,
+                [invitation.team_id],
+            );
 
             if (team && currentCount.count >= team.max_members) {
-                return { status: 403, data: { error: 'Team member limit reached. Contact the team owner to upgrade.' } };
+                return {
+                    status: 403,
+                    data: { error: 'Team member limit reached. Contact the team owner to upgrade.' },
+                };
             }
 
             // Check if already a member
-            const existingMember = await query.get(`
+            const existingMember = await query.get(
+                `
                 SELECT * FROM team_members WHERE team_id = ? AND user_id = ?
-            `, [invitation.team_id, user.id]);
+            `,
+                [invitation.team_id, user.id],
+            );
 
             if (existingMember) {
                 // Update status if previously removed
                 if (existingMember.status === 'removed') {
-                    await query.run(`
+                    await query.run(
+                        `
                         UPDATE team_members SET status = 'active', role = ?, accepted_at = NOW()
                         WHERE id = ?
-                    `, [invitation.role, existingMember.id]);
+                    `,
+                        [invitation.role, existingMember.id],
+                    );
                 } else {
                     return { status: 409, data: { error: 'You are already a member of this team' } };
                 }
             } else {
                 // Add as new member
                 const memberId = uuidv4();
-                await query.run(`
+                await query.run(
+                    `
                     INSERT INTO team_members (id, team_id, user_id, role, invited_by, status, accepted_at)
                     VALUES (?, ?, ?, ?, ?, 'active', NOW())
-                `, [memberId, invitation.team_id, user.id, invitation.role, invitation.invited_by]);
+                `,
+                    [memberId, invitation.team_id, user.id, invitation.role, invitation.invited_by],
+                );
             }
 
             // Update invitation status
-            await query.run(`
+            await query.run(
+                `
                 UPDATE team_invitations SET status = 'accepted', responded_at = NOW()
                 WHERE id = ?
-            `, [invitation.id]);
+            `,
+                [invitation.id],
+            );
 
-            logTeamActivity(invitation.team_id, user.id, 'member_joined', 'member', user.id, { role: invitation.role }, ctx.ip);
+            logTeamActivity(
+                invitation.team_id,
+                user.id,
+                'member_joined',
+                'member',
+                user.id,
+                { role: invitation.role },
+                ctx.ip,
+            );
 
             return {
                 status: 200,
@@ -499,9 +577,9 @@ export async function teamsRouter(ctx) {
                     team: {
                         id: invitation.team_id,
                         name: invitation.team_name,
-                        role: invitation.role
-                    }
-                }
+                        role: invitation.role,
+                    },
+                },
             };
         } catch (error) {
             logger.error('[Teams] Error joining team', user?.id, { detail: error.message });
@@ -521,10 +599,13 @@ export async function teamsRouter(ctx) {
             }
 
             // Check permission
-            const membership = await query.get(`
+            const membership = await query.get(
+                `
                 SELECT role FROM team_members
                 WHERE team_id = ? AND user_id = ? AND status = 'active'
-            `, [teamId, user.id]);
+            `,
+                [teamId, user.id],
+            );
 
             if (!membership || !hasPermission(membership.role, 'manage_team')) {
                 return { status: 403, data: { error: 'Permission denied' } };
@@ -535,7 +616,10 @@ export async function teamsRouter(ctx) {
             if (suspendedCheck) return suspendedCheck;
 
             // Get target member and verify they belong to the same team
-            const targetMember = await query.get('SELECT * FROM team_members WHERE id = ? AND team_id = ? AND status = "active"', [memberId, teamId]);
+            const targetMember = await query.get(
+                'SELECT * FROM team_members WHERE id = ? AND team_id = ? AND status = "active"',
+                [memberId, teamId],
+            );
             if (!targetMember) {
                 return { status: 404, data: { error: 'Member not found in this team' } };
             }
@@ -552,14 +636,22 @@ export async function teamsRouter(ctx) {
 
             await query.run('UPDATE team_members SET role = ? WHERE id = ? AND team_id = ?', [role, memberId, teamId]);
 
-            logTeamActivity(teamId, user.id, 'member_role_updated', 'member', targetMember.user_id, {
-                old_role: targetMember.role,
-                new_role: role
-            }, ctx.ip);
+            logTeamActivity(
+                teamId,
+                user.id,
+                'member_role_updated',
+                'member',
+                targetMember.user_id,
+                {
+                    old_role: targetMember.role,
+                    new_role: role,
+                },
+                ctx.ip,
+            );
 
             return {
                 status: 200,
-                data: { message: 'Member role updated successfully' }
+                data: { message: 'Member role updated successfully' },
             };
         } catch (error) {
             logger.error('[Teams] Error updating member role', user?.id, { detail: error.message });
@@ -574,10 +666,13 @@ export async function teamsRouter(ctx) {
             const [, teamId, memberId] = removeMemberMatch;
 
             // Check permission
-            const membership = await query.get(`
+            const membership = await query.get(
+                `
                 SELECT role FROM team_members
                 WHERE team_id = ? AND user_id = ? AND status = 'active'
-            `, [teamId, user.id]);
+            `,
+                [teamId, user.id],
+            );
 
             if (!membership || !hasPermission(membership.role, 'manage_team')) {
                 return { status: 403, data: { error: 'Permission denied' } };
@@ -588,7 +683,10 @@ export async function teamsRouter(ctx) {
             if (suspendedCheckRemove) return suspendedCheckRemove;
 
             // Get target member
-            const targetMember = await query.get('SELECT * FROM team_members WHERE id = ? AND team_id = ?', [memberId, teamId]);
+            const targetMember = await query.get('SELECT * FROM team_members WHERE id = ? AND team_id = ?', [
+                memberId,
+                teamId,
+            ]);
             if (!targetMember) {
                 return { status: 404, data: { error: 'Member not found' } };
             }
@@ -603,22 +701,37 @@ export async function teamsRouter(ctx) {
                 return { status: 403, data: { error: 'Cannot remove member with equal or higher role' } };
             }
 
-            await query.run('UPDATE team_members SET status = ? WHERE id = ? AND team_id = ?', ['removed', memberId, teamId]);
+            await query.run('UPDATE team_members SET status = ? WHERE id = ? AND team_id = ?', [
+                'removed',
+                memberId,
+                teamId,
+            ]);
 
             // Expire any pending invitations for the removed member's email
             const removedUser = await query.get('SELECT email FROM users WHERE id = ?', [targetMember.user_id]);
             if (removedUser) {
-                await query.run(`
+                await query.run(
+                    `
                     UPDATE team_invitations SET status = 'expired'
                     WHERE team_id = ? AND email = ? AND status = 'pending'
-                `, [teamId, removedUser.email.toLowerCase()]);
+                `,
+                    [teamId, removedUser.email.toLowerCase()],
+                );
             }
 
-            logTeamActivity(teamId, user.id, 'member_removed', 'member', targetMember.user_id, { role: targetMember.role }, ctx.ip);
+            logTeamActivity(
+                teamId,
+                user.id,
+                'member_removed',
+                'member',
+                targetMember.user_id,
+                { role: targetMember.role },
+                ctx.ip,
+            );
 
             return {
                 status: 200,
-                data: { message: 'Member removed successfully' }
+                data: { message: 'Member removed successfully' },
             };
         } catch (error) {
             logger.error('[Teams] Error removing team member', user?.id, { detail: error.message });
@@ -632,10 +745,13 @@ export async function teamsRouter(ctx) {
         try {
             const teamId = leaveMatch[1];
 
-            const membership = await query.get(`
+            const membership = await query.get(
+                `
                 SELECT * FROM team_members
                 WHERE team_id = ? AND user_id = ? AND status = 'active'
-            `, [teamId, user.id]);
+            `,
+                [teamId, user.id],
+            );
 
             if (!membership) {
                 return { status: 404, data: { error: 'Not a member of this team' } };
@@ -645,13 +761,17 @@ export async function teamsRouter(ctx) {
                 return { status: 403, data: { error: 'Owner cannot leave. Transfer ownership or delete the team.' } };
             }
 
-            await query.run('UPDATE team_members SET status = ? WHERE id = ? AND user_id = ?', ['removed', membership.id, user.id]);
+            await query.run('UPDATE team_members SET status = ? WHERE id = ? AND user_id = ?', [
+                'removed',
+                membership.id,
+                user.id,
+            ]);
 
             logTeamActivity(teamId, user.id, 'member_left', 'member', user.id, {}, ctx.ip);
 
             return {
                 status: 200,
-                data: { message: 'Successfully left the team' }
+                data: { message: 'Successfully left the team' },
             };
         } catch (error) {
             logger.error('[Teams] Error leaving team', user?.id, { detail: error.message });
@@ -667,10 +787,13 @@ export async function teamsRouter(ctx) {
             const { limit = 50, offset = 0 } = queryParams;
 
             // Check membership
-            const membership = await query.get(`
+            const membership = await query.get(
+                `
                 SELECT role FROM team_members
                 WHERE team_id = ? AND user_id = ? AND status = 'active'
-            `, [teamId, user.id]);
+            `,
+                [teamId, user.id],
+            );
 
             if (!membership) {
                 return { status: 403, data: { error: 'Not a member of this team' } };
@@ -680,23 +803,26 @@ export async function teamsRouter(ctx) {
             const suspendedCheckActivity = checkTeamActive(teamId);
             if (suspendedCheckActivity) return suspendedCheckActivity;
 
-            const activities = await query.all(`
+            const activities = await query.all(
+                `
                 SELECT tal.*, u.full_name as user_name, u.email as user_email
                 FROM team_activity_log tal
                 LEFT JOIN users u ON tal.user_id = u.id
                 WHERE tal.team_id = ?
                 ORDER BY tal.created_at DESC
                 LIMIT ? OFFSET ?
-            `, [teamId, parseInt(limit), parseInt(offset)]);
+            `,
+                [teamId, parseInt(limit), parseInt(offset)],
+            );
 
             return {
                 status: 200,
                 data: {
-                    activities: activities.map(a => ({
+                    activities: activities.map((a) => ({
                         ...a,
-                        details: safeJsonParse(a.details, null)
-                    }))
-                }
+                        details: safeJsonParse(a.details, null),
+                    })),
+                },
             };
         } catch (error) {
             logger.error('[Teams] Error fetching team activity log', user?.id, { detail: error.message });
@@ -710,14 +836,14 @@ export async function teamsRouter(ctx) {
             status: 200,
             data: {
                 roles: ROLE_HIERARCHY,
-                permissions: ROLE_PERMISSIONS
-            }
+                permissions: ROLE_PERMISSIONS,
+            },
         };
     }
 
     return {
         status: 404,
-        data: { error: 'Not found' }
+        data: { error: 'Not found' },
     };
 }
 
@@ -730,7 +856,8 @@ function hasPermission(role, permission) {
 async function checkTeamActive(teamId) {
     const team = await query.get('SELECT is_active FROM teams WHERE id = ?', [teamId]);
     if (!team) return { status: 404, data: { error: 'Team not found' } };
-    if (!team.is_active) return { status: 403, data: { error: 'This team has been suspended and cannot perform operations' } };
+    if (!team.is_active)
+        return { status: 403, data: { error: 'This team has been suspended and cannot perform operations' } };
     return null;
 }
 
@@ -741,10 +868,13 @@ function getRoleLevel(role) {
 async function logTeamActivity(teamId, userId, action, resourceType, resourceId, details, ipAddress = null) {
     try {
         const id = uuidv4();
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO team_activity_log (id, team_id, user_id, action, resource_type, resource_id, details, ip_address)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        `, [id, teamId, userId, action, resourceType, resourceId, JSON.stringify(details), ipAddress]);
+        `,
+            [id, teamId, userId, action, resourceType, resourceId, JSON.stringify(details), ipAddress],
+        );
     } catch (e) {
         // Non-critical, don't fail the main operation
         logger.error('[Teams] Failed to log team activity', null, { detail: e.message });
@@ -757,10 +887,13 @@ export function checkTeamPermission(permission) {
         const { user, teamId } = ctx;
         if (!teamId) return true; // No team context, allow
 
-        const membership = await query.get(`
+        const membership = await query.get(
+            `
             SELECT role FROM team_members
             WHERE team_id = ? AND user_id = ? AND status = 'active'
-        `, [teamId, user.id]);
+        `,
+            [teamId, user.id],
+        );
 
         if (!membership) {
             return { status: 403, data: { error: 'Not a member of this team' } };

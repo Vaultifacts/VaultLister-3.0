@@ -15,7 +15,7 @@ import { createHash } from 'crypto';
 const BRAND_PATTERNS = [
     { pattern: /nike/i, brand: 'Nike' },
     { pattern: /adidas/i, brand: 'Adidas' },
-    { pattern: /levi'?s/i, brand: 'Levi\'s' },
+    { pattern: /levi'?s/i, brand: "Levi's" },
     { pattern: /ralph\s*lauren/i, brand: 'Ralph Lauren' },
     { pattern: /coach/i, brand: 'Coach' },
     { pattern: /michael\s*kors/i, brand: 'Michael Kors' },
@@ -28,25 +28,39 @@ const BRAND_PATTERNS = [
     { pattern: /free\s*people/i, brand: 'Free People' },
     { pattern: /anthropologie/i, brand: 'Anthropologie' },
     { pattern: /north\s*face/i, brand: 'North Face' },
-    { pattern: /patagonia/i, brand: 'Patagonia' }
+    { pattern: /patagonia/i, brand: 'Patagonia' },
 ];
 
 // Color detection (simplified - real implementation would analyze pixels)
 const COMMON_COLORS = [
-    'Black', 'White', 'Gray', 'Navy', 'Blue', 'Red', 'Pink',
-    'Green', 'Brown', 'Beige', 'Cream', 'Yellow', 'Orange',
-    'Purple', 'Gold', 'Silver', 'Multi'
+    'Black',
+    'White',
+    'Gray',
+    'Navy',
+    'Blue',
+    'Red',
+    'Pink',
+    'Green',
+    'Brown',
+    'Beige',
+    'Cream',
+    'Yellow',
+    'Orange',
+    'Purple',
+    'Gold',
+    'Silver',
+    'Multi',
 ];
 
 // Category keywords for detection
 const CATEGORY_KEYWORDS = {
-    'Tops': ['shirt', 'blouse', 'top', 'tee', 't-shirt', 'tank', 'sweater', 'cardigan', 'hoodie', 'pullover'],
-    'Bottoms': ['pants', 'jeans', 'shorts', 'skirt', 'trousers', 'leggings'],
-    'Dresses': ['dress', 'gown', 'romper', 'jumpsuit'],
-    'Outerwear': ['jacket', 'coat', 'blazer', 'vest', 'parka', 'windbreaker'],
-    'Footwear': ['shoes', 'sneakers', 'boots', 'heels', 'sandals', 'flats', 'loafers', 'pumps'],
-    'Bags': ['bag', 'purse', 'handbag', 'tote', 'clutch', 'backpack', 'crossbody', 'satchel'],
-    'Accessories': ['hat', 'scarf', 'belt', 'sunglasses', 'watch', 'jewelry', 'necklace', 'bracelet', 'earrings', 'ring']
+    Tops: ['shirt', 'blouse', 'top', 'tee', 't-shirt', 'tank', 'sweater', 'cardigan', 'hoodie', 'pullover'],
+    Bottoms: ['pants', 'jeans', 'shorts', 'skirt', 'trousers', 'leggings'],
+    Dresses: ['dress', 'gown', 'romper', 'jumpsuit'],
+    Outerwear: ['jacket', 'coat', 'blazer', 'vest', 'parka', 'windbreaker'],
+    Footwear: ['shoes', 'sneakers', 'boots', 'heels', 'sandals', 'flats', 'loafers', 'pumps'],
+    Bags: ['bag', 'purse', 'handbag', 'tote', 'clutch', 'backpack', 'crossbody', 'satchel'],
+    Accessories: ['hat', 'scarf', 'belt', 'sunglasses', 'watch', 'jewelry', 'necklace', 'bracelet', 'earrings', 'ring'],
 };
 
 const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
@@ -82,7 +96,10 @@ function validateImageData(imageData) {
         // Approximate byte size: base64 encodes 3 bytes per 4 chars
         const approxBytes = Math.floor(base64Data.length * 0.75);
         if (approxBytes > MAX_BASE64_BYTES) {
-            return { valid: false, error: `Image too large: ~${Math.round(approxBytes / 1024 / 1024)}MB exceeds the 5MB limit` };
+            return {
+                valid: false,
+                error: `Image too large: ~${Math.round(approxBytes / 1024 / 1024)}MB exceeds the 5MB limit`,
+            };
         }
 
         return { valid: true, imageSource: { type: 'base64', media_type: mimeType, data: base64Data } };
@@ -118,38 +135,57 @@ export async function analyzeImage(imageData) {
             if (!validation.valid) {
                 logger.warn('AI image analysis skipped: invalid input', { reason: validation.error });
                 return {
-                    category: null, brand: null, colors: [], style: null, tags: [],
-                    condition: null, confidence: 0,
-                    metadata: { analyzed: false, reason: validation.error }
+                    category: null,
+                    brand: null,
+                    colors: [],
+                    style: null,
+                    tags: [],
+                    condition: null,
+                    confidence: 0,
+                    metadata: { analyzed: false, reason: validation.error },
                 };
             }
 
             const imageSource = validation.imageSource;
 
             if (imageSource) {
-                const response = await Sentry.startSpan({ name: 'claude.image-analysis', op: 'ai.run', attributes: { model: 'claude-haiku-4-5-20251001' } }, () =>
-                    circuitBreaker('anthropic-image', () =>
-                        withTimeout(anthropic.messages.create({
-                            model: 'claude-haiku-4-5-20251001',
-                            max_tokens: 512,
-                            system: 'Analyze product images for resale. Respond ONLY with valid JSON: {"brand":"brand name or null","category":"Tops/Bottoms/Dresses/Outerwear/Footwear/Bags/Accessories","condition":"new/like_new/good/fair/poor","colors":["primary","secondary"],"style":"casual/vintage/streetwear/etc or null","tags":["tag1","tag2","tag3"],"confidence":0.0}',
-                            messages: [{
-                                role: 'user',
-                                content: [
-                                    { type: 'image', source: imageSource },
-                                    { type: 'text', text: 'Analyze this product image.' }
-                                ]
-                            }]
-                        }), 30000, 'Anthropic image analysis'),
-                        { failureThreshold: 3, cooldownMs: 60000 }
-                    )
+                const response = await Sentry.startSpan(
+                    { name: 'claude.image-analysis', op: 'ai.run', attributes: { model: 'claude-haiku-4-5-20251001' } },
+                    () =>
+                        circuitBreaker(
+                            'anthropic-image',
+                            () =>
+                                withTimeout(
+                                    anthropic.messages.create({
+                                        model: 'claude-haiku-4-5-20251001',
+                                        max_tokens: 512,
+                                        system: 'Analyze product images for resale. Respond ONLY with valid JSON: {"brand":"brand name or null","category":"Tops/Bottoms/Dresses/Outerwear/Footwear/Bags/Accessories","condition":"new/like_new/good/fair/poor","colors":["primary","secondary"],"style":"casual/vintage/streetwear/etc or null","tags":["tag1","tag2","tag3"],"confidence":0.0}',
+                                        messages: [
+                                            {
+                                                role: 'user',
+                                                content: [
+                                                    { type: 'image', source: imageSource },
+                                                    { type: 'text', text: 'Analyze this product image.' },
+                                                ],
+                                            },
+                                        ],
+                                    }),
+                                    30000,
+                                    'Anthropic image analysis',
+                                ),
+                            { failureThreshold: 3, cooldownMs: 60000 },
+                        ),
                 );
 
                 const match = response.content[0].text.trim().match(/\{[\s\S]*\}/);
                 if (match) {
                     let r = null;
-                    try { r = JSON.parse(match[0]); } catch (parseErr) {
-                        logger.warn('AI image analysis: JSON parse failed, falling back to text helpers', { error: parseErr.message });
+                    try {
+                        r = JSON.parse(match[0]);
+                    } catch (parseErr) {
+                        logger.warn('AI image analysis: JSON parse failed, falling back to text helpers', {
+                            error: parseErr.message,
+                        });
                     }
                     if (r) {
                         const result = {
@@ -161,7 +197,7 @@ export async function analyzeImage(imageData) {
                             tags: Array.isArray(r.tags) ? r.tags : [],
                             condition: r.condition || null,
                             confidence: typeof r.confidence === 'number' ? r.confidence : 0.8,
-                            metadata: { analyzed: true, source: 'claude-haiku-vision' }
+                            metadata: { analyzed: true, source: 'claude-haiku-vision' },
                         };
                         await setCachedResponse(hash, result);
                         return result;
@@ -171,7 +207,7 @@ export async function analyzeImage(imageData) {
         } catch (err) {
             logger.warn('AI image analysis failed, falling back to text-based helpers', {
                 error: err.message,
-                hasImageData: !!imageData
+                hasImageData: !!imageData,
             });
         }
     }
@@ -189,8 +225,8 @@ export async function analyzeImage(imageData) {
         confidence: 0,
         metadata: {
             analyzed: false,
-            reason: process.env.ANTHROPIC_API_KEY ? 'Vision API call failed' : 'ANTHROPIC_API_KEY not configured'
-        }
+            reason: process.env.ANTHROPIC_API_KEY ? 'Vision API call failed' : 'ANTHROPIC_API_KEY not configured',
+        },
     };
 }
 
@@ -255,7 +291,7 @@ export function analyzeFilename(filename) {
     const results = {
         brand: detectBrand(filename),
         category: detectCategory(filename),
-        colors: extractColors(filename)
+        colors: extractColors(filename),
     };
 
     // Try to extract size from filename
@@ -282,7 +318,7 @@ export function generateTagsFromAnalysis(analysis) {
         tags.add(analysis.category.toLowerCase());
     }
 
-    for (const color of (analysis.colors || [])) {
+    for (const color of analysis.colors || []) {
         tags.add(color.toLowerCase());
     }
 
@@ -318,7 +354,7 @@ export function estimateImageQuality(imageInfo, aiAnalysis) {
     const quality = {
         score: 0,
         issues: [],
-        suggestions: []
+        suggestions: [],
     };
 
     // If AI analysis with photoQuality is available, use it directly
@@ -413,16 +449,16 @@ export function getImageRecommendations() {
         dimensions: {
             recommended: '1000x1000 pixels minimum',
             ideal: '1500x1500 pixels',
-            aspectRatio: '1:1 (square) for most platforms'
+            aspectRatio: '1:1 (square) for most platforms',
         },
         format: {
             recommended: ['JPEG', 'PNG'],
             forPhotos: 'JPEG with 80-90% quality',
-            forGraphics: 'PNG for transparency'
+            forGraphics: 'PNG for transparency',
         },
         fileSize: {
             max: '5MB',
-            recommended: '500KB - 2MB'
+            recommended: '500KB - 2MB',
         },
         tips: [
             'Use natural lighting when possible',
@@ -430,7 +466,7 @@ export function getImageRecommendations() {
             'Include multiple angles (front, back, detail shots)',
             'Show any flaws or wear clearly',
             'Use a flat lay or mannequin for clothing',
-            'Ensure the item fills most of the frame'
-        ]
+            'Ensure the item fills most of the frame',
+        ],
     };
 }

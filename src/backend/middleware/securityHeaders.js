@@ -24,53 +24,43 @@ export const cspConfig = {
     'script-src': [
         "'self'",
         "'unsafe-inline'", // Overridden by nonce+strict-dynamic when HTML is served
-        'https://www.googletagmanager.com'
+        'https://www.googletagmanager.com',
     ],
 
     // Style sources
     'style-src': [
         "'self'",
         "'unsafe-inline'", // Required for dynamic styling
-        'https://fonts.googleapis.com'
+        'https://fonts.googleapis.com',
     ],
 
     // Font sources
-    'font-src': [
-        "'self'",
-        'data:',
-        'https://fonts.gstatic.com'
-    ],
+    'font-src': ["'self'", 'data:', 'https://fonts.gstatic.com'],
 
     // Image sources - more restrictive in production
-    'img-src': IS_PRODUCTION ? [
-        "'self'",
-        'data:',
-        'blob:',
-        'https://images.unsplash.com', // Demo images
-        'https://res.cloudinary.com',  // User uploads
-        'https://www.google-analytics.com'
-    ] : [
-        "'self'",
-        'data:',
-        'blob:',
-        'https:',
-        'http://localhost:*'
-    ],
+    'img-src': IS_PRODUCTION
+        ? [
+              "'self'",
+              'data:',
+              'blob:',
+              'https://images.unsplash.com', // Demo images
+              'https://res.cloudinary.com', // User uploads
+              'https://www.google-analytics.com',
+          ]
+        : ["'self'", 'data:', 'blob:', 'https:', 'http://localhost:*'],
 
     // Connect sources (AJAX, WebSocket, EventSource)
-    'connect-src': IS_PRODUCTION ? [
-        "'self'",
-        'https://api.anthropic.com',   // AI API
-        'wss://vaultlister.com',       // WebSocket (bare domain — wildcard doesn't match it)
-        'wss://*.vaultlister.com',     // WebSocket (subdomains)
-        'https://www.google-analytics.com',
-        'https://*.google-analytics.com',
-        'https://*.analytics.google.com'
-    ] : [
-        "'self'",
-        'http://localhost:*',
-        'ws://localhost:*'
-    ],
+    'connect-src': IS_PRODUCTION
+        ? [
+              "'self'",
+              'https://api.anthropic.com', // AI API
+              'wss://vaultlister.com', // WebSocket (bare domain — wildcard doesn't match it)
+              'wss://*.vaultlister.com', // WebSocket (subdomains)
+              'https://www.google-analytics.com',
+              'https://*.google-analytics.com',
+              'https://*.analytics.google.com',
+          ]
+        : ["'self'", 'http://localhost:*', 'ws://localhost:*'],
 
     // Media sources (audio, video)
     'media-src': ["'self'"],
@@ -91,7 +81,7 @@ export const cspConfig = {
     'upgrade-insecure-requests': IS_PRODUCTION,
 
     // Report violations to endpoint (production only)
-    ...(IS_PRODUCTION && { 'report-uri': ['/api/csp-report'] })
+    ...(IS_PRODUCTION && { 'report-uri': ['/api/csp-report'] }),
 };
 
 /**
@@ -124,9 +114,9 @@ export const cspReportOnlyConfig = {
     'script-src': [
         "'self'",
         // No 'unsafe-inline' — this is the point of the report-only policy
-        ...(IS_PRODUCTION ? ["'strict-dynamic'"] : ['http://localhost:*'])
+        ...(IS_PRODUCTION ? ["'strict-dynamic'"] : ['http://localhost:*']),
     ],
-    'report-uri': ['/api/csp-report']
+    'report-uri': ['/api/csp-report'],
 };
 
 /**
@@ -142,9 +132,8 @@ export const securityHeadersConfig = {
     'Content-Security-Policy-Report-Only': buildCSPHeader(cspReportOnlyConfig),
 
     // Strict Transport Security (HTTPS only in production)
-    'Strict-Transport-Security': process.env.NODE_ENV === 'production'
-        ? 'max-age=31536000; includeSubDomains; preload'
-        : null,
+    'Strict-Transport-Security':
+        process.env.NODE_ENV === 'production' ? 'max-age=31536000; includeSubDomains; preload' : null,
 
     // Prevent clickjacking
     'X-Frame-Options': 'DENY',
@@ -157,13 +146,13 @@ export const securityHeadersConfig = {
 
     // Permissions policy (feature policy)
     'Permissions-Policy': [
-        'geolocation=()',       // Disable geolocation
-        'microphone=()',        // Disable microphone
-        'camera=(self)',        // Allow camera for AR preview (self only)
-        'payment=()',           // Disable payment API
-        'usb=()',               // Disable USB
-        'magnetometer=()',      // Disable magnetometer
-        'interest-cohort=()'    // Opt out of FLoC/Topics API
+        'geolocation=()', // Disable geolocation
+        'microphone=()', // Disable microphone
+        'camera=(self)', // Allow camera for AR preview (self only)
+        'payment=()', // Disable payment API
+        'usb=()', // Disable USB
+        'magnetometer=()', // Disable magnetometer
+        'interest-cohort=()', // Opt out of FLoC/Topics API
     ].join(', '),
 
     // Cross-Origin policies
@@ -176,8 +165,8 @@ export const securityHeadersConfig = {
 
     // Cache control for sensitive data
     'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-    'Pragma': 'no-cache',
-    'Expires': '0'
+    Pragma: 'no-cache',
+    Expires: '0',
 };
 
 /**
@@ -194,15 +183,16 @@ export function applySecurityHeaders(ctx, additionalHeaders = {}) {
     }
 
     // Override for static assets (allow caching)
-    if (ctx.path && (
-        ctx.path.endsWith('.js') ||
-        ctx.path.endsWith('.css') ||
-        ctx.path.endsWith('.png') ||
-        ctx.path.endsWith('.jpg') ||
-        ctx.path.endsWith('.svg') ||
-        ctx.path.endsWith('.woff') ||
-        ctx.path.endsWith('.woff2')
-    )) {
+    if (
+        ctx.path &&
+        (ctx.path.endsWith('.js') ||
+            ctx.path.endsWith('.css') ||
+            ctx.path.endsWith('.png') ||
+            ctx.path.endsWith('.jpg') ||
+            ctx.path.endsWith('.svg') ||
+            ctx.path.endsWith('.woff') ||
+            ctx.path.endsWith('.woff2'))
+    ) {
         headers['Cache-Control'] = 'public, max-age=31536000, immutable';
         delete headers['Pragma'];
         delete headers['Expires'];
@@ -235,17 +225,13 @@ export function applyDevelopmentHeaders(ctx) {
             'script-src': [
                 "'self'",
                 "'unsafe-inline'", // Overridden by nonce+strict-dynamic when HTML is served
-                'http://localhost:*'
-            ],
-            'connect-src': [
-                "'self'",
                 'http://localhost:*',
-                'ws://localhost:*'
-            ]
+            ],
+            'connect-src': ["'self'", 'http://localhost:*', 'ws://localhost:*'],
         };
 
         return {
-            'Content-Security-Policy': buildCSPHeader(devCSP)
+            'Content-Security-Policy': buildCSPHeader(devCSP),
         };
     }
 
@@ -259,20 +245,20 @@ export const securityPresets = {
     // API responses (JSON)
     api: {
         'Content-Type': 'application/json; charset=utf-8',
-        'X-Content-Type-Options': 'nosniff'
+        'X-Content-Type-Options': 'nosniff',
     },
 
     // HTML responses
     html: {
         'Content-Type': 'text/html; charset=utf-8',
-        'X-Content-Type-Options': 'nosniff'
+        'X-Content-Type-Options': 'nosniff',
     },
 
     // File downloads
     download: {
         'Content-Disposition': 'attachment',
-        'X-Content-Type-Options': 'nosniff'
-    }
+        'X-Content-Type-Options': 'nosniff',
+    },
 };
 
 /**
@@ -289,13 +275,13 @@ export function buildCSPWithNonce(nonce) {
             `'nonce-${nonce}'`,
             ...(IS_PRODUCTION ? ["'strict-dynamic'"] : []),
             "'unsafe-inline'",
-            ...(IS_PRODUCTION ? [] : ['http://localhost:*'])
+            ...(IS_PRODUCTION ? [] : ['http://localhost:*']),
         ],
         // Allow inline event handlers (onclick, onsubmit, etc.) in all envs.
         // When a nonce is present, 'unsafe-inline' in script-src is ignored for
         // event handlers — script-src-attr re-enables them explicitly without
         // weakening the nonce-based inline <script> block protection.
-        'script-src-attr': ["'unsafe-inline'"]
+        'script-src-attr': ["'unsafe-inline'"],
     };
     return buildCSPHeader(noncedConfig);
 }
@@ -312,9 +298,9 @@ export function buildReportOnlyCSPWithNonce(nonce) {
         'script-src': [
             "'self'",
             `'nonce-${nonce}'`,
-            ...(IS_PRODUCTION ? ["'strict-dynamic'"] : ['http://localhost:*'])
+            ...(IS_PRODUCTION ? ["'strict-dynamic'"] : ['http://localhost:*']),
             // Intentionally no 'unsafe-inline' — that is the whole point
-        ]
+        ],
     };
     return buildCSPHeader(noncedConfig);
 }
@@ -328,6 +314,6 @@ export function getPresetHeaders(preset, additionalHeaders = {}) {
     return {
         ...securityHeadersConfig,
         ...presetHeaders,
-        ...additionalHeaders
+        ...additionalHeaders,
     };
 }

@@ -10,7 +10,11 @@ import { escapeHtml } from '../shared/utils.js';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function safeJsonParse(str, fallback) {
-    try { return JSON.parse(str); } catch { return fallback; }
+    try {
+        return JSON.parse(str);
+    } catch {
+        return fallback;
+    }
 }
 
 function getClientIp(ctx) {
@@ -46,17 +50,17 @@ export async function featureRequestsRouter(ctx) {
                 FROM feature_requests fr
                 WHERE fr.hidden IS NOT TRUE
                 ORDER BY ${orderBy}`,
-                [ip]
+                [ip],
             );
 
-            const requests = rows.map(r => ({
+            const requests = rows.map((r) => ({
                 id: r.id,
                 title: r.title,
                 description: r.description,
                 status: r.status,
                 vote_count: Number(r.vote_count),
                 created_at: r.created_at,
-                user_voted: Boolean(r.user_voted)
+                user_voted: Boolean(r.user_voted),
             }));
 
             return { status: 200, data: { requests } };
@@ -79,12 +83,12 @@ export async function featureRequestsRouter(ctx) {
             const recent = await query.get(
                 `SELECT COUNT(*) AS cnt FROM feature_requests
                  WHERE submitter_ip = ? AND created_at > NOW() - INTERVAL '24 hours'`,
-                [ip]
+                [ip],
             );
             if (recent && Number(recent.cnt) >= 3) {
                 return {
                     status: 429,
-                    data: { error: 'Too many submissions. Please wait 24 hours before submitting again.' }
+                    data: { error: 'Too many submissions. Please wait 24 hours before submitting again.' },
                 };
             }
         } catch (err) {
@@ -110,9 +114,9 @@ export async function featureRequestsRouter(ctx) {
             return { status: 400, data: { error: 'Description is required.' } };
         }
 
-        const safeName        = escapeHtml(String(name).trim());
-        const safeEmail       = escapeHtml(String(email).trim());
-        const safeTitle       = escapeHtml(String(title).trim());
+        const safeName = escapeHtml(String(name).trim());
+        const safeEmail = escapeHtml(String(email).trim());
+        const safeTitle = escapeHtml(String(title).trim());
         const safeDescription = escapeHtml(String(description).trim());
 
         try {
@@ -121,7 +125,7 @@ export async function featureRequestsRouter(ctx) {
                 `INSERT INTO feature_requests
                     (id, title, description, submitter_name, submitter_email, submitter_ip, status)
                  VALUES (?, ?, ?, ?, ?, ?, 'under_consideration')`,
-                [id, safeTitle, safeDescription, safeName, safeEmail, ip || null]
+                [id, safeTitle, safeDescription, safeName, safeEmail, ip || null],
             );
 
             logger.info('[FeatureRequests] submission stored', null, { id, email: safeEmail });
@@ -130,8 +134,8 @@ export async function featureRequestsRouter(ctx) {
                 status: 201,
                 data: {
                     id,
-                    message: "Thanks! We've received your feature request."
-                }
+                    message: "Thanks! We've received your feature request.",
+                },
             };
         } catch (err) {
             logger.error('[FeatureRequests] POST failed', null, { detail: err?.message });
@@ -152,7 +156,7 @@ export async function featureRequestsRouter(ctx) {
         try {
             const fr = await query.get(
                 `SELECT id, vote_count FROM feature_requests WHERE id = ? AND hidden IS NOT TRUE`,
-                [id]
+                [id],
             );
             if (!fr) {
                 return { status: 404, data: { error: 'Feature request not found' } };
@@ -163,7 +167,7 @@ export async function featureRequestsRouter(ctx) {
             try {
                 await query.run(
                     `INSERT INTO feature_request_votes (id, feature_request_id, voter_ip) VALUES (?, ?, ?)`,
-                    [voteId, id, ip]
+                    [voteId, id, ip],
                 );
             } catch (insertErr) {
                 // PostgreSQL unique violation code 23505
@@ -177,15 +181,15 @@ export async function featureRequestsRouter(ctx) {
             // Atomically increment vote_count
             const updated = await query.get(
                 `UPDATE feature_requests SET vote_count = vote_count + 1 WHERE id = ? RETURNING vote_count`,
-                [id]
+                [id],
             );
 
             return {
                 status: 200,
                 data: {
                     vote_count: Number(updated?.vote_count ?? fr.vote_count + 1),
-                    voted: true
-                }
+                    voted: true,
+                },
             };
         } catch (err) {
             logger.error('[FeatureRequests] vote failed', null, { detail: err?.message });

@@ -19,8 +19,8 @@ async function ga4ServerEvent(clientId, eventName, params) {
             method: 'POST',
             body: JSON.stringify({
                 client_id: clientId || 'server_' + Date.now(),
-                events: [{ name: eventName, params }]
-            })
+                events: [{ name: eventName, params }],
+            }),
         });
     } catch (err) {
         logger.warn('[GA4 MP] Failed to send event', { eventName, error: err.message });
@@ -37,11 +37,18 @@ function isInternalUrl(urlString) {
         const url = new URL(urlString);
         const hostname = url.hostname.toLowerCase();
         // Block localhost
-        if (hostname === 'localhost' || hostname === '::1' || hostname === '0.0.0.0' || /^127\./.test(hostname)) return true;
+        if (hostname === 'localhost' || hostname === '::1' || hostname === '0.0.0.0' || /^127\./.test(hostname))
+            return true;
         // Block private IP ranges
         if (/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.)/.test(hostname)) return true;
         // Block link-local IPv6
-        if (hostname.startsWith('fe80:') || hostname.startsWith('fc00:') || hostname.startsWith('fd00:') || hostname.startsWith('::ffff:')) return true;
+        if (
+            hostname.startsWith('fe80:') ||
+            hostname.startsWith('fc00:') ||
+            hostname.startsWith('fd00:') ||
+            hostname.startsWith('::ffff:')
+        )
+            return true;
         // Must be HTTPS in production
         if (url.protocol !== 'https:' && url.protocol !== 'http:') return true;
         return false;
@@ -77,10 +84,16 @@ export async function webhooksRouter(ctx) {
 
         let event;
         try {
-            logger.info('[Webhooks/Stripe] Verifying signature', null, { rawBodyLength: (ctx.rawBody || '').length, sigLength: sig.length });
+            logger.info('[Webhooks/Stripe] Verifying signature', null, {
+                rawBodyLength: (ctx.rawBody || '').length,
+                sigLength: sig.length,
+            });
             event = constructWebhookEvent(ctx.rawBody || '', sig);
         } catch (err) {
-            logger.warn('[Webhooks/Stripe] Signature verification failed', null, { detail: err?.message || String(err), rawBodyLength: (ctx.rawBody || '').length });
+            logger.warn('[Webhooks/Stripe] Signature verification failed', null, {
+                detail: err?.message || String(err),
+                rawBodyLength: (ctx.rawBody || '').length,
+            });
             return { status: 400, data: { error: `Webhook signature verification failed: ${err.message}` } };
         }
 
@@ -109,16 +122,20 @@ export async function webhooksRouter(ctx) {
                         // For now, mark as starter (lowest paid) — subscription.updated fires immediately after and sets the real tier
                         await query.run(
                             'UPDATE users SET stripe_subscription_id = ?, updated_at = NOW() WHERE id = ?',
-                            [subObj, vaultUserId]
+                            [subObj, vaultUserId],
                         );
-                        logger.info(`[Webhooks/Stripe] checkout.session.completed: user ${vaultUserId} subscription ${subObj}`);
+                        logger.info(
+                            `[Webhooks/Stripe] checkout.session.completed: user ${vaultUserId} subscription ${subObj}`,
+                        );
                         // GA4 server-side purchase event
-                        const gaClientId = await query.get('SELECT ga_client_id FROM users WHERE id = ?', [vaultUserId]);
+                        const gaClientId = await query.get('SELECT ga_client_id FROM users WHERE id = ?', [
+                            vaultUserId,
+                        ]);
                         ga4ServerEvent(gaClientId?.ga_client_id, 'purchase', {
                             transaction_id: session.id,
                             value: (session.amount_total || 0) / 100,
                             currency: (session.currency || 'cad').toUpperCase(),
-                            items: [{ item_name: 'subscription' }]
+                            items: [{ item_name: 'subscription' }],
                         });
                     }
                     break;
@@ -128,15 +145,22 @@ export async function webhooksRouter(ctx) {
                     const invoice = event.data.object;
                     if (invoice.subscription && invoice.billing_reason === 'subscription_cycle') {
                         const customerId = invoice.customer;
-                        const dbUser = await query.get('SELECT id, ga_client_id FROM users WHERE stripe_customer_id = ?', [customerId]);
+                        const dbUser = await query.get(
+                            'SELECT id, ga_client_id FROM users WHERE stripe_customer_id = ?',
+                            [customerId],
+                        );
                         if (dbUser) {
                             ga4ServerEvent(dbUser.ga_client_id, 'purchase', {
                                 transaction_id: invoice.id,
                                 value: (invoice.amount_paid || 0) / 100,
                                 currency: (invoice.currency || 'cad').toUpperCase(),
-                                items: [{ item_name: dbUser.subscription_tier || 'subscription', item_category: 'renewal' }]
+                                items: [
+                                    { item_name: dbUser.subscription_tier || 'subscription', item_category: 'renewal' },
+                                ],
                             });
-                            logger.info(`[Webhooks/Stripe] invoice.paid (renewal): user ${dbUser.id} amount ${invoice.amount_paid}`);
+                            logger.info(
+                                `[Webhooks/Stripe] invoice.paid (renewal): user ${dbUser.id} amount ${invoice.amount_paid}`,
+                            );
                         }
                     }
                     break;
@@ -147,11 +171,13 @@ export async function webhooksRouter(ctx) {
                     const priceId = sub.items?.data?.[0]?.price?.id;
                     const tier = TIER_FOR_PRICE[priceId] || null;
                     if (tier && sub.customer) {
-                        const dbUser = await query.get('SELECT id FROM users WHERE stripe_customer_id = ?', [sub.customer]);
+                        const dbUser = await query.get('SELECT id FROM users WHERE stripe_customer_id = ?', [
+                            sub.customer,
+                        ]);
                         if (dbUser) {
                             await query.run(
                                 'UPDATE users SET subscription_tier = ?, stripe_subscription_id = ?, updated_at = NOW() WHERE id = ?',
-                                [tier, sub.id, dbUser.id]
+                                [tier, sub.id, dbUser.id],
                             );
                             logger.info(`[Webhooks/Stripe] subscription.updated: user ${dbUser.id} → tier ${tier}`);
                         }
@@ -162,11 +188,13 @@ export async function webhooksRouter(ctx) {
                 case 'customer.subscription.deleted': {
                     const sub = event.data.object;
                     if (sub.customer) {
-                        const dbUser = await query.get('SELECT id FROM users WHERE stripe_customer_id = ?', [sub.customer]);
+                        const dbUser = await query.get('SELECT id FROM users WHERE stripe_customer_id = ?', [
+                            sub.customer,
+                        ]);
                         if (dbUser) {
                             await query.run(
-                                'UPDATE users SET subscription_tier = \'free\', stripe_subscription_id = NULL, subscription_expires_at = NULL, updated_at = NOW() WHERE id = ?',
-                                [dbUser.id]
+                                "UPDATE users SET subscription_tier = 'free', stripe_subscription_id = NULL, subscription_expires_at = NULL, updated_at = NOW() WHERE id = ?",
+                                [dbUser.id],
                             );
                             logger.info(`[Webhooks/Stripe] subscription.deleted: user ${dbUser.id} downgraded to free`);
                         }
@@ -177,13 +205,15 @@ export async function webhooksRouter(ctx) {
                 case 'invoice.payment_failed': {
                     const invoice = event.data.object;
                     if (invoice.customer) {
-                        const dbUser = await query.get('SELECT id FROM users WHERE stripe_customer_id = ?', [invoice.customer]);
+                        const dbUser = await query.get('SELECT id FROM users WHERE stripe_customer_id = ?', [
+                            invoice.customer,
+                        ]);
                         if (dbUser) {
                             // Insert notification for the user
                             try {
                                 await query.run(
-                                    'INSERT INTO notifications (id, user_id, type, title, message, is_read, created_at) VALUES (?, ?, \'billing\', \'Payment Failed\', \'Your subscription payment failed. Please update your payment method to keep your plan active.\', 0, NOW())',
-                                    [uuidv4(), dbUser.id]
+                                    "INSERT INTO notifications (id, user_id, type, title, message, is_read, created_at) VALUES (?, ?, 'billing', 'Payment Failed', 'Your subscription payment failed. Please update your payment method to keep your plan active.', 0, NOW())",
+                                    [uuidv4(), dbUser.id],
                                 );
                             } catch {
                                 // notifications table schema may vary — log and continue
@@ -201,15 +231,14 @@ export async function webhooksRouter(ctx) {
             // Store event for audit trail — use event.id as row ID for idempotency
             try {
                 await query.run(
-                    'INSERT INTO webhook_events (id, user_id, source, event_type, payload, status, created_at) VALUES (?, ?, \'stripe\', ?, ?, \'processed\', NOW())',
-                    [event.id, STRIPE_SYSTEM_USER, event.type, JSON.stringify(event.data.object)]
+                    "INSERT INTO webhook_events (id, user_id, source, event_type, payload, status, created_at) VALUES (?, ?, 'stripe', ?, ?, 'processed', NOW())",
+                    [event.id, STRIPE_SYSTEM_USER, event.type, JSON.stringify(event.data.object)],
                 );
             } catch {
                 // Don't fail the Stripe response if audit insert fails
             }
 
             return { status: 200, data: { received: true } };
-
         } catch (error) {
             logger.error('[Webhooks/Stripe] Error processing event', null, { detail: error.message });
             return { status: 500, data: { error: 'Failed to process Stripe event' } };
@@ -236,7 +265,8 @@ export async function webhooksRouter(ctx) {
         }
 
         // eBay spec: SHA-256(challengeCode + verificationToken + endpoint)
-        const hash = crypto.createHash('sha256')
+        const hash = crypto
+            .createHash('sha256')
             .update(challengeCode + verificationToken + endpoint)
             .digest('hex');
 
@@ -248,7 +278,9 @@ export async function webhooksRouter(ctx) {
     if (method === 'POST' && path === '/ebay/account-deletion') {
         const ebayVerifyToken = process.env.EBAY_DELETION_VERIFICATION_TOKEN;
         if (!ebayVerifyToken) {
-            logger.error('[Webhooks/eBay] EBAY_DELETION_VERIFICATION_TOKEN not set — cannot verify deletion notification');
+            logger.error(
+                '[Webhooks/eBay] EBAY_DELETION_VERIFICATION_TOKEN not set — cannot verify deletion notification',
+            );
             return { status: 500, data: { error: 'Webhook not configured' } };
         }
         const ebaySignature = ctx.headers?.['x-ebay-signature'] || null;
@@ -257,11 +289,14 @@ export async function webhooksRouter(ctx) {
             return { status: 401, data: { error: 'Missing webhook signature' } };
         }
         // eBay signs with HMAC-SHA256(verificationToken, rawBody) encoded as base64
-        const expectedEbaySig = crypto.createHmac('sha256', ebayVerifyToken)
+        const expectedEbaySig = crypto
+            .createHmac('sha256', ebayVerifyToken)
             .update(ctx.rawBody || '')
             .digest('base64');
-        if (ebaySignature.length !== expectedEbaySig.length ||
-            !crypto.timingSafeEqual(Buffer.from(ebaySignature), Buffer.from(expectedEbaySig))) {
+        if (
+            ebaySignature.length !== expectedEbaySig.length ||
+            !crypto.timingSafeEqual(Buffer.from(ebaySignature), Buffer.from(expectedEbaySig))
+        ) {
             logger.warn('[Webhooks/eBay] Invalid signature on deletion notification');
             return { status: 401, data: { error: 'Invalid webhook signature' } };
         }
@@ -275,16 +310,19 @@ export async function webhooksRouter(ctx) {
             logger.info('[Webhooks/eBay] Account deletion notification received', null, {
                 ebayUserId,
                 username,
-                notificationId: payload.notificationId || null
+                notificationId: payload.notificationId || null,
             });
 
             // Store in webhook_events for audit — use a sentinel user_id for eBay system events
             const EBAY_SYSTEM_USER = '00000000-0000-0000-0000-000000000000';
             try {
-                await query.run(`
+                await query.run(
+                    `
                     INSERT INTO webhook_events (id, user_id, source, event_type, payload, status, created_at)
                     VALUES (?, ?, 'ebay', 'marketplace.account.deletion', ?, 'processed', NOW())
-                `, [uuidv4(), EBAY_SYSTEM_USER, JSON.stringify(payload)]);
+                `,
+                    [uuidv4(), EBAY_SYSTEM_USER, JSON.stringify(payload)],
+                );
             } catch (dbErr) {
                 // Don't fail the response — eBay requires 200 even if we have internal issues
                 logger.error('[Webhooks/eBay] Failed to store deletion event', null, { detail: dbErr.message });
@@ -293,11 +331,14 @@ export async function webhooksRouter(ctx) {
             // If an eBay user is linked to a VaultLister account, revoke their OAuth token
             if (ebayUserId) {
                 try {
-                    await query.run(`
+                    await query.run(
+                        `
                         UPDATE oauth_tokens
                         SET access_token = NULL, refresh_token = NULL, revoked_at = NOW()
                         WHERE platform = 'ebay' AND platform_user_id = ?
-                    `, [String(ebayUserId)]);
+                    `,
+                        [String(ebayUserId)],
+                    );
                 } catch (revokeErr) {
                     logger.warn('[Webhooks/eBay] Could not revoke OAuth token for deleted user', null, { ebayUserId });
                 }
@@ -305,7 +346,6 @@ export async function webhooksRouter(ctx) {
 
             // eBay requires an empty 200 response
             return { status: 200, data: {} };
-
         } catch (error) {
             logger.error('[Webhooks/eBay] Error processing deletion notification', null, { detail: error.message });
             // Still return 200 — eBay will retry on non-200; we don't want infinite retries for parse errors
@@ -321,15 +361,22 @@ export async function webhooksRouter(ctx) {
 
         try {
             // Extract signature from headers
-            const signature = ctx.headers?.['x-signature'] || ctx.headers?.['x-hub-signature'] || ctx.headers?.['x-vaultlister-signature'] || null;
+            const signature =
+                ctx.headers?.['x-signature'] ||
+                ctx.headers?.['x-hub-signature'] ||
+                ctx.headers?.['x-vaultlister-signature'] ||
+                null;
 
             // Look up webhook configuration for this source (most recent if duplicates)
-            const webhookConfig = await query.get(`
+            const webhookConfig = await query.get(
+                `
                 SELECT secret, user_id FROM webhook_endpoints
                 WHERE name = ? AND is_enabled = TRUE
                 ORDER BY rowid DESC
                 LIMIT 1
-            `, [source]);
+            `,
+                [source],
+            );
 
             // Reject unregistered sources
             if (!webhookConfig) {
@@ -358,17 +405,23 @@ export async function webhooksRouter(ctx) {
             const eventId = uuidv4();
             const eventType = body.type || body.event_type || 'unknown';
 
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO webhook_events (id, user_id, source, event_type, payload, signature, status, created_at)
                 VALUES (?, ?, ?, ?, ?, ?, 'pending', NOW())
-            `, [eventId, webhookConfig.user_id, source, eventType, JSON.stringify(body), signature]);
+            `,
+                [eventId, webhookConfig.user_id, source, eventType, JSON.stringify(body), signature],
+            );
 
             // Queue for async processing
             try {
-                await query.run(`
+                await query.run(
+                    `
                     INSERT INTO tasks (id, type, payload, status, priority, created_at)
                     VALUES (?, 'process_webhook', ?, 'pending', 5, NOW())
-                `, [uuidv4(), JSON.stringify({ eventId })]);
+                `,
+                    [uuidv4(), JSON.stringify({ eventId })],
+                );
             } catch (err) {
                 // Fallback: process synchronously
                 const event = await query.get('SELECT * FROM webhook_events WHERE id = ?', [eventId]);
@@ -379,11 +432,12 @@ export async function webhooksRouter(ctx) {
 
             return {
                 status: 200,
-                data: { received: true, event_id: eventId }
+                data: { received: true, event_id: eventId },
             };
-
         } catch (error) {
-            logger.error('[Webhooks] Error processing incoming webhook', null, { detail: error?.message || 'Unknown error' });
+            logger.error('[Webhooks] Error processing incoming webhook', null, {
+                detail: error?.message || 'Unknown error',
+            });
             return { status: 500, data: { error: 'Failed to process webhook' } };
         }
     }
@@ -395,18 +449,21 @@ export async function webhooksRouter(ctx) {
         const authError = requireAuth();
         if (authError) return authError;
 
-        const endpoints = await query.all(`
+        const endpoints = await query.all(
+            `
             SELECT id, name, url, events, is_enabled, last_triggered_at,
                    failure_count, created_at, updated_at
             FROM webhook_endpoints
             WHERE user_id = ?
             ORDER BY created_at DESC
-        `, [user.id]);
+        `,
+            [user.id],
+        );
 
         // Parse events JSON
-        const parsed = endpoints.map(ep => ({
+        const parsed = endpoints.map((ep) => ({
             ...ep,
-            events: safeJsonParse(ep.events, [])
+            events: safeJsonParse(ep.events, []),
         }));
 
         return { status: 200, data: parsed };
@@ -438,9 +495,14 @@ export async function webhooksRouter(ctx) {
         try {
             const createHostname = new URL(url).hostname.toLowerCase();
             const isPrivateCreateHostname = (h) =>
-                h === 'localhost' || h === '127.0.0.1' || h === '::1' || h === '0.0.0.0' ||
+                h === 'localhost' ||
+                h === '127.0.0.1' ||
+                h === '::1' ||
+                h === '0.0.0.0' ||
                 /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.|127\.)/.test(h) ||
-                h.startsWith('fe80:') || h.startsWith('fc00:') || h.startsWith('fd00:') ||
+                h.startsWith('fe80:') ||
+                h.startsWith('fc00:') ||
+                h.startsWith('fd00:') ||
                 h.startsWith('::ffff:');
             const { resolve4: r4c, resolve6: r6c } = await import('dns/promises');
             const resolvedIpsCreate = await Promise.allSettled([r4c(createHostname), r6c(createHostname)]);
@@ -460,7 +522,7 @@ export async function webhooksRouter(ctx) {
         // Check for existing endpoint with same name for this user
         const existingEndpoint = await query.get(
             'SELECT id FROM webhook_endpoints WHERE user_id = ? AND name = ? AND is_enabled = TRUE',
-            [user.id, name]
+            [user.id, name],
         );
 
         // Generate secret for HMAC signing
@@ -470,16 +532,22 @@ export async function webhooksRouter(ctx) {
         if (existingEndpoint) {
             // Update existing endpoint (rotate secret, update URL/events)
             endpointId = existingEndpoint.id;
-            await query.run(`
+            await query.run(
+                `
                 UPDATE webhook_endpoints SET url = ?, secret = ?, events = ?, updated_at = NOW()
                 WHERE id = ? AND user_id = ?
-            `, [url, secret, JSON.stringify(events), endpointId, user.id]);
+            `,
+                [url, secret, JSON.stringify(events), endpointId, user.id],
+            );
         } else {
             endpointId = uuidv4();
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO webhook_endpoints (id, user_id, name, url, secret, events, is_enabled, created_at, updated_at)
                 VALUES (?, ?, ?, ?, ?, ?, 1, NOW(), NOW())
-            `, [endpointId, user.id, name, url, secret, JSON.stringify(events)]);
+            `,
+                [endpointId, user.id, name, url, secret, JSON.stringify(events)],
+            );
         }
 
         const endpoint = await query.get('SELECT * FROM webhook_endpoints WHERE id = ?', [endpointId]);
@@ -489,8 +557,8 @@ export async function webhooksRouter(ctx) {
             data: {
                 ...endpoint,
                 events: safeJsonParse(endpoint.events, []),
-                secret // Only return secret on creation
-            }
+                secret, // Only return secret on creation
+            },
         };
     }
 
@@ -501,9 +569,12 @@ export async function webhooksRouter(ctx) {
         if (authError) return authError;
 
         const endpointId = endpointIdMatch[1];
-        const endpoint = await query.get(`
+        const endpoint = await query.get(
+            `
             SELECT * FROM webhook_endpoints WHERE id = ? AND user_id = ?
-        `, [endpointId, user.id]);
+        `,
+            [endpointId, user.id],
+        );
 
         if (!endpoint) {
             return { status: 404, data: { error: 'Endpoint not found' } };
@@ -515,8 +586,8 @@ export async function webhooksRouter(ctx) {
             status: 200,
             data: {
                 ...safeEndpoint,
-                events: safeJsonParse(endpoint.events, [])
-            }
+                events: safeJsonParse(endpoint.events, []),
+            },
         };
     }
 
@@ -526,10 +597,10 @@ export async function webhooksRouter(ctx) {
         if (authError) return authError;
 
         const endpointId = endpointIdMatch[1];
-        const existing = await query.get(
-            'SELECT id FROM webhook_endpoints WHERE id = ? AND user_id = ?',
-            [endpointId, user.id]
-        );
+        const existing = await query.get('SELECT id FROM webhook_endpoints WHERE id = ? AND user_id = ?', [
+            endpointId,
+            user.id,
+        ]);
 
         if (!existing) {
             return { status: 404, data: { error: 'Endpoint not found' } };
@@ -552,9 +623,14 @@ export async function webhooksRouter(ctx) {
             try {
                 const updateHostname = new URL(url).hostname.toLowerCase();
                 const isPrivateUpdateHostname = (h) =>
-                    h === 'localhost' || h === '127.0.0.1' || h === '::1' || h === '0.0.0.0' ||
+                    h === 'localhost' ||
+                    h === '127.0.0.1' ||
+                    h === '::1' ||
+                    h === '0.0.0.0' ||
                     /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.|127\.)/.test(h) ||
-                    h.startsWith('fe80:') || h.startsWith('fc00:') || h.startsWith('fd00:') ||
+                    h.startsWith('fe80:') ||
+                    h.startsWith('fc00:') ||
+                    h.startsWith('fd00:') ||
                     h.startsWith('::ffff:');
                 const { resolve4: r4u, resolve6: r6u } = await import('dns/promises');
                 const resolvedIpsUpdate = await Promise.allSettled([r4u(updateHostname), r6u(updateHostname)]);
@@ -572,7 +648,8 @@ export async function webhooksRouter(ctx) {
             }
         }
 
-        await query.run(`
+        await query.run(
+            `
             UPDATE webhook_endpoints SET
                 name = COALESCE(?, name),
                 url = COALESCE(?, url),
@@ -580,7 +657,9 @@ export async function webhooksRouter(ctx) {
                 is_enabled = COALESCE(?, is_enabled),
                 updated_at = NOW()
             WHERE id = ? AND user_id = ?
-        `, [name, url, events ? JSON.stringify(events) : null, is_enabled, endpointId, user.id]);
+        `,
+            [name, url, events ? JSON.stringify(events) : null, is_enabled, endpointId, user.id],
+        );
 
         const updated = await query.get('SELECT * FROM webhook_endpoints WHERE id = ?', [endpointId]);
         const { secret: _secret, ...safeUpdated } = updated;
@@ -589,8 +668,8 @@ export async function webhooksRouter(ctx) {
             status: 200,
             data: {
                 ...safeUpdated,
-                events: safeJsonParse(updated.events, [])
-            }
+                events: safeJsonParse(updated.events, []),
+            },
         };
     }
 
@@ -600,10 +679,10 @@ export async function webhooksRouter(ctx) {
         if (authError) return authError;
 
         const endpointId = endpointIdMatch[1];
-        const existing = await query.get(
-            'SELECT id FROM webhook_endpoints WHERE id = ? AND user_id = ?',
-            [endpointId, user.id]
-        );
+        const existing = await query.get('SELECT id FROM webhook_endpoints WHERE id = ? AND user_id = ?', [
+            endpointId,
+            user.id,
+        ]);
 
         if (!existing) {
             return { status: 404, data: { error: 'Endpoint not found' } };
@@ -621,9 +700,12 @@ export async function webhooksRouter(ctx) {
         if (authError) return authError;
 
         const endpointId = testMatch[1];
-        const endpoint = await query.get(`
+        const endpoint = await query.get(
+            `
             SELECT * FROM webhook_endpoints WHERE id = ? AND user_id = ?
-        `, [endpointId, user.id]);
+        `,
+            [endpointId, user.id],
+        );
 
         if (!endpoint) {
             return { status: 404, data: { error: 'Endpoint not found' } };
@@ -635,17 +717,22 @@ export async function webhooksRouter(ctx) {
             timestamp: new Date().toISOString(),
             payload: {
                 message: 'This is a test webhook from VaultLister',
-                endpoint_id: endpointId
-            }
+                endpoint_id: endpointId,
+            },
         };
 
         // DNS rebinding protection: re-check resolved IPs before fetching
         try {
             const testHostname = new URL(endpoint.url).hostname.toLowerCase();
             const isPrivateTestHostname = (h) =>
-                h === 'localhost' || h === '127.0.0.1' || h === '::1' || h === '0.0.0.0' ||
+                h === 'localhost' ||
+                h === '127.0.0.1' ||
+                h === '::1' ||
+                h === '0.0.0.0' ||
                 /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.|127\.)/.test(h) ||
-                h.startsWith('fe80:') || h.startsWith('fc00:') || h.startsWith('fd00:') ||
+                h.startsWith('fe80:') ||
+                h.startsWith('fc00:') ||
+                h.startsWith('fd00:') ||
                 h.startsWith('::ffff:');
             const { resolve4, resolve6 } = await import('dns/promises');
             const resolvedIps = await Promise.allSettled([resolve4(testHostname), resolve6(testHostname)]);
@@ -670,47 +757,54 @@ export async function webhooksRouter(ctx) {
                 headers: {
                     'Content-Type': 'application/json',
                     'X-VaultLister-Event': 'test',
-                    'X-VaultLister-Signature': 'sha256=' + crypto.createHmac('sha256', endpoint.secret).update(JSON.stringify(testPayload)).digest('hex')
+                    'X-VaultLister-Signature':
+                        'sha256=' +
+                        crypto.createHmac('sha256', endpoint.secret).update(JSON.stringify(testPayload)).digest('hex'),
                 },
-                body: JSON.stringify(testPayload)
+                body: JSON.stringify(testPayload),
             });
 
             const success = response.ok;
 
             // Update endpoint
-            await query.run(`
+            await query.run(
+                `
                 UPDATE webhook_endpoints SET
                     last_triggered_at = NOW(),
                     failure_count = CASE WHEN ? THEN 0 ELSE failure_count + 1 END,
                     updated_at = NOW()
                 WHERE id = ? AND user_id = ?
-            `, [success, endpointId, user.id]);
+            `,
+                [success, endpointId, user.id],
+            );
 
             return {
                 status: 200,
                 data: {
                     success,
                     status_code: response.status,
-                    message: success ? 'Test webhook sent successfully' : 'Webhook delivery failed'
-                }
+                    message: success ? 'Test webhook sent successfully' : 'Webhook delivery failed',
+                },
             };
-
         } catch (error) {
             logger.error('[Webhooks] Webhook delivery error', null, { detail: error?.message || 'Unknown error' });
-            await query.run(`
+            await query.run(
+                `
                 UPDATE webhook_endpoints SET
                     failure_count = failure_count + 1,
                     updated_at = NOW()
                 WHERE id = ? AND user_id = ?
-            `, [endpointId, user.id]);
+            `,
+                [endpointId, user.id],
+            );
 
             return {
                 status: 200,
                 data: {
                     success: false,
                     error: 'Failed to reach webhook endpoint',
-                    message: 'Failed to reach webhook endpoint'
-                }
+                    message: 'Failed to reach webhook endpoint',
+                },
             };
         }
     }
@@ -741,9 +835,9 @@ export async function webhooksRouter(ctx) {
         const events = await query.all(sql, params);
 
         // Parse payloads
-        const parsed = events.map(ev => ({
+        const parsed = events.map((ev) => ({
             ...ev,
-            payload: safeJsonParse(ev.payload, {})
+            payload: safeJsonParse(ev.payload, {}),
         }));
 
         return { status: 200, data: parsed };
@@ -756,9 +850,12 @@ export async function webhooksRouter(ctx) {
         if (authError) return authError;
 
         const eventId = eventIdMatch[1];
-        const event = await query.get(`
+        const event = await query.get(
+            `
             SELECT * FROM webhook_events WHERE id = ? AND user_id = ?
-        `, [eventId, user.id]);
+        `,
+            [eventId, user.id],
+        );
 
         if (!event) {
             return { status: 404, data: { error: 'Event not found' } };
@@ -768,8 +865,8 @@ export async function webhooksRouter(ctx) {
             status: 200,
             data: {
                 ...event,
-                payload: safeJsonParse(event.payload, {})
-            }
+                payload: safeJsonParse(event.payload, {}),
+            },
         };
     }
 
@@ -780,19 +877,25 @@ export async function webhooksRouter(ctx) {
         if (authError) return authError;
 
         const eventId = retryMatch[1];
-        const event = await query.get(`
+        const event = await query.get(
+            `
             SELECT * FROM webhook_events WHERE id = ? AND user_id = ?
-        `, [eventId, user.id]);
+        `,
+            [eventId, user.id],
+        );
 
         if (!event) {
             return { status: 404, data: { error: 'Event not found' } };
         }
 
         // Requeue for processing
-        await query.run(`
+        await query.run(
+            `
             UPDATE webhook_events SET status = 'pending', error_message = NULL, updated_at = NOW()
             WHERE id = ? AND user_id = ?
-        `, [eventId, user.id]);
+        `,
+            [eventId, user.id],
+        );
 
         await processWebhookEvent({ ...event, payload: event.payload });
 
@@ -802,8 +905,8 @@ export async function webhooksRouter(ctx) {
             status: 200,
             data: {
                 ...updated,
-                payload: safeJsonParse(updated.payload, {})
-            }
+                payload: safeJsonParse(updated.payload, {}),
+            },
         };
     }
 
@@ -825,8 +928,8 @@ export async function webhooksRouter(ctx) {
                 { type: 'offer.declined', description: 'An offer was declined' },
                 { type: 'inventory.low_stock', description: 'Item is running low' },
                 { type: 'account.synced', description: 'Account sync completed' },
-                { type: 'account.error', description: 'Account sync error' }
-            ]
+                { type: 'account.error', description: 'Account sync error' },
+            ],
         };
     }
 
@@ -857,11 +960,15 @@ export async function webhooksRouter(ctx) {
         if (event.type === 'v1:order.new') {
             const shopId = event.data?.shop_id;
             if (shopId) {
-                query.get('SELECT * FROM shops WHERE id = ?', [shopId])
-                    .then(shop => {
-                        if (shop) syncShop(shop)
-                            .catch(e => logger.error('[Webhooks/Depop] Sync failed', { err: e.message }));
-                    }).catch(e => logger.error('[Webhooks/Depop] Shop lookup failed', { err: e.message }));
+                query
+                    .get('SELECT * FROM shops WHERE id = ?', [shopId])
+                    .then((shop) => {
+                        if (shop)
+                            syncShop(shop).catch((e) =>
+                                logger.error('[Webhooks/Depop] Sync failed', { err: e.message }),
+                            );
+                    })
+                    .catch((e) => logger.error('[Webhooks/Depop] Shop lookup failed', { err: e.message }));
             }
         }
 

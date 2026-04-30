@@ -2,9 +2,11 @@ import Stripe from 'stripe';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 
-const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: '2024-12-18.acacia'
-}) : null;
+const stripe = process.env.STRIPE_SECRET_KEY
+    ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+          apiVersion: '2024-12-18.acacia',
+      })
+    : null;
 
 function requireStripe() {
     if (!stripe) throw new Error('Stripe is not configured — set STRIPE_SECRET_KEY in .env');
@@ -13,9 +15,9 @@ function requireStripe() {
 
 // Placeholder Price IDs — replace with real IDs after creating products in Stripe Dashboard
 export const STRIPE_PRICE_IDS = {
-    starter:  process.env.STRIPE_PRICE_STARTER  || 'price_starter_placeholder',
-    pro:      process.env.STRIPE_PRICE_PRO       || 'price_pro_placeholder',
-    business: process.env.STRIPE_PRICE_BUSINESS  || 'price_business_placeholder'
+    starter: process.env.STRIPE_PRICE_STARTER || 'price_starter_placeholder',
+    pro: process.env.STRIPE_PRICE_PRO || 'price_pro_placeholder',
+    business: process.env.STRIPE_PRICE_BUSINESS || 'price_business_placeholder',
 };
 
 // Warn at startup if Stripe is configured but price IDs are placeholder/empty values.
@@ -24,20 +26,24 @@ if (stripe) {
     const PLACEHOLDER_PATTERN = /^price_[a-z]+_placeholder$/;
     for (const [tier, priceId] of Object.entries(STRIPE_PRICE_IDS)) {
         if (!priceId || PLACEHOLDER_PATTERN.test(priceId)) {
-            logger.warn(`[Stripe] STRIPE_PRICE_${tier.toUpperCase()} is not set or uses a placeholder value ("${priceId}"). Checkout for the ${tier} plan will fail until a real Stripe Price ID is configured.`);
+            logger.warn(
+                `[Stripe] STRIPE_PRICE_${tier.toUpperCase()} is not set or uses a placeholder value ("${priceId}"). Checkout for the ${tier} plan will fail until a real Stripe Price ID is configured.`,
+            );
         }
     }
 }
 
 export const TIER_FOR_PRICE = Object.fromEntries(
-    Object.entries(STRIPE_PRICE_IDS).map(([tier, priceId]) => [priceId, tier])
+    Object.entries(STRIPE_PRICE_IDS).map(([tier, priceId]) => [priceId, tier]),
 );
 
 export async function createCustomer(userId, email) {
     try {
         const customer = await requireStripe().customers.create({ email, metadata: { vaultlister_user_id: userId } });
-        await query.run('UPDATE users SET stripe_customer_id = ?, updated_at = NOW() WHERE id = ?',
-            [customer.id, userId]);
+        await query.run('UPDATE users SET stripe_customer_id = ?, updated_at = NOW() WHERE id = ?', [
+            customer.id,
+            userId,
+        ]);
         logger.info(`[Stripe] Created customer ${customer.id} for user ${userId}`);
         return customer;
     } catch (error) {
@@ -64,7 +70,7 @@ export async function createCheckoutSession(userId, priceId, successUrl, cancelU
             line_items: [{ price: priceId, quantity: 1 }],
             success_url: successUrl,
             cancel_url: cancelUrl,
-            metadata: { vaultlister_user_id: userId }
+            metadata: { vaultlister_user_id: userId },
         });
 
         logger.info(`[Stripe] Checkout session ${session.id} created for user ${userId}`);
@@ -79,7 +85,7 @@ export async function createPortalSession(customerId, returnUrl) {
     try {
         const session = await requireStripe().billingPortal.sessions.create({
             customer: customerId,
-            return_url: returnUrl
+            return_url: returnUrl,
         });
         return session;
     } catch (error) {
@@ -102,7 +108,7 @@ export async function cancelSubscription(subscriptionId) {
 export async function getSubscription(subscriptionId) {
     try {
         return await requireStripe().subscriptions.retrieve(subscriptionId, {
-            expand: ['items.data.price.product']
+            expand: ['items.data.price.product'],
         });
     } catch (error) {
         logger.error('[Stripe] getSubscription failed', null, { detail: error.message });
@@ -111,9 +117,5 @@ export async function getSubscription(subscriptionId) {
 }
 
 export function constructWebhookEvent(rawBody, signature) {
-    return requireStripe().webhooks.constructEvent(
-        rawBody,
-        signature,
-        process.env.STRIPE_WEBHOOK_SECRET
-    );
+    return requireStripe().webhooks.constructEvent(rawBody, signature, process.env.STRIPE_WEBHOOK_SECRET);
 }

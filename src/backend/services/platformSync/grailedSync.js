@@ -18,7 +18,7 @@ export async function syncGrailedShop(shop) {
         listings: { synced: 0, created: 0, updated: 0, errors: [] },
         orders: { synced: 0, created: 0, errors: [] },
         startedAt: new Date().toISOString(),
-        completedAt: null
+        completedAt: null,
     };
 
     try {
@@ -27,7 +27,8 @@ export async function syncGrailedShop(shop) {
 
         if (oauthMode === 'mock') {
             logger.warn('[PlatformSync] Grailed sync in mock mode — returning empty data');
-            results.message = 'Grailed sync requires connected account with valid credentials. Use Automations to sync via browser automation.';
+            results.message =
+                'Grailed sync requires connected account with valid credentials. Use Automations to sync via browser automation.';
             results.completedAt = new Date().toISOString();
             return results;
         }
@@ -41,29 +42,32 @@ export async function syncGrailedShop(shop) {
         results.completedAt = new Date().toISOString();
 
         try {
-            await query.run(`
+            await query.run(
+                `
                 UPDATE shops SET last_sync_at = ?, sync_error = NULL, updated_at = ?
                 WHERE id = ?
-            `, [results.completedAt, results.completedAt, shop.id]);
+            `,
+                [results.completedAt, results.completedAt, shop.id],
+            );
         } catch (err) {
             if (err.message.includes('no such column')) {
-                await query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`,
-                    [results.completedAt, shop.id]);
+                await query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`, [results.completedAt, shop.id]);
             }
         }
 
         return results;
-
     } catch (error) {
         results.error = error.message;
         results.completedAt = new Date().toISOString();
 
         try {
-            await query.run(`UPDATE shops SET sync_error = ?, updated_at = ? WHERE id = ?`,
-                [error.message, new Date().toISOString(), shop.id]);
+            await query.run(`UPDATE shops SET sync_error = ?, updated_at = ? WHERE id = ?`, [
+                error.message,
+                new Date().toISOString(),
+                shop.id,
+            ]);
         } catch (err) {
-            await query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`,
-                [new Date().toISOString(), shop.id]);
+            await query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`, [new Date().toISOString(), shop.id]);
         }
 
         throw error;
@@ -80,27 +84,51 @@ async function syncGrailedListings(shop, accessToken, mode) {
             try {
                 const mapped = mapGrailedListingToVaultLister(grailedListing, shop);
 
-                const existing = await query.get(`
+                const existing = await query.get(
+                    `
                     SELECT id FROM listings
                     WHERE user_id = ? AND platform = 'grailed' AND platform_listing_id = ?
-                `, [shop.user_id, grailedListing.id]);
+                `,
+                    [shop.user_id, grailedListing.id],
+                );
 
                 if (existing) {
-                    await query.run(`
+                    await query.run(
+                        `
                         UPDATE listings SET title = ?, price = ?, status = ?,
                             platform_specific_data = ?, updated_at = ?
                         WHERE id = ?
-                    `, [mapped.title, mapped.price, mapped.status,
-                        JSON.stringify(mapped.externalData), new Date().toISOString(), existing.id]);
+                    `,
+                        [
+                            mapped.title,
+                            mapped.price,
+                            mapped.status,
+                            JSON.stringify(mapped.externalData),
+                            new Date().toISOString(),
+                            existing.id,
+                        ],
+                    );
                     result.updated++;
                 } else {
-                    await query.run(`
+                    await query.run(
+                        `
                         INSERT INTO listings (id, user_id, inventory_id, platform, title, price,
                             status, platform_listing_id, platform_specific_data, created_at, updated_at)
                         VALUES (?, ?, ?, 'grailed', ?, ?, ?, ?, ?, ?, ?)
-                    `, [uuidv4(), shop.user_id, null, mapped.title, mapped.price,
-                        mapped.status, mapped.externalListingId,
-                        JSON.stringify(mapped.externalData), new Date().toISOString(), new Date().toISOString()]);
+                    `,
+                        [
+                            uuidv4(),
+                            shop.user_id,
+                            null,
+                            mapped.title,
+                            mapped.price,
+                            mapped.status,
+                            mapped.externalListingId,
+                            JSON.stringify(mapped.externalData),
+                            new Date().toISOString(),
+                            new Date().toISOString(),
+                        ],
+                    );
                     result.created++;
                 }
                 result.synced++;
@@ -126,21 +154,37 @@ async function syncGrailedOrders(shop, accessToken, mode) {
             try {
                 const mapped = mapGrailedOrderToSale(grailedOrder, shop);
 
-                const existing = await query.get(`
+                const existing = await query.get(
+                    `
                     SELECT id FROM sales WHERE user_id = ? AND platform_order_id = ? AND platform = 'grailed'
-                `, [shop.user_id, grailedOrder.id]);
+                `,
+                    [shop.user_id, grailedOrder.id],
+                );
 
                 if (!existing) {
-                    await query.run(`
+                    await query.run(
+                        `
                         INSERT INTO sales (id, user_id, listing_id, platform, platform_order_id, buyer_username,
                             sale_price, platform_fee, shipping_cost, net_profit,
                             status, notes, created_at, updated_at)
                         VALUES (?, ?, ?, 'grailed', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    `, [uuidv4(), shop.user_id, null, mapped.externalOrderId, mapped.buyerUsername,
-                        mapped.salePrice, mapped.platformFees, mapped.shippingCost,
-                        mapped.netProfit, mapped.status,
-                        mapped.externalData ? JSON.stringify(mapped.externalData) : null,
-                        new Date().toISOString(), new Date().toISOString()]);
+                    `,
+                        [
+                            uuidv4(),
+                            shop.user_id,
+                            null,
+                            mapped.externalOrderId,
+                            mapped.buyerUsername,
+                            mapped.salePrice,
+                            mapped.platformFees,
+                            mapped.shippingCost,
+                            mapped.netProfit,
+                            mapped.status,
+                            mapped.externalData ? JSON.stringify(mapped.externalData) : null,
+                            new Date().toISOString(),
+                            new Date().toISOString(),
+                        ],
+                    );
                     result.created++;
                 }
                 result.synced++;
@@ -182,8 +226,8 @@ function mapGrailedListingToVaultLister(grailedListing, shop) {
             category: grailedListing.category,
             condition: grailedListing.condition,
             followers: grailedListing.followers,
-            syncedAt: new Date().toISOString()
-        }
+            syncedAt: new Date().toISOString(),
+        },
     };
 }
 
@@ -193,7 +237,7 @@ function mapGrailedListingToVaultLister(grailedListing, shop) {
  */
 function mapGrailedOrderToSale(grailedOrder, shop) {
     const price = grailedOrder.price;
-    const platformFee = (price * 0.09) + 0.30; // 9% + $0.30 Grailed fee
+    const platformFee = price * 0.09 + 0.3; // 9% + $0.30 Grailed fee
     const shippingCost = grailedOrder.shippingCost || 0;
 
     return {
@@ -209,27 +253,27 @@ function mapGrailedOrderToSale(grailedOrder, shop) {
             platform: 'grailed',
             orderId: grailedOrder.id,
             listingId: grailedOrder.listingId,
-            syncedAt: new Date().toISOString()
-        }
+            syncedAt: new Date().toISOString(),
+        },
     };
 }
 
 function mapGrailedStatus(status) {
     const statusMap = {
-        'for_sale': 'active',
-        'reserved': 'pending',
-        'sold': 'sold',
-        'deleted': 'ended'
+        for_sale: 'active',
+        reserved: 'pending',
+        sold: 'sold',
+        deleted: 'ended',
     };
     return statusMap[status] || 'draft';
 }
 
 function mapGrailedOrderStatus(status) {
     const statusMap = {
-        'pending': 'pending',
-        'shipped': 'shipped',
-        'delivered': 'delivered',
-        'cancelled': 'cancelled'
+        pending: 'pending',
+        shipped: 'shipped',
+        delivered: 'delivered',
+        cancelled: 'cancelled',
     };
     return statusMap[status] || 'pending';
 }

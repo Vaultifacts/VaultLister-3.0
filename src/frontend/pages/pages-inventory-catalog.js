@@ -13,7 +13,7 @@ const PLATFORM_DISPLAY_NAMES = {
     vinted: 'Vinted (U.S)',
     mercari: 'Mercari (U.S)',
     facebook: 'Facebook Marketplace',
-    whatnot: 'Whatnot'
+    whatnot: 'Whatnot',
 };
 
 Object.assign(pages, {
@@ -23,7 +23,7 @@ Object.assign(pages, {
         // Apply category filter if active
         const categoryFilter = store.state.categoryFilter;
         if (categoryFilter) {
-            items = items.filter(i => i.category === categoryFilter);
+            items = items.filter((i) => i.category === categoryFilter);
         }
 
         // Lazy-load categories on first render
@@ -36,29 +36,37 @@ Object.assign(pages, {
         const totalValue = items.reduce((sum, i) => sum + (parseFloat(i.list_price) || 0), 0);
         const totalCost = items.reduce((sum, i) => sum + (parseFloat(i.cost_price) || 0), 0);
         const potentialProfit = totalValue - totalCost;
-        const lowStockItems = items.filter(i => {
+        const lowStockItems = items.filter((i) => {
             const qty = i.quantity != null ? i.quantity : 1;
             const threshold = i.low_stock_threshold || 5;
             return qty <= threshold && qty > 0;
         }).length;
-        const outOfStock = items.filter(i => (i.quantity != null ? i.quantity : 1) === 0).length;
-        const activeItems = items.filter(i => i.status === 'active').length;
-        const draftItems = items.filter(i => i.status === 'draft').length;
+        const outOfStock = items.filter((i) => (i.quantity != null ? i.quantity : 1) === 0).length;
+        const activeItems = items.filter((i) => i.status === 'active').length;
+        const draftItems = items.filter((i) => i.status === 'draft').length;
 
         // Calculate stale stock (items 90+ days old)
         const today = new Date();
-        const staleItems = items.filter(i => {
+        const staleItems = items.filter((i) => {
             const createdDate = new Date(i.created_at);
             const diffDays = Math.floor((today - createdDate) / (1000 * 60 * 60 * 24));
             return diffDays >= 90;
         }).length;
 
         // Calculate average age of inventory
-        const avgAge = items.length > 0 ? Math.max(0, Math.round(items.reduce((sum, i) => {
-            const createdDate = new Date(i.created_at);
-            const days = Math.floor((today - createdDate) / (1000 * 60 * 60 * 24));
-            return sum + (Number.isFinite(days) && days >= 0 ? days : 0);
-        }, 0) / items.length)) : 0;
+        const avgAge =
+            items.length > 0
+                ? Math.max(
+                      0,
+                      Math.round(
+                          items.reduce((sum, i) => {
+                              const createdDate = new Date(i.created_at);
+                              const days = Math.floor((today - createdDate) / (1000 * 60 * 60 * 24));
+                              return sum + (Number.isFinite(days) && days >= 0 ? days : 0);
+                          }, 0) / items.length,
+                      ),
+                  )
+                : 0;
 
         // Fix #11: scroll to top on page render
         if (typeof window !== 'undefined') window.scrollTo(0, 0);
@@ -68,19 +76,19 @@ Object.assign(pages, {
         if (statCardFilter) {
             const today2 = new Date();
             if (statCardFilter === 'active') {
-                items = items.filter(i => i.status === 'active');
+                items = items.filter((i) => i.status === 'active');
             } else if (statCardFilter === 'draft') {
-                items = items.filter(i => i.status === 'draft');
+                items = items.filter((i) => i.status === 'draft');
             } else if (statCardFilter === 'low_stock') {
-                items = items.filter(i => {
+                items = items.filter((i) => {
                     const qty = i.quantity != null ? i.quantity : 1;
                     const thr = i.low_stock_threshold || 5;
                     return qty <= thr && qty > 0;
                 });
             } else if (statCardFilter === 'out_of_stock') {
-                items = items.filter(i => (i.quantity != null ? i.quantity : 1) === 0);
+                items = items.filter((i) => (i.quantity != null ? i.quantity : 1) === 0);
             } else if (statCardFilter === 'stale') {
-                items = items.filter(i => {
+                items = items.filter((i) => {
                     const d = new Date(i.created_at);
                     return Math.floor((today2 - d) / (1000 * 60 * 60 * 24)) >= 90;
                 });
@@ -113,7 +121,7 @@ Object.assign(pages, {
                                 <button aria-haspopup="menu" class="btn btn-secondary" data-testid="hero-tools-dropdown">
                                     ${components.icon('tool', 16)} Tools
                                 </button>
-                                <div class="dropdown-menu" style="right: 0; min-width: 160px;">
+                                <div class="dropdown-menu" style="right: 0; min-width: 160px;" aria-hidden="true">
                                     <button class="dropdown-item" data-testid="tools-bulk-prices" onclick="handlers.showBulkPriceUpdate()">
                                         ${components.icon('dollar-sign', 16)} Bulk Prices
                                     </button>
@@ -213,7 +221,7 @@ Object.assign(pages, {
                         <input type="text" class="form-input" id="inventory-search" data-testid="inventory-search-input" style="width: 200px" placeholder="Search items..." value="${store.state.searchTerm || ''}" oninput="handlers.debouncedSearch(this.value)" aria-label="Search inventory">
                         <select aria-label="Category Filter Select" class="form-select" style="width:140px;height:36px;font-size:13px;" onchange="handlers.filterByCategory(this.value)" data-testid="category-filter-select">
                             <option value="">All Categories</option>
-                            ${(store.state.inventoryCategories || []).map(c => '<option value="' + escapeHtml(c.name) + '"' + (store.state.categoryFilter === c.name ? ' selected' : '') + '>' + escapeHtml(c.name) + '</option>').join('')}
+                            ${(store.state.inventoryCategories || []).map((c) => '<option value="' + escapeHtml(c.name) + '"' + (store.state.categoryFilter === c.name ? ' selected' : '') + '>' + escapeHtml(c.name) + '</option>').join('')}
                         </select>
                         <button class="btn btn-secondary btn-sm" data-testid="inventory-filter-btn" onclick="handlers.showFilterMenu()">
                             ${components.icon('filter', 14)} Filters
@@ -272,7 +280,9 @@ Object.assign(pages, {
                     </div>
                 </div>
                 <div class="table-container inventory-catalog-table-container">
-                    ${items.length > 0 ? `
+                    ${
+                        items.length > 0
+                            ? `
                         <table class="table inventory-catalog-table">
                             <colgroup>
                                 <col style="width: 4%;">
@@ -297,63 +307,84 @@ Object.assign(pages, {
                                         <label for="select-all-checkbox" style="margin-left: 4px; font-size: 12px; cursor: pointer;" title="Select all">All</label>
                                     </th>
                                     <th>Image</th>
-                                    <th class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-title" onclick="handlers.toggleSort('title')">
-                                        Item <span id="sort-title">${handlers.currentSort?.field === "title" ? (handlers.currentSort?.direction === "asc" ? "↑" : "↓") : "⇅"}</span>
+                                    <th scope="col" class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-title" onclick="handlers.toggleSort('title')">
+                                        Item <span id="sort-title">${handlers.currentSort?.field === 'title' ? (handlers.currentSort?.direction === 'asc' ? '↑' : '↓') : '⇅'}</span>
                                     </th>
-                                    <th class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-sku" onclick="handlers.toggleSort('sku')">
-                                        SKU <span id="sort-sku">${handlers.currentSort?.field === "sku" ? (handlers.currentSort?.direction === "asc" ? "↑" : "↓") : "⇅"}</span>
+                                    <th scope="col" class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-sku" onclick="handlers.toggleSort('sku')">
+                                        SKU <span id="sort-sku">${handlers.currentSort?.field === 'sku' ? (handlers.currentSort?.direction === 'asc' ? '↑' : '↓') : '⇅'}</span>
                                     </th>
-                                    <th class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-price" onclick="handlers.toggleSort('list_price')">
-                                        Price <span id="sort-list_price">${handlers.currentSort?.field === "list_price" ? (handlers.currentSort?.direction === "asc" ? "↑" : "↓") : "⇅"}</span>
+                                    <th scope="col" class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-price" onclick="handlers.toggleSort('list_price')">
+                                        Price <span id="sort-list_price">${handlers.currentSort?.field === 'list_price' ? (handlers.currentSort?.direction === 'asc' ? '↑' : '↓') : '⇅'}</span>
                                     </th>
-                                    <th data-testid="sort-header-marketplace">
+                                    <th scope="col" data-testid="sort-header-marketplace">
                                         Marketplace
                                     </th>
-                                    <th class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-quantity" onclick="handlers.toggleSort('quantity')">
-                                        Qty On Hand <span id="sort-quantity">${handlers.currentSort?.field === "quantity" ? (handlers.currentSort?.direction === "asc" ? "↑" : "↓") : "⇅"}</span>
+                                    <th scope="col" class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-quantity" onclick="handlers.toggleSort('quantity')">
+                                        Qty On Hand <span id="sort-quantity">${handlers.currentSort?.field === 'quantity' ? (handlers.currentSort?.direction === 'asc' ? '↑' : '↓') : '⇅'}</span>
                                     </th>
-                                    <th class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-stock-level" onclick="handlers.toggleSort('stock_level')">
-                                        Stock Level <span id="sort-stock_level">${handlers.currentSort?.field === "stock_level" ? (handlers.currentSort?.direction === "asc" ? "↑" : "↓") : "⇅"}</span>
+                                    <th scope="col" class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-stock-level" onclick="handlers.toggleSort('stock_level')">
+                                        Stock Level <span id="sort-stock_level">${handlers.currentSort?.field === 'stock_level' ? (handlers.currentSort?.direction === 'asc' ? '↑' : '↓') : '⇅'}</span>
                                     </th>
-                                    <th class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-location" onclick="handlers.toggleSort('location')">
-                                        Location <span id="sort-location">${handlers.currentSort?.field === "location" ? (handlers.currentSort?.direction === "asc" ? "↑" : "↓") : "⇅"}</span>
+                                    <th scope="col" class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-location" onclick="handlers.toggleSort('location')">
+                                        Location <span id="sort-location">${handlers.currentSort?.field === 'location' ? (handlers.currentSort?.direction === 'asc' ? '↑' : '↓') : '⇅'}</span>
                                     </th>
-                                    <th class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-tags" onclick="handlers.toggleSort('tags')">
-                                        Tags <span id="sort-tags">${handlers.currentSort?.field === "tags" ? (handlers.currentSort?.direction === "asc" ? "↑" : "↓") : "⇅"}</span>
+                                    <th scope="col" class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-tags" onclick="handlers.toggleSort('tags')">
+                                        Tags <span id="sort-tags">${handlers.currentSort?.field === 'tags' ? (handlers.currentSort?.direction === 'asc' ? '↑' : '↓') : '⇅'}</span>
                                     </th>
-                                    <th class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-status" onclick="handlers.toggleSort('status')">
-                                        Status <span id="sort-status">${handlers.currentSort?.field === "status" ? (handlers.currentSort?.direction === "asc" ? "↑" : "↓") : "⇅"}</span>
+                                    <th scope="col" class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-status" onclick="handlers.toggleSort('status')">
+                                        Status <span id="sort-status">${handlers.currentSort?.field === 'status' ? (handlers.currentSort?.direction === 'asc' ? '↑' : '↓') : '⇅'}</span>
                                     </th>
-                                    <th class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-created" onclick="handlers.toggleSort('created_at')">
-                                        Created <span id="sort-created_at">${handlers.currentSort?.field === "created_at" ? (handlers.currentSort?.direction === "asc" ? "↑" : "↓") : "⇅"}</span>
+                                    <th scope="col" class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-created" onclick="handlers.toggleSort('created_at')">
+                                        Created <span id="sort-created_at">${handlers.currentSort?.field === 'created_at' ? (handlers.currentSort?.direction === 'asc' ? '↑' : '↓') : '⇅'}</span>
                                     </th>
-                                    <th class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-age" onclick="handlers.toggleSort('age')">
-                                        Age <span id="sort-age">${handlers.currentSort?.field === "age" ? (handlers.currentSort?.direction === "asc" ? "↑" : "↓") : "⇅"}</span>
+                                    <th scope="col" class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-age" onclick="handlers.toggleSort('age')">
+                                        Age <span id="sort-age">${handlers.currentSort?.field === 'age' ? (handlers.currentSort?.direction === 'asc' ? '↑' : '↓') : '⇅'}</span>
                                     </th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${items.map(item => {
-                                    // Use cached parsed values to avoid repeated JSON.parse
-                                    let imageUrl = null;
-                                    const images = item._parsedImages || (item._parsedImages = (() => { try { return JSON.parse(item.images || '[]'); } catch { return []; } })());
-                                    if (images.length > 0) imageUrl = images[0];
+                                ${items
+                                    .map((item) => {
+                                        // Use cached parsed values to avoid repeated JSON.parse
+                                        let imageUrl = null;
+                                        const images =
+                                            item._parsedImages ||
+                                            (item._parsedImages = (() => {
+                                                try {
+                                                    return JSON.parse(item.images || '[]');
+                                                } catch {
+                                                    return [];
+                                                }
+                                            })());
+                                        if (images.length > 0) imageUrl = images[0];
 
-                                    let tagsHtml = '-';
-                                    const tags = item._parsedTags || (item._parsedTags = (() => { try { return JSON.parse(item.tags || '[]'); } catch { return []; } })());
-                                    if (tags.length > 0) {
-                                        tagsHtml = tags.slice(0, 2).map(tag =>
-                                            `<span class="badge badge-gray text-xs">${escapeHtml(tag)}</span>`
-                                        ).join('');
-                                    }
+                                        let tagsHtml = '-';
+                                        const tags =
+                                            item._parsedTags ||
+                                            (item._parsedTags = (() => {
+                                                try {
+                                                    return JSON.parse(item.tags || '[]');
+                                                } catch {
+                                                    return [];
+                                                }
+                                            })());
+                                        if (tags.length > 0) {
+                                            tagsHtml = tags
+                                                .slice(0, 2)
+                                                .map(
+                                                    (tag) =>
+                                                        `<span class="badge badge-gray text-xs">${escapeHtml(tag)}</span>`,
+                                                )
+                                                .join('');
+                                        }
 
-                                    const firstLetter = item.title ? item.title.charAt(0).toUpperCase() : '?';
-                                    const imageHtml = imageUrl ?
-                                        `<img class="inventory-thumb" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(item.title)}">` :
-                                        `<div class="inventory-thumb inventory-thumb-placeholder">${firstLetter}</div>`;
+                                        const firstLetter = item.title ? item.title.charAt(0).toUpperCase() : '?';
+                                        const imageHtml = imageUrl
+                                            ? `<img class="inventory-thumb" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(item.title)}">`
+                                            : `<div class="inventory-thumb inventory-thumb-placeholder">${firstLetter}</div>`;
 
-                                    return `
+                                        return `
                                     <tr class="hover:bg-gray-50 cursor-pointer"
                                         data-context-menu="inventory-item"
                                         data-id="${item.id}"
@@ -371,32 +402,59 @@ Object.assign(pages, {
                                         <td class="text-sm">${escapeHtml(item.sku || '-')}</td>
                                         <td>
                                             <div class="font-medium">C$${parseFloat(item.list_price || 0).toFixed(2)}</div>
-                                            ${item.cost_price ? (() => {
-                                                const listP = parseFloat(item.list_price || 0);
-                                                const costP = parseFloat(item.cost_price || 0);
-                                                const profit = listP - costP;
-                                                const marginPct = listP > 0 ? (profit / listP * 100) : 0;
-                                                const marginColor = marginPct > 50 ? 'var(--success)' : marginPct > 20 ? 'var(--warning-600)' : 'var(--error)';
-                                                return `
+                                            ${
+                                                item.cost_price
+                                                    ? (() => {
+                                                          const listP = parseFloat(item.list_price || 0);
+                                                          const costP = parseFloat(item.cost_price || 0);
+                                                          const profit = listP - costP;
+                                                          const marginPct = listP > 0 ? (profit / listP) * 100 : 0;
+                                                          const marginColor =
+                                                              marginPct > 50
+                                                                  ? 'var(--success)'
+                                                                  : marginPct > 20
+                                                                    ? 'var(--warning-600)'
+                                                                    : 'var(--error)';
+                                                          return `
                                                 <div class="text-xs text-gray-500">Cost: C$${costP.toFixed(2)}</div>
                                                 <div class="text-xs" style="color: ${marginColor}; font-weight: 600;">
                                                     Profit: C$${profit.toFixed(2)} (${marginPct.toFixed(0)}%)
                                                 </div>`;
-                                            })() : ''}
+                                                      })()
+                                                    : ''
+                                            }
                                         </td>
                                         <td>
                                             <div class="flex gap-1">
                                                 ${(() => {
-                                                    const itemListings = (store.state.listings || []).filter(l => l.inventory_id === item.id);
+                                                    const itemListings = (store.state.listings || []).filter(
+                                                        (l) => l.inventory_id === item.id,
+                                                    );
                                                     if (itemListings.length === 0) {
                                                         return '<span class="text-xs text-gray-500">Not listed</span>';
                                                     }
-                                                    return itemListings.map(l => {
-                                                        const statusColors = { active: 'var(--success)', pending: 'var(--warning-600)', draft: 'var(--gray-400)', error: 'var(--error)', ended: 'var(--error)', sold: 'var(--primary-500)', archived: 'var(--gray-400)' };
-                                                        const sc = statusColors[l.status] || 'var(--gray-400)';
-                                                        const dot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + sc + ';margin-left:-2px;margin-right:4px;" title="' + ((l.status || 'unknown').charAt(0).toUpperCase() + (l.status || 'unknown').slice(1)) + '"></span>';
-                                                        return components.platformBadge(l.platform) + dot;
-                                                    }).join(' ');
+                                                    return itemListings
+                                                        .map((l) => {
+                                                            const statusColors = {
+                                                                active: 'var(--success)',
+                                                                pending: 'var(--warning-600)',
+                                                                draft: 'var(--gray-400)',
+                                                                error: 'var(--error)',
+                                                                ended: 'var(--error)',
+                                                                sold: 'var(--primary-500)',
+                                                                archived: 'var(--gray-400)',
+                                                            };
+                                                            const sc = statusColors[l.status] || 'var(--gray-400)';
+                                                            const dot =
+                                                                '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' +
+                                                                sc +
+                                                                ';margin-left:-2px;margin-right:4px;" title="' +
+                                                                ((l.status || 'unknown').charAt(0).toUpperCase() +
+                                                                    (l.status || 'unknown').slice(1)) +
+                                                                '"></span>';
+                                                            return components.platformBadge(l.platform) + dot;
+                                                        })
+                                                        .join(' ');
                                                 })()}
                                             </div>
                                         </td>
@@ -420,12 +478,16 @@ Object.assign(pages, {
                                             })()}
                                         </td>
                                         <td>
-                                            ${item.location || item.bin_location ? `
+                                            ${
+                                                item.location || item.bin_location
+                                                    ? `
                                                 <div class="flex flex-col gap-1">
                                                     ${item.location ? `<span class="text-sm font-medium">${escapeHtml(item.location)}</span>` : ''}
                                                     ${item.bin_location ? `<span class="text-xs text-gray-500">${components.icon('map-pin', 10)} ${escapeHtml(item.bin_location)}</span>` : ''}
                                                 </div>
-                                            ` : '<span class="text-xs text-gray-400">Not set</span>'}
+                                            `
+                                                    : '<span class="text-xs text-gray-400">Not set</span>'
+                                            }
                                         </td>
                                         <td>
                                             <div class="flex gap-1 flex-wrap">
@@ -480,22 +542,27 @@ Object.assign(pages, {
                                         </td>
                                     </tr>
                                     `;
-                                }).join('')}
+                                    })
+                                    .join('')}
                             </tbody>
                         </table>
-                    ` : (store.state.searchTerm ? `
+                    `
+                            : store.state.searchTerm
+                              ? `
                         <div class="empty-state" style="text-align: center; padding: 3rem 1rem;">
                             <div style="font-size: 48px; margin-bottom: 12px; opacity: 0.5;">${components.icon('search', 48)}</div>
                             <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">No results for "${escapeHtml(store.state.searchTerm)}"</h2>
                             <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;">Try adjusting your search or removing filters</p>
                             <button class="btn btn-secondary btn-sm" onclick="document.getElementById('inventory-search').value=''; handlers.debouncedSearch('')">Clear Search</button>
                         </div>
-                    ` : components.emptyState(
-                        'No inventory items yet',
-                        'Start by adding your first item to track and manage your stock',
-                        'Add Your First Item',
-                        "modals.addItem()"
-                    ))}
+                    `
+                              : components.emptyState(
+                                    'No inventory items yet',
+                                    'Start by adding your first item to track and manage your stock',
+                                    'Add Your First Item',
+                                    'modals.addItem()',
+                                )
+                    }
                 </div>
             </div>
 
@@ -536,7 +603,6 @@ Object.assign(pages, {
 
     // Listings page,
 
-
     listings() {
         const currentListingsTab = store.state.listingsTab || 'listings';
 
@@ -557,7 +623,7 @@ Object.assign(pages, {
                                 ${components.icon('plus', 16)} Add New Listing(s)
                                 ${components.icon('chevron-down', 14)}
                             </button>
-                            <div class="dropdown-menu" style="min-width: 220px; right: 0;">
+                            <div class="dropdown-menu" style="min-width: 220px; right: 0;" aria-hidden="true">
                                 <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); handlers.showImportFromMarketplace()">
                                     ${components.icon('import', 16)} Import From Marketplace
                                 </button>
@@ -598,7 +664,7 @@ Object.assign(pages, {
                                 ${components.icon('plus', 16)} Add New Listing(s)
                                 ${components.icon('chevron-down', 14)}
                             </button>
-                            <div class="dropdown-menu" style="min-width: 220px; right: 0;">
+                            <div class="dropdown-menu" style="min-width: 220px; right: 0;" aria-hidden="true">
                                 <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); handlers.showImportFromMarketplace()">
                                     ${components.icon('import', 16)} Import From Marketplace
                                 </button>
@@ -625,7 +691,7 @@ Object.assign(pages, {
 
         // Archived listings tab
         if (currentListingsTab === 'archived') {
-            const archivedListings = (store.state.listings || []).filter(l => l.status === 'archived');
+            const archivedListings = (store.state.listings || []).filter((l) => l.status === 'archived');
             return `
                 <div class="page-header flex justify-between items-start">
                     <div>
@@ -640,7 +706,9 @@ Object.assign(pages, {
                     <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('recently-deleted')">Recently Deleted</button>
                 </div>
                 <div class="card">
-                    ${archivedListings.length > 0 ? `
+                    ${
+                        archivedListings.length > 0
+                            ? `
                         <div class="table-container">
                             <table class="table">
                                 <thead>
@@ -654,10 +722,15 @@ Object.assign(pages, {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${archivedListings.map(listing => {
-                                        const images = listing.images ? (typeof listing.images === 'string' ? JSON.parse(listing.images) : listing.images) : [];
-                                        const firstImage = images[0] || 'https://placehold.co/60x60?text=No+Image';
-                                        return `
+                                    ${archivedListings
+                                        .map((listing) => {
+                                            const images = listing.images
+                                                ? typeof listing.images === 'string'
+                                                    ? JSON.parse(listing.images)
+                                                    : listing.images
+                                                : [];
+                                            const firstImage = images[0] || 'https://placehold.co/60x60?text=No+Image';
+                                            return `
                                             <tr>
                                                 <td>
                                                     <img src="${escapeHtml(firstImage)}" alt="${escapeHtml(listing.title)}"
@@ -682,16 +755,19 @@ Object.assign(pages, {
                                                 </td>
                                             </tr>
                                         `;
-                                    }).join('')}
+                                        })
+                                        .join('')}
                                 </tbody>
                             </table>
                         </div>
-                    ` : components.emptyState(
-                        'No archived listings',
-                        'Listings you archive will appear here. Archive listings that are no longer active but you want to keep for reference.',
-                        null,
-                        null
-                    )}
+                    `
+                            : components.emptyState(
+                                  'No archived listings',
+                                  'Listings you archive will appear here. Archive listings that are no longer active but you want to keep for reference.',
+                                  null,
+                                  null,
+                              )
+                    }
                 </div>
             `;
         }
@@ -702,47 +778,58 @@ Object.assign(pages, {
 
         // Calculate listings stats (before filtering)
         const totalListings = allListings.length;
-        const activeListings = allListings.filter(l => l.status === 'active').length;
-        const draftListings = allListings.filter(l => l.status === 'draft').length;
-        const archivedListings = allListings.filter(l => l.status === 'archived').length;
+        const activeListings = allListings.filter((l) => l.status === 'active').length;
+        const draftListings = allListings.filter((l) => l.status === 'draft').length;
+        const archivedListings = allListings.filter((l) => l.status === 'archived').length;
 
         // Apply filters
         const statusFilter = store.state.listingsStatusFilter || 'all';
         const platformFilter = store.state.listingsPlatformFilter || 'all';
         const folderFilter = store.state.listingsFolderFilter || 'all';
-        const listingPlatformOptions = (window.SUPPORTED_PLATFORMS || []).map(platform => ({
+        const listingPlatformOptions = (window.SUPPORTED_PLATFORMS || []).map((platform) => ({
             value: platform.id,
-            label: PLATFORM_DISPLAY_NAMES[platform.id] || platform.name || platform.id
+            label: PLATFORM_DISPLAY_NAMES[platform.id] || platform.name || platform.id,
         }));
-        const currentPlatformLabel = platformFilter === 'all'
-            ? 'All Platforms'
-            : (listingPlatformOptions.find(platform => platform.value === platformFilter)?.label || (platformFilter.charAt(0).toUpperCase() + platformFilter.slice(1)));
-        const renderListingPlatformIcon = (platform, label = '') => platform === 'all'
-            ? `<span style="width:24px;height:24px;border-radius:50%;background:var(--gray-200);color:var(--gray-600);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">${components.icon('grid', 14)}</span>`
-            : `<span style="width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">${components.platformLogo(platform, 20, label)}</span>`;
+        const currentPlatformLabel =
+            platformFilter === 'all'
+                ? 'All Platforms'
+                : listingPlatformOptions.find((platform) => platform.value === platformFilter)?.label ||
+                  platformFilter.charAt(0).toUpperCase() + platformFilter.slice(1);
+        const renderListingPlatformIcon = (platform, label = '') =>
+            platform === 'all'
+                ? `<span style="width:24px;height:24px;border-radius:50%;background:var(--gray-200);color:var(--gray-600);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">${components.icon('grid', 14)}</span>`
+                : `<span style="width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">${components.platformLogo(platform, 20, label)}</span>`;
 
         // Filter out archived listings from main view by default (they have their own tab)
         if (statusFilter === 'all') {
-            listings = listings.filter(l => l.status !== 'archived');
+            listings = listings.filter((l) => l.status !== 'archived');
         } else {
-            listings = listings.filter(l => l.status === statusFilter);
+            listings = listings.filter((l) => l.status === statusFilter);
         }
         if (platformFilter !== 'all') {
-            listings = listings.filter(l => l.platform === platformFilter);
+            listings = listings.filter((l) => l.platform === platformFilter);
         }
         if (folderFilter !== 'all') {
-            listings = listings.filter(l => l.folder_id === folderFilter);
+            listings = listings.filter((l) => l.folder_id === folderFilter);
         }
 
         // Get visible columns
-        const visibleColumns = store.state.listingsVisibleColumns || ['image', 'item', 'platform', 'price', 'status', 'stale', 'listed'];
+        const visibleColumns = store.state.listingsVisibleColumns || [
+            'image',
+            'item',
+            'platform',
+            'price',
+            'status',
+            'stale',
+            'listed',
+        ];
 
         // Calculate engagement scores for listings
         const getEngagementScore = (listing) => {
             const views = listing.views || 0;
             const likes = listing.likes || 0;
             const shares = listing.shares || 0;
-            return Math.min(100, Math.round((views * 0.3 + likes * 2 + shares * 5)));
+            return Math.min(100, Math.round(views * 0.3 + likes * 2 + shares * 5));
         };
 
         // Calculate SEO score for listings
@@ -751,12 +838,16 @@ Object.assign(pages, {
             if (listing.title && listing.title.length >= 20) score += 25;
             if (listing.description && listing.description.length >= 100) score += 25;
             if (listing.tags && listing.tags.length >= 3) score += 25;
-            if (listing.images && (typeof listing.images === 'string' ? JSON.parse(listing.images) : listing.images).length >= 4) score += 25;
+            if (
+                listing.images &&
+                (typeof listing.images === 'string' ? JSON.parse(listing.images) : listing.images).length >= 4
+            )
+                score += 25;
             return score;
         };
 
         // Calculate stale listings (older than 30 days without refresh)
-        const staleListings = allListings.filter(l => {
+        const staleListings = allListings.filter((l) => {
             if (l.status !== 'active') return false;
             const lastRefresh = l.last_relisted_at || l.listed_at || l.created_at;
             const daysSinceRefresh = Math.floor((Date.now() - new Date(lastRefresh).getTime()) / (1000 * 60 * 60 * 24));
@@ -765,23 +856,29 @@ Object.assign(pages, {
 
         // Calculate platform distribution
         const platformDistribution = {};
-        allListings.filter(l => l.status === 'active').forEach(l => {
-            const platform = l.platform || 'other';
-            platformDistribution[platform] = (platformDistribution[platform] || 0) + 1;
-        });
+        allListings
+            .filter((l) => l.status === 'active')
+            .forEach((l) => {
+                const platform = l.platform || 'other';
+                platformDistribution[platform] = (platformDistribution[platform] || 0) + 1;
+            });
 
         // Calculate average listing age
-        const avgAge = activeListings > 0
-            ? Math.round(allListings.filter(l => l.status === 'active').reduce((sum, l) => {
-                const created = new Date(l.listed_at || l.created_at);
-                return sum + Math.floor((Date.now() - created.getTime()) / (1000 * 60 * 60 * 24));
-            }, 0) / activeListings)
-            : 0;
+        const avgAge =
+            activeListings > 0
+                ? Math.round(
+                      allListings
+                          .filter((l) => l.status === 'active')
+                          .reduce((sum, l) => {
+                              const created = new Date(l.listed_at || l.created_at);
+                              return sum + Math.floor((Date.now() - created.getTime()) / (1000 * 60 * 60 * 24));
+                          }, 0) / activeListings,
+                  )
+                : 0;
 
         // Get listing health score
-        const healthScore = activeListings > 0
-            ? Math.round(((activeListings - staleListings) / activeListings) * 100)
-            : null;
+        const healthScore =
+            activeListings > 0 ? Math.round(((activeListings - staleListings) / activeListings) * 100) : null;
 
         return `
             <!-- Breadcrumb Navigation -->
@@ -798,18 +895,26 @@ Object.assign(pages, {
                             Listings
                         </a>
                     </li>
-                    ${currentListingsTab !== 'listings' ? `
+                    ${
+                        currentListingsTab !== 'listings'
+                            ? `
                         <li style="color: var(--gray-400);">${components.icon('chevron-right', 12)}</li>
                         <li style="color: var(--primary-600); font-weight: 600;">
                             ${currentListingsTab === 'archived' ? 'Archived' : currentListingsTab === 'templates' ? 'Templates' : currentListingsTab === 'recently-deleted' ? 'Recently Deleted' : 'Listings'}
                         </li>
-                    ` : ''}
-                    ${statusFilter !== 'all' ? `
+                    `
+                            : ''
+                    }
+                    ${
+                        statusFilter !== 'all'
+                            ? `
                         <li style="color: var(--gray-400);">${components.icon('chevron-right', 12)}</li>
                         <li style="color: var(--primary-600); font-weight: 600;">
                             ${statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
                         </li>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                 </ol>
             </nav>
 
@@ -834,7 +939,7 @@ Object.assign(pages, {
                             <button aria-haspopup="menu" class="btn btn-secondary" style="display:flex;align-items:center;gap:6px;">
                                 ${components.icon('upload', 16)} Import ${components.icon('chevron-down', 12)}
                             </button>
-                            <div class="dropdown-menu" style="min-width:170px;">
+                            <div class="dropdown-menu" style="min-width:170px;" aria-hidden="true">
                                 <button class="dropdown-item" onclick="modals.showInventoryImport()">
                                     ${components.icon('file-text', 14)} Import from CSV
                                 </button>
@@ -848,7 +953,7 @@ Object.assign(pages, {
                                 ${components.icon('plus', 16)} Add New Listing(s)
                                 ${components.icon('chevron-down', 14)}
                             </button>
-                            <div class="dropdown-menu" style="min-width: 220px; right: 0;">
+                            <div class="dropdown-menu" style="min-width: 220px; right: 0;" aria-hidden="true">
                                 <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); handlers.showImportFromMarketplace()">
                                     ${components.icon('import', 16)} Import From Marketplace
                                 </button>
@@ -866,11 +971,14 @@ Object.assign(pages, {
 
                 <div class="listings-health-bar">
                     <div class="listings-health-score">
-                        ${healthScore === null ? `
+                        ${
+                            healthScore === null
+                                ? `
                         <div class="health-score-ring empty" style="display:flex;align-items:center;justify-content:center;min-height:60px;">
                             <span class="health-score-value" style="font-size:12px;color:var(--gray-500);text-align:center;">Add listings to see your Listing Health Score</span>
                         </div>
-                        ` : `
+                        `
+                                : `
                         <div class="health-score-ring ${healthScore >= 80 ? 'good' : healthScore >= 50 ? 'warning' : 'poor'}">
                             <svg viewBox="0 0 36 36" class="health-ring-svg">
                                 <path class="health-ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
@@ -879,7 +987,8 @@ Object.assign(pages, {
                             <span class="health-score-value">${healthScore}%</span>
                         </div>
                         <div class="health-score-tier ${healthScore >= 80 ? 'tier-good' : healthScore >= 50 ? 'tier-warning' : 'tier-poor'}">${healthScore >= 80 ? 'Excellent' : healthScore >= 50 ? 'Good' : 'Needs Work'}</div>
-                        `}
+                        `
+                        }
                         <div class="health-score-label">Listing Health</div>
                     </div>
 
@@ -936,12 +1045,17 @@ Object.assign(pages, {
                     </div>
 
                     <div class="listings-platform-mini">
-                        ${Object.entries(platformDistribution).slice(0, 4).map(([platform, count]) => `
+                        ${Object.entries(platformDistribution)
+                            .slice(0, 4)
+                            .map(
+                                ([platform, count]) => `
                             <div class="platform-mini-badge" title="${platform}: ${count} listings">
                                 <span class="platform-mini-icon" style="background: var(--${platform}, var(--gray-500));">${platform.charAt(0).toUpperCase()}</span>
                                 <span class="platform-mini-count">${count}</span>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
             </div>
@@ -960,9 +1074,13 @@ Object.assign(pages, {
                             <label for="listings-filter-folder" style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Folder</label>
                             <select aria-label="Listings-filter-folder" id="listings-filter-folder" name="listings-filter-folder" class="form-select" style="width: 180px;" onchange="handlers.filterListings('folder', this.value)">
                                 <option value="all" ${folderFilter === 'all' ? 'selected' : ''}>All Folders</option>
-                                ${folders.map(folder => `
+                                ${folders
+                                    .map(
+                                        (folder) => `
                                     <option value="${folder.id}" ${folderFilter === folder.id ? 'selected' : ''}>${escapeHtml(folder.name)}</option>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </select>
                         </div>
                         <div>
@@ -978,20 +1096,24 @@ Object.assign(pages, {
                         <div>
                             <label style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Platform</label>
                             <div class="dropdown" id="listings-platform-dropdown" onclick="event.stopPropagation(); this.classList.toggle('open');" style="position:relative;">
-                                <button class="shop-switch-btn" style="width:220px;display:flex;align-items:center;gap:8px;justify-content:space-between;" aria-haspopup="listbox" aria-label="Filter by platform">
+                                <button class="shop-switch-btn" style="width:220px;display:flex;align-items:center;gap:8px;justify-content:space-between;" aria-haspopup="menu">
                                     <span style="display:flex;align-items:center;gap:6px;">
                                         ${renderListingPlatformIcon(platformFilter, currentPlatformLabel)}
                                         <span>${escapeHtml(currentPlatformLabel)}</span>
                                     </span>
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
                                 </button>
-                                <div class="dropdown-menu" style="min-width:220px;top:100%;left:0;right:auto;max-height:320px;overflow-y:auto;">
-                                    ${[{ value: 'all', label: 'All Platforms' }, ...listingPlatformOptions].map(p => `
+                                <div class="dropdown-menu" style="min-width:220px;top:100%;left:0;right:auto;max-height:320px;overflow-y:auto;" aria-hidden="true">
+                                    ${[{ value: 'all', label: 'All Platforms' }, ...listingPlatformOptions]
+                                        .map(
+                                            (p) => `
                                         <button class="dropdown-item ${platformFilter === p.value ? 'active' : ''}" style="display:flex;align-items:center;gap:10px;" onclick="event.stopPropagation(); document.getElementById('listings-platform-dropdown').classList.remove('open'); handlers.filterListings('platform', '${p.value}')">
                                             ${renderListingPlatformIcon(p.value, p.label)}
                                             ${escapeHtml(p.label)}
                                         </button>
-                                    `).join('')}
+                                    `,
+                                        )
+                                        .join('')}
                                 </div>
                             </div>
                         </div>
@@ -1001,7 +1123,7 @@ Object.assign(pages, {
                                 <button aria-haspopup="menu" class="btn btn-secondary">
                                     ${components.icon('list', 14)} Customize
                                 </button>
-                                <div class="dropdown-menu" style="min-width: 200px; right: 0; padding: 12px;">
+                                <div class="dropdown-menu" style="min-width: 200px; right: 0; padding: 12px;" aria-hidden="true">
                                     <div style="font-weight: 600; margin-bottom: 8px; font-size: 13px;">Show Columns</div>
                                     ${[
                                         { id: 'image', label: 'Image' },
@@ -1015,8 +1137,10 @@ Object.assign(pages, {
                                         { id: 'stale', label: 'Stale Listing' },
                                         { id: 'listed', label: 'Listed Date' },
                                         { id: 'views', label: 'Views' },
-                                        { id: 'likes', label: 'Likes' }
-                                    ].map(col => `
+                                        { id: 'likes', label: 'Likes' },
+                                    ]
+                                        .map(
+                                            (col) => `
                                         <label class="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer" style="font-size: 13px;">
                                             <input aria-label="Toggle ${col.label}" type="checkbox"
                                                    ${visibleColumns.includes(col.id) ? 'checked' : ''}
@@ -1024,15 +1148,21 @@ Object.assign(pages, {
                                                    onclick="event.stopPropagation()">
                                             <span>${col.label}</span>
                                         </label>
-                                    `).join('')}
+                                    `,
+                                        )
+                                        .join('')}
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                ${store.state.listingsLoading ? `
+                ${
+                    store.state.listingsLoading
+                        ? `
                     <div class="listings-loading-skeleton">
-                        ${[1,2,3,4,5].map(() => `
+                        ${[1, 2, 3, 4, 5]
+                            .map(
+                                () => `
                             <div class="listing-skeleton-row">
                                 <div class="skeleton-cell skeleton-shimmer" style="width: 30px; height: 30px; border-radius: 4px;"></div>
                                 <div class="skeleton-cell skeleton-shimmer" style="width: 48px; height: 48px; border-radius: 8px;"></div>
@@ -1045,81 +1175,106 @@ Object.assign(pages, {
                                 <div class="skeleton-cell skeleton-shimmer" style="width: 60px; height: 22px; border-radius: 12px;"></div>
                                 <div class="skeleton-cell skeleton-shimmer" style="width: 80px; height: 14px;"></div>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
-                ` : `
-                    <div class="table-container table-sticky-header" style="max-height: 70vh; overflow-y: auto;">
+                `
+                        : `
+                    <div class="table-container table-sticky-header" tabindex="0" style="max-height: 70vh; overflow-y: auto;">
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th style="width: 50px"></th>
-                                ${visibleColumns.includes('image') ? '<th style="width: 60px">Image</th>' : ''}
-                                ${visibleColumns.includes('item') ? '<th>Item</th>' : ''}
-                                ${visibleColumns.includes('sku') ? '<th>SKU</th>' : ''}
-                                ${visibleColumns.includes('platform') ? '<th>Platform</th>' : ''}
-                                ${visibleColumns.includes('price') ? '<th>Price</th>' : ''}
-                                ${visibleColumns.includes('condition') ? '<th>Condition</th>' : ''}
-                                ${visibleColumns.includes('labels') ? '<th>Labels</th>' : ''}
-                                ${visibleColumns.includes('status') ? '<th>Status</th>' : ''}
-                                ${visibleColumns.includes('stale') ? '<th>Stale Listing</th>' : ''}
-                                ${visibleColumns.includes('listed') ? '<th>Listed</th>' : ''}
-                                ${visibleColumns.includes('views') ? '<th>Views</th>' : ''}
-                                ${visibleColumns.includes('likes') ? '<th>Likes</th>' : ''}
-                                <th style="width: 60px">Actions</th>
+                                    <th scope="col" style="width: 50px"></th>
+                                ${visibleColumns.includes('image') ? '<th scope="col" style="width: 60px">Image</th>' : ''}
+                                ${visibleColumns.includes('item') ? '<th scope="col">Item</th>' : ''}
+                                ${visibleColumns.includes('sku') ? '<th scope="col">SKU</th>' : ''}
+                                ${visibleColumns.includes('platform') ? '<th scope="col">Platform</th>' : ''}
+                                ${visibleColumns.includes('price') ? '<th scope="col">Price</th>' : ''}
+                                ${visibleColumns.includes('condition') ? '<th scope="col">Condition</th>' : ''}
+                                ${visibleColumns.includes('labels') ? '<th scope="col">Labels</th>' : ''}
+                                ${visibleColumns.includes('status') ? '<th scope="col">Status</th>' : ''}
+                                ${visibleColumns.includes('stale') ? '<th scope="col">Stale Listing</th>' : ''}
+                                ${visibleColumns.includes('listed') ? '<th scope="col">Listed</th>' : ''}
+                                ${visibleColumns.includes('views') ? '<th scope="col">Views</th>' : ''}
+                                ${visibleColumns.includes('likes') ? '<th scope="col">Likes</th>' : ''}
+                                <th scope="col" style="width: 60px">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                ${listings.length > 0 ? `
-                                ${listings.map((listing, index) => {
-                                    let imageUrl = null;
-                                    let inventorySku = '';
-                                    let inventoryCondition = '';
-                                    let inventoryLabels = [];
-                                    try {
-                                        const inventory = store.state.inventory.find(i => i.id === listing.inventory_id);
-                                        if (inventory) {
-                                            const images = JSON.parse(inventory.images || '[]');
-                                            if (images && images.length > 0) imageUrl = images[0];
-                                            inventorySku = inventory.sku || '';
-                                            inventoryCondition = inventory.condition || '';
-                                            try {
-                                                inventoryLabels = JSON.parse(inventory.labels || '[]');
-                                            } catch (e) { inventoryLabels = []; }
+                ${
+                    listings.length > 0
+                        ? `
+                                ${listings
+                                    .map((listing, index) => {
+                                        let imageUrl = null;
+                                        let inventorySku = '';
+                                        let inventoryCondition = '';
+                                        let inventoryLabels = [];
+                                        try {
+                                            const inventory = store.state.inventory.find(
+                                                (i) => i.id === listing.inventory_id,
+                                            );
+                                            if (inventory) {
+                                                const images = JSON.parse(inventory.images || '[]');
+                                                if (images && images.length > 0) imageUrl = images[0];
+                                                inventorySku = inventory.sku || '';
+                                                inventoryCondition = inventory.condition || '';
+                                                try {
+                                                    inventoryLabels = JSON.parse(inventory.labels || '[]');
+                                                } catch (e) {
+                                                    inventoryLabels = [];
+                                                }
+                                            }
+                                        } catch (e) {}
+
+                                        const firstLetter = listing.title ? listing.title.charAt(0).toUpperCase() : '?';
+                                        const imageHtml = imageUrl
+                                            ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(listing.title)}" style="width:48px;height:48px;object-fit:cover;border-radius:var(--radius-md)">`
+                                            : `<div style="width:48px;height:48px;border-radius:var(--radius-md);background:var(--primary-100);color:var(--primary-600);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:20px;">${firstLetter}</div>`;
+
+                                        const expandedListings = store.state.expandedListings || [];
+                                        const isExpanded = expandedListings.includes(listing.id);
+
+                                        // Get all platform prices for this inventory item
+                                        const relatedListings =
+                                            store.state.listings.filter(
+                                                (l) => l.inventory_id === listing.inventory_id,
+                                            ) || [];
+
+                                        // Calculate stale listing status (stale if listed > 30 days ago with low activity)
+                                        const listedDate = listing.listed_at ? new Date(listing.listed_at) : null;
+                                        const daysSinceListed = listedDate
+                                            ? Math.floor((new Date() - listedDate) / (1000 * 60 * 60 * 24))
+                                            : 0;
+                                        const hasLowActivity = (listing.views || 0) < 10 && (listing.likes || 0) < 3;
+                                        const isStale = daysSinceListed > 30 && hasLowActivity;
+                                        const staleStatus = isStale
+                                            ? `Stale (${daysSinceListed}d)`
+                                            : daysSinceListed > 0
+                                              ? `Good (${daysSinceListed}d)`
+                                              : 'New';
+                                        const staleBadgeClass = isStale
+                                            ? 'badge-warning'
+                                            : daysSinceListed > 14
+                                              ? 'badge-info'
+                                              : 'badge-success';
+
+                                        // Calculate platform-specific expiration
+                                        const platformExpirations = { ebay: 30, mercari: 365, depop: 180, grailed: 90 };
+                                        const expirationDays = platformExpirations[listing.platform] || null;
+                                        let daysUntilExpiration = null;
+                                        let expirationLabel = '';
+                                        if (expirationDays && listedDate) {
+                                            const expiresAt = new Date(
+                                                listedDate.getTime() + expirationDays * 86400000,
+                                            );
+                                            daysUntilExpiration = Math.ceil((expiresAt - new Date()) / 86400000);
+                                            if (daysUntilExpiration <= 0) expirationLabel = 'Expired';
+                                            else expirationLabel = daysUntilExpiration + 'd left';
                                         }
-                                    } catch (e) {}
 
-                                    const firstLetter = listing.title ? listing.title.charAt(0).toUpperCase() : '?';
-                                    const imageHtml = imageUrl ?
-                                        `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(listing.title)}" style="width:48px;height:48px;object-fit:cover;border-radius:var(--radius-md)">` :
-                                        `<div style="width:48px;height:48px;border-radius:var(--radius-md);background:var(--primary-100);color:var(--primary-600);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:20px;">${firstLetter}</div>`;
-
-                                    const expandedListings = store.state.expandedListings || [];
-                                    const isExpanded = expandedListings.includes(listing.id);
-
-                                    // Get all platform prices for this inventory item
-                                    const relatedListings = store.state.listings.filter(l => l.inventory_id === listing.inventory_id) || [];
-
-                                    // Calculate stale listing status (stale if listed > 30 days ago with low activity)
-                                    const listedDate = listing.listed_at ? new Date(listing.listed_at) : null;
-                                    const daysSinceListed = listedDate ? Math.floor((new Date() - listedDate) / (1000 * 60 * 60 * 24)) : 0;
-                                    const hasLowActivity = (listing.views || 0) < 10 && (listing.likes || 0) < 3;
-                                    const isStale = daysSinceListed > 30 && hasLowActivity;
-                                    const staleStatus = isStale ? `Stale (${daysSinceListed}d)` : daysSinceListed > 0 ? `Good (${daysSinceListed}d)` : 'New';
-                                    const staleBadgeClass = isStale ? 'badge-warning' : daysSinceListed > 14 ? 'badge-info' : 'badge-success';
-
-                                    // Calculate platform-specific expiration
-                                    const platformExpirations = { ebay: 30, mercari: 365, depop: 180, grailed: 90 };
-                                    const expirationDays = platformExpirations[listing.platform] || null;
-                                    let daysUntilExpiration = null;
-                                    let expirationLabel = '';
-                                    if (expirationDays && listedDate) {
-                                        const expiresAt = new Date(listedDate.getTime() + expirationDays * 86400000);
-                                        daysUntilExpiration = Math.ceil((expiresAt - new Date()) / 86400000);
-                                        if (daysUntilExpiration <= 0) expirationLabel = 'Expired';
-                                        else expirationLabel = daysUntilExpiration + 'd left';
-                                    }
-
-                                    return `
+                                        return `
                                     <tr class="listing-row" data-listing-id="${listing.id}" data-context-menu="listing-item">
                                         <td>
                                             <button class="btn btn-icon btn-sm" onclick="handlers.toggleListingDetails('${listing.id}')" style="transform: rotate(${isExpanded ? '90deg' : '0deg'}); transition: transform 0.2s;" aria-label="${isExpanded ? 'Collapse' : 'Expand'} listing details" aria-expanded="${isExpanded}">
@@ -1127,7 +1282,9 @@ Object.assign(pages, {
                                             </button>
                                         </td>
                                         ${visibleColumns.includes('image') ? `<td>${imageHtml}</td>` : ''}
-                                        ${visibleColumns.includes('item') ? `
+                                        ${
+                                            visibleColumns.includes('item')
+                                                ? `
                                             <td>
                                                 <div class="font-medium">${escapeHtml(listing.title)}</div>
                                                 <div class="text-xs text-gray-500">
@@ -1137,44 +1294,82 @@ Object.assign(pages, {
                                                     </span>
                                                 </div>
                                             </td>
-                                        ` : ''}
+                                        `
+                                                : ''
+                                        }
                                         ${visibleColumns.includes('sku') ? `<td class="text-sm text-gray-600">${escapeHtml(inventorySku) || '-'}</td>` : ''}
                                         ${visibleColumns.includes('platform') ? `<td>${components.platformBadge(listing.platform)}</td>` : ''}
-                                        ${visibleColumns.includes('price') ? `
+                                        ${
+                                            visibleColumns.includes('price')
+                                                ? `
                                             <td>
                                                 <div class="font-medium">C$${listing.price}</div>
                                                 <span class="listing-fee text-sm text-muted">${listing.platform_fee ? 'Fee: C$' + parseFloat(listing.platform_fee).toFixed(2) : 'Fee: N/A'}</span>
                                                 ${(() => {
-                                                    const priceHistory = listing.price_history ? (typeof listing.price_history === 'string' ? JSON.parse(listing.price_history) : listing.price_history) : [listing.price * 1.1, listing.price * 1.05, listing.price];
+                                                    const priceHistory = listing.price_history
+                                                        ? typeof listing.price_history === 'string'
+                                                            ? JSON.parse(listing.price_history)
+                                                            : listing.price_history
+                                                        : [listing.price * 1.1, listing.price * 1.05, listing.price];
                                                     if (priceHistory.length >= 2) {
-                                                        const prices = priceHistory.map(p => p.price || p);
+                                                        const prices = priceHistory.map((p) => p.price || p);
                                                         const max = Math.max(...prices);
                                                         const min = Math.min(...prices);
                                                         const range = max - min || 1;
                                                         const w = 50;
                                                         const h = 16;
-                                                        const pts = prices.map((p, i) => ((i / (prices.length - 1)) * w).toFixed(1) + ',' + (h - ((p - min) / range) * (h - 2) - 1).toFixed(1)).join(' ');
-                                                        const trend = prices[prices.length - 1] >= prices[0] ? 'var(--success)' : 'var(--error)';
-                                                        return '<svg viewBox="0 0 ' + w + ' ' + h + '" style="width: 50px; height: 16px; display: block; margin-top: 4px;"><polyline points="' + pts + '" fill="none" stroke="' + trend + '" stroke-width="1.5" stroke-linecap="round"/></svg>';
+                                                        const pts = prices
+                                                            .map(
+                                                                (p, i) =>
+                                                                    ((i / (prices.length - 1)) * w).toFixed(1) +
+                                                                    ',' +
+                                                                    (h - ((p - min) / range) * (h - 2) - 1).toFixed(1),
+                                                            )
+                                                            .join(' ');
+                                                        const trend =
+                                                            prices[prices.length - 1] >= prices[0]
+                                                                ? 'var(--success)'
+                                                                : 'var(--error)';
+                                                        return (
+                                                            '<svg viewBox="0 0 ' +
+                                                            w +
+                                                            ' ' +
+                                                            h +
+                                                            '" style="width: 50px; height: 16px; display: block; margin-top: 4px;"><polyline points="' +
+                                                            pts +
+                                                            '" fill="none" stroke="' +
+                                                            trend +
+                                                            '" stroke-width="1.5" stroke-linecap="round"/></svg>'
+                                                        );
                                                     }
                                                     return '';
                                                 })()}
                                             </td>
-                                        ` : ''}
+                                        `
+                                                : ''
+                                        }
                                         ${visibleColumns.includes('condition') ? `<td><span class="badge badge-gray">${escapeHtml(inventoryCondition) || '-'}</span></td>` : ''}
-                                        ${visibleColumns.includes('labels') ? `<td>${inventoryLabels.length > 0 ? inventoryLabels.map(l => `<span class="badge badge-primary badge-sm" style="margin-right: 4px;">${escapeHtml(l)}</span>`).join('') : '-'}</td>` : ''}
+                                        ${visibleColumns.includes('labels') ? `<td>${inventoryLabels.length > 0 ? inventoryLabels.map((l) => `<span class="badge badge-primary badge-sm" style="margin-right: 4px;">${escapeHtml(l)}</span>`).join('') : '-'}</td>` : ''}
                                         ${visibleColumns.includes('status') ? `<td><span class="badge badge-${listing.status === 'active' ? 'success' : 'gray'}">${listing.status}</span></td>` : ''}
                                         ${visibleColumns.includes('stale') ? `<td><span class="badge ${staleBadgeClass}">${staleStatus}</span></td>` : ''}
-                                        ${visibleColumns.includes('listed') ? `
+                                        ${
+                                            visibleColumns.includes('listed')
+                                                ? `
                                             <td class="text-sm text-gray-500">
                                                 ${listing.listed_at ? new Date(listing.listed_at).toLocaleDateString() : '-'}
-                                                ${daysUntilExpiration !== null ? `
+                                                ${
+                                                    daysUntilExpiration !== null
+                                                        ? `
                                                     <div class="listing-expiration ${daysUntilExpiration <= 0 ? 'expired' : daysUntilExpiration <= 7 ? 'urgent' : 'normal'}">
                                                         ${components.icon('clock', 10)} ${expirationLabel}
                                                     </div>
-                                                ` : ''}
+                                                `
+                                                        : ''
+                                                }
                                             </td>
-                                        ` : ''}
+                                        `
+                                                : ''
+                                        }
                                         ${visibleColumns.includes('views') ? `<td class="text-sm text-gray-500">${listing.views || 0}</td>` : ''}
                                         ${visibleColumns.includes('likes') ? `<td class="text-sm text-gray-500">${listing.likes || 0}</td>` : ''}
                                         <td>
@@ -1182,7 +1377,7 @@ Object.assign(pages, {
                                                 <button aria-haspopup="menu" class="btn btn-icon btn-sm" aria-label="More options">
                                                     ${components.icon('more-vertical', 16)}
                                                 </button>
-                                                <div class="dropdown-menu" style="min-width: 150px; right: 0;">
+                                                <div class="dropdown-menu" style="min-width: 150px; right: 0;" aria-hidden="true">
                                                     <button class="dropdown-item" onclick="handlers.viewListing('${listing.id}')">
                                                         ${components.icon('eye', 14)} View Details
                                                     </button>
@@ -1192,11 +1387,15 @@ Object.assign(pages, {
                                                     <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); modals.advancedCrosslist(['${listing.id}'])">
                                                         ${components.icon('share', 14)} Advanced Crosslist
                                                     </button>
-                                                    ${isStale ? `
+                                                    ${
+                                                        isStale
+                                                            ? `
                                                     <button class="dropdown-item text-warning" onclick="handlers.refreshListing('${listing.id}')" style="color: var(--warning-600);">
                                                         ${components.icon('refresh-cw', 14)} Relist Now
                                                     </button>
-                                                    ` : ''}
+                                                    `
+                                                            : ''
+                                                    }
                                                     <button class="dropdown-item" onclick="handlers.showPriceDropScheduler('${listing.id}')" style="color: var(--primary-600);">
                                                         ${components.icon('trending-down', 14)} Schedule Price Drop
                                                     </button>
@@ -1211,20 +1410,26 @@ Object.assign(pages, {
                                             </div>
                                         </td>
                                     </tr>
-                                    ${isExpanded ? `
+                                    ${
+                                        isExpanded
+                                            ? `
                                         <tr class="listing-details-row">
                                             <td colspan="8" style="background: var(--gray-50); padding: 16px;">
                                                 <div class="grid grid-cols-2 gap-4">
                                                     <div>
                                                         <h2 class="font-semibold text-sm mb-2">Platform Prices</h2>
                                                         <div class="flex flex-col gap-2">
-                                                            ${relatedListings.map(rl => `
+                                                            ${relatedListings
+                                                                .map(
+                                                                    (rl) => `
                                                                 <div class="flex items-center justify-between p-2 bg-white rounded border" style="border-color: var(--gray-200)">
                                                                     ${components.platformBadge(rl.platform)}
                                                                     <span class="font-medium">C$${rl.price}</span>
                                                                     <span class="badge badge-${rl.status === 'active' ? 'success' : 'gray'} text-xs">${rl.status}</span>
                                                                 </div>
-                                                            `).join('')}
+                                                            `,
+                                                                )
+                                                                .join('')}
                                                         </div>
                                                     </div>
                                                     <div>
@@ -1269,10 +1474,14 @@ Object.assign(pages, {
                                                 </div>
                                             </td>
                                         </tr>
-                                    ` : ''}
+                                    `
+                                            : ''
+                                    }
                                     `;
-                                }).join('')}
-                ` : `
+                                    })
+                                    .join('')}
+                `
+                        : `
                             <tr>
                                 <td colspan="${2 + visibleColumns.length}" style="text-align: center; padding: 48px 24px;">
                                     <div style="color: var(--gray-400); margin-bottom: 8px;">
@@ -1288,17 +1497,18 @@ Object.assign(pages, {
                                     </button>
                                 </td>
                             </tr>
-                `}
+                `
+                }
                         </tbody>
                     </table>
                     </div>
-                `}
+                `
+                }
             </div>
         `;
     },
 
     // Listing Templates page,
-
 
     templates() {
         const templates = store.state.templates || [];
@@ -1316,13 +1526,17 @@ Object.assign(pages, {
 
             <div class="stats-grid mb-6">
                 ${components.statCard('Total Templates', templates.length, 'edit')}
-                ${components.statCard('Favorites', templates.filter(t => t.is_favorite).length, 'activity')}
-                ${components.statCard('Most Used', templates.length > 0 ? templates.reduce((max, t) => t.use_count > max.use_count ? t : max, templates[0]).use_count : 0, 'analytics')}
+                ${components.statCard('Favorites', templates.filter((t) => t.is_favorite).length, 'activity')}
+                ${components.statCard('Most Used', templates.length > 0 ? templates.reduce((max, t) => (t.use_count > max.use_count ? t : max), templates[0]).use_count : 0, 'analytics')}
             </div>
 
-            ${templates.length > 0 ? `
+            ${
+                templates.length > 0
+                    ? `
                 <div class="grid grid-cols-1 gap-4">
-                    ${templates.map(template => `
+                    ${templates
+                        .map(
+                            (template) => `
                         <div class="card">
                             <div class="card-body">
                                 <div class="flex items-start justify-between">
@@ -1335,27 +1549,45 @@ Object.assign(pages, {
                                         ${template.description ? `<p class="text-sm text-gray-600 mb-3">${escapeHtml(template.description)}</p>` : ''}
 
                                         <div class="grid grid-cols-2 gap-4 text-sm">
-                                            ${template.title_pattern ? `
+                                            ${
+                                                template.title_pattern
+                                                    ? `
                                                 <div>
                                                     <span class="text-gray-500">Title Pattern:</span>
                                                     <div class="font-medium">${escapeHtml(template.title_pattern)}</div>
                                                 </div>
-                                            ` : ''}
-                                            ${template.pricing_strategy ? `
+                                            `
+                                                    : ''
+                                            }
+                                            ${
+                                                template.pricing_strategy
+                                                    ? `
                                                 <div>
                                                     <span class="text-gray-500">Pricing:</span>
                                                     <div class="font-medium">${escapeHtml(template.pricing_strategy)}${template.markup_percentage ? ` (+${template.markup_percentage}%)` : ''}</div>
                                                 </div>
-                                            ` : ''}
-                                            ${template.tags && template.tags.length > 0 ? `
+                                            `
+                                                    : ''
+                                            }
+                                            ${
+                                                template.tags && template.tags.length > 0
+                                                    ? `
                                                 <div style="grid-column: span 2">
                                                     <span class="text-gray-500">Tags:</span>
                                                     <div class="flex gap-2 flex-wrap mt-1">
-                                                        ${template.tags.slice(0, 5).map(tag => `<span class="badge badge-gray">${escapeHtml(tag)}</span>`).join('')}
+                                                        ${template.tags
+                                                            .slice(0, 5)
+                                                            .map(
+                                                                (tag) =>
+                                                                    `<span class="badge badge-gray">${escapeHtml(tag)}</span>`,
+                                                            )
+                                                            .join('')}
                                                         ${template.tags.length > 5 ? `<span class="text-xs text-gray-500">+${template.tags.length - 5} more</span>` : ''}
                                                     </div>
                                                 </div>
-                                            ` : ''}
+                                            `
+                                                    : ''
+                                            }
                                         </div>
 
                                         <div class="flex items-center gap-4 mt-4 pt-4" style="border-top: 1px solid var(--gray-200)">
@@ -1378,45 +1610,107 @@ Object.assign(pages, {
                                 </div>
                             </div>
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
-            ` : components.emptyState(
-                'No templates yet',
-                'Create reusable listing templates to speed up your workflow',
-                'Create Template',
-                "modals.createTemplate()"
-            )}
+            `
+                    : components.emptyState(
+                          'No templates yet',
+                          'Create reusable listing templates to speed up your workflow',
+                          'Create Template',
+                          'modals.createTemplate()',
+                      )
+            }
         `;
     },
 
     // Automations page,
 
-
     automations() {
         const BUILTIN_AUTOMATIONS = [
-            { id: 'poshmark_share_closet', platform: 'poshmark', name: 'Share Closet', description: 'Automatically share all your Poshmark listings at set intervals', icon: 'share-2', category: 'sharing' },
-            { id: 'poshmark_follow_back', platform: 'poshmark', name: 'Follow Back', description: 'Automatically follow users who follow you', icon: 'user-plus', category: 'engagement' },
-            { id: 'poshmark_offer_likers', platform: 'poshmark', name: 'Offer to Likers', description: 'Automatically send discounted offers to users who liked your listings', icon: 'tag', category: 'offers' },
-            { id: 'poshmark_community_share', platform: 'poshmark', name: 'Community Sharing', description: 'Share items from community feeds to increase visibility', icon: 'users', category: 'sharing' },
-            { id: 'depop_refresh', platform: 'depop', name: 'Refresh Listings', description: 'Automatically refresh Depop listings to boost visibility', icon: 'refresh-cw', category: 'listing' },
-            { id: 'grailed_bump', platform: 'grailed', name: 'Bump Listings', description: 'Automatically bump Grailed listings to the top', icon: 'trending-up', category: 'listing' },
-            { id: 'mercari_relist', platform: 'mercari', name: 'Relist Items', description: 'Automatically relist sold-out or expired Mercari items', icon: 'repeat', category: 'listing' },
-            { id: 'facebook_refresh', platform: 'facebook', name: 'Refresh Listings', description: 'Automatically refresh Facebook Marketplace listings', icon: 'refresh-cw', category: 'listing' },
+            {
+                id: 'poshmark_share_closet',
+                platform: 'poshmark',
+                name: 'Share Closet',
+                description: 'Automatically share all your Poshmark listings at set intervals',
+                icon: 'share-2',
+                category: 'sharing',
+            },
+            {
+                id: 'poshmark_follow_back',
+                platform: 'poshmark',
+                name: 'Follow Back',
+                description: 'Automatically follow users who follow you',
+                icon: 'user-plus',
+                category: 'engagement',
+            },
+            {
+                id: 'poshmark_offer_likers',
+                platform: 'poshmark',
+                name: 'Offer to Likers',
+                description: 'Automatically send discounted offers to users who liked your listings',
+                icon: 'tag',
+                category: 'offers',
+            },
+            {
+                id: 'poshmark_community_share',
+                platform: 'poshmark',
+                name: 'Community Sharing',
+                description: 'Share items from community feeds to increase visibility',
+                icon: 'users',
+                category: 'sharing',
+            },
+            {
+                id: 'depop_refresh',
+                platform: 'depop',
+                name: 'Refresh Listings',
+                description: 'Automatically refresh Depop listings to boost visibility',
+                icon: 'refresh-cw',
+                category: 'listing',
+            },
+            {
+                id: 'grailed_bump',
+                platform: 'grailed',
+                name: 'Bump Listings',
+                description: 'Automatically bump Grailed listings to the top',
+                icon: 'trending-up',
+                category: 'listing',
+            },
+            {
+                id: 'mercari_relist',
+                platform: 'mercari',
+                name: 'Relist Items',
+                description: 'Automatically relist sold-out or expired Mercari items',
+                icon: 'repeat',
+                category: 'listing',
+            },
+            {
+                id: 'facebook_refresh',
+                platform: 'facebook',
+                name: 'Refresh Listings',
+                description: 'Automatically refresh Facebook Marketplace listings',
+                icon: 'refresh-cw',
+                category: 'listing',
+            },
         ];
         // Use shared automation presets if available, otherwise fall back to built-in list
-        const allPresets = (window.AUTOMATION_PRESETS && window.AUTOMATION_PRESETS.length > 0)
-            ? window.AUTOMATION_PRESETS
-            : BUILTIN_AUTOMATIONS;
+        const allPresets =
+            window.AUTOMATION_PRESETS && window.AUTOMATION_PRESETS.length > 0
+                ? window.AUTOMATION_PRESETS
+                : BUILTIN_AUTOMATIONS;
 
         // Merge presets with existing rules to show enabled state
-        const automations = allPresets.map(preset => {
-            const existing = (store.state.automations || []).find(a => a.type === preset.id || a.name === preset.name);
+        const automations = allPresets.map((preset) => {
+            const existing = (store.state.automations || []).find(
+                (a) => a.type === preset.id || a.name === preset.name,
+            );
             return {
                 ...preset,
                 id: existing ? existing.id : preset.id,
                 is_enabled: existing ? existing.is_enabled : 0,
                 exists: !!existing,
-                schedule: existing?.schedule || null
+                schedule: existing?.schedule || null,
             };
         });
 
@@ -1426,23 +1720,53 @@ Object.assign(pages, {
             startTime: '09:00',
             endTime: '21:00',
             daysOfWeek: [1, 2, 3, 4, 5, 6, 0], // Mon-Sun
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         };
 
         const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
         // Use real run history from state (loaded via API), with mock fallback
         const runHistory = store.state.automationHistoryRuns || [
-            { timestamp: new Date(Date.now() - 3600000).toISOString(), action: 'Daily Closet Share', status: 'success', result: 'Shared 45 items' },
-            { timestamp: new Date(Date.now() - 7200000).toISOString(), action: 'Send Offers to Likers', status: 'success', result: 'Sent 12 offers' },
-            { timestamp: new Date(Date.now() - 10800000).toISOString(), action: 'Relist Stale Items', status: 'success', result: 'Relisted 3 items (60+ days stale)' },
-            { timestamp: new Date(Date.now() - 14400000).toISOString(), action: 'Delist Stale Items', status: 'success', result: 'Delisted 2 items (90+ days inactive)' },
-            { timestamp: new Date(Date.now() - 18000000).toISOString(), action: 'Follow Back', status: 'success', result: 'Followed 8 users' },
-            { timestamp: new Date(Date.now() - 86400000).toISOString(), action: 'Weekly Price Drop', status: 'failed', result: 'API rate limit exceeded' }
+            {
+                timestamp: new Date(Date.now() - 3600000).toISOString(),
+                action: 'Daily Closet Share',
+                status: 'success',
+                result: 'Shared 45 items',
+            },
+            {
+                timestamp: new Date(Date.now() - 7200000).toISOString(),
+                action: 'Send Offers to Likers',
+                status: 'success',
+                result: 'Sent 12 offers',
+            },
+            {
+                timestamp: new Date(Date.now() - 10800000).toISOString(),
+                action: 'Relist Stale Items',
+                status: 'success',
+                result: 'Relisted 3 items (60+ days stale)',
+            },
+            {
+                timestamp: new Date(Date.now() - 14400000).toISOString(),
+                action: 'Delist Stale Items',
+                status: 'success',
+                result: 'Delisted 2 items (90+ days inactive)',
+            },
+            {
+                timestamp: new Date(Date.now() - 18000000).toISOString(),
+                action: 'Follow Back',
+                status: 'success',
+                result: 'Followed 8 users',
+            },
+            {
+                timestamp: new Date(Date.now() - 86400000).toISOString(),
+                action: 'Weekly Price Drop',
+                status: 'failed',
+                result: 'API rate limit exceeded',
+            },
         ];
 
         // Count recent failures for alert banner
-        const recentFailures = runHistory.filter(r => r.status === 'failed');
+        const recentFailures = runHistory.filter((r) => r.status === 'failed');
         const failedCount = recentFailures.length;
 
         const isPaused = store.state.automationsPaused || false;
@@ -1452,7 +1776,7 @@ Object.assign(pages, {
             const counts = [0, 0, 0, 0, 0, 0, 0];
             const now = Date.now();
             const dayMs = 86400000;
-            runHistory.forEach(r => {
+            runHistory.forEach((r) => {
                 if (r.automation_name !== ruleName && r.automation_id !== ruleId && r.action !== ruleName) return;
                 const ts = new Date(r.started_at || r.timestamp || r.created_at).getTime();
                 const daysAgo = Math.floor((now - ts) / dayMs);
@@ -1497,34 +1821,48 @@ Object.assign(pages, {
                     }
                 }
                 return null;
-            } catch { return null; }
+            } catch {
+                return null;
+            }
         }
 
         // Calculate automation statistics — prefer API stats, fallback to local
         const apiStats = store.state.automationStats || {};
-        const activeRules = apiStats.activeRules ?? automations.filter(a => a.is_enabled).length;
+        const activeRules = apiStats.activeRules ?? automations.filter((a) => a.is_enabled).length;
         const totalRules = apiStats.totalRules ?? automations.length;
-        const successfulRuns = apiStats.successfulRuns ?? runHistory.filter(r => r.status === 'success').length;
+        const successfulRuns = apiStats.successfulRuns ?? runHistory.filter((r) => r.status === 'success').length;
         const totalRuns = apiStats.totalRuns ?? runHistory.length;
-        const failedRuns = apiStats.failedRuns ?? runHistory.filter(r => r.status === 'failed' || r.status === 'failure').length;
+        const failedRuns =
+            apiStats.failedRuns ?? runHistory.filter((r) => r.status === 'failed' || r.status === 'failure').length;
         const successRate = totalRuns > 0 ? Math.round((successfulRuns / totalRuns) * 100) : 100;
 
         // Calculate time saved (mock calculation based on active automations)
-        const timeSavedPerAutomation = { sharing: 45, engagement: 20, offers: 15, bundles: 10, pricing: 25, maintenance: 30 };
+        const timeSavedPerAutomation = {
+            sharing: 45,
+            engagement: 20,
+            offers: 15,
+            bundles: 10,
+            pricing: 25,
+            maintenance: 30,
+        };
         const timeSavedToday = automations
-            .filter(a => a.is_enabled)
+            .filter((a) => a.is_enabled)
             .reduce((sum, a) => sum + (timeSavedPerAutomation[a.category] || 15), 0);
 
-        const todayStart = new Date(); todayStart.setHours(0,0,0,0);
-        const runsToday = runHistory.filter(r => {
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const runsToday = runHistory.filter((r) => {
             const ts = new Date(r.started_at || r.timestamp || r.created_at).getTime();
             return ts >= todayStart.getTime();
         }).length;
-        const totalItemsProcessed = runHistory.reduce((sum, r) => sum + (r.items_processed || r.items_succeeded || 0), 0);
-        const dailyChart = Array.from({length: 7}, () => ({ success: 0, failed: 0 }));
+        const totalItemsProcessed = runHistory.reduce(
+            (sum, r) => sum + (r.items_processed || r.items_succeeded || 0),
+            0,
+        );
+        const dailyChart = Array.from({ length: 7 }, () => ({ success: 0, failed: 0 }));
         const nowMs = Date.now();
         const dayMs = 86400000;
-        runHistory.forEach(r => {
+        runHistory.forEach((r) => {
             const ts = new Date(r.started_at || r.timestamp || r.created_at).getTime();
             const daysAgo = Math.floor((nowMs - ts) / dayMs);
             if (daysAgo >= 0 && daysAgo < 7) {
@@ -1534,15 +1872,15 @@ Object.assign(pages, {
                 else dailyChart[idx].success++;
             }
         });
-        const maxDaily = Math.max(...dailyChart.map(d => d.success + d.failed), 1);
-        const dayLabels = Array.from({length: 7}, (_, i) => {
-            const d = new Date(nowMs - (6-i) * dayMs);
-            return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
+        const maxDaily = Math.max(...dailyChart.map((d) => d.success + d.failed), 1);
+        const dayLabels = Array.from({ length: 7 }, (_, i) => {
+            const d = new Date(nowMs - (6 - i) * dayMs);
+            return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()];
         });
         const categoryRunCounts = {};
-        runHistory.forEach(r => {
+        runHistory.forEach((r) => {
             const ruleName = r.automation_name || r.action || '';
-            const matchedRule = automations.find(a => a.name === ruleName || a.id === r.automation_id);
+            const matchedRule = automations.find((a) => a.name === ruleName || a.id === r.automation_id);
             if (matchedRule) {
                 categoryRunCounts[matchedRule.category] = (categoryRunCounts[matchedRule.category] || 0) + 1;
             }
@@ -1550,13 +1888,15 @@ Object.assign(pages, {
 
         // Load scheduler status if not cached (non-blocking)
         if (!store.state.schedulerStatus) {
-            api.get('/automations/scheduler-status').then(data => {
-                store.setState({ schedulerStatus: data });
-                const widget = document.getElementById('scheduler-health-widget');
-                if (widget) {
-                    widget.innerHTML = sanitizeHTML(renderSchedulerWidget(data));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-                }
-            }).catch(() => {});
+            api.get('/automations/scheduler-status')
+                .then((data) => {
+                    store.setState({ schedulerStatus: data });
+                    const widget = document.getElementById('scheduler-health-widget');
+                    if (widget) {
+                        widget.innerHTML = sanitizeHTML(renderSchedulerWidget(data)); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                    }
+                })
+                .catch(() => {});
         }
 
         function renderSchedulerWidget(status) {
@@ -1567,11 +1907,10 @@ Object.assign(pages, {
             const healthLabel = status.healthy ? 'Healthy' : 'Unhealthy';
 
             const successRate = status.runs24h?.successRate ?? 100;
-            const rateColor = successRate >= 90 ? 'text-success-600' : successRate >= 70 ? 'text-warning-600' : 'text-error-600';
+            const rateColor =
+                successRate >= 90 ? 'text-success-600' : successRate >= 70 ? 'text-warning-600' : 'text-error-600';
 
-            const lastRun = status.worker?.lastRun
-                ? new Date(status.worker.lastRun).toLocaleTimeString()
-                : 'Never';
+            const lastRun = status.worker?.lastRun ? new Date(status.worker.lastRun).toLocaleTimeString() : 'Never';
 
             return `
                 <div class="grid grid-cols-4 gap-4">
@@ -1592,11 +1931,15 @@ Object.assign(pages, {
                         <div class="text-xs text-gray-500 mt-1">Queued Tasks</div>
                     </div>
                 </div>
-                ${status.runs24h?.failed > 0 ? `
+                ${
+                    status.runs24h?.failed > 0
+                        ? `
                     <div class="mt-3 p-2 bg-error-50 border border-error-200 rounded text-sm text-error-700">
                         ${components.icon('alert-triangle', 14)} ${status.runs24h.failed} failed run(s) in the last 24 hours
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
                 <div class="mt-3 text-xs text-gray-400 flex justify-between">
                     <span>Last poll: ${lastRun}</span>
                     <span>${status.enabledRules || 0} active rules</span>
@@ -1606,7 +1949,7 @@ Object.assign(pages, {
 
         // Group automations by category for breakdown
         const categoryStats = {};
-        automations.forEach(a => {
+        automations.forEach((a) => {
             if (!categoryStats[a.category]) {
                 categoryStats[a.category] = { total: 0, active: 0 };
             }
@@ -1620,7 +1963,7 @@ Object.assign(pages, {
             offers: { label: 'Offers', icon: 'tag', color: '#10b981' },
             bundles: { label: 'Bundles', icon: 'package', color: '#f59e0b' },
             pricing: { label: 'Pricing', icon: 'dollar', color: '#ef4444' },
-            maintenance: { label: 'Maintenance', icon: 'settings', color: '#6b7280' }
+            maintenance: { label: 'Maintenance', icon: 'settings', color: '#6b7280' },
         };
 
         return `
@@ -1643,7 +1986,9 @@ Object.assign(pages, {
                 </div>
             </div>
 
-            ${failedRuns > 0 ? `
+            ${
+                failedRuns > 0
+                    ? `
             <!-- Failed Automations Alert Banner -->
             <div class="automation-failure-banner mb-4" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--error-50, var(--error-50)); border: 1px solid var(--error-200, var(--error-200)); border-radius: var(--radius-md); color: var(--error-700, var(--error-700));">
                 ${components.icon('alert-triangle', 20)}
@@ -1655,7 +2000,9 @@ Object.assign(pages, {
                     ${components.icon('eye', 14)} View Failures
                 </button>
             </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Scheduler Health Widget -->
             <div class="card mb-6" id="scheduler-health-widget-card">
@@ -1683,9 +2030,11 @@ Object.assign(pages, {
                     <div class="automations-status-info">
                         <h2 class="automations-status-title">${isPaused ? 'Automations Paused' : 'System Active'}</h2>
                         <p class="automations-status-subtitle">
-                            ${isPaused
-                                ? 'All automations are currently paused. Click to resume.'
-                                : `${activeRules} automation${activeRules !== 1 ? 's' : ''} running on schedule`}
+                            ${
+                                isPaused
+                                    ? 'All automations are currently paused. Click to resume.'
+                                    : `${activeRules} automation${activeRules !== 1 ? 's' : ''} running on schedule`
+                            }
                         </p>
                         <label class="automations-toggle-switch">
                             <input aria-label="Toggle all automations" type="checkbox" ${!isPaused ? 'checked' : ''} onchange="handlers.toggleAllAutomations(this.checked)">
@@ -1737,10 +2086,11 @@ Object.assign(pages, {
 
             <!-- Category Breakdown -->
             <div class="automations-categories mb-6" hidden style="display: none;">
-                ${Object.entries(categoryStats).map(([cat, stats]) => {
-                    const catInfo = categoryLabels[cat] || { label: cat, icon: 'settings', color: '#6b7280' };
-                    const percentage = stats.total > 0 ? Math.round((stats.active / stats.total) * 100) : 0;
-                    return `
+                ${Object.entries(categoryStats)
+                    .map(([cat, stats]) => {
+                        const catInfo = categoryLabels[cat] || { label: cat, icon: 'settings', color: '#6b7280' };
+                        const percentage = stats.total > 0 ? Math.round((stats.active / stats.total) * 100) : 0;
+                        return `
                         <div class="automation-category-card" style="--category-color: ${catInfo.color}">
                             <div class="category-header">
                                 <div class="category-icon" style="background: ${catInfo.color}20; color: ${catInfo.color}">
@@ -1754,7 +2104,8 @@ Object.assign(pages, {
                             <div class="category-stats">${stats.active}/${stats.total} active</div>
                         </div>
                     `;
-                }).join('')}
+                    })
+                    .join('')}
             </div>
 
             <!-- Performance Metrics Dashboard -->
@@ -1770,7 +2121,7 @@ Object.assign(pages, {
                                 ${components.icon('clock', 24)}
                             </div>
                             <div class="metric-content">
-                                <div class="metric-value">${Math.round(timeSavedToday * 7 / 60)}h ${timeSavedToday * 7 % 60}m</div>
+                                <div class="metric-value">${Math.round((timeSavedToday * 7) / 60)}h ${(timeSavedToday * 7) % 60}m</div>
                                 <div class="metric-label">Time Saved This Week</div>
                                 <div class="metric-comparison neutral">Est. at C$30/hr</div>
                             </div>
@@ -1810,12 +2161,14 @@ Object.assign(pages, {
                     <div class="performance-breakdown mt-4">
                         <h2 class="text-sm font-semibold text-gray-700 mb-3">Actions by Category This Week</h2>
                         <div class="breakdown-bars">
-                            ${Object.entries(categoryStats).map(([cat, stats]) => {
-                                const catInfo = categoryLabels[cat] || { label: cat, color: '#6b7280' };
-                                const actionsCount = categoryRunCounts[cat] || 0;
-                                const maxCatActions = Math.max(...Object.values(categoryRunCounts), 1);
-                                const barWidth = maxCatActions > 0 ? Math.min((actionsCount / maxCatActions) * 100, 100) : 0;
-                                return `
+                            ${Object.entries(categoryStats)
+                                .map(([cat, stats]) => {
+                                    const catInfo = categoryLabels[cat] || { label: cat, color: '#6b7280' };
+                                    const actionsCount = categoryRunCounts[cat] || 0;
+                                    const maxCatActions = Math.max(...Object.values(categoryRunCounts), 1);
+                                    const barWidth =
+                                        maxCatActions > 0 ? Math.min((actionsCount / maxCatActions) * 100, 100) : 0;
+                                    return `
                                     <div class="breakdown-row">
                                         <div class="breakdown-label">${catInfo.label}</div>
                                         <div class="breakdown-bar-container">
@@ -1824,7 +2177,8 @@ Object.assign(pages, {
                                         <div class="breakdown-value">${actionsCount}</div>
                                     </div>
                                 `;
-                            }).join('')}
+                                })
+                                .join('')}
                         </div>
                     </div>
                 </div>
@@ -1840,9 +2194,13 @@ Object.assign(pages, {
                         </button>
                     </div>
                     <div class="card-body">
-                        ${store.state.automationHistoryLoading ? `
+                        ${
+                            store.state.automationHistoryLoading
+                                ? `
                             <div class="run-history-loading">
-                                ${[1,2,3].map(() => `
+                                ${[1, 2, 3]
+                                    .map(
+                                        () => `
                                     <div class="history-skeleton-row">
                                         <div class="skeleton-shimmer" style="width: 12px; height: 12px; border-radius: 50%;"></div>
                                         <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
@@ -1851,9 +2209,13 @@ Object.assign(pages, {
                                         </div>
                                         <div class="skeleton-shimmer" style="width: 50px; height: 20px; border-radius: 10px;"></div>
                                     </div>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </div>
-                        ` : runHistoryTimeline.render(runHistory)}
+                        `
+                                : runHistoryTimeline.render(runHistory)
+                        }
                     </div>
                 </div>
                 <div class="card collapsible-card ${store.state.scheduledRunsCollapsed ? 'collapsed' : ''}">
@@ -1865,12 +2227,14 @@ Object.assign(pages, {
                     </div>
                     <div class="card-body">
                         <div class="schedule-preview">
-                            ${[...Array(7)].map((_, i) => {
-                                const date = new Date();
-                                date.setDate(date.getDate() + i);
-                                const hasRun = scheduleSettings.daysOfWeek.includes(date.getDay());
-                                return `<div class="schedule-preview-day ${hasRun ? 'has-run' : ''} ${i === 0 ? 'today' : ''}">${date.getDate()}</div>`;
-                            }).join('')}
+                            ${[...Array(7)]
+                                .map((_, i) => {
+                                    const date = new Date();
+                                    date.setDate(date.getDate() + i);
+                                    const hasRun = scheduleSettings.daysOfWeek.includes(date.getDay());
+                                    return `<div class="schedule-preview-day ${hasRun ? 'has-run' : ''} ${i === 0 ? 'today' : ''}">${date.getDate()}</div>`;
+                                })
+                                .join('')}
                         </div>
                         <div class="text-xs text-gray-500 mt-2 text-center">Next 7 days</div>
                     </div>
@@ -1887,8 +2251,8 @@ Object.assign(pages, {
                     <div class="grid grid-cols-4 gap-6">
                         <!-- Frequency -->
                         <div>
-                            <label class="form-label">Frequency</label>
-                            <select class="form-select" onchange="handlers.updateAutomationSchedule('frequency', this.value)" aria-label="Automation frequency">
+                            <label class="form-label" for="pic-frequency">Frequency</label>
+                            <select id="pic-frequency" class="form-select" onchange="handlers.updateAutomationSchedule('frequency', this.value)" aria-label="Automation frequency">
                                 <option value="hourly" ${scheduleSettings.frequency === 'hourly' ? 'selected' : ''}>Hourly</option>
                                 <option value="every_4h" ${scheduleSettings.frequency === 'every_4h' ? 'selected' : ''}>Every 4 Hours</option>
                                 <option value="daily" ${scheduleSettings.frequency === 'daily' ? 'selected' : ''}>Daily</option>
@@ -1898,51 +2262,65 @@ Object.assign(pages, {
                         </div>
                         <!-- Start Time -->
                         <div>
-                            <label class="form-label">Start Time</label>
-                            <input aria-label="Time" type="time" class="form-input" value="${scheduleSettings.startTime}"
+                            <label class="form-label" for="pic-start-time">Start Time</label>
+                            <input id="pic-start-time" aria-label="Time" type="time" class="form-input" value="${scheduleSettings.startTime}"
                                 onchange="handlers.updateAutomationSchedule('startTime', this.value)">
                         </div>
                         <!-- End Time -->
                         <div>
-                            <label class="form-label">End Time</label>
-                            <input aria-label="Time" type="time" class="form-input" value="${scheduleSettings.endTime}"
+                            <label class="form-label" for="pic-end-time">End Time</label>
+                            <input id="pic-end-time" aria-label="Time" type="time" class="form-input" value="${scheduleSettings.endTime}"
                                 onchange="handlers.updateAutomationSchedule('endTime', this.value)">
                         </div>
                         <!-- Timezone -->
                         <div>
-                            <label class="form-label">Timezone</label>
+                            <p class="form-label">Timezone</p>
                             <div class="text-sm text-gray-600 p-2 bg-gray-50 rounded">${scheduleSettings.timezone}</div>
                         </div>
                     </div>
                     <!-- Days of Week -->
                     <div class="mt-4">
-                        <label class="form-label mb-2">Active Days</label>
+                        <p class="form-label mb-2">Active Days</p>
                         <div class="flex gap-2">
-                            ${dayNames.map((day, idx) => {
-                                const isActive = scheduleSettings.daysOfWeek.includes(idx);
-                                return `
+                            ${dayNames
+                                .map((day, idx) => {
+                                    const isActive = scheduleSettings.daysOfWeek.includes(idx);
+                                    return `
                                 <label class="flex items-center justify-center px-4 py-3 rounded-lg border-2 cursor-pointer transition-all"
-                                       style="min-width: 60px; ${isActive
-                                           ? 'background: var(--success-100); border-color: var(--success-400); color: var(--success-700);'
-                                           : 'background: var(--gray-100); border-color: var(--gray-300); color: var(--gray-400);'}">
+                                       style="min-width: 60px; ${
+                                           isActive
+                                               ? 'background: var(--success-100); border-color: var(--success-400); color: var(--success-700);'
+                                               : 'background: var(--gray-100); border-color: var(--gray-300); color: var(--gray-400);'
+                                       }">
                                     <input aria-label="Toggle ${day}" type="checkbox" class="hidden" ${isActive ? 'checked' : ''}
                                         onchange="handlers.updateAutomationSchedule('toggleDay', ${idx})">
                                     <span class="text-sm font-semibold">${day}</span>
                                 </label>
-                            `}).join('')}
+                            `;
+                                })
+                                .join('')}
                         </div>
                     </div>
                     <div class="mt-4 p-3 callout-info rounded-lg">
                         <div class="text-sm">
                             <strong>Schedule Summary:</strong> Automations will run
-                            ${scheduleSettings.frequency === 'hourly' ? 'every hour' :
-                              scheduleSettings.frequency === 'every_4h' ? 'every 4 hours' :
-                              scheduleSettings.frequency === 'daily' ? 'once daily' :
-                              scheduleSettings.frequency === 'twice_daily' ? 'twice daily (morning & evening)' :
-                              'once per week'}
+                            ${
+                                scheduleSettings.frequency === 'hourly'
+                                    ? 'every hour'
+                                    : scheduleSettings.frequency === 'every_4h'
+                                      ? 'every 4 hours'
+                                      : scheduleSettings.frequency === 'daily'
+                                        ? 'once daily'
+                                        : scheduleSettings.frequency === 'twice_daily'
+                                          ? 'twice daily (morning & evening)'
+                                          : 'once per week'
+                            }
                             between ${scheduleSettings.startTime} and ${scheduleSettings.endTime} on
-                            ${scheduleSettings.daysOfWeek.length === 7 ? 'all days' :
-                              scheduleSettings.daysOfWeek.map(d => dayNames[d]).join(', ')}.
+                            ${
+                                scheduleSettings.daysOfWeek.length === 7
+                                    ? 'all days'
+                                    : scheduleSettings.daysOfWeek.map((d) => dayNames[d]).join(', ')
+                            }.
                         </div>
                     </div>
                 </div>
@@ -1962,12 +2340,12 @@ Object.assign(pages, {
                             on_partial: true,
                             daily_summary: false,
                             desktop_enabled: true,
-                            email_enabled: false
+                            email_enabled: false,
                         };
                         return `
                     <div class="grid grid-cols-3 gap-6">
                         <div>
-                            <label class="form-label mb-3">Event Types</label>
+                            <p class="form-label mb-3">Event Types</p>
                             <div class="flex flex-col gap-3">
                                 <label class="flex items-center gap-3 cursor-pointer">
                                     <input aria-label="Toggle Successful runs" type="checkbox" ${notifPrefs.on_success ? 'checked' : ''}
@@ -1996,7 +2374,7 @@ Object.assign(pages, {
                             </div>
                         </div>
                         <div>
-                            <label class="form-label mb-3">Channels</label>
+                            <p class="form-label mb-3">Channels</p>
                             <div class="flex flex-col gap-3">
                                 <label class="flex items-center gap-3 cursor-pointer">
                                     <input aria-label="Toggle Desktop notifications" type="checkbox" ${notifPrefs.desktop_enabled ? 'checked' : ''}
@@ -2014,7 +2392,7 @@ Object.assign(pages, {
                             </div>
                         </div>
                         <div>
-                            <label class="form-label mb-3">Quick Actions</label>
+                            <p class="form-label mb-3">Quick Actions</p>
                             <div class="flex flex-col gap-2">
                                 <button class="btn btn-sm btn-primary" onclick="handlers.updateAutomationNotifPref('_enable_all', true)">
                                     ${components.icon('bell', 14)} Enable All
@@ -2051,7 +2429,12 @@ Object.assign(pages, {
                         </select>
                         <select class="form-select" onchange="handlers.filterAutomationCategory(this.value)" style="width: 140px; height: 36px;" aria-label="Filter by category">
                             <option value="all" ${(store.state.automationCategoryFilter || 'all') === 'all' ? 'selected' : ''}>All Categories</option>
-                            ${Object.entries(categoryLabels).map(([key, val]) => `<option value="${key}" ${store.state.automationCategoryFilter === key ? 'selected' : ''}>${val.label}</option>`).join('')}
+                            ${Object.entries(categoryLabels)
+                                .map(
+                                    ([key, val]) =>
+                                        `<option value="${key}" ${store.state.automationCategoryFilter === key ? 'selected' : ''}>${val.label}</option>`,
+                                )
+                                .join('')}
                         </select>
                         <select class="form-select" onchange="handlers.sortAutomations(this.value)" style="width: 140px; height: 36px;" aria-label="Sort automations">
                             <option value="name_asc" ${(store.state.automationSortBy || 'name_asc') === 'name_asc' ? 'selected' : ''}>Name A-Z</option>
@@ -2063,37 +2446,69 @@ Object.assign(pages, {
                         ${(() => {
                             const platFilter = store.state.automationPlatformFilter || 'all';
                             if (platFilter === 'all') return '';
-                            const platRules = automations.filter(a => a.platform === platFilter || a.platform === 'all');
-                            const allEnabled = platRules.every(a => a.is_enabled);
-                            return '<button class="btn btn-sm ' + (allEnabled ? 'btn-secondary' : 'btn-primary') + '" onclick="handlers.bulkTogglePlatform(\'' + platFilter + '\', ' + !allEnabled + ')" style="height: 36px; white-space: nowrap;">' + components.icon(allEnabled ? 'toggle-right' : 'toggle-left', 14) + (allEnabled ? ' Disable All' : ' Enable All') + '</button>';
+                            const platRules = automations.filter(
+                                (a) => a.platform === platFilter || a.platform === 'all',
+                            );
+                            const allEnabled = platRules.every((a) => a.is_enabled);
+                            return (
+                                '<button class="btn btn-sm ' +
+                                (allEnabled ? 'btn-secondary' : 'btn-primary') +
+                                '" onclick="handlers.bulkTogglePlatform(\'' +
+                                platFilter +
+                                "', " +
+                                !allEnabled +
+                                ')" style="height: 36px; white-space: nowrap;">' +
+                                components.icon(allEnabled ? 'toggle-right' : 'toggle-left', 14) +
+                                (allEnabled ? ' Disable All' : ' Enable All') +
+                                '</button>'
+                            );
                         })()}
                     </div>
                 </div>
                 <div class="card-body">
                     <div class="flex flex-col gap-2">
-                        ${automations.filter(rule => {
-                            const searchQ = (store.state.automationSearchQuery || '').toLowerCase();
-                            const catFilter = store.state.automationCategoryFilter || 'all';
-                            const platFilter = store.state.automationPlatformFilter || 'all';
-                            const tagFilter = store.state.automationTagFilter || '';
-                            const matchesSearch = !searchQ || rule.name.toLowerCase().includes(searchQ) || rule.description.toLowerCase().includes(searchQ);
-                            const matchesCat = catFilter === 'all' || rule.category === catFilter;
-                            const matchesPlat = platFilter === 'all' || rule.platform === platFilter || rule.platform === 'all';
-                            const ruleTags = (() => { try { return JSON.parse(rule.tags || '[]'); } catch { return []; } })();
-                            const matchesTag = !tagFilter || ruleTags.includes(tagFilter);
-                            return matchesSearch && matchesCat && matchesPlat && matchesTag;
-                        }).sort((a, b) => {
-                            const sortBy = store.state.automationSortBy || 'name_asc';
-                            switch (sortBy) {
-                                case 'name_desc': return b.name.localeCompare(a.name);
-                                case 'last_run': return (b.last_run_at || '').localeCompare(a.last_run_at || '');
-                                case 'run_count': return (b.run_count || 0) - (a.run_count || 0);
-                                case 'enabled': return (b.is_enabled ? 1 : 0) - (a.is_enabled ? 1 : 0);
-                                default: return a.name.localeCompare(b.name);
-                            }
-                        }).map(rule => (() => {
-                            const isCollapsed = !!(store.state.collapsedAutomations || {})[rule.id];
-                            return `
+                        ${automations
+                            .filter((rule) => {
+                                const searchQ = (store.state.automationSearchQuery || '').toLowerCase();
+                                const catFilter = store.state.automationCategoryFilter || 'all';
+                                const platFilter = store.state.automationPlatformFilter || 'all';
+                                const tagFilter = store.state.automationTagFilter || '';
+                                const matchesSearch =
+                                    !searchQ ||
+                                    rule.name.toLowerCase().includes(searchQ) ||
+                                    rule.description.toLowerCase().includes(searchQ);
+                                const matchesCat = catFilter === 'all' || rule.category === catFilter;
+                                const matchesPlat =
+                                    platFilter === 'all' || rule.platform === platFilter || rule.platform === 'all';
+                                const ruleTags = (() => {
+                                    try {
+                                        return JSON.parse(rule.tags || '[]');
+                                    } catch {
+                                        return [];
+                                    }
+                                })();
+                                const matchesTag = !tagFilter || ruleTags.includes(tagFilter);
+                                return matchesSearch && matchesCat && matchesPlat && matchesTag;
+                            })
+                            .sort((a, b) => {
+                                const sortBy = store.state.automationSortBy || 'name_asc';
+                                switch (sortBy) {
+                                    case 'name_desc':
+                                        return b.name.localeCompare(a.name);
+                                    case 'last_run':
+                                        return (b.last_run_at || '').localeCompare(a.last_run_at || '');
+                                    case 'run_count':
+                                        return (b.run_count || 0) - (a.run_count || 0);
+                                    case 'enabled':
+                                        return (b.is_enabled ? 1 : 0) - (a.is_enabled ? 1 : 0);
+                                    default:
+                                        return a.name.localeCompare(b.name);
+                                }
+                            })
+                            .map((rule) =>
+                                (() => {
+                                    const isCollapsed = !!(store.state.collapsedAutomations || {})[rule.id];
+                                    return `
                             <div class="automation-card" draggable="true" style="${(store.state.selectedAutomationIds || []).includes(rule.id) ? 'outline: 2px solid var(--primary-500); outline-offset: -2px;' : ''}" ondragstart="handlers.onRuleDragStart(event, '${rule.id}')" ondragend="handlers.onRuleDragEnd(event)" ondragover="handlers.onRuleDragOver(event)" ondragleave="handlers.onRuleDragLeave(event)" ondrop="handlers.onRuleDrop(event, '${rule.id}')">
                                 <div class="automation-card-content">
                                     <div class="automation-card-header">
@@ -2114,19 +2529,53 @@ Object.assign(pages, {
                                     <div class="automation-card-body" style="${isCollapsed ? 'display:none;' : ''}">
                                     <div class="text-sm text-gray-500">${rule.description}</div>
                                     ${(() => {
-                                        const ruleTags = (() => { try { return JSON.parse(rule.tags || '[]'); } catch { return []; } })();
-                                        return ruleTags.length > 0 ? '<div class="flex flex-wrap gap-1 mt-1">' + ruleTags.slice(0, 5).map(t => '<span role="button" tabindex="0" class="badge badge-sm" style="font-size:10px;padding:1px 6px;background:var(--primary-100);color:var(--primary-700);cursor:pointer;" onclick="event.stopPropagation();handlers.filterByRuleTag(\'' + escapeHtml(t).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')">' + escapeHtml(t) + '</span>').join('') + (ruleTags.length > 5 ? '<span class="text-xs text-gray-400">+' + (ruleTags.length - 5) + '</span>' : '') + '</div>' : '';
+                                        const ruleTags = (() => {
+                                            try {
+                                                return JSON.parse(rule.tags || '[]');
+                                            } catch {
+                                                return [];
+                                            }
+                                        })();
+                                        return ruleTags.length > 0
+                                            ? '<div class="flex flex-wrap gap-1 mt-1">' +
+                                                  ruleTags
+                                                      .slice(0, 5)
+                                                      .map(
+                                                          (t) =>
+                                                              '<span role="button" tabindex="0" class="badge badge-sm" style="font-size:10px;padding:1px 6px;background:var(--primary-100);color:var(--primary-700);cursor:pointer;" onclick="event.stopPropagation();handlers.filterByRuleTag(\'' +
+                                                              escapeHtml(t)
+                                                                  .replace(/\\/g, '\\\\')
+                                                                  .replace(/'/g, "\\'") +
+                                                              '\')">' +
+                                                              escapeHtml(t) +
+                                                              '</span>',
+                                                      )
+                                                      .join('') +
+                                                  (ruleTags.length > 5
+                                                      ? '<span class="text-xs text-gray-400">+' +
+                                                        (ruleTags.length - 5) +
+                                                        '</span>'
+                                                      : '') +
+                                                  '</div>'
+                                            : '';
                                     })()}
                                     <div class="automation-card-stats">
                                         ${(() => {
-                                            const ruleRuns = runHistory.filter(r => r.automation_name === rule.name || r.automation_id === rule.id || r.action === rule.name);
+                                            const ruleRuns = runHistory.filter(
+                                                (r) =>
+                                                    r.automation_name === rule.name ||
+                                                    r.automation_id === rule.id ||
+                                                    r.action === rule.name,
+                                            );
                                             const runCount = ruleRuns.length;
-                                            const successCount = ruleRuns.filter(r => r.status === 'success').length;
-                                            const successRate = runCount > 0 ? Math.round((successCount / runCount) * 100) : 0;
+                                            const successCount = ruleRuns.filter((r) => r.status === 'success').length;
+                                            const successRate =
+                                                runCount > 0 ? Math.round((successCount / runCount) * 100) : 0;
                                             const lastRun = ruleRuns[0];
                                             const lastRunLabel = (() => {
                                                 if (!lastRun) return 'Never';
-                                                const ts = lastRun.started_at || lastRun.timestamp || lastRun.created_at;
+                                                const ts =
+                                                    lastRun.started_at || lastRun.timestamp || lastRun.created_at;
                                                 if (!ts) return 'Never';
                                                 const ago = Date.now() - new Date(ts).getTime();
                                                 if (ago < 3600000) return Math.round(ago / 60000) + 'm ago';
@@ -2145,7 +2594,13 @@ Object.assign(pages, {
                                         </span>
                                         ${(() => {
                                             const nextRun = getNextRunLabel(rule.schedule, rule.is_enabled);
-                                            return nextRun ? '<span class="automation-card-stat" style="color: var(--primary-500);">' + components.icon('arrow-right', 12) + ' Next: ' + nextRun + '</span>' : '';
+                                            return nextRun
+                                                ? '<span class="automation-card-stat" style="color: var(--primary-500);">' +
+                                                      components.icon('arrow-right', 12) +
+                                                      ' Next: ' +
+                                                      nextRun +
+                                                      '</span>'
+                                                : '';
                                         })()}`;
                                         })()}
                                     </div>
@@ -2181,7 +2636,10 @@ Object.assign(pages, {
                                     </label>
                                 </div>
                             </div>
-                        `; })()).join('')}
+                        `;
+                                })(),
+                            )
+                            .join('')}
                     </div>
                 </div>
             </div>
@@ -2231,7 +2689,6 @@ Object.assign(pages, {
 
     // Offers page,
 
-
     skuRules() {
         const rules = store.state.skuRules || [];
         const previewSku = store.state.skuRulePreview;
@@ -2246,7 +2703,7 @@ Object.assign(pages, {
             { token: '{month}', desc: 'Current month (01-12)' }, // placeholder
             { token: '{day}', desc: 'Current day (01-31)' }, // placeholder
             { token: '{counter}', desc: 'Auto-increment number' }, // placeholder
-            { token: '{random}', desc: 'Random 4-char code' } // placeholder
+            { token: '{random}', desc: 'Random 4-char code' }, // placeholder
         ];
 
         return `
@@ -2272,12 +2729,16 @@ Object.assign(pages, {
                 </div>
                 <div class="card-body">
                     <div class="flex flex-wrap gap-3">
-                        ${patternVars.map(v => `
+                        ${patternVars
+                            .map(
+                                (v) => `
                             <div class="sku-var-chip" title="${v.desc}">
                                 <code>${v.token}</code>
                                 <span class="text-xs text-gray-500">${v.desc}</span>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                     <p class="text-sm text-gray-500 mt-3">
                         Example pattern: <code class="bg-gray-100 px-2 py-1 rounded">{brand}-{category}-{counter}</code>
@@ -2286,7 +2747,9 @@ Object.assign(pages, {
                 </div>
             </div>
 
-            ${rules.length === 0 ? `
+            ${
+                rules.length === 0
+                    ? `
                 <div class="card">
                     <div class="card-body">
                         <div class="empty-state" style="text-align: center; padding: 3rem;">
@@ -2301,9 +2764,12 @@ Object.assign(pages, {
                         </div>
                     </div>
                 </div>
-            ` : `
+            `
+                    : `
                 <div class="grid grid-cols-2 gap-4">
-                    ${rules.map(rule => `
+                    ${rules
+                        .map(
+                            (rule) => `
                         <div class="card sku-rule-card ${rule.is_default ? 'sku-rule-default' : ''}">
                             <div class="card-body">
                                 <div class="flex items-center justify-between mb-3">
@@ -2315,11 +2781,15 @@ Object.assign(pages, {
                                         <button class="btn btn-icon btn-sm" onclick="handlers.editSkuRule('${rule.id}')" title="Edit">
                                             ${components.icon('edit', 14)}
                                         </button>
-                                        ${!rule.is_default ? `
+                                        ${
+                                            !rule.is_default
+                                                ? `
                                             <button class="btn btn-icon btn-sm" onclick="handlers.setDefaultSkuRule('${rule.id}')" title="Set as Default">
                                                 &#9734;
                                             </button>
-                                        ` : ''}
+                                        `
+                                                : ''
+                                        }
                                         <button class="btn btn-icon btn-sm btn-error" onclick="handlers.deleteSkuRule('${rule.id}')" title="Delete">
                                             ${components.icon('trash', 14)}
                                         </button>
@@ -2331,9 +2801,13 @@ Object.assign(pages, {
                                     <code>${escapeHtml(rule.pattern)}</code>
                                 </div>
 
-                                ${rule.description ? `
+                                ${
+                                    rule.description
+                                        ? `
                                     <p class="text-sm text-gray-600 mt-2">${escapeHtml(rule.description)}</p>
-                                ` : ''}
+                                `
+                                        : ''
+                                }
 
                                 <div class="sku-rule-meta mt-3">
                                     ${rule.prefix ? `<span class="badge badge-sm">Prefix: ${escapeHtml(rule.prefix)}</span>` : ''}
@@ -2352,14 +2826,16 @@ Object.assign(pages, {
                                 </div>
                             </div>
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
-            `}
+            `
+            }
         `;
     },
 
     // Receipt Parser page,
-
 
     smartRelisting() {
         const activeTab = store.state.relistingTab || 'rules';
@@ -2393,7 +2869,9 @@ Object.assign(pages, {
                 </button>
             </div>
 
-            ${activeTab === 'rules' ? `
+            ${
+                activeTab === 'rules'
+                    ? `
                 <div class="card">
                     <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
                         <h2 class="card-title">Relisting Rules</h2>
@@ -2402,9 +2880,13 @@ Object.assign(pages, {
                         </button>
                     </div>
                     <div class="card-body">
-                        ${rules.length > 0 ? `
+                        ${
+                            rules.length > 0
+                                ? `
                             <div class="relisting-rules-grid">
-                                ${rules.map(rule => `
+                                ${rules
+                                    .map(
+                                        (rule) => `
                                     <div class="relisting-rule-card ${rule.is_active ? '' : 'inactive'}">
                                         <div class="relisting-rule-header">
                                             <div>
@@ -2439,18 +2921,26 @@ Object.assign(pages, {
                                             </div>
                                         </div>
                                     </div>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="text-center py-8 text-gray-500">
                                 <p>No relisting rules yet. Create one to get started.</p>
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
-            ${activeTab === 'stale' ? `
+            ${
+                activeTab === 'stale'
+                    ? `
                 <div class="card">
                     <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
                         <h2 class="card-title">Stale Listings (${staleListings.length})</h2>
@@ -2461,15 +2951,21 @@ Object.assign(pages, {
                                 <option value="60">60+ days</option>
                                 <option value="90">90+ days</option>
                             </select>
-                            ${staleListings.length > 0 ? `
+                            ${
+                                staleListings.length > 0
+                                    ? `
                                 <button class="btn btn-primary btn-sm" onclick="handlers.queueAllStale()">
                                     Queue All for Relisting
                                 </button>
-                            ` : ''}
+                            `
+                                    : ''
+                            }
                         </div>
                     </div>
                     <div class="card-body">
-                        ${staleListings.length > 0 ? `
+                        ${
+                            staleListings.length > 0
+                                ? `
                             <div class="table-container">
                                 <table class="table">
                                     <thead>
@@ -2484,7 +2980,9 @@ Object.assign(pages, {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${staleListings.map(listing => `
+                                        ${staleListings
+                                            .map(
+                                                (listing) => `
                                             <tr>
                                                 <td><input aria-label="Toggle ${escapeHtml(listing.title || '')}" type="checkbox" class="stale-checkbox" value="${listing.id}"></td>
                                                 <td>${escapeHtml(listing.title || '')}</td>
@@ -2501,31 +2999,45 @@ Object.assign(pages, {
                                                     </button>
                                                 </td>
                                             </tr>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </tbody>
                                 </table>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="text-center py-8 text-gray-500">
                                 <p>No stale listings found. All your listings are fresh!</p>
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
-            ${activeTab === 'queue' ? `
+            ${
+                activeTab === 'queue'
+                    ? `
                 <div class="card">
                     <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
                         <h2 class="card-title">Relist Queue</h2>
-                        ${relistQueue.length > 0 ? `
+                        ${
+                            relistQueue.length > 0
+                                ? `
                             <button class="btn btn-primary btn-sm" onclick="handlers.processRelistQueue()">
                                 Process All Pending
                             </button>
-                        ` : ''}
+                        `
+                                : ''
+                        }
                     </div>
                     <div class="card-body">
-                        ${relistQueue.length > 0 ? `
+                        ${
+                            relistQueue.length > 0
+                                ? `
                             <div class="table-container">
                                 <table class="table">
                                     <thead>
@@ -2539,7 +3051,9 @@ Object.assign(pages, {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${relistQueue.map(item => `
+                                        ${relistQueue
+                                            .map(
+                                                (item) => `
                                             <tr>
                                                 <td>${escapeHtml(item.title || '')}</td>
                                                 <td>C$${(item.original_price || 0).toFixed(2)}</td>
@@ -2549,27 +3063,39 @@ Object.assign(pages, {
                                                 </td>
                                                 <td><span class="badge badge-${item.status === 'completed' ? 'success' : item.status === 'failed' ? 'error' : 'warning'}">${item.status}</span></td>
                                                 <td>
-                                                    ${item.status === 'pending' ? `
+                                                    ${
+                                                        item.status === 'pending'
+                                                            ? `
                                                         <button class="btn btn-ghost btn-sm" onclick="handlers.removeFromRelistQueue('${item.id}')">
                                                             ${components.icon('trash', 14)}
                                                         </button>
-                                                    ` : ''}
+                                                    `
+                                                            : ''
+                                                    }
                                                 </td>
                                             </tr>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </tbody>
                                 </table>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="text-center py-8 text-gray-500">
                                 <p>No items in the relist queue.</p>
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
-            ${activeTab === 'performance' ? `
+            ${
+                activeTab === 'performance'
+                    ? `
                 <div class="stats-grid mb-6">
                     <div class="stat-card">
                         <div class="stat-label">Total Relisted</div>
@@ -2599,12 +3125,13 @@ Object.assign(pages, {
                         </div>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
         `;
     },
 
     // Shipping Labels page,
-
 
     inventoryImport() {
         const activeTab = store.state.importTab || 'upload';
@@ -2633,8 +3160,12 @@ Object.assign(pages, {
                 </button>
             </div>
 
-            ${activeTab === 'upload' ? `
-                ${currentJob ? `
+            ${
+                activeTab === 'upload'
+                    ? `
+                ${
+                    currentJob
+                        ? `
                     <!-- Field Mapping Step -->
                     <div class="card mb-6">
                         <div class="card-header">
@@ -2645,10 +3176,18 @@ Object.assign(pages, {
                             ${(() => {
                                 const skipped = currentJob.preview?.skipped_title_rows || 0;
                                 if (skipped > 0) {
-                                    return '<div style="background:var(--info-light); border:1px solid var(--blue-300); border-radius:8px; padding:12px 16px; margin-bottom:16px; font-size:13px; color:var(--blue-800);"><strong>Auto-detected ' + skipped + ' title/metadata row' + (skipped > 1 ? 's' : '') + '</strong> at the top of your file and skipped ' + (skipped > 1 ? 'them' : 'it') + '. The column headers below were detected from your actual data.</div>';
+                                    return (
+                                        '<div style="background:var(--info-light); border:1px solid var(--blue-300); border-radius:8px; padding:12px 16px; margin-bottom:16px; font-size:13px; color:var(--blue-800);"><strong>Auto-detected ' +
+                                        skipped +
+                                        ' title/metadata row' +
+                                        (skipped > 1 ? 's' : '') +
+                                        '</strong> at the top of your file and skipped ' +
+                                        (skipped > 1 ? 'them' : 'it') +
+                                        '. The column headers below were detected from your actual data.</div>'
+                                    );
                                 }
                                 const hdrs = currentJob.preview?.headers || [];
-                                const emptyCount = hdrs.filter(h => !h || !h.trim()).length;
+                                const emptyCount = hdrs.filter((h) => !h || !h.trim()).length;
                                 if (emptyCount > hdrs.length / 2 && hdrs.length > 1) {
                                     return '<div style="background:var(--primary-100); border:1px solid var(--primary-400); border-radius:8px; padding:12px 16px; margin-bottom:16px; font-size:13px; color:var(--primary-800);"><strong>⚠ Many columns have empty headers.</strong> Your file may have a title row before the actual column headers. Try re-uploading with the title row removed, or map the columns manually below.</div>';
                                 }
@@ -2659,7 +3198,7 @@ Object.assign(pages, {
                                 const rawHdrs = currentJob.preview?.headers || [];
                                 const counts = {};
                                 const cleanHdrs = rawHdrs.map((h, idx) => {
-                                    let name = (h && h.trim()) ? h.trim() : 'Column ' + (idx + 1);
+                                    let name = h && h.trim() ? h.trim() : 'Column ' + (idx + 1);
                                     const key = name.toLowerCase();
                                     counts[key] = (counts[key] || 0) + 1;
                                     if (counts[key] > 1) name = name + ' (' + counts[key] + ')';
@@ -2680,23 +3219,46 @@ Object.assign(pages, {
                                 };
 
                                 const initWidth = colCount <= 10 ? (100 / (colCount + 1)).toFixed(2) + '%' : '10%';
-                                const colLetter = (idx) => { let s = ''; idx++; while (idx > 0) { idx--; s = String.fromCharCode(65 + (idx % 26)) + s; idx = Math.floor(idx / 26); } return s; };
+                                const colLetter = (idx) => {
+                                    let s = '';
+                                    idx++;
+                                    while (idx > 0) {
+                                        idx--;
+                                        s = String.fromCharCode(65 + (idx % 26)) + s;
+                                        idx = Math.floor(idx / 26);
+                                    }
+                                    return s;
+                                };
                                 const rowNumW = '42px';
                                 // Column visibility dropdown
                                 let html = '<div style="display:flex; justify-content:flex-end; margin-bottom:8px;">';
                                 html += '<div style="position:relative; display:inline-block;">';
-                                html += '<button class="btn btn-ghost btn-sm" onclick="handlers.toggleColFilterMenu(this)" style="font-size:12px; padding:5px 12px; border:1px solid var(--gray-300); border-radius:6px; display:flex; align-items:center; gap:6px;">';
+                                html +=
+                                    '<button class="btn btn-ghost btn-sm" onclick="handlers.toggleColFilterMenu(this)" style="font-size:12px; padding:5px 12px; border:1px solid var(--gray-300); border-radius:6px; display:flex; align-items:center; gap:6px;">';
                                 html += components.icon('settings', 14) + ' Columns (' + colCount + ')</button>';
-                                html += '<div class="import-col-filter-menu" style="display:none; position:absolute; right:0; top:100%; margin-top:4px; background:#fff; border:1px solid var(--gray-300); border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); z-index:20; min-width:200px; max-height:300px; overflow-y:auto; padding:6px 0;">';
+                                html +=
+                                    '<div class="import-col-filter-menu" style="display:none; position:absolute; right:0; top:100%; margin-top:4px; background:#fff; border:1px solid var(--gray-300); border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); z-index:20; min-width:200px; max-height:300px; overflow-y:auto; padding:6px 0;">';
                                 for (let c = 0; c < colCount; c++) {
-                                    html += '<label style="display:flex; align-items:center; gap:8px; padding:6px 12px; cursor:pointer; font-size:13px; color:var(--gray-700); white-space:nowrap;" onmouseover="this.style.background=\'var(--gray-100)\'" onmouseout="this.style.background=\'transparent\'">';
-                                    html += '<input aria-label="Toggle ${escapeHtml(cleanHdrs[c])}" type="checkbox" checked data-filter-col="' + c + '" onchange="handlers.toggleImportCol(' + c + ', this.checked)" style="accent-color:var(--primary-500);">';
-                                    html += '<span style="color:var(--gray-400); font-size:11px; min-width:18px;">' + colLetter(c) + '</span> ' + escapeHtml(cleanHdrs[c]);
+                                    html +=
+                                        '<label style="display:flex; align-items:center; gap:8px; padding:6px 12px; cursor:pointer; font-size:13px; color:var(--gray-700); white-space:nowrap;" onmouseover="this.style.background=\'var(--gray-100)\'" onmouseout="this.style.background=\'transparent\'">';
+                                    html +=
+                                        '<input aria-label="Toggle ${escapeHtml(cleanHdrs[c])}" type="checkbox" checked data-filter-col="' +
+                                        c +
+                                        '" onchange="handlers.toggleImportCol(' +
+                                        c +
+                                        ', this.checked)" style="accent-color:var(--primary-500);">';
+                                    html +=
+                                        '<span style="color:var(--gray-400); font-size:11px; min-width:18px;">' +
+                                        colLetter(c) +
+                                        '</span> ' +
+                                        escapeHtml(cleanHdrs[c]);
                                     html += '</label>';
                                 }
                                 html += '</div></div></div>';
-                                html += '<div class="import-table-wrap" style="max-height:70vh; overflow:auto; border:1px solid var(--gray-300); border-radius:8px;">';
-                                html += '<table class="table table-sm import-preview-table" style="width:100%; table-layout:fixed; border-collapse:collapse;">';
+                                html +=
+                                    '<div class="import-table-wrap" style="max-height:70vh; overflow:auto; border:1px solid var(--gray-300); border-radius:8px;">';
+                                html +=
+                                    '<table class="table table-sm import-preview-table" style="width:100%; table-layout:fixed; border-collapse:collapse;">';
                                 html += '<colgroup><col style="width:' + rowNumW + ';">';
                                 for (let c = 0; c < colCount; c++) {
                                     html += '<col data-col="' + c + '" style="width:' + initWidth + ';">';
@@ -2705,21 +3267,41 @@ Object.assign(pages, {
                                 // Row 1: column letters
                                 html += '<thead style="position:sticky; top:0; z-index:2;">';
                                 html += '<tr>';
-                                html += '<th style="background:var(--gray-200); border:1px solid var(--gray-300); text-align:center; font-size:11px; font-weight:600; color:var(--gray-500); padding:2px 4px;"></th>';
+                                html +=
+                                    '<th style="background:var(--gray-200); border:1px solid var(--gray-300); text-align:center; font-size:11px; font-weight:600; color:var(--gray-500); padding:2px 4px;"></th>';
                                 for (let c = 0; c < colCount; c++) {
-                                    html += '<th style="position:relative; background:var(--gray-200); border:1px solid var(--gray-300); text-align:center; font-size:11px; font-weight:600; color:var(--gray-500); padding:2px 4px;">' + colLetter(c);
-                                    html += '<div onmousedown="handlers.startColResize(event,' + c + ')" ondblclick="handlers.autoFitCol(event,' + c + ')" style="position:absolute; right:-6px; top:0; bottom:0; width:12px; cursor:col-resize; z-index:4;"></div>';
+                                    html +=
+                                        '<th style="position:relative; background:var(--gray-200); border:1px solid var(--gray-300); text-align:center; font-size:11px; font-weight:600; color:var(--gray-500); padding:2px 4px;">' +
+                                        colLetter(c);
+                                    html +=
+                                        '<div onmousedown="handlers.startColResize(event,' +
+                                        c +
+                                        ')" ondblclick="handlers.autoFitCol(event,' +
+                                        c +
+                                        ')" style="position:absolute; right:-6px; top:0; bottom:0; width:12px; cursor:col-resize; z-index:4;"></div>';
                                     html += '</th>';
                                 }
                                 html += '</tr>';
                                 // Row 2: dropdown selects
                                 html += '<tr>';
-                                html += '<th style="background:var(--gray-100); border:1px solid var(--gray-300); text-align:center; font-size:10px; color:var(--gray-400); padding:4px;">Row</th>';
+                                html +=
+                                    '<th style="background:var(--gray-100); border:1px solid var(--gray-300); text-align:center; font-size:10px; color:var(--gray-400); padding:4px;">Row</th>';
                                 for (let c = 0; c < colCount; c++) {
-                                    html += '<th style="vertical-align:top; padding:6px 4px; background:var(--gray-100); border:1px solid var(--gray-300); text-align:center;">';
-                                    html += '<select class="form-input import-field-select" aria-label="Map column" data-col-index="' + c + '" onchange="handlers.swapImportColumn(this)" style="width:100%; font-size:12px; padding:3px 4px; border-radius:4px;">';
+                                    html +=
+                                        '<th style="vertical-align:top; padding:6px 4px; background:var(--gray-100); border:1px solid var(--gray-300); text-align:center;">';
+                                    html +=
+                                        '<select class="form-input import-field-select" aria-label="Map column" data-col-index="' +
+                                        c +
+                                        '" onchange="handlers.swapImportColumn(this)" style="width:100%; font-size:12px; padding:3px 4px; border-radius:4px;">';
                                     for (let i = 0; i < colCount; i++) {
-                                        html += '<option value="' + i + '"' + (i === c ? ' selected' : '') + '>' + escapeHtml(cleanHdrs[i]) + '</option>';
+                                        html +=
+                                            '<option value="' +
+                                            i +
+                                            '"' +
+                                            (i === c ? ' selected' : '') +
+                                            '>' +
+                                            escapeHtml(cleanHdrs[i]) +
+                                            '</option>';
                                     }
                                     html += '</select></th>';
                                 }
@@ -2729,17 +3311,32 @@ Object.assign(pages, {
                                 for (let r = 0; r < displayRows; r++) {
                                     html += '<tr data-row="' + r + '">';
                                     // Row number cell
-                                    html += '<td style="position:relative; background:var(--gray-50); border:1px solid var(--gray-300); text-align:center; font-size:11px; font-weight:500; color:var(--gray-500); padding:4px 2px; user-select:none;">' + (r + 1);
-                                    html += '<div onmousedown="handlers.startRowResize(event,' + r + ')" ondblclick="handlers.autoFitRow(event,' + r + ')" style="position:absolute; left:0; right:0; bottom:-6px; height:12px; cursor:row-resize; z-index:3;"></div>';
+                                    html +=
+                                        '<td style="position:relative; background:var(--gray-50); border:1px solid var(--gray-300); text-align:center; font-size:11px; font-weight:500; color:var(--gray-500); padding:4px 2px; user-select:none;">' +
+                                        (r + 1);
+                                    html +=
+                                        '<div onmousedown="handlers.startRowResize(event,' +
+                                        r +
+                                        ')" ondblclick="handlers.autoFitRow(event,' +
+                                        r +
+                                        ')" style="position:absolute; left:0; right:0; bottom:-6px; height:12px; cursor:row-resize; z-index:3;"></div>';
                                     html += '</td>';
                                     for (let c = 0; c < colCount; c++) {
-                                        html += '<td style="padding:5px 6px; vertical-align:middle; text-align:center; overflow-wrap:break-word; word-wrap:break-word; border:1px solid var(--gray-300);">' + escapeHtml(String(getCell(r, c))) + '</td>';
+                                        html +=
+                                            '<td style="padding:5px 6px; vertical-align:middle; text-align:center; overflow-wrap:break-word; word-wrap:break-word; border:1px solid var(--gray-300);">' +
+                                            escapeHtml(String(getCell(r, c))) +
+                                            '</td>';
                                     }
                                     html += '</tr>';
                                 }
                                 html += '</tbody></table></div>';
                                 const totalRows = currentJob.preview?.total_rows || rowCount;
-                                html += '<p style="font-size:12px; color:var(--gray-500); margin-top:8px;">' + totalRows + ' rows total' + (rowCount > maxPreview ? ' (showing first ' + maxPreview + ')' : '') + '</p>';
+                                html +=
+                                    '<p style="font-size:12px; color:var(--gray-500); margin-top:8px;">' +
+                                    totalRows +
+                                    ' rows total' +
+                                    (rowCount > maxPreview ? ' (showing first ' + maxPreview + ')' : '') +
+                                    '</p>';
                                 return html;
                             })()}
                             <div class="mt-4" style="display:flex; gap:8px; justify-content:flex-end;">
@@ -2749,7 +3346,8 @@ Object.assign(pages, {
                             </div>
                         </div>
                     </div>
-                ` : `
+                `
+                        : `
                     <!-- Upload Step -->
                     <div class="card">
                         <div class="card-header">
@@ -2786,28 +3384,39 @@ Object.assign(pages, {
                                 <label class="flex items-center gap-2 text-sm">
                                     <input type="checkbox" id="import-has-header" checked aria-label="Import Has Header"> Has header row
                                 </label>
-                                ${mappings.length > 0 ? `
+                                ${
+                                    mappings.length > 0
+                                        ? `
                                     <select class="form-input" id="import-saved-mapping" style="width:auto;" aria-label="Saved import mapping">
                                         <option value="">Use saved mapping...</option>
-                                        ${mappings.map(m => `<option value="${m.id}">${escapeHtml(m.name)}</option>`).join('')}
+                                        ${mappings.map((m) => `<option value="${m.id}">${escapeHtml(m.name)}</option>`).join('')}
                                     </select>
-                                ` : ''}
+                                `
+                                        : ''
+                                }
                                 <button class="btn btn-primary" onclick="handlers.startImportFromPaste()">
                                     Parse Data
                                 </button>
                             </div>
                         </div>
                     </div>
-                `}
-            ` : ''}
+                `
+                }
+            `
+                    : ''
+            }
 
-            ${activeTab === 'jobs' ? `
+            ${
+                activeTab === 'jobs'
+                    ? `
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Import History</h2>
                     </div>
                     <div class="card-body">
-                        ${jobs.length > 0 ? `
+                        ${
+                            jobs.length > 0
+                                ? `
                             <div class="table-container">
                                 <table class="table">
                                     <thead>
@@ -2823,7 +3432,9 @@ Object.assign(pages, {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${jobs.map(job => `
+                                        ${jobs
+                                            .map(
+                                                (job) => `
                                             <tr>
                                                 <td>${escapeHtml(job.name || 'Unnamed')}</td>
                                                 <td><span class="badge">${(job.source_type || '').toUpperCase()}</span></td>
@@ -2838,28 +3449,40 @@ Object.assign(pages, {
                                                     </button>
                                                 </td>
                                             </tr>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </tbody>
                                 </table>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="text-center py-8 text-gray-500">
                                 <p>No import history.</p>
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
-            ${activeTab === 'mappings' ? `
+            ${
+                activeTab === 'mappings'
+                    ? `
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Saved Field Mappings</h2>
                     </div>
                     <div class="card-body">
-                        ${mappings.length > 0 ? `
+                        ${
+                            mappings.length > 0
+                                ? `
                             <div class="import-mappings-grid">
-                                ${mappings.map(mapping => `
+                                ${mappings
+                                    .map(
+                                        (mapping) => `
                                     <div class="import-mapping-card">
                                         <div class="import-mapping-card-header">
                                             <strong>${escapeHtml(mapping.name)}</strong>
@@ -2876,21 +3499,26 @@ Object.assign(pages, {
                                             </button>
                                         </div>
                                     </div>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="text-center py-8 text-gray-500">
                                 <p>No saved mappings. Mappings are saved during the import process.</p>
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
         `;
     },
 
     // Transactions page,
-
 
     recentlyDeleted() {
         const deletedItems = store.state.deletedItems || [];
@@ -2902,13 +3530,13 @@ Object.assign(pages, {
         // Calculate stats
         const totalDeleted = deletedItems.length;
         const typeBreakdown = {};
-        deletedItems.forEach(item => {
+        deletedItems.forEach((item) => {
             const type = item.item_type || 'unknown';
             typeBreakdown[type] = (typeBreakdown[type] || 0) + 1;
         });
 
         // Filter items
-        let filteredItems = deletedItems.filter(item => {
+        let filteredItems = deletedItems.filter((item) => {
             let match = true;
             if (itemTypeFilter) match = match && item.item_type === itemTypeFilter;
             if (deletionReasonFilter) match = match && item.deletion_reason === deletionReasonFilter;
@@ -2927,7 +3555,7 @@ Object.assign(pages, {
         });
 
         // Parse item data
-        const itemsWithData = filteredItems.map(item => {
+        const itemsWithData = filteredItems.map((item) => {
             let itemData = {};
             try {
                 itemData = item.original_data ? JSON.parse(item.original_data) : {};
@@ -2937,7 +3565,7 @@ Object.assign(pages, {
             return {
                 ...item,
                 itemName: itemData.title || 'Untitled Item',
-                itemPrice: itemData.price || 0
+                itemPrice: itemData.price || 0,
             };
         });
 
@@ -2948,7 +3576,9 @@ Object.assign(pages, {
                         <h1 class="page-title">Recently Deleted</h1>
                         <p class="text-gray-500">Manage deleted items. Permanently deleted items are removed after 30 days.</p>
                     </div>
-                    ${selectedDeletedIds.length > 0 ? `
+                    ${
+                        selectedDeletedIds.length > 0
+                            ? `
                         <div class="flex gap-2">
                             <button class="btn btn-secondary" onclick="handlers.bulkRestoreDeleted()">
                                 ${components.icon('undo', 16)} Restore Selected (${selectedDeletedIds.length})
@@ -2957,7 +3587,9 @@ Object.assign(pages, {
                                 ${components.icon('trash', 16)} Delete Permanently (${selectedDeletedIds.length})
                             </button>
                         </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                 </div>
 
                 <!-- Stats Cards -->
@@ -2967,38 +3599,50 @@ Object.assign(pages, {
                 </div>
 
                 <!-- Type Breakdown -->
-                ${Object.keys(typeBreakdown).length > 0 ? `
+                ${
+                    Object.keys(typeBreakdown).length > 0
+                        ? `
                     <div class="card mb-6">
                         <div class="card-body">
                             <h2 class="font-semibold mb-4">Items by Type</h2>
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                ${Object.entries(typeBreakdown).map(([type, count]) => `
+                                ${Object.entries(typeBreakdown)
+                                    .map(
+                                        ([type, count]) => `
                                     <div class="text-center p-3 bg-gray-50 rounded">
                                         <div class="text-2xl font-bold text-primary">${count}</div>
                                         <div class="text-sm text-gray-600 capitalize">${type}</div>
                                     </div>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </div>
                         </div>
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
 
                 <!-- Filters -->
                 <div class="card mb-6">
                     <div class="card-body">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div class="form-group">
-                                <label class="form-label">Item Type</label>
-                                <select class="form-select" onchange="handlers.setDeletedItemTypeFilter(this.value)" aria-label="Filter by item type">
+                                <label class="form-label" for="pic-item-type-filter">Item Type</label>
+                                <select id="pic-item-type-filter" class="form-select" onchange="handlers.setDeletedItemTypeFilter(this.value)" aria-label="Filter by item type">
                                     <option value="">All Types</option>
-                                    ${Object.keys(typeBreakdown).map(type => `
+                                    ${Object.keys(typeBreakdown)
+                                        .map(
+                                            (type) => `
                                         <option value="${type}" ${itemTypeFilter === type ? 'selected' : ''}>${type}</option>
-                                    `).join('')}
+                                    `,
+                                        )
+                                        .join('')}
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Deletion Reason</label>
-                                <select class="form-select" aria-label="Filter by deletion reason" onchange="handlers.setDeletedReasonFilter(this.value)">
+                                <label class="form-label" for="pic-deletion-reason">Deletion Reason</label>
+                                <select id="pic-deletion-reason" class="form-select" aria-label="Filter by deletion reason" onchange="handlers.setDeletedReasonFilter(this.value)">
                                     <option value="">All Reasons</option>
                                     <option value="user_deleted" ${deletionReasonFilter === 'user_deleted' ? 'selected' : ''}>User Deleted</option>
                                     <option value="expired" ${deletionReasonFilter === 'expired' ? 'selected' : ''}>Expired</option>
@@ -3007,8 +3651,8 @@ Object.assign(pages, {
                                 </select>
                             </div>
                             <div class="form-group" role="search">
-                                <label class="form-label">Search</label>
-                                <input type="text" class="form-input" aria-label="Search item name" placeholder="Search item name..."
+                                <label class="form-label" for="pic-search">Search</label>
+                                <input id="pic-search" type="text" class="form-input" aria-label="Search item name" placeholder="Search item name..."
                                        value="${searchTerm}"
                                        onchange="handlers.setDeletedSearchTerm(this.value)">
                             </div>
@@ -3017,7 +3661,9 @@ Object.assign(pages, {
                 </div>
 
                 <!-- Action Bar -->
-                ${selectedDeletedIds.length > 0 ? `
+                ${
+                    selectedDeletedIds.length > 0
+                        ? `
                     <div class="card mb-6 callout-info">
                         <div class="card-body flex justify-between items-center">
                             <span>${selectedDeletedIds.length} item(s) selected</span>
@@ -3034,18 +3680,23 @@ Object.assign(pages, {
                             </div>
                         </div>
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
 
                 <!-- Deleted Items Table -->
                 <div class="card">
                     <div class="card-body">
-                        ${itemsWithData.length === 0 ? `
+                        ${
+                            itemsWithData.length === 0
+                                ? `
                             <div class="empty-state">
                                 <div class="empty-state-icon">${components.icon('trash', 48)}</div>
                                 <h2 class="empty-state-title">No deleted items</h2>
                                 <p class="empty-state-description">Deleted items will appear here</p>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="overflow-x-auto">
                                 <table class="data-table">
                                     <thead>
@@ -3063,7 +3714,9 @@ Object.assign(pages, {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${itemsWithData.map(item => `
+                                        ${itemsWithData
+                                            .map(
+                                                (item) => `
                                             <tr>
                                                 <td>
                                                     <input aria-label="Toggle ${escapeHtml(item.itemName)}" type="checkbox"
@@ -3089,11 +3742,14 @@ Object.assign(pages, {
                                                     </div>
                                                 </td>
                                             </tr>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </tbody>
                                 </table>
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
 
@@ -3111,5 +3767,4 @@ Object.assign(pages, {
     },
 
     // Report Builder Page,
-
 });

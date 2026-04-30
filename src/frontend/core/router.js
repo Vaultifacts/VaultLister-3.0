@@ -11,15 +11,15 @@
 // and the built files at dist/chunk-{name}.js.
 const pageChunkMap = {
     // dashboard — no chunk (core bundle)
-    'dashboard': null,
+    dashboard: null,
 
     // inventory chunk
-    'inventory': 'inventory',
-    'listings': 'inventory',
+    inventory: 'inventory',
+    listings: 'inventory',
     'my-listings': 'inventory',
-    'crosslist': 'inventory',
-    'templates': 'inventory',
-    'automations': 'inventory',
+    crosslist: 'inventory',
+    templates: 'inventory',
+    automations: 'inventory',
     'sku-rules': 'inventory',
     'smart-relisting': 'inventory',
     'inventory-import': 'inventory',
@@ -27,68 +27,68 @@ const pageChunkMap = {
     'platform-health': 'inventory',
 
     // analytics → sales chunk (13/16 analytics handlers live in sales chunk)
-    'analytics': 'sales',
+    analytics: 'sales',
 
     // sales chunk
-    'sales': 'sales',
-    'orders': 'sales',
+    sales: 'sales',
+    orders: 'sales',
     'orders-sales': 'sales',
-    'offers': 'sales',
-    'financials': 'sales',
-    'transactions': 'sales',
-    'reports': 'sales',
+    offers: 'sales',
+    financials: 'sales',
+    transactions: 'sales',
+    reports: 'sales',
     'report-builder': 'sales',
     'shipping-labels': 'sales',
 
     // tools chunk
-    'checklist': 'tools',
-    'calendar': 'tools',
-    'planner': 'tools',
+    checklist: 'tools',
+    calendar: 'tools',
+    planner: 'tools',
     'size-charts': 'tools',
     'image-bank': 'tools',
     'receipt-parser': 'tools',
     'whatnot-live': 'tools',
 
     // intelligence chunk
-    'heatmaps': 'intelligence',
-    'predictions': 'intelligence',
-    'suppliers': 'intelligence',
+    heatmaps: 'intelligence',
+    predictions: 'intelligence',
+    suppliers: 'intelligence',
     'market-intel': 'intelligence',
-    'sourcing': 'intelligence',
-    'tools': 'intelligence',
+    sourcing: 'intelligence',
+    tools: 'intelligence',
 
     // settings chunk
-    'settings': 'settings',
-    'account': 'settings',
-    'teams': 'settings',
+    settings: 'settings',
+    account: 'settings',
+    teams: 'settings',
     'plans-billing': 'settings',
-    'affiliate': 'settings',
-    'notifications': 'settings',
-    'connections': 'settings',
+    affiliate: 'settings',
+    notifications: 'settings',
+    connections: 'settings',
     'shipping-profiles': 'settings',
     'push-notifications': 'settings',
-    'webhooks': 'settings',
-    'shops': 'settings',
+    webhooks: 'settings',
+    shops: 'settings',
 
     // community chunk
-    'community': 'community',
-    'help': 'community',
+    community: 'community',
+    help: 'community',
     'support-articles': 'community',
     'report-bug': 'community',
-    'tutorials': 'community',
-    'roadmap': 'community',
+    tutorials: 'community',
+    roadmap: 'community',
     'suggest-features': 'community',
     'submit-feedback': 'community',
     'feedback-suggestions': 'community',
     'feedback-analytics': 'community',
-    'changelog': 'community',
+    changelog: 'community',
     'help-support': 'community',
     'refer-friend': 'community',
     'terms-of-service': 'community',
     'privacy-policy': 'community',
-    'about': 'community',
-    'terms': 'community',
-    'privacy': 'community',
+    about: 'community',
+    terms: 'community',
+    privacy: 'community',
 
     // admin
     'admin-metrics': 'admin',
@@ -121,7 +121,9 @@ const navProgress = {
         bar.style.width = '0%';
         bar.style.opacity = '1';
         bar.classList.add('nav-progress-active');
-        requestAnimationFrame(() => { bar.style.width = '80%'; });
+        requestAnimationFrame(() => {
+            bar.style.width = '80%';
+        });
     },
 
     done() {
@@ -131,9 +133,11 @@ const navProgress = {
         this._timer = setTimeout(() => {
             bar.style.opacity = '0';
             bar.classList.remove('nav-progress-active');
-            setTimeout(() => { bar.style.width = '0%'; }, 300);
+            setTimeout(() => {
+                bar.style.width = '0%';
+            }, 300);
         }, 200);
-    }
+    },
 };
 
 // ============================================
@@ -161,16 +165,21 @@ const pageCleanupRegistry = {
 
     cleanAll() {
         for (const { target, type, handler, options } of this._listeners) {
-            try { target.removeEventListener(type, handler, options); } catch (_) {}
+            try {
+                target.removeEventListener(type, handler, options);
+            } catch (_) {}
         }
-        for (const id of this._intervals) { clearInterval(id); }
-        for (const id of this._timeouts) { clearTimeout(id); }
+        for (const id of this._intervals) {
+            clearInterval(id);
+        }
+        for (const id of this._timeouts) {
+            clearTimeout(id);
+        }
         this._listeners = [];
         this._intervals = [];
         this._timeouts = [];
-    }
+    },
 };
-
 
 /**
  * Dynamically load a built route-group chunk (dist/chunk-{name}.js).
@@ -183,20 +192,20 @@ function loadChunk(chunkName) {
     const v = '20';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
-    _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
-        var timeout = setTimeout(function() {
+    _loadingChunks[chunkName] = new Promise(function (resolve, reject) {
+        var timeout = setTimeout(function () {
             reject(new Error('Chunk load timeout: ' + chunkName));
         }, 15000);
 
         var s = document.createElement('script');
         s.src = src;
-        s.onload = function() {
+        s.onload = function () {
             clearTimeout(timeout);
             _loadedChunks.add(chunkName);
             delete _loadingChunks[chunkName];
             resolve();
         };
-        s.onerror = function() {
+        s.onerror = function () {
             clearTimeout(timeout);
             delete _loadingChunks[chunkName];
             reject(new Error('Failed to load chunk: ' + src));
@@ -240,7 +249,13 @@ const router = {
         // Check for unsaved settings changes before navigating
         const currentPage = store.state.currentPage;
         if (currentPage === 'settings' && !path.startsWith('settings') && store.state.settingsChanged) {
-            if (!await modals.confirm('You have unsaved changes. Discard changes and leave this page?', { title: 'Unsaved Changes', confirmText: 'Discard', danger: true })) {
+            if (
+                !(await modals.confirm('You have unsaved changes. Discard changes and leave this page?', {
+                    title: 'Unsaved Changes',
+                    confirmText: 'Discard',
+                    danger: true,
+                }))
+            ) {
                 return; // Stay on settings page
             }
         }
@@ -267,27 +282,32 @@ const router = {
         }
         store.setState({ vaultBuddyOpen: false });
         window.history.pushState({ scrollY: window.scrollY }, '', `#${path}`);
-        if (typeof gtag === 'function') gtag('event', 'page_view', { page_title: document.title, page_location: window.location.href, page_path: '/' + path });
+        if (typeof gtag === 'function')
+            gtag('event', 'page_view', {
+                page_title: document.title,
+                page_location: window.location.href,
+                page_path: '/' + path,
+            });
         await this.handleRoute();
     },
 
     // Route aliases for sidebar consolidation — old routes redirect to new parent pages
     routeAliases: {
         'my-listings': { target: 'listings', tab: null },
-        'orders': { target: 'orders-sales', tab: 'orders' },
-        'transactions': { target: 'financials', tab: 'transactions', storeKey: 'financialsTab' },
+        orders: { target: 'orders-sales', tab: 'orders' },
+        transactions: { target: 'financials', tab: 'transactions', storeKey: 'financialsTab' },
         'report-builder': { target: 'analytics', tab: 'reports', storeKey: 'analyticsTab' },
-        'predictions': { target: 'analytics', tab: 'predictions', storeKey: 'analyticsTab' },
+        predictions: { target: 'analytics', tab: 'predictions', storeKey: 'analyticsTab' },
         'market-intel': { target: 'analytics', tab: 'market-intel', storeKey: 'analyticsTab' },
-        'suppliers': { target: 'analytics', tab: 'sourcing', storeKey: 'analyticsTab' },
+        suppliers: { target: 'analytics', tab: 'sourcing', storeKey: 'analyticsTab' },
         'platform-health': { target: 'shops', tab: 'health' },
         // checklist + calendar: standalone routes (aliases removed — pages.planner() doesn't exist)
         // roadmap: standalone route — pages.roadmap() handles it directly
         'feedback-suggestions': { target: 'help-support', tab: 'feedback' },
         'recently-deleted': { target: 'inventory', tab: 'trash' },
         'my-shops': { target: 'shops' },
-        'billing': { target: 'plans-billing' },
-        'upgrade': { target: 'plans-billing' },
+        billing: { target: 'plans-billing' },
+        upgrade: { target: 'plans-billing' },
         'terms-of-service': { target: 'help-support', tab: 'terms' },
         'privacy-policy': { target: 'help-support', tab: 'privacy' },
         // admin-metrics: standalone page (no alias — loads admin chunk directly)
@@ -346,14 +366,23 @@ const router = {
         // Handle settings deep-linking: #settings/account → set tab and use 'settings' as route.
         const settingsTabAliases = {
             profile: 'account',
-            billing: 'plans-billing'
+            billing: 'plans-billing',
         };
         const settingsStandaloneRoutes = {
             teams: 'teams',
             'reference-data': 'size-charts',
-            admin: 'admin-metrics'
+            admin: 'admin-metrics',
         };
-        const validSettingsTabs = ['account', 'appearance', 'notifications', 'integrations', 'tools', 'data', 'plans-billing', 'affiliate'];
+        const validSettingsTabs = [
+            'account',
+            'appearance',
+            'notifications',
+            'integrations',
+            'tools',
+            'data',
+            'plans-billing',
+            'affiliate',
+        ];
         if (path.startsWith('settings/')) {
             const rawTab = path.split('/')[1];
             const tab = settingsTabAliases[rawTab] || rawTab;
@@ -395,7 +424,21 @@ const router = {
         // Also redirect when the access token is present but expired — the API client
         // will attempt a silent refresh on the next request, but we redirect early here
         // so the user is not briefly shown a protected page before the 401 fires.
-        const publicRoutes = ['login', 'register', 'forgot-password', 'reset-password', 'email-verification', 'verify-email', 'about', 'terms', 'privacy', 'terms-of-service', 'privacy-policy', '404', 'auth-callback'];
+        const publicRoutes = [
+            'login',
+            'register',
+            'forgot-password',
+            'reset-password',
+            'email-verification',
+            'verify-email',
+            'about',
+            'terms',
+            'privacy',
+            'terms-of-service',
+            'privacy-policy',
+            '404',
+            'auth-callback',
+        ];
         if (!publicRoutes.includes(path)) {
             const token = store.state.token;
             if (!auth.isAuthenticated() || this._isTokenExpired(token)) {
@@ -449,10 +492,10 @@ const router = {
             'report-bug': 'Report a Bug',
             'help-support': 'Help & Support',
             'support-articles': 'Knowledge Base',
-            'tutorials': 'Tutorials & Guides',
-            'roadmap': 'Roadmap',
+            tutorials: 'Tutorials & Guides',
+            roadmap: 'Roadmap',
             'plans-billing': 'Plans & Billing',
-            'changelog': 'Changelog',
+            changelog: 'Changelog',
             'receipt-parser': 'Receipts',
         };
         document.title = (PAGE_TITLES[path] ? PAGE_TITLES[path] + ' | ' : '') + 'VaultLister';
@@ -461,13 +504,18 @@ const router = {
         const chunkName = pageChunkMap[path];
         if (chunkName && !_loadedChunks.has(chunkName)) {
             // Show loading spinner while chunk loads
-            renderApp('<div style="display:flex;align-items:center;justify-content:center;min-height:60vh"><div class="loading-spinner"></div><p style="margin-left:1rem;color:var(--gray-500)">Loading page...</p></div>');
+            renderApp(
+                '<div style="display:flex;align-items:center;justify-content:center;min-height:60vh"><div class="loading-spinner"></div><p style="margin-left:1rem;color:var(--gray-500)">Loading page...</p></div>',
+            );
             try {
                 await loadChunk(chunkName);
                 // If user navigated away while the chunk was loading, bail out silently
-                if (this._navNonce !== navNonce) { navProgress.done(); return; }
+                if (this._navNonce !== navNonce) {
+                    navProgress.done();
+                    return;
+                }
             } catch (err) {
-                console.error('[Router] Chunk load failed for', chunkName, err);  // nosemgrep: javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
+                console.error('[Router] Chunk load failed for', chunkName, err); // nosemgrep: javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
                 toast.error('Failed to load page module. Please try again.');
                 return;
             }
@@ -486,13 +534,10 @@ const router = {
                     await Promise.all([
                         handlers.loadShops(),
                         handlers.loadEmailAccounts(),
-                        handlers.loadEmailProviders()
+                        handlers.loadEmailProviders(),
                     ]);
                 } else if (path === 'listings') {
-                    await Promise.all([
-                        handlers.loadListings(),
-                        handlers.loadListingFolders()
-                    ]);
+                    await Promise.all([handlers.loadListings(), handlers.loadListingFolders()]);
                 } else if (path === 'sales') {
                     store.setState({ salesStatusFilter: 'all', salesPlatformFilter: 'all' });
                     await handlers.loadSales();
@@ -500,22 +545,22 @@ const router = {
                     await handlers.loadDeletedItems();
                 } else if (path === 'analytics') {
                     // Render shell immediately, load data in background to avoid blocking navigation
-                    handlers.loadAnalytics().then(() => {
-                        if (store.state.currentPage === 'analytics') renderApp(window.pages.analytics());
-                    }).catch(err => console.error('[Router] Analytics background load failed:', err));  // nosemgrep: javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
+                    handlers
+                        .loadAnalytics()
+                        .then(() => {
+                            if (store.state.currentPage === 'analytics') renderApp(window.pages.analytics());
+                        })
+                        .catch((err) => console.error('[Router] Analytics background load failed:', err)); // nosemgrep: javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
                     // Skip the await so render proceeds below without waiting
                 } else if (path === 'financials') {
                     await Promise.all([
                         handlers.loadPurchases(),
                         handlers.loadAccounts(),
                         handlers.loadSales(),
-                        handlers.loadCategorizationRules()
+                        handlers.loadCategorizationRules(),
                     ]);
                 } else if (path === 'transactions') {
-                    await Promise.all([
-                        handlers.loadPurchases(),
-                        handlers.loadSales()
-                    ]);
+                    await Promise.all([handlers.loadPurchases(), handlers.loadSales()]);
                 } else if (path === 'templates') {
                     await handlers.loadTemplates();
                 } else if (path === 'image-bank') {
@@ -524,19 +569,13 @@ const router = {
                 } else if (path === 'community') {
                     await handlers.loadCommunity();
                 } else if (path === 'support-articles') {
-                    await Promise.all([
-                        handlers.loadFAQs(),
-                        handlers.loadArticles()
-                    ]);
+                    await Promise.all([handlers.loadFAQs(), handlers.loadArticles()]);
                 } else if (path === 'report-bug') {
                     await handlers.loadTickets();
                 } else if (path === 'orders') {
                     await handlers.loadOrders();
                 } else if (path === 'orders-sales') {
-                    await Promise.all([
-                        handlers.loadOrders(),
-                        handlers.loadSales()
-                    ]);
+                    await Promise.all([handlers.loadOrders(), handlers.loadSales()]);
                 } else if (path === 'offers') {
                     await handlers.loadOffers();
                 } else if (path === 'checklist') {
@@ -557,19 +596,20 @@ const router = {
                     await handlers.loadPushStatus();
                 }
             } catch (err) {
-                console.error(`[Router] Failed to load data for ${path}:`, err);  // nosemgrep: javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
+                console.error(`[Router] Failed to load data for ${path}:`, err); // nosemgrep: javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
                 toast.error('Failed to load page data. The page may show stale content.');
             }
         }
 
-        const handler = (Object.prototype.hasOwnProperty.call(this.routes, path) ? this.routes[path] : null) || this.routes['404'];
+        const handler =
+            (Object.prototype.hasOwnProperty.call(this.routes, path) ? this.routes[path] : null) || this.routes['404'];
         if (handler) {
             try {
                 // On initial load, add a 4-second timeout so async route handlers can't hang forever
                 if (isInitialLoad) {
                     await Promise.race([
                         handler(),
-                        new Promise((_, reject) => setTimeout(() => reject(new Error('__route_timeout__')), 4000))
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('__route_timeout__')), 4000)),
                     ]);
                 } else {
                     await handler();
@@ -577,27 +617,30 @@ const router = {
             } catch (err) {
                 // On initial load timeout, render the page immediately without data
                 if (isInitialLoad && err.message === '__route_timeout__') {
-                    console.warn(`[Router] Timeout loading '${path}', rendering without data`);  // nosemgrep: javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
+                    console.warn(`[Router] Timeout loading '${path}', rendering without data`); // nosemgrep: javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
                     try {
-                        const pageRenderer = window.pages[path] || window.pages[path.replace(/-/g, '')] || window.pages.dashboard;
+                        const pageRenderer =
+                            window.pages[path] || window.pages[path.replace(/-/g, '')] || window.pages.dashboard;
                         if (typeof pageRenderer === 'function') {
                             renderApp(pageRenderer());
                         } else {
                             renderApp(window.pages.dashboard());
                         }
                     } catch (renderErr) {
-                        console.error('[Router] Fallback render failed:', renderErr);  // nosemgrep: javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
+                        console.error('[Router] Fallback render failed:', renderErr); // nosemgrep: javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
                         renderApp(window.pages.dashboard());
                     }
                 } else {
-                    console.error('[Router] Error rendering page:', path, err);  // nosemgrep: javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
+                    console.error('[Router] Error rendering page:', path, err); // nosemgrep: javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
                     // Render an error state so sidebar still updates to reflect the current page
-                    renderApp(`<div style="padding:40px;text-align:center"><h2>Page Error</h2><p>Something went wrong loading this page.</p><button class="btn btn-primary" onclick="router.navigate('${escapeHtml(path)}')">Retry</button> <button class="btn btn-secondary" onclick="router.navigate('dashboard')">Go to Dashboard</button></div>`);
+                    renderApp(
+                        `<div style="padding:40px;text-align:center"><h2>Page Error</h2><p>Something went wrong loading this page.</p><button class="btn btn-primary" onclick="router.navigate('${escapeHtml(path)}')">Retry</button> <button class="btn btn-secondary" onclick="router.navigate('dashboard')">Go to Dashboard</button></div>`,
+                    );
                     toast.error('Failed to load page. Please try again.');
                 }
             }
         } else {
-            console.error('[Router] No handler found for:', path);  // nosemgrep: javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
+            console.error('[Router] No handler found for:', path); // nosemgrep: javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
             router.navigate('404');
         }
 
@@ -619,8 +662,8 @@ const router = {
         // Load data AFTER rendering on initial load
         if (isInitialLoad) {
             // Load in background without blocking
-            this.loadPageData(path).catch(err => {
-                console.error('Background data load failed:', err);  // nosemgrep: javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
+            this.loadPageData(path).catch((err) => {
+                console.error('Background data load failed:', err); // nosemgrep: javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
                 toast.error('Failed to load page data');
             });
         }
@@ -634,16 +677,9 @@ const router = {
         } else if (path === 'shops') {
             await handlers.loadShops();
         } else if (path === 'connections') {
-            await Promise.all([
-                handlers.loadShops(),
-                handlers.loadEmailAccounts(),
-                handlers.loadEmailProviders()
-            ]);
+            await Promise.all([handlers.loadShops(), handlers.loadEmailAccounts(), handlers.loadEmailProviders()]);
         } else if (path === 'listings') {
-            await Promise.all([
-                handlers.loadListings(),
-                handlers.loadListingFolders()
-            ]);
+            await Promise.all([handlers.loadListings(), handlers.loadListingFolders()]);
         } else if (path === 'sales') {
             store.setState({ salesStatusFilter: 'all', salesPlatformFilter: 'all' });
             await handlers.loadSales();
@@ -683,12 +719,16 @@ const router = {
             this.handleRoute();
         });
         // Catch unhandled errors from async initial route handling
-        this.handleRoute(true).catch(err => {
-            console.error('[Router] Unhandled init error:', err);  // nosemgrep: javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
+        this.handleRoute(true).catch((err) => {
+            console.error('[Router] Unhandled init error:', err); // nosemgrep: javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
             hideLoadingScreen();
-            try { renderApp(window.pages.dashboard()); } catch (_) {
-                try { render(window.pages.login()); } catch (__) {}
+            try {
+                renderApp(window.pages.dashboard());
+            } catch (_) {
+                try {
+                    render(window.pages.login());
+                } catch (__) {}
             }
         });
-    }
+    },
 };

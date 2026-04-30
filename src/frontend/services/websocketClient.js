@@ -182,7 +182,7 @@ class VaultListerSocket {
 
         // Call type-specific handlers
         const handlers = this.handlers.get(data.type) || [];
-        handlers.forEach(handler => {
+        handlers.forEach((handler) => {
             try {
                 handler(data);
             } catch (e) {
@@ -192,7 +192,7 @@ class VaultListerSocket {
 
         // Call wildcard handlers
         const wildcardHandlers = this.handlers.get('*') || [];
-        wildcardHandlers.forEach(handler => {
+        wildcardHandlers.forEach((handler) => {
             try {
                 handler(data);
             } catch (e) {
@@ -214,7 +214,7 @@ class VaultListerSocket {
     subscribe(topics) {
         this.send({
             type: 'subscribe',
-            topics: Array.isArray(topics) ? topics : [topics]
+            topics: Array.isArray(topics) ? topics : [topics],
         });
     }
 
@@ -222,7 +222,7 @@ class VaultListerSocket {
     unsubscribe(topics) {
         this.send({
             type: 'unsubscribe',
-            topics: Array.isArray(topics) ? topics : [topics]
+            topics: Array.isArray(topics) ? topics : [topics],
         });
     }
 
@@ -274,10 +274,7 @@ class VaultListerSocket {
         }
 
         this.reconnectAttempts++;
-        const delay = Math.min(
-            this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1),
-            this.maxReconnectDelay
-        );
+        const delay = Math.min(this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1), this.maxReconnectDelay);
 
         console.log(`[WS] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
 
@@ -355,7 +352,7 @@ window.wsSubscribe = {
 
     // Connection events
     onConnected: (handler) => wsClient.on('auth_success', handler),
-    onDisconnected: (handler) => wsClient.on('max_reconnect_reached', handler)
+    onDisconnected: (handler) => wsClient.on('max_reconnect_reached', handler),
 };
 
 // Update the WS status dot when connection status changes
@@ -388,7 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (raw) token = JSON.parse(raw).token || null;
     } catch (_) {}
     if (token) {
-        wsClient.connect(token).catch(err => {
+        wsClient.connect(token).catch((err) => {
             console.log('[WS] Initial connection failed:', err.message);
         });
     }
@@ -398,8 +395,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const notif = data.notification;
         if (!notif) return;
 
-        const prefs = window.store?.state?.automationNotifPrefs ||
-            (() => { try { return JSON.parse(localStorage.getItem('vaultlister_automation_notif_prefs') || '{}'); } catch { return {}; } })();
+        const prefs =
+            window.store?.state?.automationNotifPrefs ||
+            (() => {
+                try {
+                    return JSON.parse(localStorage.getItem('vaultlister_automation_notif_prefs') || '{}');
+                } catch {
+                    return {};
+                }
+            })();
 
         if (!prefs.desktop_enabled) return;
 
@@ -418,7 +422,7 @@ document.addEventListener('DOMContentLoaded', () => {
             new Notification(notif.title || 'Automation Update', {
                 body: notif.message || '',
                 icon: '/icons/icon-192.png',
-                tag: 'automation-' + (notif.id || Date.now())
+                tag: 'automation-' + (notif.id || Date.now()),
             });
         }
     });

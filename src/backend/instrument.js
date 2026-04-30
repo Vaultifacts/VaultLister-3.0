@@ -9,7 +9,7 @@ const SENTRY_DSN = process.env.SENTRY_DSN;
 const SENTRY_ENVIRONMENT = process.env.NODE_ENV || 'development';
 const SENTRY_ALLOW_NON_PROD = process.env.SENTRY_ALLOW_NON_PROD === 'true';
 const SHOULD_INIT_SENTRY = Boolean(
-    SENTRY_DSN && (SENTRY_ENVIRONMENT === 'production' || SENTRY_ENVIRONMENT === 'staging' || SENTRY_ALLOW_NON_PROD)
+    SENTRY_DSN && (SENTRY_ENVIRONMENT === 'production' || SENTRY_ENVIRONMENT === 'staging' || SENTRY_ALLOW_NON_PROD),
 );
 
 if (SHOULD_INIT_SENTRY) {

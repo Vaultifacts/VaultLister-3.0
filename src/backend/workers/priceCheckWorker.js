@@ -16,10 +16,18 @@ function isPrivatePriceUrl(urlStr) {
         const parsed = new URL(urlStr);
         if (!['https:', 'http:'].includes(parsed.protocol)) return true;
         const h = parsed.hostname.toLowerCase();
-        return h === 'localhost' || h === '::1' || h === '0.0.0.0' ||
+        return (
+            h === 'localhost' ||
+            h === '::1' ||
+            h === '0.0.0.0' ||
             /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.|127\.)/.test(h) ||
-            h.startsWith('fe80:') || h.startsWith('fc00:') || h.startsWith('fd00:') ||
-            h.startsWith('::ffff:') || h.endsWith('.internal') || h.endsWith('.local');
+            h.startsWith('fe80:') ||
+            h.startsWith('fc00:') ||
+            h.startsWith('fd00:') ||
+            h.startsWith('::ffff:') ||
+            h.endsWith('.internal') ||
+            h.endsWith('.local')
+        );
     } catch {
         return true;
     }
@@ -39,7 +47,7 @@ async function writeHeartbeat() {
     await setRedisValue(
         HEARTBEAT_KEY,
         JSON.stringify({ lastRun: new Date(lastRun).toISOString(), status: 'running' }),
-        HEARTBEAT_TTL_SECONDS
+        HEARTBEAT_TTL_SECONDS,
     );
 }
 
@@ -55,13 +63,13 @@ export function startPriceCheckWorker() {
     logger.info('[PriceCheckWorker] Starting price check worker...');
 
     // Run immediately on start
-    runPriceChecks().catch(err => {
+    runPriceChecks().catch((err) => {
         logger.error('[PriceCheckWorker] Initial check failed:', err);
     });
 
     // Schedule regular checks
     pollInterval = setInterval(() => {
-        runPriceChecks().catch(err => {
+        runPriceChecks().catch((err) => {
             logger.error('[PriceCheckWorker] Scheduled check failed:', err);
         });
     }, POLL_INTERVAL_MS);
@@ -91,11 +99,7 @@ async function runPriceChecks() {
     lastRun = Date.now();
 
     isRunning = true;
-    const lock = await acquireRedisLock(
-        PRICE_CHECK_LOCK_KEY,
-        PRICE_CHECK_LOCK_TTL_MS,
-        { name: 'price check worker' }
-    );
+    const lock = await acquireRedisLock(PRICE_CHECK_LOCK_KEY, PRICE_CHECK_LOCK_TTL_MS, { name: 'price check worker' });
 
     if (!lock.acquired) {
         isRunning = false;
@@ -106,7 +110,8 @@ async function runPriceChecks() {
 
     try {
         // Get items due for checking (ordered by last_checked_at)
-        const items = await query.all(`
+        const items = await query.all(
+            `
             SELECT si.*, s.name as supplier_name, s.user_id
             FROM supplier_items si
             JOIN suppliers s ON si.supplier_id = s.id
@@ -114,7 +119,9 @@ async function runPriceChecks() {
             AND s.is_active = TRUE
             ORDER BY si.last_checked_at ASC NULLS FIRST
             LIMIT ?
-        `, [MAX_ITEMS_PER_CYCLE]);
+        `,
+            [MAX_ITEMS_PER_CYCLE],
+        );
 
         logger.info(`[PriceCheckWorker] Checking ${items.length} items`);
 
@@ -134,14 +141,12 @@ async function runPriceChecks() {
 
                 // Small delay between checks
                 await sleep(CHECK_DELAY_MS);
-
             } catch (error) {
                 logger.error(`[PriceCheckWorker] Error checking item ${item.id}:`, error.message);
             }
         }
 
         logger.info(`[PriceCheckWorker] Completed. Price drops: ${priceDrops}, Targets hit: ${targetsHit}`);
-
     } catch (error) {
         logger.error('[PriceCheckWorker] Cycle failed:', error);
     } finally {
@@ -168,19 +173,23 @@ async function checkItemPrice(item) {
 
     if (newPrice === null) {
         // Couldn't get price, update last checked time only
-        await query.run(`
+        await query.run(
+            `
             UPDATE supplier_items SET last_checked_at = NOW()
             WHERE id = ?
-        `, [item.id]);
+        `,
+            [item.id],
+        );
         return result;
     }
 
     const oldPrice = item.current_price || newPrice;
     const priceChange = newPrice - oldPrice;
-    const changePercent = oldPrice > 0 ? (priceChange / oldPrice) : 0;
+    const changePercent = oldPrice > 0 ? priceChange / oldPrice : 0;
 
     // Update item with new price
-    await query.run(`
+    await query.run(
+        `
         UPDATE supplier_items SET
             last_price = current_price,
             current_price = ?,
@@ -188,27 +197,37 @@ async function checkItemPrice(item) {
             last_checked_at = NOW(),
             updated_at = NOW()
         WHERE id = ?
-    `, [newPrice, priceChange, item.id]);
+    `,
+        [newPrice, priceChange, item.id],
+    );
 
     // Record price history — include _source so callers can distinguish live
     // scrapes from mock/unavailable results
     try {
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO supplier_price_history (id, supplier_item_id, price, source, recorded_at)
             VALUES (?, ?, ?, ?, NOW())
-        `, [uuidv4(), item.id, newPrice, priceSource]);
+        `,
+            [uuidv4(), item.id, newPrice, priceSource],
+        );
     } catch (err) {
         // Fallback: table may not have source column yet
         try {
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO supplier_price_history (id, supplier_item_id, price, recorded_at)
                 VALUES (?, ?, ?, NOW())
-            `, [uuidv4(), item.id, newPrice]);
-        } catch (_) { /* Table might not exist */ }
+            `,
+                [uuidv4(), item.id, newPrice],
+            );
+        } catch (_) {
+            /* Table might not exist */
+        }
     }
 
     // Check for alerts
-    const dropThreshold = item.alert_threshold || 0.10;
+    const dropThreshold = item.alert_threshold || 0.1;
 
     // Check if price dropped by threshold percentage
     if (priceChange < 0 && Math.abs(changePercent) >= dropThreshold) {
@@ -223,9 +242,9 @@ async function checkItemPrice(item) {
                 supplier_id: item.supplier_id,
                 old_price: oldPrice,
                 new_price: newPrice,
-                change_percent: changePercent
+                change_percent: changePercent,
             },
-            important: true
+            important: true,
         });
 
         logger.info(`[PriceCheckWorker] Price drop: ${item.name} - $${oldPrice} -> $${newPrice}`);
@@ -243,9 +262,9 @@ async function checkItemPrice(item) {
                 supplier_item_id: item.id,
                 supplier_id: item.supplier_id,
                 current_price: newPrice,
-                target_price: item.target_price
+                target_price: item.target_price,
             },
-            important: true
+            important: true,
         });
 
         logger.info(`[PriceCheckWorker] Target hit: ${item.name} at $${newPrice}`);
@@ -302,7 +321,9 @@ async function fetchPriceFromUrl(item) {
                 });
                 if (response.status >= 300 && response.status < 400) {
                     const location = response.headers.get('location');
-                    if (!location) { return { price: null, source: 'mock' }; }
+                    if (!location) {
+                        return { price: null, source: 'mock' };
+                    }
                     currentUrl = new URL(location, currentUrl).href;
                 } else {
                     break;
@@ -323,7 +344,12 @@ async function fetchPriceFromUrl(item) {
                 try {
                     const jsonStr = match.replace(/<\/?script[^>]*(>|$)/gi, '');
                     const data = JSON.parse(jsonStr);
-                    const product = data['@type'] === 'Product' ? data : (Array.isArray(data['@graph']) ? data['@graph'].find(i => i['@type'] === 'Product') : null);
+                    const product =
+                        data['@type'] === 'Product'
+                            ? data
+                            : Array.isArray(data['@graph'])
+                              ? data['@graph'].find((i) => i['@type'] === 'Product')
+                              : null;
                     if (product?.offers) {
                         const offer = Array.isArray(product.offers) ? product.offers[0] : product.offers;
                         const price = parseFloat(offer.price || offer.lowPrice);
@@ -341,7 +367,9 @@ async function fetchPriceFromUrl(item) {
         }
 
         // Fall back to generic price pattern in meta
-        const priceMetaMatch = html.match(/<meta[^>]*(?:name|property)\s*=\s*"(?:og:)?price"[^>]*content\s*=\s*"([^"]+)"/i);
+        const priceMetaMatch = html.match(
+            /<meta[^>]*(?:name|property)\s*=\s*"(?:og:)?price"[^>]*content\s*=\s*"([^"]+)"/i,
+        );
         if (priceMetaMatch) {
             const price = parseFloat(priceMetaMatch[1].replace(/[^0-9.]/g, ''));
             if (!isNaN(price) && price > 0) return { price: Math.round(price * 100) / 100, source: 'live' };
@@ -364,12 +392,15 @@ export async function triggerPriceCheck(itemIds) {
 
     for (const itemId of itemIds) {
         try {
-            const item = await query.get(`
+            const item = await query.get(
+                `
                 SELECT si.*, s.name as supplier_name, s.user_id
                 FROM supplier_items si
                 JOIN suppliers s ON si.supplier_id = s.id
                 WHERE si.id = ?
-            `, [itemId]);
+            `,
+                [itemId],
+            );
 
             if (!item) {
                 results.errors.push({ itemId, error: 'Item not found' });
@@ -381,7 +412,6 @@ export async function triggerPriceCheck(itemIds) {
 
             if (result.priceDrop) results.drops++;
             if (result.targetHit) results.targets++;
-
         } catch (error) {
             results.errors.push({ itemId, error: error.message });
         }
@@ -401,17 +431,17 @@ export function getPriceCheckWorkerStatus() {
         interval_ms: POLL_INTERVAL_MS,
         interval_minutes: POLL_INTERVAL_MS / 60000,
         max_items_per_cycle: MAX_ITEMS_PER_CYCLE,
-        lastRun: lastRun ? new Date(lastRun).toISOString() : null
+        lastRun: lastRun ? new Date(lastRun).toISOString() : null,
     };
 }
 
 function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export default {
     startPriceCheckWorker,
     stopPriceCheckWorker,
     triggerPriceCheck,
-    getPriceCheckWorkerStatus
+    getPriceCheckWorkerStatus,
 };

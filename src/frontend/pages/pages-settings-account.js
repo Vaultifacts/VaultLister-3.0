@@ -13,46 +13,46 @@ const PLATFORM_DISPLAY_NAMES = {
     vinted: 'Vinted (U.S)',
     mercari: 'Mercari (U.S)',
     facebook: 'Facebook Marketplace',
-    whatnot: 'Whatnot'
+    whatnot: 'Whatnot',
 };
 
 Object.assign(pages, {
     shops() {
         const shops = store.state.shops || [];
-        const connectedShops = shops.filter(s => s.is_connected);
+        const connectedShops = shops.filter((s) => s.is_connected);
         const lastSync = store.state.lastShopSync;
 
         // Calculate sync status for connected shops
         const syncStatus = {
             syncing: false,
             lastSync: lastSync || null,
-            pending: 0
+            pending: 0,
         };
 
         // Calculate actual platform stats from sales data
         const sales = store.state.sales || [];
         const platformFeeRates = {
-            poshmark: 0.20,  // 20% flat fee
-            ebay: 0.13,      // ~13% average
-            mercari: 0.10,   // 10%
-            depop: 0.10,     // 10%
-            whatnot: 0.08,   // 8%
-            grailed: 0.09,   // 9%
-            facebook: 0.05,  // 5%
-            shopify: 0.029,  // 2.9% + transaction fees
-            etsy: 0.15       // ~15% with listing fees
+            poshmark: 0.2, // 20% flat fee
+            ebay: 0.13, // ~13% average
+            mercari: 0.1, // 10%
+            depop: 0.1, // 10%
+            whatnot: 0.08, // 8%
+            grailed: 0.09, // 9%
+            facebook: 0.05, // 5%
+            shopify: 0.029, // 2.9% + transaction fees
+            etsy: 0.15, // ~15% with listing fees
         };
 
         // Calculate fees per platform from actual sales
         const platformFees = {};
-        connectedShops.forEach(shop => {
-            const platformSales = sales.filter(s => s.platform === shop.platform);
+        connectedShops.forEach((shop) => {
+            const platformSales = sales.filter((s) => s.platform === shop.platform);
             const totalRevenue = platformSales.reduce((sum, s) => sum + (s.sale_price || 0), 0);
             const totalFees = platformSales.reduce((sum, s) => sum + (s.platform_fee || 0), 0);
             const salesCount = platformSales.length;
 
             // If no recorded fees, estimate based on fee rate
-            const estimatedFees = totalFees || (totalRevenue * (platformFeeRates[shop.platform] || 0.10));
+            const estimatedFees = totalFees || totalRevenue * (platformFeeRates[shop.platform] || 0.1);
             const netRevenue = totalRevenue - estimatedFees;
             const feePercentage = totalRevenue > 0 ? ((estimatedFees / totalRevenue) * 100).toFixed(1) : 0;
 
@@ -62,26 +62,24 @@ Object.assign(pages, {
                 netRevenue,
                 salesCount,
                 feePercentage,
-                feeRate: platformFeeRates[shop.platform] || 0.10
+                feeRate: platformFeeRates[shop.platform] || 0.1,
             };
         });
 
         // Platform comparison data
-        const platformData = connectedShops.map(shop => ({
+        const platformData = connectedShops.map((shop) => ({
             platform: shop.platform,
             sales: platformFees[shop.platform]?.salesCount || 0,
             revenue: platformFees[shop.platform]?.totalRevenue || 0,
             listings: 0,
-            fees: platformFees[shop.platform]?.totalFees || 0
+            fees: platformFees[shop.platform]?.totalFees || 0,
         }));
 
         // Calculate total stats across all connected shops
         const totalListings = platformData.reduce((sum, p) => sum + p.listings, 0);
         const totalRevenue = platformData.reduce((sum, p) => sum + p.revenue, 0);
         const totalSales = platformData.reduce((sum, p) => sum + p.sales, 0);
-        const avgHealthScore = connectedShops.length > 0
-            ? null
-            : 0;
+        const avgHealthScore = connectedShops.length > 0 ? null : 0;
 
         // Platform colors for visual display
         const platformColors = {
@@ -90,7 +88,7 @@ Object.assign(pages, {
             whatnot: '#ff4757',
             depop: '#ff2300',
             shopify: '#96bf48',
-            facebook: '#1877f2'
+            facebook: '#1877f2',
         };
 
         return `
@@ -99,13 +97,17 @@ Object.assign(pages, {
                     <h1 class="page-title">${components.icon('store', 24)} My Shops</h1>
                     <p class="page-description">Connect and manage your selling platforms</p>
                 </div>
-                ${connectedShops.length > 0 ? `
+                ${
+                    connectedShops.length > 0
+                        ? `
                     <div class="flex gap-2">
                         <button class="btn btn-secondary" onclick="handlers.syncAllShops()">
                             ${components.icon('refresh-cw', 16)} Sync All
                         </button>
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
             </div>
 
             <!-- My Shops Hero Section -->
@@ -114,14 +116,18 @@ Object.assign(pages, {
                     <div class="shops-connection-status">
                         <div class="connection-ring">
                             <svg viewBox="0 0 120 120">
-                                ${connectedShops.length > 0 ? `
+                                ${
+                                    connectedShops.length > 0
+                                        ? `
                                     <circle cx="60" cy="60" r="54" fill="none" stroke="var(--gray-200)" stroke-width="8"/>
                                     <circle cx="60" cy="60" r="54" fill="none" stroke="var(--success-500)" stroke-width="8"
                                         stroke-dasharray="${(connectedShops.length / (window.SUPPORTED_PLATFORMS || []).length) * 339} 339"
                                         stroke-linecap="round" transform="rotate(-90 60 60)"/>
-                                ` : `
+                                `
+                                        : `
                                     <circle cx="60" cy="60" r="54" fill="none" stroke="var(--gray-200)" stroke-width="8"/>
-                                `}
+                                `
+                                }
                             </svg>
                             <div class="connection-count">
                                 <span class="count-value">${connectedShops.length}</span>
@@ -130,28 +136,47 @@ Object.assign(pages, {
                         </div>
                         <div class="connection-info">
                             <h2 class="connection-title">
-                                ${connectedShops.length === 0 ? 'No Platforms Connected' :
-                                  connectedShops.length === 1 ? '1 Platform Connected' :
-                                  `${connectedShops.length} Platforms Connected`}
+                                ${
+                                    connectedShops.length === 0
+                                        ? 'No Platforms Connected'
+                                        : connectedShops.length === 1
+                                          ? '1 Platform Connected'
+                                          : `${connectedShops.length} Platforms Connected`
+                                }
                             </h2>
                             <p class="connection-subtitle">
-                                ${connectedShops.length === 0 ? 'Connect your first selling platform to start syncing' :
-                                  syncStatus.lastSync ? `Last sync: ${new Date(syncStatus.lastSync).toLocaleTimeString()}` : 'All synced'}
+                                ${
+                                    connectedShops.length === 0
+                                        ? 'Connect your first selling platform to start syncing'
+                                        : syncStatus.lastSync
+                                          ? `Last sync: ${new Date(syncStatus.lastSync).toLocaleTimeString()}`
+                                          : 'All synced'
+                                }
                             </p>
-                            ${connectedShops.length > 0 ? `
+                            ${
+                                connectedShops.length > 0
+                                    ? `
                                 <div class="connected-platforms-pills">
-                                    ${connectedShops.map(shop => `
+                                    ${connectedShops
+                                        .map(
+                                            (shop) => `
                                         <span class="platform-pill" style="--platform-color: ${platformColors[shop.platform] || 'var(--gray-500)'}">
                                             ${components.platformLogo(shop.platform, 16)}
                                             ${PLATFORM_DISPLAY_NAMES[shop.platform] || shop.platform.charAt(0).toUpperCase() + shop.platform.slice(1)}
                                         </span>
-                                    `).join('')}
+                                    `,
+                                        )
+                                        .join('')}
                                 </div>
-                            ` : ''}
+                            `
+                                    : ''
+                            }
                         </div>
                     </div>
 
-                    ${connectedShops.length > 0 ? `
+                    ${
+                        connectedShops.length > 0
+                            ? `
                         <div class="shops-hero-stats">
                             <div class="shop-hero-stat">
                                 <div class="shop-stat-icon listings">
@@ -190,14 +215,20 @@ Object.assign(pages, {
                                 </div>
                             </div>
                         </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                 </div>
 
-                ${connectedShops.length > 0 ? (() => {
-                    const isVacationMode = store.state.vacationMode || false;
-                    return `
+                ${
+                    connectedShops.length > 0
+                        ? (() => {
+                              const isVacationMode = store.state.vacationMode || false;
+                              return `
                     <!-- Vacation Mode Banner -->
-                    ${isVacationMode ? `
+                    ${
+                        isVacationMode
+                            ? `
                         <div class="vacation-mode-banner" style="background: linear-gradient(135deg, var(--warning) 0%, var(--warning-600) 100%); color: white; padding: 16px 20px; border-radius: 12px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;">
                             <div style="display: flex; align-items: center; gap: 12px;">
                                 ${components.icon('sun', 24)}
@@ -210,7 +241,9 @@ Object.assign(pages, {
                                 ${components.icon('x', 16)} End Vacation
                             </button>
                         </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
 
                     <div class="shops-quick-actions">
                         <button class="shop-quick-action" onclick="handlers.syncAllShops()">
@@ -235,20 +268,33 @@ Object.assign(pages, {
                         </button>
                     </div>
                 `;
-                })() : ''}
+                          })()
+                        : ''
+                }
             </div>
 
             <!-- Sync Status Bar -->
             ${connectedShops.length > 0 ? syncStatusBar.render(syncStatus) : ''}
 
             <!-- Platform Fee Summary Card -->
-            ${connectedShops.length > 0 ? (() => {
-                const totalPlatformRevenue = Object.values(platformFees).reduce((sum, p) => sum + p.totalRevenue, 0);
-                const totalPlatformFees = Object.values(platformFees).reduce((sum, p) => sum + p.totalFees, 0);
-                const totalNetRevenue = totalPlatformRevenue - totalPlatformFees;
-                const avgFeeRate = totalPlatformRevenue > 0 ? (totalPlatformFees / totalPlatformRevenue * 100).toFixed(1) : 0;
+            ${
+                connectedShops.length > 0
+                    ? (() => {
+                          const totalPlatformRevenue = Object.values(platformFees).reduce(
+                              (sum, p) => sum + p.totalRevenue,
+                              0,
+                          );
+                          const totalPlatformFees = Object.values(platformFees).reduce(
+                              (sum, p) => sum + p.totalFees,
+                              0,
+                          );
+                          const totalNetRevenue = totalPlatformRevenue - totalPlatformFees;
+                          const avgFeeRate =
+                              totalPlatformRevenue > 0
+                                  ? ((totalPlatformFees / totalPlatformRevenue) * 100).toFixed(1)
+                                  : 0;
 
-                return `
+                          return `
                 <div class="card mb-6">
                     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                         <h2 class="card-title">${components.icon('dollar', 18)} Platform Fee Summary</h2>
@@ -278,10 +324,16 @@ Object.assign(pages, {
                         <div style="margin-top: 20px;">
                             <div style="font-size: 13px; font-weight: 600; color: var(--gray-700); margin-bottom: 12px;">Fees by Platform</div>
                             <div style="display: flex; flex-direction: column; gap: 8px;">
-                                ${connectedShops.map(shop => {
-                                    const fees = platformFees[shop.platform] || { totalFees: 0, feeRate: 0.10, feePercentage: 0 };
-                                    const barWidth = totalPlatformFees > 0 ? (fees.totalFees / totalPlatformFees * 100) : 0;
-                                    return `
+                                ${connectedShops
+                                    .map((shop) => {
+                                        const fees = platformFees[shop.platform] || {
+                                            totalFees: 0,
+                                            feeRate: 0.1,
+                                            feePercentage: 0,
+                                        };
+                                        const barWidth =
+                                            totalPlatformFees > 0 ? (fees.totalFees / totalPlatformFees) * 100 : 0;
+                                        return `
                                         <div style="display: flex; align-items: center; gap: 12px;">
                                             <div style="width: 80px; font-size: 12px; font-weight: 500;">${shop.platform.charAt(0).toUpperCase() + shop.platform.slice(1)}</div>
                                             <div style="flex: 1; height: 20px; background: var(--gray-100); border-radius: 4px; overflow: hidden; position: relative;">
@@ -291,16 +343,21 @@ Object.assign(pages, {
                                             <div style="width: 50px; font-size: 11px; color: var(--gray-500); text-align: right;">${(fees.feeRate * 100).toFixed(0)}%</div>
                                         </div>
                                     `;
-                                }).join('')}
+                                    })
+                                    .join('')}
                             </div>
                         </div>
                     </div>
                 </div>
                 `;
-            })() : ''}
+                      })()
+                    : ''
+            }
 
             <!-- Shop Health Dashboard -->
-            ${connectedShops.length > 0 ? `
+            ${
+                connectedShops.length > 0
+                    ? `
                 <div class="card mb-6">
                     <div class="card-header">
                         <h2 class="card-title">${components.icon('activity', 18)} Shop Health Overview</h2>
@@ -309,10 +366,14 @@ Object.assign(pages, {
                         ${shopHealthDashboard.render(connectedShops)}
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Platform Comparison -->
-            ${connectedShops.length > 1 ? `
+            ${
+                connectedShops.length > 1
+                    ? `
                 <div class="card mb-6">
                     <div class="card-header">
                         <h2 class="card-title">${components.icon('bar-chart-2', 18)} Platform Comparison</h2>
@@ -321,36 +382,56 @@ Object.assign(pages, {
                         ${platformComparison.render(platformData)}
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Shop Cards Grid -->
             <div class="grid grid-cols-3 gap-6">
-                ${(window.SUPPORTED_PLATFORMS || []).map(p => p.id).map(platform => {
-                    const shop = shops.find(s => s.platform === platform);
-                    const isConnected = shop?.is_connected || false;
-                    const connectionType = shop?.connection_type || 'manual';
-                    const isOAuth = connectionType === 'oauth';
+                ${(window.SUPPORTED_PLATFORMS || [])
+                    .map((p) => p.id)
+                    .map((platform) => {
+                        const shop = shops.find((s) => s.platform === platform);
+                        const isConnected = shop?.is_connected || false;
+                        const connectionType = shop?.connection_type || 'manual';
+                        const isOAuth = connectionType === 'oauth';
 
-                    // Calculate status HTML before template literal
-                    let statusHtml;
-                    if (!isConnected) {
-                        statusHtml = '<div class="text-sm text-gray-500">Not connected</div>';
-                    } else if (isOAuth) {
-                        statusHtml = '<div class="text-xs text-success flex items-center gap-1" style="margin-top: 4px;">' + components.icon('check-circle', 14) + ' OAuth Connected</div>';
-                    } else {
-                        statusHtml = '<div class="text-xs text-gray-500" style="margin-top: 4px;">Manual Connection</div>';
-                    }
+                        // Calculate status HTML before template literal
+                        let statusHtml;
+                        if (!isConnected) {
+                            statusHtml = '<div class="text-sm text-gray-500">Not connected</div>';
+                        } else if (isOAuth) {
+                            statusHtml =
+                                '<div class="text-xs text-success flex items-center gap-1" style="margin-top: 4px;">' +
+                                components.icon('check-circle', 14) +
+                                ' OAuth Connected</div>';
+                        } else {
+                            statusHtml =
+                                '<div class="text-xs text-gray-500" style="margin-top: 4px;">Manual Connection</div>';
+                        }
 
-                    const usernameHtml = shop?.platform_username ? '<div class="text-xs text-gray-400" style="margin-top: 2px;">@' + escapeHtml(shop.platform_username) + '</div>' : '';
+                        const usernameHtml = shop?.platform_username
+                            ? '<div class="text-xs text-gray-400" style="margin-top: 2px;">@' +
+                              escapeHtml(shop.platform_username) +
+                              '</div>'
+                            : '';
 
-                    // Health score for connected shops
-                    const healthScore = null;
-                    const healthColor = healthScore >= 80 ? 'var(--success)' : healthScore >= 60 ? 'var(--warning)' : 'var(--error)';
-                    const launchPlatforms = window.LAUNCH_PLATFORMS || new Set(['poshmark', 'ebay', 'depop', 'shopify', 'facebook', 'whatnot']);
-                    const isPostLaunch = !launchPlatforms.has(platform);
-                    const platformDisplayName = PLATFORM_DISPLAY_NAMES[platform] || platform.charAt(0).toUpperCase() + platform.slice(1);
+                        // Health score for connected shops
+                        const healthScore = null;
+                        const healthColor =
+                            healthScore >= 80
+                                ? 'var(--success)'
+                                : healthScore >= 60
+                                  ? 'var(--warning)'
+                                  : 'var(--error)';
+                        const launchPlatforms =
+                            window.LAUNCH_PLATFORMS ||
+                            new Set(['poshmark', 'ebay', 'depop', 'shopify', 'facebook', 'whatnot']);
+                        const isPostLaunch = !launchPlatforms.has(platform);
+                        const platformDisplayName =
+                            PLATFORM_DISPLAY_NAMES[platform] || platform.charAt(0).toUpperCase() + platform.slice(1);
 
-                    return `
+                        return `
                         <div class="card shop-card ${isConnected ? 'connected' : ''}">
                             <div class="card-body">
                                 <div class="flex items-center gap-4 mb-4">
@@ -360,15 +441,28 @@ Object.assign(pages, {
                                         ${statusHtml}
                                         ${usernameHtml}
                                     </div>
-                                    ${isConnected && healthScore ? `
+                                    ${
+                                        isConnected && healthScore
+                                            ? `
                                         <div class="shop-health-badge" style="background: ${healthColor}20; color: ${healthColor}; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600;">
                                             ${healthScore}%
                                         </div>
-                                    ` : ''}
+                                    `
+                                            : ''
+                                    }
                                 </div>
-                                ${isConnected ? (() => {
-                                    const fees = platformFees[platform] || { totalRevenue: 0, totalFees: 0, netRevenue: 0, salesCount: 0, feePercentage: 0, feeRate: 0.10 };
-                                    return `
+                                ${
+                                    isConnected
+                                        ? (() => {
+                                              const fees = platformFees[platform] || {
+                                                  totalRevenue: 0,
+                                                  totalFees: 0,
+                                                  netRevenue: 0,
+                                                  salesCount: 0,
+                                                  feePercentage: 0,
+                                                  feeRate: 0.1,
+                                              };
+                                              return `
                                     <div class="shop-quick-stats mb-3" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center;">
                                         <div style="padding: 8px; background: var(--gray-50); border-radius: 6px;">
                                             <div style="font-size: 16px; font-weight: 600;">—</div>
@@ -399,37 +493,50 @@ Object.assign(pages, {
                                             </div>
                                         </div>
                                         <div style="margin-top: 6px; height: 4px; background: var(--gray-200); border-radius: 2px; overflow: hidden;">
-                                            <div style="width: ${fees.feePercentage || (fees.feeRate * 100)}%; height: 100%; background: var(--error); border-radius: 2px;"></div>
+                                            <div style="width: ${fees.feePercentage || fees.feeRate * 100}%; height: 100%; background: var(--error); border-radius: 2px;"></div>
                                         </div>
                                         <div style="font-size: 9px; color: var(--gray-500); margin-top: 4px; text-align: center;">
                                             ${fees.feePercentage || (fees.feeRate * 100).toFixed(1)}% of revenue goes to ${platformDisplayName}
                                         </div>
                                     </div>
                                 `;
-                                })() : ''}
+                                          })()
+                                        : ''
+                                }
                                 <div class="flex gap-2">
-                                    ${isPostLaunch && !isConnected ? `
+                                    ${
+                                        isPostLaunch && !isConnected
+                                            ? `
                                         <button class="btn btn-secondary flex-1" disabled style="opacity:0.5;cursor:not-allowed;">Coming Soon</button>
-                                    ` : `
+                                    `
+                                            : `
                                         <button class="btn ${isConnected ? 'btn-success' : 'btn-secondary'} flex-1"
                                                 onclick="handlers.${isConnected ? 'disconnect' : 'connect'}Shop('${platform}')">
                                             ${isConnected ? components.icon('check', 16) + ' Connected' : 'Connect'}
                                         </button>
-                                        ${isConnected ? `
+                                        ${
+                                            isConnected
+                                                ? `
                                             <button class="btn btn-icon btn-secondary" onclick="handlers.showShopSettings('${platform}')" title="Settings">
                                                 ${components.icon('settings', 16)}
                                             </button>
-                                        ` : ''}
-                                    `}
+                                        `
+                                                : ''
+                                        }
+                                    `
+                                    }
                                 </div>
                             </div>
                         </div>
                     `;
-                }).join('')}
+                    })
+                    .join('')}
             </div>
 
             <!-- Shop Branding Section -->
-            ${connectedShops.length > 0 ? `
+            ${
+                connectedShops.length > 0
+                    ? `
                 <div class="card mb-6">
                     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                         <h2 class="card-title">${components.icon('palette', 18)} Shop Branding</h2>
@@ -437,27 +544,34 @@ Object.assign(pages, {
                     </div>
                     <div class="card-body">
                         <div class="grid grid-cols-3 gap-4">
-                            ${connectedShops.map(shop => {
-                                const branding = (store.state.shopBranding || {})[shop.platform] || {};
-                                const brandColor = branding.primaryColor || platformColors[shop.platform] || '#6b7280';
-                                return `
+                            ${connectedShops
+                                .map((shop) => {
+                                    const branding = (store.state.shopBranding || {})[shop.platform] || {};
+                                    const brandColor =
+                                        branding.primaryColor || platformColors[shop.platform] || '#6b7280';
+                                    return `
                                     <div class="shop-branding-card" style="border: 2px solid ${brandColor}20; border-radius: 12px; padding: 16px; position: relative; overflow: hidden;">
                                         <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: ${brandColor};"></div>
                                         <div class="flex items-center gap-3 mb-3">
-                                            ${branding.logoUrl
-                                                ? `<img src="${branding.logoUrl}" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover;" alt="Shop logo">`
-                                                : `<div style="width: 40px; height: 40px; border-radius: 8px; background: ${brandColor}20; display: flex; align-items: center; justify-content: center; color: ${brandColor}; font-weight: 700; font-size: 16px;">${shop.platform.charAt(0).toUpperCase()}</div>`
+                                            ${
+                                                branding.logoUrl
+                                                    ? `<img src="${branding.logoUrl}" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover;" alt="Shop logo">`
+                                                    : `<div style="width: 40px; height: 40px; border-radius: 8px; background: ${brandColor}20; display: flex; align-items: center; justify-content: center; color: ${brandColor}; font-weight: 700; font-size: 16px;">${shop.platform.charAt(0).toUpperCase()}</div>`
                                             }
                                             <div>
                                                 <div class="font-medium">${PLATFORM_DISPLAY_NAMES[shop.platform] || shop.platform.charAt(0).toUpperCase() + shop.platform.slice(1)}</div>
                                                 <div class="text-xs text-gray-500">${branding.tagline || 'No tagline set'}</div>
                                             </div>
                                         </div>
-                                        ${branding.bannerText ? `
+                                        ${
+                                            branding.bannerText
+                                                ? `
                                             <div style="background: ${brandColor}10; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px; font-size: 12px; color: ${brandColor}; font-style: italic;">
                                                 "${escapeHtml(branding.bannerText)}"
                                             </div>
-                                        ` : ''}
+                                        `
+                                                : ''
+                                        }
                                         <div class="flex items-center gap-2 mb-2">
                                             <span class="text-xs text-gray-500">Color:</span>
                                             <div style="width: 16px; height: 16px; border-radius: 4px; background: ${brandColor}; border: 1px solid var(--gray-200);"></div>
@@ -468,25 +582,46 @@ Object.assign(pages, {
                                         </button>
                                     </div>
                                 `;
-                            }).join('')}
+                                })
+                                .join('')}
                         </div>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Performance Dashboard -->
-            ${connectedShops.length > 1 ? (() => {
-                const perfMetrics = connectedShops.map(shop => {
-                    const fees = platformFees[shop.platform] || { totalRevenue: 0, salesCount: 0, netRevenue: 0, totalFees: 0 };
-                    const avgSalePrice = fees.salesCount > 0 ? fees.totalRevenue / fees.salesCount : 0;
-                    const conversionRate = '—';
-                    const salesVelocity = (fees.salesCount / 30).toFixed(1);
-                    const avgDaysToSell = '—';
-                    const returnRate = '—';
-                    return { platform: shop.platform, ...fees, avgSalePrice, conversionRate, salesVelocity, avgDaysToSell, returnRate };
-                });
-                const bestPlatform = perfMetrics.reduce((best, m) => m.totalRevenue > (best?.totalRevenue || 0) ? m : best, null);
-                return `
+            ${
+                connectedShops.length > 1
+                    ? (() => {
+                          const perfMetrics = connectedShops.map((shop) => {
+                              const fees = platformFees[shop.platform] || {
+                                  totalRevenue: 0,
+                                  salesCount: 0,
+                                  netRevenue: 0,
+                                  totalFees: 0,
+                              };
+                              const avgSalePrice = fees.salesCount > 0 ? fees.totalRevenue / fees.salesCount : 0;
+                              const conversionRate = '—';
+                              const salesVelocity = (fees.salesCount / 30).toFixed(1);
+                              const avgDaysToSell = '—';
+                              const returnRate = '—';
+                              return {
+                                  platform: shop.platform,
+                                  ...fees,
+                                  avgSalePrice,
+                                  conversionRate,
+                                  salesVelocity,
+                                  avgDaysToSell,
+                                  returnRate,
+                              };
+                          });
+                          const bestPlatform = perfMetrics.reduce(
+                              (best, m) => (m.totalRevenue > (best?.totalRevenue || 0) ? m : best),
+                              null,
+                          );
+                          return `
                 <div class="card mb-6">
                     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                         <h2 class="card-title">${components.icon('trending-up', 18)} Performance Dashboard</h2>
@@ -509,7 +644,9 @@ Object.assign(pages, {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${perfMetrics.map(m => `
+                                    ${perfMetrics
+                                        .map(
+                                            (m) => `
                                         <tr>
                                             <td>
                                                 <div class="flex items-center gap-2">
@@ -526,17 +663,23 @@ Object.assign(pages, {
                                             <td>${m.returnRate}%</td>
                                             <td class="font-medium">C$${m.netRevenue.toFixed(2)}</td>
                                         </tr>
-                                    `).join('')}
+                                    `,
+                                        )
+                                        .join('')}
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
                 `;
-            })() : ''}
+                      })()
+                    : ''
+            }
 
             <!-- Multi-Shop Inventory Sync -->
-            ${connectedShops.length > 1 ? `
+            ${
+                connectedShops.length > 1
+                    ? `
                 <div class="card mb-6">
                     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                         <h2 class="card-title">${components.icon('refresh-cw', 18)} Multi-Shop Inventory Sync</h2>
@@ -546,11 +689,14 @@ Object.assign(pages, {
                     </div>
                     <div class="card-body">
                         <div style="display: grid; grid-template-columns: repeat(${Math.min(connectedShops.length, 4)}, 1fr); gap: 12px; margin-bottom: 16px;">
-                            ${connectedShops.map(shop => {
-                                const syncConfig = (store.state.shopSyncConfig || {})[shop.platform] || {};
-                                const isSyncEnabled = syncConfig.enabled !== false;
-                                const lastSync = syncConfig.lastSync ? new Date(syncConfig.lastSync).toLocaleString() : 'Never';
-                                return `
+                            ${connectedShops
+                                .map((shop) => {
+                                    const syncConfig = (store.state.shopSyncConfig || {})[shop.platform] || {};
+                                    const isSyncEnabled = syncConfig.enabled !== false;
+                                    const lastSync = syncConfig.lastSync
+                                        ? new Date(syncConfig.lastSync).toLocaleString()
+                                        : 'Never';
+                                    return `
                                     <div style="padding: 14px; border: 1px solid ${isSyncEnabled ? 'var(--success-200)' : 'var(--gray-200)'}; border-radius: 10px; background: ${isSyncEnabled ? 'var(--success-50)' : 'var(--gray-50)'};">
                                         <div class="flex items-center justify-between mb-2">
                                             <span class="font-medium text-sm">${shop.platform.charAt(0).toUpperCase() + shop.platform.slice(1)}</span>
@@ -560,7 +706,8 @@ Object.assign(pages, {
                                         <div class="text-xs text-gray-400 mt-1">Mode: ${syncConfig.mode || 'Two-way'}</div>
                                     </div>
                                 `;
-                            }).join('')}
+                                })
+                                .join('')}
                         </div>
                         <div style="display: flex; gap: 8px;">
                             <button class="btn btn-secondary btn-sm" onclick="handlers.syncAllShops()">
@@ -572,10 +719,14 @@ Object.assign(pages, {
                         </div>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Marketplace-Specific Listing Requirements -->
-            ${connectedShops.length > 0 ? `
+            ${
+                connectedShops.length > 0
+                    ? `
                 <div class="card mb-6">
                     <div class="card-header">
                         <h2 class="card-title">${components.icon('clipboard', 18)} Marketplace Listing Requirements</h2>
@@ -583,17 +734,60 @@ Object.assign(pages, {
                     <div class="card-body">
                         <p class="text-sm text-gray-500 mb-4">Each platform has specific requirements for listings. Review them to optimize your reach.</p>
                         <div class="grid grid-cols-2 gap-4">
-                            ${connectedShops.map(shop => {
-                                const reqs = {
-                                    poshmark: { photos: '1-16', titleMax: 80, descMax: 1500, categories: 'Required', shipping: 'Flat rate via USPS' },
-                                    ebay: { photos: '1-24', titleMax: 80, descMax: 'Unlimited', categories: 'Required (Item Specifics)', shipping: 'Multiple options' },
-                                    whatnot: { photos: '1-10', titleMax: 100, descMax: 500, categories: 'Required', shipping: 'Calculated' },
-                                    depop: { photos: '1-4', titleMax: 280, descMax: 1000, categories: 'Optional', shipping: 'Flat or free' },
-                                    shopify: { photos: 'Unlimited', titleMax: 255, descMax: 'Unlimited', categories: 'Collections', shipping: 'Custom profiles' },
-                                    facebook: { photos: '1-10', titleMax: 100, descMax: 1000, categories: 'Required', shipping: 'Flat or free' }
-                                };
-                                const r = reqs[shop.platform] || { photos: 'N/A', titleMax: 'N/A', descMax: 'N/A', categories: 'N/A', shipping: 'N/A' };
-                                return `
+                            ${connectedShops
+                                .map((shop) => {
+                                    const reqs = {
+                                        poshmark: {
+                                            photos: '1-16',
+                                            titleMax: 80,
+                                            descMax: 1500,
+                                            categories: 'Required',
+                                            shipping: 'Flat rate via USPS',
+                                        },
+                                        ebay: {
+                                            photos: '1-24',
+                                            titleMax: 80,
+                                            descMax: 'Unlimited',
+                                            categories: 'Required (Item Specifics)',
+                                            shipping: 'Multiple options',
+                                        },
+                                        whatnot: {
+                                            photos: '1-10',
+                                            titleMax: 100,
+                                            descMax: 500,
+                                            categories: 'Required',
+                                            shipping: 'Calculated',
+                                        },
+                                        depop: {
+                                            photos: '1-4',
+                                            titleMax: 280,
+                                            descMax: 1000,
+                                            categories: 'Optional',
+                                            shipping: 'Flat or free',
+                                        },
+                                        shopify: {
+                                            photos: 'Unlimited',
+                                            titleMax: 255,
+                                            descMax: 'Unlimited',
+                                            categories: 'Collections',
+                                            shipping: 'Custom profiles',
+                                        },
+                                        facebook: {
+                                            photos: '1-10',
+                                            titleMax: 100,
+                                            descMax: 1000,
+                                            categories: 'Required',
+                                            shipping: 'Flat or free',
+                                        },
+                                    };
+                                    const r = reqs[shop.platform] || {
+                                        photos: 'N/A',
+                                        titleMax: 'N/A',
+                                        descMax: 'N/A',
+                                        categories: 'N/A',
+                                        shipping: 'N/A',
+                                    };
+                                    return `
                                     <div style="padding: 14px; border: 1px solid var(--gray-200); border-radius: 10px; border-left: 3px solid ${platformColors[shop.platform] || 'var(--gray-500)'};">
                                         <div class="flex items-center gap-2 mb-3">
                                             <span class="font-medium">${shop.platform.charAt(0).toUpperCase() + shop.platform.slice(1)}</span>
@@ -610,11 +804,14 @@ Object.assign(pages, {
                                         </button>
                                     </div>
                                 `;
-                            }).join('')}
+                                })
+                                .join('')}
                         </div>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Business FAB -->
             ${businessFAB.render()}
@@ -623,16 +820,15 @@ Object.assign(pages, {
 
     // Shipping Profiles page,
 
-
     shippingProfiles() {
         const profiles = store.state.shippingProfiles || [];
         const carriers = ['USPS', 'UPS', 'FedEx', 'DHL', 'Other'];
         const serviceTypes = {
-            'USPS': ['Priority Mail', 'First Class', 'Parcel Select', 'Media Mail', 'Priority Express'],
-            'UPS': ['Ground', 'Next Day Air', '2nd Day Air', '3 Day Select'],
-            'FedEx': ['Ground', 'Express Saver', '2Day', 'Standard Overnight', 'Priority Overnight'],
-            'DHL': ['Express Worldwide', 'Express', 'Economy Select'],
-            'Other': ['Standard', 'Expedited', 'Economy']
+            USPS: ['Priority Mail', 'First Class', 'Parcel Select', 'Media Mail', 'Priority Express'],
+            UPS: ['Ground', 'Next Day Air', '2nd Day Air', '3 Day Select'],
+            FedEx: ['Ground', 'Express Saver', '2Day', 'Standard Overnight', 'Priority Overnight'],
+            DHL: ['Express Worldwide', 'Express', 'Economy Select'],
+            Other: ['Standard', 'Expedited', 'Economy'],
         };
         const packageTypes = ['Box', 'Poly Mailer', 'Envelope', 'Tube', 'Padded Envelope', 'Custom'];
 
@@ -647,7 +843,9 @@ Object.assign(pages, {
                 </button>
             </div>
 
-            ${profiles.length === 0 ? `
+            ${
+                profiles.length === 0
+                    ? `
                 <div class="card">
                     <div class="card-body">
                         <div class="empty-state" style="text-align: center; padding: 3rem;">
@@ -662,9 +860,12 @@ Object.assign(pages, {
                         </div>
                     </div>
                 </div>
-            ` : `
+            `
+                    : `
                 <div class="grid grid-cols-2 gap-4">
-                    ${profiles.map(profile => `
+                    ${profiles
+                        .map(
+                            (profile) => `
                         <div class="card ${profile.is_default ? 'border-primary' : ''}">
                             <div class="card-body">
                                 <div class="flex items-center justify-between mb-3">
@@ -676,11 +877,15 @@ Object.assign(pages, {
                                         <button class="btn btn-icon btn-sm" onclick="handlers.editShippingProfile('${profile.id}')" title="Edit">
                                             ${components.icon('edit', 14)}
                                         </button>
-                                        ${!profile.is_default ? `
+                                        ${
+                                            !profile.is_default
+                                                ? `
                                             <button class="btn btn-icon btn-sm" onclick="handlers.setDefaultShippingProfile('${profile.id}')" title="Set as Default">
                                                 ☆
                                             </button>
-                                        ` : ''}
+                                        `
+                                                : ''
+                                        }
                                         <button class="btn btn-icon btn-sm btn-error" onclick="handlers.deleteShippingProfile('${profile.id}')" title="Delete">
                                             ${components.icon('trash', 14)}
                                         </button>
@@ -697,43 +902,67 @@ Object.assign(pages, {
                                     ${profile.domestic_cost ? ` • C$${parseFloat(profile.domestic_cost).toFixed(2)}` : ' • Free'}
                                 </div>
 
-                                ${profile.free_shipping_threshold ? `
+                                ${
+                                    profile.free_shipping_threshold
+                                        ? `
                                     <div class="text-xs text-success mb-2">
                                         Free shipping on orders over C$${parseFloat(profile.free_shipping_threshold).toFixed(2)}
                                     </div>
-                                ` : ''}
+                                `
+                                        : ''
+                                }
 
-                                ${profile.platforms && profile.platforms.length > 0 ? `
+                                ${
+                                    profile.platforms && profile.platforms.length > 0
+                                        ? `
                                     <div class="flex flex-wrap gap-1 mt-3">
-                                        ${profile.platforms.map(p => `
+                                        ${profile.platforms
+                                            .map(
+                                                (p) => `
                                             <span class="badge badge-sm">${p.charAt(0).toUpperCase() + p.slice(1)}</span>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </div>
-                                ` : ''}
+                                `
+                                        : ''
+                                }
 
-                                ${profile.notes ? `
+                                ${
+                                    profile.notes
+                                        ? `
                                     <div class="text-xs text-gray-400 mt-2" style="font-style: italic;">
                                         ${escapeHtml(profile.notes)}
                                     </div>
-                                ` : ''}
+                                `
+                                        : ''
+                                }
                             </div>
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
-            `}
+            `
+            }
         `;
     },
 
     // Settings page,
 
-
     settings() {
-        const safeGet = (key, fallback = null) => { try { return localStorage.getItem(key); } catch { return fallback; } };
+        const safeGet = (key, fallback = null) => {
+            try {
+                return localStorage.getItem(key);
+            } catch {
+                return fallback;
+            }
+        };
         const hasUnsavedChanges = store.state.settingsChanged || false;
         const activeTab = store.state.settingsTab || 'account';
         const user = store.state.user || {};
         const renderTabContent = () => {
-            switch(activeTab) {
+            switch (activeTab) {
                 case 'account':
                     return `
                         <!-- Profile Avatar Section -->
@@ -806,8 +1035,8 @@ Object.assign(pages, {
                                     <div class="form-group settings-locale-picker settings-flag-select settings-flag-ca">
                                         <label class="form-label sr-only" for="settings-language">Language</label>
                                         <select id="settings-language" class="form-select settings-locale-select settings-language-select" aria-label="Language" onchange="handlers.markSettingsChanged()">
-                                            <option value="en" ${(store.state.userLanguage || 'en') === 'en' ? 'selected' : ''}>EN</option>
-                                            <option value="fr" ${(store.state.userLanguage || 'en') === 'fr' ? 'selected' : ''}>FR</option>
+                                            <option value="en" ${(store.state.userLanguage || 'en') === 'en' ? 'selected' : ''}>English</option>
+                                            <option value="fr" ${(store.state.userLanguage || 'en') === 'fr' ? 'selected' : ''}>Français</option>
                                         </select>
                                     </div>
                                 </div>
@@ -1123,29 +1352,39 @@ Object.assign(pages, {
                     `;
 
                 case 'integrations':
-                    const connectedShops = (store.state.shops || []).filter(shop => shop.is_connected);
-                    const shopByPlatform = new Map(connectedShops.map(shop => [shop.platform, shop]));
-                    const launchPlatforms = window.LAUNCH_PLATFORMS || new Set(['poshmark', 'ebay', 'depop', 'shopify', 'facebook', 'whatnot']);
-                    const marketplacePlatforms = (window.SUPPORTED_PLATFORMS || []).map(platform => ({
+                    const connectedShops = (store.state.shops || []).filter((shop) => shop.is_connected);
+                    const shopByPlatform = new Map(connectedShops.map((shop) => [shop.platform, shop]));
+                    const launchPlatforms =
+                        window.LAUNCH_PLATFORMS ||
+                        new Set(['poshmark', 'ebay', 'depop', 'shopify', 'facebook', 'whatnot']);
+                    const marketplacePlatforms = (window.SUPPORTED_PLATFORMS || []).map((platform) => ({
                         id: platform.id,
                         label: PLATFORM_DISPLAY_NAMES[platform.id] || platform.name,
-                        isLaunch: launchPlatforms.has(platform.id)
+                        isLaunch: launchPlatforms.has(platform.id),
                     }));
-                    const livePlatforms = marketplacePlatforms.filter(platform => platform.isLaunch || shopByPlatform.has(platform.id));
-                    const comingSoonPlatforms = marketplacePlatforms.filter(platform => !platform.isLaunch && !shopByPlatform.has(platform.id));
+                    const livePlatforms = marketplacePlatforms.filter(
+                        (platform) => platform.isLaunch || shopByPlatform.has(platform.id),
+                    );
+                    const comingSoonPlatforms = marketplacePlatforms.filter(
+                        (platform) => !platform.isLaunch && !shopByPlatform.has(platform.id),
+                    );
                     const renderMarketplaceIntegration = (platform) => {
                         const shop = shopByPlatform.get(platform.id);
                         const isConnected = Boolean(shop);
                         const canConnect = platform.isLaunch || isConnected;
                         const statusClass = isConnected ? 'connected' : '';
                         const statusText = isConnected
-                            ? (shop.platform_username ? `Connected as @${escapeHtml(shop.platform_username)}` : 'Connected')
-                            : (canConnect ? 'Ready to connect' : 'Coming soon');
+                            ? shop.platform_username
+                                ? `Connected as @${escapeHtml(shop.platform_username)}`
+                                : 'Connected'
+                            : canConnect
+                              ? 'Ready to connect'
+                              : 'Coming soon';
                         const actionMarkup = isConnected
                             ? `<button class="btn btn-sm btn-secondary" onclick="router.navigate('shops')">Manage</button>`
-                            : (canConnect
-                                ? `<button class="btn btn-sm btn-primary" onclick="handlers.connectShop('${platform.id}')">Connect</button>`
-                                : `<button class="btn btn-sm btn-secondary" disabled>Coming Soon</button>`);
+                            : canConnect
+                              ? `<button class="btn btn-sm btn-primary" onclick="handlers.connectShop('${platform.id}')">Connect</button>`
+                              : `<button class="btn btn-sm btn-secondary" disabled>Coming Soon</button>`;
 
                         return `
                             <div class="integration-card ${isConnected ? 'connected' : ''}">
@@ -1172,14 +1411,18 @@ Object.assign(pages, {
                             <div class="integrations-grid">
                                 ${livePlatforms.map(renderMarketplaceIntegration).join('')}
                             </div>
-                            ${comingSoonPlatforms.length ? `
+                            ${
+                                comingSoonPlatforms.length
+                                    ? `
                                 <div style="margin-top: 20px;">
                                     <div class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-3">Coming Soon</div>
                                     <div class="integrations-grid">
                                         ${comingSoonPlatforms.map(renderMarketplaceIntegration).join('')}
                                     </div>
                                 </div>
-                            ` : ''}
+                            `
+                                    : ''
+                            }
                         </div>
 
                         <div class="settings-section">
@@ -1473,22 +1716,32 @@ Object.assign(pages, {
                                     const activityLog = store.state.accountActivityLog || [];
 
                                     const getActivityIcon = (type) => {
-                                        switch(type) {
-                                            case 'login': return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>';
-                                            case 'login_failed': return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--error)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
-                                            case 'password_change': return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>';
-                                            case '2fa_enabled': return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary-500)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>';
-                                            default: return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>';
+                                        switch (type) {
+                                            case 'login':
+                                                return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>';
+                                            case 'login_failed':
+                                                return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--error)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
+                                            case 'password_change':
+                                                return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>';
+                                            case '2fa_enabled':
+                                                return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary-500)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>';
+                                            default:
+                                                return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>';
                                         }
                                     };
 
                                     const getActivityLabel = (type) => {
-                                        switch(type) {
-                                            case 'login': return 'Successful login';
-                                            case 'login_failed': return 'Failed login attempt';
-                                            case 'password_change': return 'Password changed';
-                                            case '2fa_enabled': return '2FA enabled';
-                                            default: return type;
+                                        switch (type) {
+                                            case 'login':
+                                                return 'Successful login';
+                                            case 'login_failed':
+                                                return 'Failed login attempt';
+                                            case 'password_change':
+                                                return 'Password changed';
+                                            case '2fa_enabled':
+                                                return '2FA enabled';
+                                            default:
+                                                return type;
                                         }
                                     };
 
@@ -1504,25 +1757,59 @@ Object.assign(pages, {
                                         return days + ' days ago';
                                     };
 
-                                    return '<div class="activity-log-list">' + activityLog.map(activity =>
-                                        '<div class="activity-log-item ' + (activity.current ? 'current' : '') + (activity.type === 'login_failed' ? ' suspicious' : '') + '">' +
-                                            '<div class="activity-icon">' + getActivityIcon(activity.type) + '</div>' +
-                                            '<div class="activity-details">' +
-                                                '<div class="activity-header">' +
-                                                    '<span class="activity-label">' + getActivityLabel(activity.type) + '</span>' +
-                                                    (activity.current ? '<span class="badge badge-success badge-sm">Current</span>' : '') +
-                                                    (activity.type === 'login_failed' ? '<span class="badge badge-error badge-sm">Suspicious</span>' : '') +
-                                                '</div>' +
-                                                '<div class="activity-meta">' +
-                                                    '<span class="activity-device">' + activity.device + ' \u2022 ' + activity.browser + '</span>' +
-                                                    '<span class="activity-location">' + activity.location + '</span>' +
-                                                '</div>' +
-                                                '<div class="activity-ip">IP: ' + activity.ip + '</div>' +
-                                            '</div>' +
-                                            '<div class="activity-time">' + formatTimeAgo(activity.timestamp) + '</div>' +
-                                            (activity.current ? '' : '<button class="btn btn-icon btn-sm btn-ghost" onclick="handlers.revokeSession(\'' + activity.timestamp + '\')" title="Revoke session">' + components.icon('x', 14) + '</button>') +
+                                    return (
+                                        '<div class="activity-log-list">' +
+                                        activityLog
+                                            .map(
+                                                (activity) =>
+                                                    '<div class="activity-log-item ' +
+                                                    (activity.current ? 'current' : '') +
+                                                    (activity.type === 'login_failed' ? ' suspicious' : '') +
+                                                    '">' +
+                                                    '<div class="activity-icon">' +
+                                                    getActivityIcon(activity.type) +
+                                                    '</div>' +
+                                                    '<div class="activity-details">' +
+                                                    '<div class="activity-header">' +
+                                                    '<span class="activity-label">' +
+                                                    getActivityLabel(activity.type) +
+                                                    '</span>' +
+                                                    (activity.current
+                                                        ? '<span class="badge badge-success badge-sm">Current</span>'
+                                                        : '') +
+                                                    (activity.type === 'login_failed'
+                                                        ? '<span class="badge badge-error badge-sm">Suspicious</span>'
+                                                        : '') +
+                                                    '</div>' +
+                                                    '<div class="activity-meta">' +
+                                                    '<span class="activity-device">' +
+                                                    activity.device +
+                                                    ' \u2022 ' +
+                                                    activity.browser +
+                                                    '</span>' +
+                                                    '<span class="activity-location">' +
+                                                    activity.location +
+                                                    '</span>' +
+                                                    '</div>' +
+                                                    '<div class="activity-ip">IP: ' +
+                                                    activity.ip +
+                                                    '</div>' +
+                                                    '</div>' +
+                                                    '<div class="activity-time">' +
+                                                    formatTimeAgo(activity.timestamp) +
+                                                    '</div>' +
+                                                    (activity.current
+                                                        ? ''
+                                                        : '<button class="btn btn-icon btn-sm btn-ghost" onclick="handlers.revokeSession(\'' +
+                                                          activity.timestamp +
+                                                          '\')" title="Revoke session">' +
+                                                          components.icon('x', 14) +
+                                                          '</button>') +
+                                                    '</div>',
+                                            )
+                                            .join('') +
                                         '</div>'
-                                    ).join('') + '</div>';
+                                    );
                                 })()}
                                 <div class="activity-log-footer">
                                     <button class="btn btn-sm btn-secondary" onclick="handlers.loadMoreActivity()">
@@ -1545,7 +1832,7 @@ Object.assign(pages, {
                                     analyticsData: '90',
                                     notifications: '30',
                                     automationLogs: '30',
-                                    autoCleanup: false
+                                    autoCleanup: false,
                                 };
 
                                 const retentionOptions = [
@@ -1554,91 +1841,162 @@ Object.assign(pages, {
                                     { value: '90', label: '90 days' },
                                     { value: '180', label: '6 months' },
                                     { value: '365', label: '1 year' },
-                                    { value: 'forever', label: 'Keep forever' }
+                                    { value: 'forever', label: 'Keep forever' },
                                 ];
 
-                                return '<div class="data-retention-grid">' +
+                                return (
+                                    '<div class="data-retention-grid">' +
                                     '<div class="retention-option">' +
-                                        '<div class="retention-info">' +
-                                            '<div class="retention-icon">' + components.icon('package', 18) + '</div>' +
-                                            '<div>' +
-                                                '<h3>Completed Orders</h3>' +
-                                                '<p class="text-sm text-gray-500">Orders that have been fulfilled and delivered</p>' +
-                                            '</div>' +
-                                        '</div>' +
-                                        '<select class="form-select form-select-sm" aria-label="Completed orders retention" onchange="handlers.updateRetentionSetting(\'completedOrders\', this.value)">' +
-                                            retentionOptions.map(opt => '<option value="' + opt.value + '" ' + (retentionSettings.completedOrders === opt.value ? 'selected' : '') + '>' + opt.label + '</option>').join('') +
-                                        '</select>' +
+                                    '<div class="retention-info">' +
+                                    '<div class="retention-icon">' +
+                                    components.icon('package', 18) +
+                                    '</div>' +
+                                    '<div>' +
+                                    '<h3>Completed Orders</h3>' +
+                                    '<p class="text-sm text-gray-500">Orders that have been fulfilled and delivered</p>' +
+                                    '</div>' +
+                                    '</div>' +
+                                    '<select class="form-select form-select-sm" aria-label="Completed orders retention" onchange="handlers.updateRetentionSetting(\'completedOrders\', this.value)">' +
+                                    retentionOptions
+                                        .map(
+                                            (opt) =>
+                                                '<option value="' +
+                                                opt.value +
+                                                '" ' +
+                                                (retentionSettings.completedOrders === opt.value ? 'selected' : '') +
+                                                '>' +
+                                                opt.label +
+                                                '</option>',
+                                        )
+                                        .join('') +
+                                    '</select>' +
                                     '</div>' +
                                     '<div class="retention-option">' +
-                                        '<div class="retention-info">' +
-                                            '<div class="retention-icon">' + components.icon('check-circle', 18) + '</div>' +
-                                            '<div>' +
-                                                '<h3>Sold Items History</h3>' +
-                                                '<p class="text-sm text-gray-500">Items moved to sold/archived status</p>' +
-                                            '</div>' +
-                                        '</div>' +
-                                        '<select class="form-select form-select-sm" aria-label="Sold items retention" onchange="handlers.updateRetentionSetting(\'soldItems\', this.value)">' +
-                                            retentionOptions.map(opt => '<option value="' + opt.value + '" ' + (retentionSettings.soldItems === opt.value ? 'selected' : '') + '>' + opt.label + '</option>').join('') +
-                                        '</select>' +
+                                    '<div class="retention-info">' +
+                                    '<div class="retention-icon">' +
+                                    components.icon('check-circle', 18) +
+                                    '</div>' +
+                                    '<div>' +
+                                    '<h3>Sold Items History</h3>' +
+                                    '<p class="text-sm text-gray-500">Items moved to sold/archived status</p>' +
+                                    '</div>' +
+                                    '</div>' +
+                                    '<select class="form-select form-select-sm" aria-label="Sold items retention" onchange="handlers.updateRetentionSetting(\'soldItems\', this.value)">' +
+                                    retentionOptions
+                                        .map(
+                                            (opt) =>
+                                                '<option value="' +
+                                                opt.value +
+                                                '" ' +
+                                                (retentionSettings.soldItems === opt.value ? 'selected' : '') +
+                                                '>' +
+                                                opt.label +
+                                                '</option>',
+                                        )
+                                        .join('') +
+                                    '</select>' +
                                     '</div>' +
                                     '<div class="retention-option">' +
-                                        '<div class="retention-info">' +
-                                            '<div class="retention-icon">' + components.icon('bar-chart', 18) + '</div>' +
-                                            '<div>' +
-                                                '<h3>Analytics Data</h3>' +
-                                                '<p class="text-sm text-gray-500">Performance metrics and statistics</p>' +
-                                            '</div>' +
-                                        '</div>' +
-                                        '<select class="form-select form-select-sm" aria-label="Analytics data retention" onchange="handlers.updateRetentionSetting(\'analyticsData\', this.value)">' +
-                                            retentionOptions.map(opt => '<option value="' + opt.value + '" ' + (retentionSettings.analyticsData === opt.value ? 'selected' : '') + '>' + opt.label + '</option>').join('') +
-                                        '</select>' +
+                                    '<div class="retention-info">' +
+                                    '<div class="retention-icon">' +
+                                    components.icon('bar-chart', 18) +
+                                    '</div>' +
+                                    '<div>' +
+                                    '<h3>Analytics Data</h3>' +
+                                    '<p class="text-sm text-gray-500">Performance metrics and statistics</p>' +
+                                    '</div>' +
+                                    '</div>' +
+                                    '<select class="form-select form-select-sm" aria-label="Analytics data retention" onchange="handlers.updateRetentionSetting(\'analyticsData\', this.value)">' +
+                                    retentionOptions
+                                        .map(
+                                            (opt) =>
+                                                '<option value="' +
+                                                opt.value +
+                                                '" ' +
+                                                (retentionSettings.analyticsData === opt.value ? 'selected' : '') +
+                                                '>' +
+                                                opt.label +
+                                                '</option>',
+                                        )
+                                        .join('') +
+                                    '</select>' +
                                     '</div>' +
                                     '<div class="retention-option">' +
-                                        '<div class="retention-info">' +
-                                            '<div class="retention-icon">' + components.icon('bell', 18) + '</div>' +
-                                            '<div>' +
-                                                '<h3>Notifications</h3>' +
-                                                '<p class="text-sm text-gray-500">Read notifications and alerts</p>' +
-                                            '</div>' +
-                                        '</div>' +
-                                        '<select class="form-select form-select-sm" aria-label="Notifications retention" onchange="handlers.updateRetentionSetting(\'notifications\', this.value)">' +
-                                            retentionOptions.map(opt => '<option value="' + opt.value + '" ' + (retentionSettings.notifications === opt.value ? 'selected' : '') + '>' + opt.label + '</option>').join('') +
-                                        '</select>' +
+                                    '<div class="retention-info">' +
+                                    '<div class="retention-icon">' +
+                                    components.icon('bell', 18) +
+                                    '</div>' +
+                                    '<div>' +
+                                    '<h3>Notifications</h3>' +
+                                    '<p class="text-sm text-gray-500">Read notifications and alerts</p>' +
+                                    '</div>' +
+                                    '</div>' +
+                                    '<select class="form-select form-select-sm" aria-label="Notifications retention" onchange="handlers.updateRetentionSetting(\'notifications\', this.value)">' +
+                                    retentionOptions
+                                        .map(
+                                            (opt) =>
+                                                '<option value="' +
+                                                opt.value +
+                                                '" ' +
+                                                (retentionSettings.notifications === opt.value ? 'selected' : '') +
+                                                '>' +
+                                                opt.label +
+                                                '</option>',
+                                        )
+                                        .join('') +
+                                    '</select>' +
                                     '</div>' +
                                     '<div class="retention-option">' +
-                                        '<div class="retention-info">' +
-                                            '<div class="retention-icon">' + components.icon('activity', 18) + '</div>' +
-                                            '<div>' +
-                                                '<h3>Automation Logs</h3>' +
-                                                '<p class="text-sm text-gray-500">Run history and task logs</p>' +
-                                            '</div>' +
-                                        '</div>' +
-                                        '<select class="form-select form-select-sm" aria-label="Automation logs retention" onchange="handlers.updateRetentionSetting(\'automationLogs\', this.value)">' +
-                                            retentionOptions.map(opt => '<option value="' + opt.value + '" ' + (retentionSettings.automationLogs === opt.value ? 'selected' : '') + '>' + opt.label + '</option>').join('') +
-                                        '</select>' +
+                                    '<div class="retention-info">' +
+                                    '<div class="retention-icon">' +
+                                    components.icon('activity', 18) +
                                     '</div>' +
-                                '</div>' +
-                                '<div class="retention-auto-cleanup mt-4">' +
+                                    '<div>' +
+                                    '<h3>Automation Logs</h3>' +
+                                    '<p class="text-sm text-gray-500">Run history and task logs</p>' +
+                                    '</div>' +
+                                    '</div>' +
+                                    '<select class="form-select form-select-sm" aria-label="Automation logs retention" onchange="handlers.updateRetentionSetting(\'automationLogs\', this.value)">' +
+                                    retentionOptions
+                                        .map(
+                                            (opt) =>
+                                                '<option value="' +
+                                                opt.value +
+                                                '" ' +
+                                                (retentionSettings.automationLogs === opt.value ? 'selected' : '') +
+                                                '>' +
+                                                opt.label +
+                                                '</option>',
+                                        )
+                                        .join('') +
+                                    '</select>' +
+                                    '</div>' +
+                                    '</div>' +
+                                    '<div class="retention-auto-cleanup mt-4">' +
                                     '<label class="toggle-row">' +
-                                        '<div class="toggle-info">' +
-                                            '<span class="toggle-label">Automatic Cleanup</span>' +
-                                            '<span class="toggle-description">Automatically delete old data based on retention settings</span>' +
-                                        '</div>' +
-                                        '<label class="switch">' +
-                                            '<input aria-label="Toggle Auto cleanup" type="checkbox" ' + (retentionSettings.autoCleanup ? 'checked' : '') + ' onchange="handlers.updateRetentionSetting(\'autoCleanup\', this.checked)">' +
-                                            '<span class="slider round"></span>' +
-                                        '</label>' +
+                                    '<div class="toggle-info">' +
+                                    '<span class="toggle-label">Automatic Cleanup</span>' +
+                                    '<span class="toggle-description">Automatically delete old data based on retention settings</span>' +
+                                    '</div>' +
+                                    '<label class="switch">' +
+                                    '<input aria-label="Toggle Auto cleanup" type="checkbox" ' +
+                                    (retentionSettings.autoCleanup ? 'checked' : '') +
+                                    ' onchange="handlers.updateRetentionSetting(\'autoCleanup\', this.checked)">' +
+                                    '<span class="slider round"></span>' +
                                     '</label>' +
-                                '</div>' +
-                                '<div class="retention-actions mt-4">' +
+                                    '</label>' +
+                                    '</div>' +
+                                    '<div class="retention-actions mt-4">' +
                                     '<button class="btn btn-secondary btn-sm" onclick="handlers.previewRetentionCleanup()">' +
-                                        components.icon('eye', 14) + ' Preview Cleanup' +
+                                    components.icon('eye', 14) +
+                                    ' Preview Cleanup' +
                                     '</button>' +
                                     '<button class="btn btn-primary btn-sm" onclick="handlers.runRetentionCleanup()">' +
-                                        components.icon('trash-2', 14) + ' Run Cleanup Now' +
+                                    components.icon('trash-2', 14) +
+                                    ' Run Cleanup Now' +
                                     '</button>' +
-                                '</div>';
+                                    '</div>'
+                                );
                             })()}
                         </div>
 
@@ -1701,7 +2059,10 @@ Object.assign(pages, {
                         changes = [];
                     }
                     if (changes.length > 0 && lastVisit) {
-                        const changesList = changes.slice(0, 3).map(c => `${c}`).join(', ');
+                        const changesList = changes
+                            .slice(0, 3)
+                            .map((c) => `${c}`)
+                            .join(', ');
                         const moreText = changes.length > 3 ? ` and ${changes.length - 3} more` : '';
                         return `
                             <div class="settings-changelog-banner" style="background: var(--info-light); border: 1px solid var(--info); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: start; gap: 12px;">
@@ -1791,11 +2152,12 @@ Object.assign(pages, {
 
     // Account page,
 
-
     account() {
         const user = store.state.user || {};
         const connectedShops = store.state.shops || [];
-        const memberSince = user.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
+        const memberSince = user.created_at
+            ? new Date(user.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+            : 'N/A';
 
         return `
             <div class="page-header">
@@ -1941,7 +2303,6 @@ Object.assign(pages, {
 
     // Community page,
 
-
     teams() {
         const teams = store.state.teams || [];
         const activeTeam = store.state.activeTeam || null;
@@ -1964,11 +2325,15 @@ Object.assign(pages, {
                     </div>
                 </div>
 
-                ${!activeTeam ? `
+                ${
+                    !activeTeam
+                        ? `
                     <!-- Team Selection Grid -->
                     <div style="margin-bottom: 24px;">
                         <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">Your Teams</h2>
-                        ${teams.length === 0 ? `
+                        ${
+                            teams.length === 0
+                                ? `
                             <div class="card" style="text-align: center; padding: 48px 24px;">
                                 <div style="font-size: 48px; margin-bottom: 16px;">${components.icon('community', 48)}</div>
                                 <h2 style="margin-bottom: 8px; color: var(--gray-700);">No Teams Yet</h2>
@@ -1977,9 +2342,12 @@ Object.assign(pages, {
                                     ${components.icon('plus', 16)} Create Your First Team
                                 </button>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
-                                ${teams.map(team => `
+                                ${teams
+                                    .map(
+                                        (team) => `
                                     <div role="button" tabindex="0" class="card" style="padding: 20px; cursor: pointer; transition: all 0.2s; border: 2px solid transparent;" onclick="handlers.selectTeam('${team.id}')" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='transparent'">
                                         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                                             <div style="width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, var(--primary), var(--primary-600)); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px;">
@@ -1995,9 +2363,12 @@ Object.assign(pages, {
                                             <span style="font-size: 11px; color: var(--gray-400);">Created ${new Date(team.created_at).toLocaleDateString()}</span>
                                         </div>
                                     </div>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </div>
-                        `}
+                        `
+                        }
                     </div>
 
                     <!-- Role Permissions Reference -->
@@ -2022,18 +2393,23 @@ Object.assign(pages, {
                                         ['View Sales', false, false, true, true, true],
                                         ['View Financials', false, false, false, true, true],
                                         ['Manage Team', false, false, false, true, true],
-                                        ['Delete Team', false, false, false, false, true]
-                                    ].map(([perm, ...roles]) => `
+                                        ['Delete Team', false, false, false, false, true],
+                                    ]
+                                        .map(
+                                            ([perm, ...roles]) => `
                                         <tr>
                                             <td>${perm}</td>
-                                            ${roles.map(r => `<td style="text-align: center; color: ${r ? 'var(--success)' : 'var(--gray-300)'};">${r ? '&#10003;' : '&#10005;'}</td>`).join('')}
+                                            ${roles.map((r) => `<td style="text-align: center; color: ${r ? 'var(--success)' : 'var(--gray-300)'};">${r ? '&#10003;' : '&#10005;'}</td>`).join('')}
                                         </tr>
-                                    `).join('')}
+                                    `,
+                                        )
+                                        .join('')}
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                ` : `
+                `
+                        : `
                     <!-- Active Team View -->
                     <div style="margin-bottom: 16px;">
                         <button class="btn btn-ghost btn-sm" onclick="handlers.deselectTeam()">
@@ -2054,20 +2430,28 @@ Object.assign(pages, {
                                 </div>
                             </div>
                             <div style="display: flex; gap: 8px;">
-                                ${teamPermissions.manage_team ? `
+                                ${
+                                    teamPermissions.manage_team
+                                        ? `
                                     <button class="btn btn-secondary btn-sm" onclick="modals.inviteTeamMember('${activeTeam.id}', '${escapeHtml(activeTeam.name)}')">
                                         ${components.icon('mail', 14)} Invite Member
                                     </button>
-                                ` : ''}
-                                ${teamPermissions.delete_team ? `
+                                `
+                                        : ''
+                                }
+                                ${
+                                    teamPermissions.delete_team
+                                        ? `
                                     <button class="btn btn-ghost btn-sm" style="color: var(--danger-600);" onclick="handlers.deleteTeam('${activeTeam.id}')">
                                         ${components.icon('trash', 14)} Delete Team
                                     </button>
-                                ` : `
+                                `
+                                        : `
                                     <button class="btn btn-ghost btn-sm" style="color: var(--warning-600);" onclick="handlers.leaveTeam('${activeTeam.id}')">
                                         ${components.icon('logout', 14)} Leave Team
                                     </button>
-                                `}
+                                `
+                                }
                             </div>
                         </div>
                     </div>
@@ -2096,7 +2480,9 @@ Object.assign(pages, {
                     <div class="card" style="padding: 20px; margin-bottom: 20px;">
                         <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">${components.icon('community', 18)} Team Members</h2>
                         <div style="display: grid; gap: 12px;">
-                            ${teamMembers.map(member => `
+                            ${teamMembers
+                                .map(
+                                    (member) => `
                                 <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--gray-50); border-radius: 8px;">
                                     <div style="display: flex; align-items: center; gap: 12px;">
                                         <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-100); color: var(--primary-600); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px;">
@@ -2109,26 +2495,36 @@ Object.assign(pages, {
                                     </div>
                                     <div style="display: flex; align-items: center; gap: 10px;">
                                         <span class="badge badge-sm" style="text-transform: capitalize;">${member.role}</span>
-                                        ${teamPermissions.manage_team && member.role !== 'owner' ? `
+                                        ${
+                                            teamPermissions.manage_team && member.role !== 'owner'
+                                                ? `
                                             <select class="form-select" aria-label="Member role" style="font-size: 12px; padding: 4px 8px; width: auto;" onchange="handlers.updateMemberRole('${activeTeam.id}', '${member.id}', this.value)">
-                                                ${['viewer', 'member', 'manager', 'admin'].map(r => `<option value="${r}" ${member.role === r ? 'selected' : ''}>${r}</option>`).join('')}
+                                                ${['viewer', 'member', 'manager', 'admin'].map((r) => `<option value="${r}" ${member.role === r ? 'selected' : ''}>${r}</option>`).join('')}
                                             </select>
                                             <button class="btn btn-ghost btn-sm" style="color: var(--danger-600);" onclick="handlers.removeTeamMember('${activeTeam.id}', '${member.id}')" title="Remove member">
                                                 ${components.icon('close', 14)}
                                             </button>
-                                        ` : ''}
+                                        `
+                                                : ''
+                                        }
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
                     </div>
 
                     <!-- Pending Invitations -->
-                    ${teamInvitations.length > 0 ? `
+                    ${
+                        teamInvitations.length > 0
+                            ? `
                         <div class="card" style="padding: 20px; margin-bottom: 20px;">
                             <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">${components.icon('mail', 18)} Pending Invitations</h2>
                             <div style="display: grid; gap: 8px;">
-                                ${teamInvitations.map(inv => `
+                                ${teamInvitations
+                                    .map(
+                                        (inv) => `
                                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--warning-50); border-radius: 8px; border: 1px solid var(--warning-100);">
                                         <div>
                                             <span style="font-weight: 500;">${escapeHtml(inv.email)}</span>
@@ -2138,38 +2534,57 @@ Object.assign(pages, {
                                             Expires ${new Date(inv.expires_at).toLocaleDateString()}
                                         </div>
                                     </div>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </div>
                         </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
 
                     <!-- Activity Log -->
                     <div class="card" style="padding: 20px;">
                         <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">${components.icon('clock', 18)} Activity Log</h2>
-                        ${teamActivity.length === 0 ? `
+                        ${
+                            teamActivity.length === 0
+                                ? `
                             <p style="color: var(--gray-500); text-align: center; padding: 20px;">No activity recorded yet.</p>
-                        ` : `
+                        `
+                                : `
                             <div style="display: grid; gap: 8px;">
-                                ${teamActivity.slice(0, 20).map(act => {
-                                    const icons = { team_created: 'plus', member_invited: 'mail', member_joined: 'community', member_role_updated: 'settings', member_removed: 'close', member_left: 'logout', team_updated: 'edit' };
-                                    return `
+                                ${teamActivity
+                                    .slice(0, 20)
+                                    .map((act) => {
+                                        const icons = {
+                                            team_created: 'plus',
+                                            member_invited: 'mail',
+                                            member_joined: 'community',
+                                            member_role_updated: 'settings',
+                                            member_removed: 'close',
+                                            member_left: 'logout',
+                                            team_updated: 'edit',
+                                        };
+                                        return `
                                         <div style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-left: 3px solid var(--primary-200); background: var(--gray-50); border-radius: 0 6px 6px 0; font-size: 13px;">
                                             <span style="color: var(--primary);">${components.icon(icons[act.action] || 'activity', 14)}</span>
                                             <span style="flex: 1;"><strong>${escapeHtml(act.user_name || 'System')}</strong> ${escapeHtml((act.action || '').replace(/_/g, ' '))}</span>
                                             <span style="color: var(--gray-400); font-size: 11px;">${new Date(act.created_at).toLocaleString()}</span>
                                         </div>
                                     `;
-                                }).join('')}
+                                    })
+                                    .join('')}
                             </div>
-                        `}
+                        `
+                        }
                     </div>
-                `}
+                `
+                }
             </div>
         `;
     },
 
     // Plans & Billing page,
-
 
     plansBilling() {
         return `
@@ -2186,18 +2601,21 @@ Object.assign(pages, {
         const currentPlan = user.subscription_tier || 'free';
         const period = store.state.billingPeriod || 'monthly';
         const PRICING = {
-            starter:  { monthly: 9,   quarterly: 8.10, yearly: 7.20  },
-            pro:      { monthly: 19,  quarterly: 17.10, yearly: 15.20 },
-            business: { monthly: 49,  quarterly: 44.10, yearly: 39.20 },
+            starter: { monthly: 9, quarterly: 8.1, yearly: 7.2 },
+            pro: { monthly: 19, quarterly: 17.1, yearly: 15.2 },
+            business: { monthly: 49, quarterly: 44.1, yearly: 39.2 },
         };
         const SAVINGS = { quarterly: 10, yearly: 20 };
         const getPrice = (tier) => {
             const p = PRICING[tier][period];
             return Number.isInteger(p) ? `C$${p}` : `C$${p.toFixed(2)}`;
         };
-        const periodLabel = period === 'monthly' ? 'per month'
-            : period === 'quarterly' ? '/mo, billed quarterly'
-            : '/mo, billed yearly';
+        const periodLabel =
+            period === 'monthly'
+                ? 'per month'
+                : period === 'quarterly'
+                  ? '/mo, billed quarterly'
+                  : '/mo, billed yearly';
 
         return `
             <!-- Current Plan -->
@@ -2214,15 +2632,19 @@ Object.assign(pages, {
                             </div>
                             <p class="text-sm text-gray-600 mt-2">You're currently on the ${currentPlan === 'free' ? 'Free plan with limited features' : 'Pro plan with all features unlocked'}.</p>
                         </div>
-                        ${currentPlan === 'free' ? `
+                        ${
+                            currentPlan === 'free'
+                                ? `
                             <button class="btn btn-primary" onclick="handlers.showPlanComparison()">
                                 Upgrade to Pro
                             </button>
-                        ` : `
+                        `
+                                : `
                             <button class="btn btn-secondary" onclick="handlers.showProrationCalculator()">
                                 Manage Subscription
                             </button>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
             </div>
@@ -2238,36 +2660,78 @@ Object.assign(pages, {
                         const usage = store.state.usage || {};
                         const tier = currentPlan;
                         const limits = {
-                            free:     { items: 100,       listings: 50,        ai: 0,   automations: 0   },
-                            starter:  { items: 500,       listings: 250,       ai: 25,  automations: 5   },
-                            pro:      { items: Infinity,  listings: Infinity,  ai: 50,  automations: 20  },
-                            business: { items: Infinity,  listings: Infinity,  ai: Infinity, automations: Infinity }
+                            free: { items: 100, listings: 50, ai: 0, automations: 0 },
+                            starter: { items: 500, listings: 250, ai: 25, automations: 5 },
+                            pro: { items: Infinity, listings: Infinity, ai: 50, automations: 20 },
+                            business: { items: Infinity, listings: Infinity, ai: Infinity, automations: Infinity },
                         };
                         const planLimits = limits[tier] || limits.free;
                         const metrics = [
-                            { label: 'Inventory Items', current: usage.inventory_items || 0, limit: planLimits.items, unit: 'items' },
-                            { label: 'Active Listings', current: usage.active_listings || 0, limit: planLimits.listings, unit: 'listings' },
-                            { label: 'AI Generations', current: usage.ai_generations || 0, limit: planLimits.ai, unit: 'this month' },
-                            { label: 'Automations', current: usage.automations || 0, limit: planLimits.automations, unit: 'active' },
+                            {
+                                label: 'Inventory Items',
+                                current: usage.inventory_items || 0,
+                                limit: planLimits.items,
+                                unit: 'items',
+                            },
+                            {
+                                label: 'Active Listings',
+                                current: usage.active_listings || 0,
+                                limit: planLimits.listings,
+                                unit: 'listings',
+                            },
+                            {
+                                label: 'AI Generations',
+                                current: usage.ai_generations || 0,
+                                limit: planLimits.ai,
+                                unit: 'this month',
+                            },
+                            {
+                                label: 'Automations',
+                                current: usage.automations || 0,
+                                limit: planLimits.automations,
+                                unit: 'active',
+                            },
                         ];
-                        return metrics.map(m => {
-                            const isUnlimited = !isFinite(m.limit);
-                            const pct = isUnlimited ? 0 : Math.min(100, Math.round((m.current / m.limit) * 100));
-                            const color = pct >= 90 ? 'var(--danger)' : pct >= 70 ? 'var(--warning)' : 'var(--success)';
-                            const warningHtml = (pct >= 80 && !isUnlimited)
-                                ? '<span style="font-size:12px; color:' + color + '; margin-top:2px; display:block;">' + pct + '% used \u2014 consider upgrading</span>'
-                                : '';
-                            return '<div style="margin-bottom: 16px;">' +
-                                '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">' +
-                                    '<span style="font-size:14px; font-weight:500;">' + m.label + '</span>' +
-                                    '<span style="font-size:13px; color:var(--gray-500);">' + m.current + ' / ' + (isUnlimited ? 'Unlimited' : m.limit) + ' ' + m.unit + '</span>' +
-                                '</div>' +
-                                '<div style="height:6px; background:var(--gray-200); border-radius:3px; overflow:hidden;">' +
-                                    '<div style="height:100%; width:' + (isUnlimited ? 0 : pct) + '%; background:' + color + '; border-radius:3px; transition:width 0.3s;"></div>' +
-                                '</div>' +
-                                warningHtml +
-                            '</div>';
-                        }).join('');
+                        return metrics
+                            .map((m) => {
+                                const isUnlimited = !isFinite(m.limit);
+                                const pct = isUnlimited ? 0 : Math.min(100, Math.round((m.current / m.limit) * 100));
+                                const color =
+                                    pct >= 90 ? 'var(--danger)' : pct >= 70 ? 'var(--warning)' : 'var(--success)';
+                                const warningHtml =
+                                    pct >= 80 && !isUnlimited
+                                        ? '<span style="font-size:12px; color:' +
+                                          color +
+                                          '; margin-top:2px; display:block;">' +
+                                          pct +
+                                          '% used \u2014 consider upgrading</span>'
+                                        : '';
+                                return (
+                                    '<div style="margin-bottom: 16px;">' +
+                                    '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">' +
+                                    '<span style="font-size:14px; font-weight:500;">' +
+                                    m.label +
+                                    '</span>' +
+                                    '<span style="font-size:13px; color:var(--gray-500);">' +
+                                    m.current +
+                                    ' / ' +
+                                    (isUnlimited ? 'Unlimited' : m.limit) +
+                                    ' ' +
+                                    m.unit +
+                                    '</span>' +
+                                    '</div>' +
+                                    '<div style="height:6px; background:var(--gray-200); border-radius:3px; overflow:hidden;">' +
+                                    '<div style="height:100%; width:' +
+                                    (isUnlimited ? 0 : pct) +
+                                    '%; background:' +
+                                    color +
+                                    '; border-radius:3px; transition:width 0.3s;"></div>' +
+                                    '</div>' +
+                                    warningHtml +
+                                    '</div>'
+                                );
+                            })
+                            .join('');
                     })()}
                 </div>
             </div>
@@ -2277,15 +2741,15 @@ Object.assign(pages, {
                 <div class="card-body" style="display:flex; align-items:center; justify-content:center; gap:12px; padding:16px;">
                     <span class="text-sm font-medium">Billing period:</span>
                     <div style="display:flex; background:var(--gray-100); border-radius:8px; padding:4px; gap:4px;">
-                        <button class="btn btn-sm ${period==='monthly' ? 'btn-primary' : 'btn-ghost'}"
+                        <button class="btn btn-sm ${period === 'monthly' ? 'btn-primary' : 'btn-ghost'}"
                             onclick="store.setState({billingPeriod:'monthly'}); renderApp(window.pages.plansBilling());">
                             Monthly
                         </button>
-                        <button class="btn btn-sm ${period==='quarterly' ? 'btn-primary' : 'btn-ghost'}"
+                        <button class="btn btn-sm ${period === 'quarterly' ? 'btn-primary' : 'btn-ghost'}"
                             onclick="store.setState({billingPeriod:'quarterly'}); renderApp(window.pages.plansBilling());">
                             Quarterly <span style="font-size:11px; color:var(--success); font-weight:600;">Save ${SAVINGS.quarterly}%</span>
                         </button>
-                        <button class="btn btn-sm ${period==='yearly' ? 'btn-primary' : 'btn-ghost'}"
+                        <button class="btn btn-sm ${period === 'yearly' ? 'btn-primary' : 'btn-ghost'}"
                             onclick="store.setState({billingPeriod:'yearly'}); renderApp(window.pages.plansBilling());">
                             Yearly <span style="font-size:11px; color:var(--success); font-weight:600;">Save ${SAVINGS.yearly}%</span>
                         </button>
@@ -2327,11 +2791,15 @@ Object.assign(pages, {
                                 Automation features
                             </li>
                         </ul>
-                        ${currentPlan === 'free' ? `
+                        ${
+                            currentPlan === 'free'
+                                ? `
                             <button class="btn btn-outline w-full" disabled>Current Plan</button>
-                        ` : `
+                        `
+                                : `
                             <button class="btn btn-outline w-full" onclick="handlers.confirmPlanChange('free')">Downgrade to Free</button>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
 
@@ -2367,13 +2835,19 @@ Object.assign(pages, {
                                 Priority support
                             </li>
                         </ul>
-                        ${currentPlan === 'starter' ? `
+                        ${
+                            currentPlan === 'starter'
+                                ? `
                             <button class="btn btn-outline w-full" disabled>Current Plan</button>
-                        ` : currentPlan === 'free' ? `
+                        `
+                                : currentPlan === 'free'
+                                  ? `
                             <button class="btn btn-secondary w-full" onclick="handlers.selectPlan('starter')">Upgrade to Starter</button>
-                        ` : `
+                        `
+                                  : `
                             <button class="btn btn-outline w-full" onclick="handlers.confirmPlanChange('starter')">Switch to Starter</button>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
 
@@ -2417,13 +2891,17 @@ Object.assign(pages, {
                                 Priority support
                             </li>
                         </ul>
-                        ${currentPlan === 'pro' ? `
+                        ${
+                            currentPlan === 'pro'
+                                ? `
                             <button class="btn btn-primary w-full" disabled>Current Plan</button>
-                        ` : `
+                        `
+                                : `
                             <button class="btn btn-primary w-full" onclick="handlers.selectPlan('pro')">
                                 ${currentPlan === 'business' ? 'Switch to Pro' : 'Upgrade to Pro'}
                             </button>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
 
@@ -2459,11 +2937,15 @@ Object.assign(pages, {
                                 API access
                             </li>
                         </ul>
-                        ${currentPlan === 'business' ? `
+                        ${
+                            currentPlan === 'business'
+                                ? `
                             <button class="btn btn-secondary w-full" disabled>Current Plan</button>
-                        ` : `
+                        `
+                                : `
                             <button class="btn btn-secondary w-full" onclick="handlers.selectPlan('business')">Upgrade to Business</button>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
             </div>
@@ -2510,7 +2992,9 @@ Object.assign(pages, {
                                 ['API access', '—', '—', '—', components.icon('check', 16)],
                                 ['Priority support', '—', '—', '—', components.icon('check', 16)],
                                 ['7-day free trial', '—', '—', components.icon('check', 16), '—'],
-                            ].map((row, i) => `
+                            ]
+                                .map(
+                                    (row, i) => `
                                 <tr style="border-bottom:1px solid var(--gray-100); background:${i % 2 === 0 ? 'transparent' : 'var(--gray-50)'};">
                                     <td style="padding:10px 16px; font-weight:500;">${row[0]}</td>
                                     <td style="padding:10px 16px; text-align:center; color:var(--gray-600);">${row[1]}</td>
@@ -2518,7 +3002,9 @@ Object.assign(pages, {
                                     <td style="padding:10px 16px; text-align:center; color:var(--primary); font-weight:500;">${row[3]}</td>
                                     <td style="padding:10px 16px; text-align:center; color:var(--gray-600);">${row[4]}</td>
                                 </tr>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </tbody>
                     </table>
                 </div>
@@ -2527,7 +3013,6 @@ Object.assign(pages, {
     },
 
     // Affiliate Program page,
-
 
     affiliate() {
         return `
@@ -2545,7 +3030,9 @@ Object.assign(pages, {
         const hasApplied = !!user.affiliate_applied_at;
 
         return `
-            ${isAffiliate ? `
+            ${
+                isAffiliate
+                    ? `
                 <!-- Affiliate Dashboard Button -->
                 <div class="card mb-6" style="background: linear-gradient(135deg, var(--success-500) 0%, var(--success-700) 100%); color: white;">
                     <div class="card-body text-center py-8">
@@ -2556,7 +3043,9 @@ Object.assign(pages, {
                         </button>
                     </div>
                 </div>
-            ` : hasApplied ? `
+            `
+                    : hasApplied
+                      ? `
                 <!-- Pending Review -->
                 <div class="card mb-6" style="background: linear-gradient(135deg, var(--warning-500, #f59e0b) 0%, #d97706 100%); color: white;">
                     <div class="card-body text-center py-8">
@@ -2565,18 +3054,20 @@ Object.assign(pages, {
                         <p class="text-sm opacity-75">We'll notify you within 2 business days.</p>
                     </div>
                 </div>
-            ` : `
+            `
+                      : `
                 <!-- Join Program CTA -->
                 <div class="card mb-6" style="background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-700) 100%); color: white;">
                     <div class="card-body text-center py-8">
                         <h2 class="text-2xl font-bold mb-2">Become a VaultLister Affiliate</h2>
-                        <p class="mb-4 opacity-90">Earn 30% commission on every subscription you refer. No limits!</p>
+                        <p class="mb-4 opacity-90">Earn 25% commission on every subscription you refer. No limits!</p>
                         <button class="btn" style="background: white; color: var(--primary-600);" onclick="handlers.applyAffiliate()">
                             Apply Now
                         </button>
                     </div>
                 </div>
-            `}
+            `
+            }
 
             <!-- Commission Structure -->
             <div class="card mb-6">
@@ -2586,7 +3077,7 @@ Object.assign(pages, {
                 <div class="card-body">
                     <div class="grid grid-cols-3 gap-6">
                         <div class="text-center p-6 rounded-lg" style="background: var(--gray-50);">
-                            <div class="text-4xl font-bold text-primary mb-2">30%</div>
+                            <div class="text-4xl font-bold text-primary mb-2">25%</div>
                             <div class="font-medium mb-1">Recurring Commission</div>
                             <div class="text-sm text-gray-500">On every payment, for the life of the subscription</div>
                         </div>
@@ -2729,7 +3220,6 @@ Object.assign(pages, {
 
     // Notifications page,
 
-
     notifications() {
         const notificationFilter = store.state.notificationFilter || 'all';
         const notificationSearch = store.state.notificationSearchQuery || '';
@@ -2739,19 +3229,20 @@ Object.assign(pages, {
 
         // Apply search filter
         if (notificationSearch) {
-            filteredNotifications = filteredNotifications.filter(n =>
-                n.title?.toLowerCase().includes(notificationSearch.toLowerCase()) ||
-                n.message?.toLowerCase().includes(notificationSearch.toLowerCase())
+            filteredNotifications = filteredNotifications.filter(
+                (n) =>
+                    n.title?.toLowerCase().includes(notificationSearch.toLowerCase()) ||
+                    n.message?.toLowerCase().includes(notificationSearch.toLowerCase()),
             );
         }
 
         // Apply status filter
         if (notificationFilter === 'unread') {
-            filteredNotifications = filteredNotifications.filter(n => !n.read);
+            filteredNotifications = filteredNotifications.filter((n) => !n.read);
         } else if (notificationFilter === 'read') {
-            filteredNotifications = filteredNotifications.filter(n => n.read);
+            filteredNotifications = filteredNotifications.filter((n) => n.read);
         } else if (notificationFilter === 'important') {
-            filteredNotifications = filteredNotifications.filter(n => n.important);
+            filteredNotifications = filteredNotifications.filter((n) => n.important);
         }
 
         return `
@@ -2781,15 +3272,15 @@ Object.assign(pages, {
                         </button>
                         <button class="btn btn-sm ${notificationFilter === 'unread' ? 'btn-primary' : 'btn-outline'}"
                                 onclick="handlers.filterNotifications('unread')">
-                            Unread ${notificationFilter === 'unread' ? `(${store.state.notifications.filter(n => !n.read).length})` : ''}
+                            Unread ${notificationFilter === 'unread' ? `(${store.state.notifications.filter((n) => !n.read).length})` : ''}
                         </button>
                         <button class="btn btn-sm ${notificationFilter === 'read' ? 'btn-primary' : 'btn-outline'}"
                                 onclick="handlers.filterNotifications('read')">
-                            Read ${notificationFilter === 'read' ? `(${store.state.notifications.filter(n => n.read).length})` : ''}
+                            Read ${notificationFilter === 'read' ? `(${store.state.notifications.filter((n) => n.read).length})` : ''}
                         </button>
                         <button class="btn btn-sm ${notificationFilter === 'important' ? 'btn-primary' : 'btn-outline'}"
                                 onclick="handlers.filterNotifications('important')">
-                            Important ${notificationFilter === 'important' ? `(${store.state.notifications.filter(n => n.important).length})` : ''}
+                            Important ${notificationFilter === 'important' ? `(${store.state.notifications.filter((n) => n.important).length})` : ''}
                         </button>
                         <div style="margin-left: auto;">
                             <button class="btn btn-sm btn-secondary" onclick="handlers.markAllNotificationsRead()">
@@ -2800,7 +3291,9 @@ Object.assign(pages, {
                 </div>
 
                 <div class="card-body" style="padding: 0;">
-                    ${filteredNotifications.length === 0 ? `
+                    ${
+                        filteredNotifications.length === 0
+                            ? `
                         <div class="notification-empty-state">
                             <svg class="notification-empty-svg" width="120" height="120" viewBox="0 0 120 120" fill="none">
                                 <circle cx="60" cy="60" r="50" fill="var(--primary-50)" stroke="var(--primary-200)" stroke-width="2"/>
@@ -2813,18 +3306,29 @@ Object.assign(pages, {
                             <p class="notification-empty-text">${notificationFilter === 'all' ? "You're all caught up! New notifications will appear here." : 'Try a different filter to see more notifications.'}</p>
                             ${notificationFilter !== 'all' ? '<button class="btn btn-sm btn-secondary mt-3" onclick="handlers.filterNotifications(\'all\')">Show All</button>' : ''}
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div class="notification-list">
-                            ${filteredNotifications.map(notif => `
+                            ${filteredNotifications
+                                .map(
+                                    (notif) => `
                                 <div role="button" tabindex="0" class="notification-item ${notif.read ? 'read' : 'unread'}" style="padding: 16px 24px; border-bottom: 1px solid var(--gray-100); display: flex; align-items: start; gap: 12px; cursor: pointer; ${!notif.read ? 'background: var(--primary-50);' : ''}" onclick="handlers.navigateFromNotification('${notif.id}', '${escapeHtml(notif.link || notif.type || '')}')">
                                     <div class="notification-type-icon notification-type-${notif.type || 'info'}">
-                                        ${notif.type === 'order' ? components.icon('package', 18) :
-                                          notif.type === 'sale' ? components.icon('dollar-sign', 18) :
-                                          notif.type === 'offer' ? components.icon('tag', 18) :
-                                          notif.type === 'shipping' ? components.icon('truck', 18) :
-                                          notif.type === 'warning' ? components.icon('alert-triangle', 18) :
-                                          notif.type === 'success' ? components.icon('check-circle', 18) :
-                                          components.icon('bell', 18)}
+                                        ${
+                                            notif.type === 'order'
+                                                ? components.icon('package', 18)
+                                                : notif.type === 'sale'
+                                                  ? components.icon('dollar-sign', 18)
+                                                  : notif.type === 'offer'
+                                                    ? components.icon('tag', 18)
+                                                    : notif.type === 'shipping'
+                                                      ? components.icon('truck', 18)
+                                                      : notif.type === 'warning'
+                                                        ? components.icon('alert-triangle', 18)
+                                                        : notif.type === 'success'
+                                                          ? components.icon('check-circle', 18)
+                                                          : components.icon('bell', 18)
+                                        }
                                     </div>
                                     <div style="flex: 1;">
                                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
@@ -2853,9 +3357,12 @@ Object.assign(pages, {
                                         </button>
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
         `;
@@ -2863,38 +3370,48 @@ Object.assign(pages, {
 
     // Connections page,
 
-
     connections() {
         const shops = store.state.shops || [];
         const emailAccounts = store.state.emailAccounts || [];
         const emailProviders = store.state.emailProviders || [];
-        const connectedShops = shops.filter(shop => shop.is_connected);
-        const shopByPlatform = new Map(connectedShops.map(shop => [shop.platform, shop]));
-        const providerById = new Map(emailProviders.map(provider => [provider.id, provider]));
-        const gmailAccount = emailAccounts.find(account => account.provider === 'gmail' && account.is_enabled);
-        const outlookAccount = emailAccounts.find(account => account.provider === 'outlook' && account.is_enabled);
+        const connectedShops = shops.filter((shop) => shop.is_connected);
+        const shopByPlatform = new Map(connectedShops.map((shop) => [shop.platform, shop]));
+        const providerById = new Map(emailProviders.map((provider) => [provider.id, provider]));
+        const gmailAccount = emailAccounts.find((account) => account.provider === 'gmail' && account.is_enabled);
+        const outlookAccount = emailAccounts.find((account) => account.provider === 'outlook' && account.is_enabled);
         const gmailConfigured = providerById.get('gmail')?.configured !== false;
         const outlookConfigured = Boolean(providerById.get('outlook')?.configured);
-        const launchPlatforms = window.LAUNCH_PLATFORMS || new Set(['poshmark', 'ebay', 'depop', 'shopify', 'facebook', 'whatnot']);
-        const marketplacePlatforms = (window.SUPPORTED_PLATFORMS || []).map(platform => ({
+        const launchPlatforms =
+            window.LAUNCH_PLATFORMS || new Set(['poshmark', 'ebay', 'depop', 'shopify', 'facebook', 'whatnot']);
+        const marketplacePlatforms = (window.SUPPORTED_PLATFORMS || []).map((platform) => ({
             id: platform.id,
             label: PLATFORM_DISPLAY_NAMES[platform.id] || platform.name,
-            isLaunch: launchPlatforms.has(platform.id)
+            isLaunch: launchPlatforms.has(platform.id),
         }));
-        const livePlatforms = marketplacePlatforms.filter(platform => platform.isLaunch || shopByPlatform.has(platform.id));
-        const comingSoonPlatforms = marketplacePlatforms.filter(platform => !platform.isLaunch && !shopByPlatform.has(platform.id));
+        const livePlatforms = marketplacePlatforms.filter(
+            (platform) => platform.isLaunch || shopByPlatform.has(platform.id),
+        );
+        const comingSoonPlatforms = marketplacePlatforms.filter(
+            (platform) => !platform.isLaunch && !shopByPlatform.has(platform.id),
+        );
         const renderMarketplaceCard = (platform) => {
             const shop = shopByPlatform.get(platform.id);
             const canConnect = platform.isLaunch || Boolean(shop);
-            const statusClass = shop ? 'text-success' : (canConnect ? 'text-gray-500' : 'text-warning');
+            const statusClass = shop ? 'text-success' : canConnect ? 'text-gray-500' : 'text-warning';
             const statusText = shop
-                ? (shop.platform_username ? `Connected as @${escapeHtml(shop.platform_username)}` : 'Connected')
-                : (canConnect ? 'Ready to connect' : 'Coming soon');
-            const actionLabel = shop ? 'Manage' : (canConnect ? 'Connect' : 'Coming Soon');
-            const actionClass = shop ? 'btn-outline' : (canConnect ? 'btn-primary' : 'btn-outline');
+                ? shop.platform_username
+                    ? `Connected as @${escapeHtml(shop.platform_username)}`
+                    : 'Connected'
+                : canConnect
+                  ? 'Ready to connect'
+                  : 'Coming soon';
+            const actionLabel = shop ? 'Manage' : canConnect ? 'Connect' : 'Coming Soon';
+            const actionClass = shop ? 'btn-outline' : canConnect ? 'btn-primary' : 'btn-outline';
             const actionHandler = shop
                 ? "router.navigate('shops')"
-                : (canConnect ? `handlers.connectShop('${platform.id}')` : '');
+                : canConnect
+                  ? `handlers.connectShop('${platform.id}')`
+                  : '';
 
             return `
                 <div class="flex items-center justify-between gap-3 p-3 rounded-lg border" style="background: var(--gray-50);">
@@ -2931,14 +3448,18 @@ Object.assign(pages, {
                     <div class="grid grid-cols-2 gap-4">
                         ${livePlatforms.map(renderMarketplaceCard).join('')}
                     </div>
-                    ${comingSoonPlatforms.length ? `
+                    ${
+                        comingSoonPlatforms.length
+                            ? `
                         <div style="margin-top: 20px;">
                             <div class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-3">Coming Soon</div>
                             <div class="grid grid-cols-2 gap-4">
                                 ${comingSoonPlatforms.map(renderMarketplaceCard).join('')}
                             </div>
                         </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                 </div>
             </div>
 
@@ -2956,14 +3477,14 @@ Object.assign(pages, {
                                 <div>
                                     <div class="font-medium">Gmail</div>
                                     <div class="text-xs ${gmailAccount ? 'text-success' : 'text-gray-500'}">
-                                        ${gmailAccount ? `Connected${gmailAccount.email_address ? ` as ${escapeHtml(gmailAccount.email_address)}` : ''}` : (gmailConfigured ? 'Not connected' : 'OAuth not configured')}
+                                        ${gmailAccount ? `Connected${gmailAccount.email_address ? ` as ${escapeHtml(gmailAccount.email_address)}` : ''}` : gmailConfigured ? 'Not connected' : 'OAuth not configured'}
                                     </div>
                                 </div>
                             </div>
-                            <button class="btn btn-sm ${(gmailAccount || !gmailConfigured) ? 'btn-outline' : 'btn-primary'}"
-                                    onclick="${gmailAccount ? "router.navigate('receipt-parser')" : "handlers.connectGmail()"}"
+                            <button class="btn btn-sm ${gmailAccount || !gmailConfigured ? 'btn-outline' : 'btn-primary'}"
+                                    onclick="${gmailAccount ? "router.navigate('receipt-parser')" : 'handlers.connectGmail()'}"
                                     ${!gmailConfigured && !gmailAccount ? 'disabled' : ''}>
-                                ${gmailAccount ? 'Manage' : (gmailConfigured ? 'Connect' : 'Unavailable')}
+                                ${gmailAccount ? 'Manage' : gmailConfigured ? 'Connect' : 'Unavailable'}
                             </button>
                         </div>
                         <div class="flex items-center justify-between p-4 rounded-lg border">
@@ -2972,15 +3493,15 @@ Object.assign(pages, {
                                 <div>
                                     <div class="font-medium">Outlook</div>
                                     <div class="text-xs ${outlookAccount ? 'text-success' : 'text-gray-500'}">
-                                        ${outlookAccount ? `Connected${outlookAccount.email_address ? ` as ${escapeHtml(outlookAccount.email_address)}` : ''}` : (outlookConfigured ? 'Not connected' : 'OAuth not configured')}
+                                        ${outlookAccount ? `Connected${outlookAccount.email_address ? ` as ${escapeHtml(outlookAccount.email_address)}` : ''}` : outlookConfigured ? 'Not connected' : 'OAuth not configured'}
                                     </div>
                                 </div>
                             </div>
-                            <button class="btn btn-sm ${(outlookAccount || !outlookConfigured) ? 'btn-outline' : 'btn-primary'}"
+                            <button class="btn btn-sm ${outlookAccount || !outlookConfigured ? 'btn-outline' : 'btn-primary'}"
                                     aria-label="Connect Outlook"
-                                    onclick="${outlookAccount ? "router.navigate('receipt-parser')" : "handlers.connectOutlook()"}"
+                                    onclick="${outlookAccount ? "router.navigate('receipt-parser')" : 'handlers.connectOutlook()'}"
                                     ${!outlookConfigured && !outlookAccount ? 'disabled' : ''}>
-                                ${outlookAccount ? 'Manage' : (outlookConfigured ? 'Connect' : 'Unavailable')}
+                                ${outlookAccount ? 'Manage' : outlookConfigured ? 'Connect' : 'Unavailable'}
                             </button>
                         </div>
                     </div>
@@ -3065,7 +3586,6 @@ Object.assign(pages, {
 
     // Terms of Service page,
 
-
     webhooks() {
         const endpoints = store.state.webhookEndpoints || [];
         const events = store.state.webhookEvents || [];
@@ -3096,9 +3616,13 @@ Object.assign(pages, {
                     <h2 class="card-title">Webhook Endpoints</h2>
                 </div>
                 <div class="card-body">
-                    ${endpoints.length > 0 ? `
+                    ${
+                        endpoints.length > 0
+                            ? `
                         <div style="display: grid; gap: 16px;">
-                            ${endpoints.map(ep => `
+                            ${endpoints
+                                .map(
+                                    (ep) => `
                                 <div style="padding: 16px; border: 1px solid var(--gray-200); border-radius: 8px; background: var(--gray-50);">
                                     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
                                         <div>
@@ -3117,10 +3641,14 @@ Object.assign(pages, {
                                     <div style="margin-bottom: 12px;">
                                         <span style="font-size: 11px; color: var(--gray-700);">Events:</span>
                                         <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">
-                                            ${(ep.events || []).map(evt => `
+                                            ${(ep.events || [])
+                                                .map(
+                                                    (evt) => `
                                                 <span class="badge badge-secondary" style="font-size: 11px;">${escapeHtml(evt)}</span>
-                                            `).join('')}
-                                            ${(!ep.events || ep.events.length === 0) ? '<span style="font-size: 11px; color: var(--gray-500);">No events subscribed</span>' : ''}
+                                            `,
+                                                )
+                                                .join('')}
+                                            ${!ep.events || ep.events.length === 0 ? '<span style="font-size: 11px; color: var(--gray-500);">No events subscribed</span>' : ''}
                                         </div>
                                     </div>
                                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; padding: 12px; background: white; border-radius: 4px; font-size: 12px;">
@@ -3143,18 +3671,24 @@ Object.assign(pages, {
                                         <button class="btn btn-sm btn-danger" onclick="handlers.deleteWebhookEndpoint('${ep.id}')">Delete</button>
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div style="text-align: center; padding: 40px; color: var(--gray-500);">
                             <p style="margin: 0; font-size: 14px;">No webhook endpoints configured yet.</p>
                             <button class="btn btn-primary" style="margin-top: 12px;" onclick="window.showAddWebhookModal()">Create Your First Endpoint</button>
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
-            ${events.length > 0 ? `
+            ${
+                events.length > 0
+                    ? `
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Recent Events Log</h2>
@@ -3173,7 +3707,10 @@ Object.assign(pages, {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${events.slice(0, 20).map(evt => `
+                                    ${events
+                                        .slice(0, 20)
+                                        .map(
+                                            (evt) => `
                                         <tr style="border-bottom: 1px solid var(--gray-200);">
                                             <td style="padding: 12px;">${new Date(evt.created_at).toLocaleString()}</td>
                                             <td style="padding: 12px;"><strong>${escapeHtml(evt.event_type)}</strong></td>
@@ -3190,23 +3727,27 @@ Object.assign(pages, {
                                                 ${evt.status === 'failed' ? `<button class="btn btn-xs btn-secondary" onclick="handlers.retryWebhookEvent('${evt.id}')">Retry</button>` : ''}
                                             </td>
                                         </tr>
-                                    `).join('')}
+                                    `,
+                                        )
+                                        .join('')}
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
         `;
     },
-
 
     pushNotifications() {
         const subscriptions = store.state.pushSubscriptions || [];
         const settings = store.state.pushSettings || { enabled: true, categories: {} };
         const subscribed = store.state.pushSubscribed || false;
 
-        const supportsNotifications = typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window;
+        const supportsNotifications =
+            typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window;
 
         return `
             <div class="page-header">
@@ -3234,24 +3775,34 @@ Object.assign(pages, {
                         </div>
                     </div>
 
-                    ${supportsNotifications ? `
+                    ${
+                        supportsNotifications
+                            ? `
                         <div style="display: flex; gap: 8px;">
-                            ${subscribed ? `
+                            ${
+                                subscribed
+                                    ? `
                                 <button class="btn btn-danger" onclick="handlers.unsubscribePush()">Disable Push Notifications</button>
-                            ` : `
+                            `
+                                    : `
                                 <button class="btn btn-primary" onclick="handlers.subscribePush()">Enable Push Notifications</button>
-                            `}
+                            `
+                            }
                             <button class="btn btn-secondary" onclick="handlers.testPushNotification()">Send Test Notification</button>
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div style="padding: 12px; background: var(--warning-light); border-left: 4px solid var(--warning); border-radius: 4px; color: var(--gray-800);">
                             <strong>Push notifications are not supported</strong> in your current browser. Please use a modern browser like Chrome, Firefox, or Edge.
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
-            ${subscribed ? `
+            ${
+                subscribed
+                    ? `
                 <div class="card mb-6">
                     <div class="card-header">
                         <h2 class="card-title">Notification Preferences</h2>
@@ -3263,8 +3814,10 @@ Object.assign(pages, {
                                 { key: 'offers', label: 'Offers', description: 'Price changes and offers' },
                                 { key: 'orders', label: 'Orders', description: 'Order status updates' },
                                 { key: 'sync', label: 'Sync', description: 'Inventory sync notifications' },
-                                { key: 'marketing', label: 'Marketing', description: 'Marketing and promotions' }
-                            ].map(cat => `
+                                { key: 'marketing', label: 'Marketing', description: 'Marketing and promotions' },
+                            ]
+                                .map(
+                                    (cat) => `
                                 <div style="padding: 12px; border: 1px solid var(--gray-200); border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
                                     <div>
                                         <div style="font-weight: 600; margin-bottom: 2px;">${cat.label}</div>
@@ -3278,20 +3831,28 @@ Object.assign(pages, {
                                         ">
                                     </label>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
-            ${subscriptions.length > 0 ? `
+            ${
+                subscriptions.length > 0
+                    ? `
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Active Subscriptions</h2>
                     </div>
                     <div class="card-body">
                         <div style="display: grid; gap: 12px;">
-                            ${subscriptions.map(sub => `
+                            ${subscriptions
+                                .map(
+                                    (sub) => `
                                 <div style="padding: 12px; border: 1px solid var(--gray-200); border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
                                     <div style="font-size: 12px;">
                                         <div style="font-weight: 600; margin-bottom: 4px;">Device</div>
@@ -3300,14 +3861,17 @@ Object.assign(pages, {
                                     </div>
                                     <button class="btn btn-sm btn-danger" onclick="handlers.deletePushSubscription('${sub.id}')">Remove</button>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
         `;
     },
 
     // Help & Support page,
-
 });

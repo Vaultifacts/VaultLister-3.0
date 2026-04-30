@@ -6,10 +6,17 @@ function convertPlaceholders(sqlStr) {
     let inString = false;
     for (let i = 0; i < sqlStr.length; i++) {
         const ch = sqlStr[i];
-        if (ch === "'" && !inString) { inString = true; result += ch; }
-        else if (ch === "'" && inString) { inString = false; result += ch; }
-        else if (ch === '?' && !inString) { result += '$' + (++index); }
-        else { result += ch; }
+        if (ch === "'" && !inString) {
+            inString = true;
+            result += ch;
+        } else if (ch === "'" && inString) {
+            inString = false;
+            result += ch;
+        } else if (ch === '?' && !inString) {
+            result += '$' + ++index;
+        } else {
+            result += ch;
+        }
     }
     return result;
 }

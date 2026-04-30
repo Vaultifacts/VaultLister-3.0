@@ -22,15 +22,15 @@ export async function refreshGmailToken(refreshToken) {
         response = await fetch(GOOGLE_TOKEN_URL, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Content-Type': 'application/x-www-form-urlencoded',
             },
             body: new URLSearchParams({
                 client_id: clientId,
                 client_secret: clientSecret,
                 refresh_token: refreshToken,
-                grant_type: 'refresh_token'
+                grant_type: 'refresh_token',
             }),
-            signal: AbortSignal.timeout(15000)
+            signal: AbortSignal.timeout(15000),
         });
     } catch (fetchError) {
         if (fetchError.name === 'TimeoutError' || fetchError.name === 'AbortError') {
@@ -54,19 +54,14 @@ export async function refreshGmailToken(refreshToken) {
  * @returns {Promise<Array>} Array of message IDs
  */
 export async function fetchRecentEmails(accessToken, options = {}) {
-    const {
-        sinceMessageId,
-        senderFilters = [],
-        maxResults = 100,
-        afterDate
-    } = options;
+    const { sinceMessageId, senderFilters = [], maxResults = 100, afterDate } = options;
 
     // Build Gmail search query
     const queryParts = [];
 
     // Filter by senders
     if (senderFilters.length > 0) {
-        const senderQuery = senderFilters.map(s => `from:${s}`).join(' OR ');
+        const senderQuery = senderFilters.map((s) => `from:${s}`).join(' OR ');
         queryParts.push(`(${senderQuery})`);
     }
 
@@ -92,10 +87,10 @@ export async function fetchRecentEmails(accessToken, options = {}) {
     try {
         response = await fetch(url.toString(), {
             headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Accept': 'application/json'
+                Authorization: `Bearer ${accessToken}`,
+                Accept: 'application/json',
             },
-            signal: AbortSignal.timeout(15000)
+            signal: AbortSignal.timeout(15000),
         });
     } catch (fetchError) {
         if (fetchError.name === 'TimeoutError' || fetchError.name === 'AbortError') {
@@ -114,7 +109,7 @@ export async function fetchRecentEmails(accessToken, options = {}) {
 
     // If we have a sinceMessageId, filter out messages we've already seen
     if (sinceMessageId) {
-        const sinceIndex = messages.findIndex(m => m.id === sinceMessageId);
+        const sinceIndex = messages.findIndex((m) => m.id === sinceMessageId);
         if (sinceIndex !== -1) {
             return messages.slice(0, sinceIndex);
         }
@@ -136,10 +131,10 @@ export async function getEmailContent(accessToken, messageId) {
     try {
         response = await fetch(url, {
             headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Accept': 'application/json'
+                Authorization: `Bearer ${accessToken}`,
+                Accept: 'application/json',
             },
-            signal: AbortSignal.timeout(15000)
+            signal: AbortSignal.timeout(15000),
         });
     } catch (fetchError) {
         if (fetchError.name === 'TimeoutError' || fetchError.name === 'AbortError') {
@@ -164,7 +159,7 @@ export async function getEmailContent(accessToken, messageId) {
  */
 export function parseGmailMessage(message) {
     const headers = message.payload?.headers || [];
-    const getHeader = (name) => headers.find(h => h.name.toLowerCase() === name.toLowerCase())?.value;
+    const getHeader = (name) => headers.find((h) => h.name.toLowerCase() === name.toLowerCase())?.value;
 
     const parsed = {
         id: message.id,
@@ -176,9 +171,9 @@ export function parseGmailMessage(message) {
         snippet: message.snippet || '',
         body: {
             text: '',
-            html: ''
+            html: '',
         },
-        attachments: []
+        attachments: [],
     };
 
     // Parse sender email
@@ -233,7 +228,7 @@ function extractParts(part, result) {
             filename: part.filename,
             mimeType: mimeType,
             size: part.body.size || 0,
-            attachmentId: part.body.attachmentId
+            attachmentId: part.body.attachmentId,
         });
     }
 
@@ -244,7 +239,7 @@ function extractParts(part, result) {
             mimeType: mimeType,
             size: part.body.size || 0,
             data: part.body.data, // Already base64
-            inline: true
+            inline: true,
         });
     }
 }
@@ -263,10 +258,10 @@ export async function getAttachment(accessToken, messageId, attachmentId) {
     try {
         response = await fetch(url, {
             headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Accept': 'application/json'
+                Authorization: `Bearer ${accessToken}`,
+                Accept: 'application/json',
             },
-            signal: AbortSignal.timeout(15000)
+            signal: AbortSignal.timeout(15000),
         });
     } catch (fetchError) {
         if (fetchError.name === 'TimeoutError' || fetchError.name === 'AbortError') {
@@ -296,10 +291,10 @@ export async function getUserEmail(accessToken) {
     try {
         response = await fetch(url, {
             headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Accept': 'application/json'
+                Authorization: `Bearer ${accessToken}`,
+                Accept: 'application/json',
             },
-            signal: AbortSignal.timeout(15000)
+            signal: AbortSignal.timeout(15000),
         });
     } catch (fetchError) {
         if (fetchError.name === 'TimeoutError' || fetchError.name === 'AbortError') {
@@ -323,7 +318,7 @@ export async function getUserEmail(accessToken) {
 function decodeBase64Url(data) {
     // Replace URL-safe characters and add padding
     const base64 = data.replace(/-/g, '+').replace(/_/g, '/');
-    const padded = base64 + '='.repeat((4 - base64.length % 4) % 4);
+    const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
 
     try {
         return Buffer.from(padded, 'base64').toString('utf-8');

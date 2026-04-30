@@ -24,12 +24,12 @@ export async function affiliateApplyRouter(ctx) {
             const hourAgo = new Date(now - windowMs).toISOString();
             const recent = await query.get(
                 `SELECT COUNT(*) AS cnt FROM affiliate_applications WHERE ip = $1 AND created_at > $2`,
-                [ip, hourAgo]
+                [ip, hourAgo],
             );
             if (recent && Number(recent.cnt) >= 3) {
                 return {
                     status: 429,
-                    data: { error: 'Too many submissions. Please wait before sending another message.' }
+                    data: { error: 'Too many submissions. Please wait before sending another message.' },
                 };
             }
         } catch (err) {
@@ -51,22 +51,21 @@ export async function affiliateApplyRouter(ctx) {
             return { status: 400, data: { error: 'Promotion plan is required.' } };
         }
 
-        const safeName          = escapeHtml(String(name).trim());
-        const safeEmail         = escapeHtml(String(email).trim());
-        const safeWebsite       = website ? escapeHtml(String(website).trim()) : null;
-        const safeAudienceSize  = audience_size ? escapeHtml(String(audience_size).trim()) : null;
+        const safeName = escapeHtml(String(name).trim());
+        const safeEmail = escapeHtml(String(email).trim());
+        const safeWebsite = website ? escapeHtml(String(website).trim()) : null;
+        const safeAudienceSize = audience_size ? escapeHtml(String(audience_size).trim()) : null;
         const safePromotionPlan = escapeHtml(String(promotion_plan).trim());
 
         // Check for duplicate email
         try {
-            const existing = await query.get(
-                `SELECT id FROM affiliate_applications WHERE email = $1`,
-                [safeEmail]
-            );
+            const existing = await query.get(`SELECT id FROM affiliate_applications WHERE email = $1`, [safeEmail]);
             if (existing) {
                 return {
                     status: 400,
-                    data: { error: "An application from this email already exists. We'll be in touch within 2 business days." }
+                    data: {
+                        error: "An application from this email already exists. We'll be in touch within 2 business days.",
+                    },
                 };
             }
         } catch (err) {
@@ -79,14 +78,14 @@ export async function affiliateApplyRouter(ctx) {
             await query.run(
                 `INSERT INTO affiliate_applications (id, name, email, website, audience_size, promotion_plan, ip)
                  VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-                [id, safeName, safeEmail, safeWebsite, safeAudienceSize, safePromotionPlan, ip || null]
+                [id, safeName, safeEmail, safeWebsite, safeAudienceSize, safePromotionPlan, ip || null],
             );
 
             logger.info('[AffiliateApply] application submitted', null, { id, email: safeEmail });
 
             return {
                 status: 200,
-                data: { message: "Application submitted! We'll review it within 1\u20132 business days." }
+                data: { message: "Application submitted! We'll review it within 1\u20132 business days." },
             };
         } catch (err) {
             logger.error('[AffiliateApply] failed to store application', null, { detail: err?.message });

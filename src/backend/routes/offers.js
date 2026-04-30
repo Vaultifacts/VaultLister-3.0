@@ -6,7 +6,6 @@ import { websocketService } from '../services/websocket.js';
 import { safeJsonParse } from '../shared/utils.js';
 import { canAcceptOffer, recordTransaction, recordCancellation } from '../services/platformSync/cancellationTracker.js';
 
-
 const ALLOWED_RULE_FIELDS = new Set(['name', 'platform', 'conditions', 'actions', 'isEnabled']);
 
 export async function offersRouter(ctx) {
@@ -40,16 +39,17 @@ export async function offersRouter(ctx) {
         const parsedOffset = parseInt(offset);
         params.push(
             Math.min(!isNaN(parsedLimit) && parsedLimit > 0 ? parsedLimit : 50, 200),
-            !isNaN(parsedOffset) && parsedOffset >= 0 ? parsedOffset : 0
+            !isNaN(parsedOffset) && parsedOffset >= 0 ? parsedOffset : 0,
         );
 
         const offers = await query.all(sql, params);
 
-        offers.forEach(offer => {
+        offers.forEach((offer) => {
             offer.item_images = safeJsonParse(offer.item_images, []);
             // Calculate offer percentage
             if (offer.listing_price && offer.offer_amount != null) {
-                offer.percentage = offer.listing_price > 0 ? Math.round((offer.offer_amount / offer.listing_price) * 100) : 0;
+                offer.percentage =
+                    offer.listing_price > 0 ? Math.round((offer.offer_amount / offer.listing_price) * 100) : 0;
             }
         });
 
@@ -68,7 +68,15 @@ export async function offersRouter(ctx) {
         }
 
         const total = Number((await query.get(countSql, countParams))?.count) || 0;
-        const pending = Number((await query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ? AND status = ?', [user.id, 'pending']))?.count) || 0;
+        const pending =
+            Number(
+                (
+                    await query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ? AND status = ?', [
+                        user.id,
+                        'pending',
+                    ])
+                )?.count,
+            ) || 0;
 
         return { status: 200, data: { offers, total, pending } };
     }
@@ -76,14 +84,17 @@ export async function offersRouter(ctx) {
     // GET /api/offers/:id - Get single offer
     if (method === 'GET' && path.match(/^\/[a-f0-9-]+$/)) {
         const id = path.slice(1);
-        const offer = await query.get(`
+        const offer = await query.get(
+            `
             SELECT o.*, l.title as listing_title, l.price as listing_price, l.description,
                    i.images as item_images, i.brand, i.category
             FROM offers o
             LEFT JOIN listings l ON o.listing_id = l.id
             LEFT JOIN inventory i ON l.inventory_id = i.id
             WHERE o.id = ? AND o.user_id = ? AND (i.id IS NULL OR i.status != 'deleted')
-        `, [id, user.id]);
+        `,
+            [id, user.id],
+        );
 
         if (!offer) {
             return { status: 404, data: { error: 'Offer not found' } };
@@ -107,7 +118,12 @@ export async function offersRouter(ctx) {
 
         // Cancellation rate check — block accept if rate is too high (Gap #14)
         if (!canAcceptOffer(preCheck.platform, user.id)) {
-            return { status: 429, data: { error: `Cancellation rate too high on ${preCheck.platform}. Accepting more offers would risk account suspension. Resolve inventory sync issues first.` } };
+            return {
+                status: 429,
+                data: {
+                    error: `Cancellation rate too high on ${preCheck.platform}. Accepting more offers would risk account suspension. Resolve inventory sync issues first.`,
+                },
+            };
         }
 
         let offer;
@@ -116,7 +132,7 @@ export async function offersRouter(ctx) {
                 // Lock the row to prevent concurrent accept/decline/counter
                 const locked = await tx.get(
                     'SELECT id, status, listing_id, platform, buyer_username, offer_amount FROM offers WHERE id = ? AND user_id = ? FOR UPDATE',
-                    [id, user.id]
+                    [id, user.id],
                 );
 
                 if (!locked) {
@@ -132,7 +148,7 @@ export async function offersRouter(ctx) {
 
                 await tx.run(
                     'UPDATE offers SET status = ?, responded_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
-                    ['accepted', id, user.id]
+                    ['accepted', id, user.id],
                 );
 
                 // Create sale atomically within the same transaction
@@ -140,28 +156,40 @@ export async function offersRouter(ctx) {
                 await tx.run(
                     `INSERT INTO sales (id, user_id, listing_id, platform, buyer_username, sale_price, platform_fee, shipping_cost, customer_shipping_cost, seller_shipping_cost, item_cost, net_profit, status, created_at)
                      VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0, 0, 0, ?, 'confirmed', CURRENT_TIMESTAMP)`,
-                    [saleId, user.id, locked.listing_id, locked.platform, locked.buyer_username, locked.offer_amount, locked.offer_amount]
+                    [
+                        saleId,
+                        user.id,
+                        locked.listing_id,
+                        locked.platform,
+                        locked.buyer_username,
+                        locked.offer_amount,
+                        locked.offer_amount,
+                    ],
                 );
                 await tx.run(
                     `UPDATE listings SET status = 'sold', updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status != 'sold'`,
-                    [locked.listing_id]
+                    [locked.listing_id],
                 );
 
                 return locked;
             });
         } catch (err) {
             if (err.message === 'OFFER_NOT_FOUND') return { status: 404, data: { error: 'Offer not found' } };
-            if (err.message === 'OFFER_ALREADY_PROCESSED') return { status: 409, data: { error: 'Offer has already been processed' } };
+            if (err.message === 'OFFER_ALREADY_PROCESSED')
+                return { status: 409, data: { error: 'Offer has already been processed' } };
             logger.error('[Offers] Accept transaction failed', user?.id, { detail: err?.message });
             throw err;
         }
 
         // Queue automation task to accept on platform
         const taskId = uuidv4();
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO tasks (id, user_id, type, payload, status)
             VALUES (?, ?, ?, ?, ?)
-        `, [taskId, user.id, 'accept_offer', JSON.stringify({ offerId: id, platform: offer.platform }), 'pending']);
+        `,
+            [taskId, user.id, 'accept_offer', JSON.stringify({ offerId: id, platform: offer.platform }), 'pending'],
+        );
 
         websocketService.notifyOfferAccepted(user.id, offer);
         recordTransaction(offer.platform, user.id);
@@ -185,7 +213,7 @@ export async function offersRouter(ctx) {
                 // Lock the row to prevent concurrent accept/decline/counter
                 const locked = await tx.get(
                     'SELECT id, status, platform FROM offers WHERE id = ? AND user_id = ? FOR UPDATE',
-                    [id, user.id]
+                    [id, user.id],
                 );
 
                 if (!locked) {
@@ -201,24 +229,28 @@ export async function offersRouter(ctx) {
 
                 await tx.run(
                     'UPDATE offers SET status = ?, responded_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
-                    ['declined', id, user.id]
+                    ['declined', id, user.id],
                 );
 
                 return locked;
             });
         } catch (err) {
             if (err.message === 'OFFER_NOT_FOUND') return { status: 404, data: { error: 'Offer not found' } };
-            if (err.message === 'OFFER_ALREADY_PROCESSED') return { status: 409, data: { error: 'Offer has already been processed' } };
+            if (err.message === 'OFFER_ALREADY_PROCESSED')
+                return { status: 409, data: { error: 'Offer has already been processed' } };
             logger.error('[Offers] Decline transaction failed', user?.id, { detail: err?.message });
             throw err;
         }
 
         // Queue automation task
         const taskId = uuidv4();
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO tasks (id, user_id, type, payload, status)
             VALUES (?, ?, ?, ?, ?)
-        `, [taskId, user.id, 'decline_offer', JSON.stringify({ offerId: id, platform: offer.platform }), 'pending']);
+        `,
+            [taskId, user.id, 'decline_offer', JSON.stringify({ offerId: id, platform: offer.platform }), 'pending'],
+        );
 
         websocketService.notifyOfferDeclined(user.id, offer);
 
@@ -249,7 +281,7 @@ export async function offersRouter(ctx) {
                 // Lock the row to prevent concurrent accept/decline/counter
                 const locked = await tx.get(
                     'SELECT id, status, platform FROM offers WHERE id = ? AND user_id = ? FOR UPDATE',
-                    [id, user.id]
+                    [id, user.id],
                 );
 
                 if (!locked) {
@@ -265,24 +297,34 @@ export async function offersRouter(ctx) {
 
                 await tx.run(
                     'UPDATE offers SET status = ?, counter_amount = ?, responded_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
-                    ['countered', amount, id, user.id]
+                    ['countered', amount, id, user.id],
                 );
 
                 return locked;
             });
         } catch (err) {
             if (err.message === 'OFFER_NOT_FOUND') return { status: 404, data: { error: 'Offer not found' } };
-            if (err.message === 'OFFER_ALREADY_PROCESSED') return { status: 409, data: { error: 'Offer has already been processed' } };
+            if (err.message === 'OFFER_ALREADY_PROCESSED')
+                return { status: 409, data: { error: 'Offer has already been processed' } };
             logger.error('[Offers] Counter transaction failed', user?.id, { detail: err?.message });
             throw err;
         }
 
         // Queue automation task
         const taskId = uuidv4();
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO tasks (id, user_id, type, payload, status)
             VALUES (?, ?, ?, ?, ?)
-        `, [taskId, user.id, 'counter_offer', JSON.stringify({ offerId: id, amount, platform: offer.platform }), 'pending']);
+        `,
+            [
+                taskId,
+                user.id,
+                'counter_offer',
+                JSON.stringify({ offerId: id, amount, platform: offer.platform }),
+                'pending',
+            ],
+        );
 
         websocketService.notify(user.id, { type: 'offer.countered', offer });
 
@@ -310,7 +352,7 @@ export async function offersRouter(ctx) {
         await query.run(
             `INSERT INTO offers (id, user_id, listing_id, platform, offer_amount, buyer_username, status, expires_at)
              VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)`,
-            [id, user.id, listing_id, platform, offer_amount, buyer_username || 'e2e_buyer', expires]
+            [id, user.id, listing_id, platform, offer_amount, buyer_username || 'e2e_buyer', expires],
         );
 
         const offer = await query.get('SELECT * FROM offers WHERE id = ? AND user_id = ?', [id, user.id]);
@@ -319,12 +361,12 @@ export async function offersRouter(ctx) {
 
     // GET /api/offers/rules - Get offer rules
     if (method === 'GET' && path === '/rules') {
-        const rules = await query.all(
-            'SELECT * FROM automation_rules WHERE user_id = ? AND type = ?',
-            [user.id, 'offer']
-        );
+        const rules = await query.all('SELECT * FROM automation_rules WHERE user_id = ? AND type = ?', [
+            user.id,
+            'offer',
+        ]);
 
-        rules.forEach(rule => {
+        rules.forEach((rule) => {
             rule.conditions = safeJsonParse(rule.conditions, {});
             rule.actions = safeJsonParse(rule.actions, {});
         });
@@ -342,14 +384,22 @@ export async function offersRouter(ctx) {
 
         const id = uuidv4();
 
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO automation_rules (id, user_id, name, type, platform, conditions, actions, is_enabled)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        `, [
-            id, user.id, name, 'offer', platform,
-            JSON.stringify(conditions), JSON.stringify(actions),
-            isEnabled !== false ? 1 : 0
-        ]);
+        `,
+            [
+                id,
+                user.id,
+                name,
+                'offer',
+                platform,
+                JSON.stringify(conditions),
+                JSON.stringify(actions),
+                isEnabled !== false ? 1 : 0,
+            ],
+        );
 
         const rule = await query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [id, user.id]);
         rule.conditions = safeJsonParse(rule.conditions, []);
@@ -362,10 +412,11 @@ export async function offersRouter(ctx) {
     if (method === 'PUT' && path.match(/^\/rules\/[a-f0-9-]+$/)) {
         const id = path.split('/')[2];
 
-        const existing = await query.get(
-            'SELECT * FROM automation_rules WHERE id = ? AND user_id = ? AND type = ?',
-            [id, user.id, 'offer']
-        );
+        const existing = await query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ? AND type = ?', [
+            id,
+            user.id,
+            'offer',
+        ]);
 
         if (!existing) {
             return { status: 404, data: { error: 'Rule not found' } };
@@ -405,7 +456,7 @@ export async function offersRouter(ctx) {
             values.push(id, user.id);
             await query.run(
                 `UPDATE automation_rules SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
-                values
+                values,
             );
         }
 
@@ -420,10 +471,11 @@ export async function offersRouter(ctx) {
     if (method === 'DELETE' && path.match(/^\/rules\/[a-f0-9-]+$/)) {
         const id = path.split('/')[2];
 
-        const existing = await query.get(
-            'SELECT * FROM automation_rules WHERE id = ? AND user_id = ? AND type = ?',
-            [id, user.id, 'offer']
-        );
+        const existing = await query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ? AND type = ?', [
+            id,
+            user.id,
+            'offer',
+        ]);
 
         if (!existing) {
             return { status: 404, data: { error: 'Rule not found' } };
@@ -437,17 +489,51 @@ export async function offersRouter(ctx) {
     // GET /api/offers/stats - Get offer statistics
     if (method === 'GET' && path === '/stats') {
         const stats = {
-            total: Number((await query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ?', [user.id]))?.count) || 0,
-            pending: Number((await query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ? AND status = ?', [user.id, 'pending']))?.count) || 0,
-            accepted: Number((await query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ? AND status = ?', [user.id, 'accepted']))?.count) || 0,
-            declined: Number((await query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ? AND status = ?', [user.id, 'declined']))?.count) || 0,
-            avgOfferPercentage: Number((await query.get(`
+            total:
+                Number((await query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ?', [user.id]))?.count) ||
+                0,
+            pending:
+                Number(
+                    (
+                        await query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ? AND status = ?', [
+                            user.id,
+                            'pending',
+                        ])
+                    )?.count,
+                ) || 0,
+            accepted:
+                Number(
+                    (
+                        await query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ? AND status = ?', [
+                            user.id,
+                            'accepted',
+                        ])
+                    )?.count,
+                ) || 0,
+            declined:
+                Number(
+                    (
+                        await query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ? AND status = ?', [
+                            user.id,
+                            'declined',
+                        ])
+                    )?.count,
+                ) || 0,
+            avgOfferPercentage:
+                Number(
+                    (
+                        await query.get(
+                            `
                 SELECT AVG(o.offer_amount * 100.0 / l.price) as avg
                 FROM offers o
                 JOIN listings l ON o.listing_id = l.id
                 WHERE o.user_id = ?
-            `, [user.id]))?.avg) || 0,
-            acceptRate: 0
+            `,
+                            [user.id],
+                        )
+                    )?.avg,
+                ) || 0,
+            acceptRate: 0,
         };
 
         const responded = stats.accepted + stats.declined;

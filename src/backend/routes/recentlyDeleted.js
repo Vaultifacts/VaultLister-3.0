@@ -12,15 +12,7 @@ export async function recentlyDeletedRouter(ctx) {
     try {
         // GET / - List deleted items with pagination and filters
         if (method === 'GET' && path === '/') {
-            const {
-                type,
-                reason,
-                search,
-                startDate,
-                endDate,
-                page = '1',
-                limit = '50'
-            } = queryParams;
+            const { type, reason, search, startDate, endDate, page = '1', limit = '50' } = queryParams;
 
             const pageNum = parseInt(page, 10);
             const limitNum = Math.min(parseInt(limit, 10), 200);
@@ -70,9 +62,15 @@ export async function recentlyDeletedRouter(ctx) {
             const items = await query.all(sql, params);
 
             // Parse original_data JSON for each item
-            const parsedItems = items.map(item => ({
+            const parsedItems = items.map((item) => ({
                 ...item,
-                original_data: (() => { try { return JSON.parse(item.original_data); } catch { return {}; } })()
+                original_data: (() => {
+                    try {
+                        return JSON.parse(item.original_data);
+                    } catch {
+                        return {};
+                    }
+                })(),
             }));
 
             return {
@@ -83,33 +81,42 @@ export async function recentlyDeletedRouter(ctx) {
                         page: pageNum,
                         limit: limitNum,
                         total,
-                        totalPages: Math.ceil(total / limitNum)
-                    }
-                }
+                        totalPages: Math.ceil(total / limitNum),
+                    },
+                },
             };
         }
 
         // GET /stats - Return counts by type and reason
         if (method === 'GET' && path === '/stats') {
-            const byType = await query.all(`
+            const byType = await query.all(
+                `
                 SELECT item_type, COUNT(*) as count
                 FROM deleted_items
                 WHERE user_id = ?
                 GROUP BY item_type
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
-            const byReason = await query.all(`
+            const byReason = await query.all(
+                `
                 SELECT deletion_reason, COUNT(*) as count
                 FROM deleted_items
                 WHERE user_id = ?
                 GROUP BY deletion_reason
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
-            const total = await query.get(`
+            const total = await query.get(
+                `
                 SELECT COUNT(*) as count
                 FROM deleted_items
                 WHERE user_id = ?
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             return {
                 status: 200,
@@ -122,8 +129,8 @@ export async function recentlyDeletedRouter(ctx) {
                     byReason: byReason.reduce((acc, row) => {
                         acc[row.deletion_reason] = row.count;
                         return acc;
-                    }, {})
-                }
+                    }, {}),
+                },
             };
         }
 
@@ -131,10 +138,10 @@ export async function recentlyDeletedRouter(ctx) {
         if (method === 'POST' && path.match(/^\/[^/]+\/restore$/)) {
             const id = path.split('/')[1];
 
-            const deletedItem = await query.get(
-                'SELECT * FROM deleted_items WHERE id = ? AND user_id = ?',
-                [id, user.id]
-            );
+            const deletedItem = await query.get('SELECT * FROM deleted_items WHERE id = ? AND user_id = ?', [
+                id,
+                user.id,
+            ]);
 
             if (!deletedItem) {
                 return { status: 404, data: { error: 'Deleted item not found' } };
@@ -154,12 +161,12 @@ export async function recentlyDeletedRouter(ctx) {
 
             // Build insert query — validate column names to prevent injection
             const VALID_IDENTIFIER = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
-            const columns = Object.keys(originalData).filter(col => VALID_IDENTIFIER.test(col));
+            const columns = Object.keys(originalData).filter((col) => VALID_IDENTIFIER.test(col));
             if (columns.length === 0) {
                 return { status: 400, data: { error: 'No valid columns to restore' } };
             }
             const placeholders = columns.map(() => '?').join(', ');
-            const values = columns.map(col => originalData[col]);
+            const values = columns.map((col) => originalData[col]);
 
             const insertSql = `
                 INSERT INTO ${tableName} (${columns.join(', ')})
@@ -176,14 +183,14 @@ export async function recentlyDeletedRouter(ctx) {
                     status: 200,
                     data: {
                         message: 'Item restored successfully',
-                        item: originalData
-                    }
+                        item: originalData,
+                    },
                 };
             } catch (error) {
                 logger.error('[RecentlyDeleted] Error restoring item', user?.id, { detail: error?.message });
                 return {
                     status: 500,
-                    data: { error: 'Failed to restore item' }
+                    data: { error: 'Failed to restore item' },
                 };
             }
         }
@@ -204,10 +211,10 @@ export async function recentlyDeletedRouter(ctx) {
 
             for (const id of body.ids) {
                 try {
-                    const deletedItem = await query.get(
-                        'SELECT * FROM deleted_items WHERE id = ? AND user_id = ?',
-                        [id, user.id]
-                    );
+                    const deletedItem = await query.get('SELECT * FROM deleted_items WHERE id = ? AND user_id = ?', [
+                        id,
+                        user.id,
+                    ]);
 
                     if (!deletedItem) {
                         failed++;
@@ -233,14 +240,14 @@ export async function recentlyDeletedRouter(ctx) {
 
                     // Validate column names to prevent injection
                     const VALID_IDENTIFIER = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
-                    const columns = Object.keys(originalData).filter(col => VALID_IDENTIFIER.test(col));
+                    const columns = Object.keys(originalData).filter((col) => VALID_IDENTIFIER.test(col));
                     if (columns.length === 0) {
                         failed++;
                         errors.push({ id, error: 'No valid columns to restore' });
                         continue;
                     }
                     const placeholders = columns.map(() => '?').join(', ');
-                    const values = columns.map(col => originalData[col]);
+                    const values = columns.map((col) => originalData[col]);
 
                     const insertSql = `
                         INSERT INTO ${tableName} (${columns.join(', ')})
@@ -251,7 +258,9 @@ export async function recentlyDeletedRouter(ctx) {
                     await query.run('DELETE FROM deleted_items WHERE id = ? AND user_id = ?', [id, user.id]);
                     restored++;
                 } catch (error) {
-                    logger.error('[RecentlyDeleted] Error restoring item in bulk restore', user?.id, { detail: error?.message });
+                    logger.error('[RecentlyDeleted] Error restoring item in bulk restore', user?.id, {
+                        detail: error?.message,
+                    });
                     failed++;
                     errors.push({ id, error: 'Failed to restore item' });
                 }
@@ -262,8 +271,8 @@ export async function recentlyDeletedRouter(ctx) {
                 data: {
                     restored,
                     failed,
-                    errors
-                }
+                    errors,
+                },
             };
         }
 
@@ -271,10 +280,7 @@ export async function recentlyDeletedRouter(ctx) {
         if (method === 'DELETE' && path.match(/^\/[^/]+$/)) {
             const id = path.split('/')[1];
 
-            const result = await query.run(
-                'DELETE FROM deleted_items WHERE id = ? AND user_id = ?',
-                [id, user.id]
-            );
+            const result = await query.run('DELETE FROM deleted_items WHERE id = ? AND user_id = ?', [id, user.id]);
 
             if (result.changes === 0) {
                 return { status: 404, data: { error: 'Deleted item not found' } };
@@ -282,7 +288,7 @@ export async function recentlyDeletedRouter(ctx) {
 
             return {
                 status: 200,
-                data: { message: 'Item permanently deleted' }
+                data: { message: 'Item permanently deleted' },
             };
         }
 
@@ -297,17 +303,17 @@ export async function recentlyDeletedRouter(ctx) {
             }
 
             const placeholders = body.ids.map(() => '?').join(', ');
-            const result = await query.run(
-                `DELETE FROM deleted_items WHERE id IN (${placeholders}) AND user_id = ?`,
-                [...body.ids, user.id]
-            );
+            const result = await query.run(`DELETE FROM deleted_items WHERE id IN (${placeholders}) AND user_id = ?`, [
+                ...body.ids,
+                user.id,
+            ]);
 
             return {
                 status: 200,
                 data: {
                     message: 'Items permanently deleted',
-                    count: result.changes
-                }
+                    count: result.changes,
+                },
             };
         }
 
@@ -316,27 +322,26 @@ export async function recentlyDeletedRouter(ctx) {
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-            const result = await query.run(
-                'DELETE FROM deleted_items WHERE user_id = ? AND deleted_at < ?',
-                [user.id, thirtyDaysAgo.toISOString()]
-            );
+            const result = await query.run('DELETE FROM deleted_items WHERE user_id = ? AND deleted_at < ?', [
+                user.id,
+                thirtyDaysAgo.toISOString(),
+            ]);
 
             return {
                 status: 200,
                 data: {
                     message: 'Cleanup completed',
-                    deleted: result.changes
-                }
+                    deleted: result.changes,
+                },
             };
         }
 
         return { status: 404, data: { error: 'Not found' } };
-
     } catch (error) {
         logger.error('[RecentlyDeleted] Recently Deleted Router Error', user?.id, { detail: error?.message });
         return {
             status: 500,
-            data: { error: 'Internal server error' }
+            data: { error: 'Internal server error' },
         };
     }
 }
@@ -344,11 +349,11 @@ export async function recentlyDeletedRouter(ctx) {
 // Helper function to map item_type to table name
 function getTableName(itemType) {
     const typeToTable = {
-        'inventory': 'inventory',
-        'listing': 'listings',
-        'order': 'orders',
-        'offer': 'offers',
-        'checklist': 'checklists'
+        inventory: 'inventory',
+        listing: 'listings',
+        order: 'orders',
+        offer: 'offers',
+        checklist: 'checklists',
     };
     return typeToTable[itemType] || null;
 }

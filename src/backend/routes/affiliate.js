@@ -12,7 +12,8 @@ export async function affiliateRouter(ctx) {
     // Landing Pages Routes
     if (path === '/landing-pages' && method === 'GET') {
         try {
-            const landingPages = await query.all(`
+            const landingPages = await query.all(
+                `
                 SELECT
                     id,
                     slug,
@@ -28,7 +29,9 @@ export async function affiliateRouter(ctx) {
                 FROM affiliate_landing_pages
                 WHERE user_id = ?
                 ORDER BY created_at DESC
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             return { status: 200, data: landingPages };
         } catch (error) {
@@ -58,14 +61,20 @@ export async function affiliateRouter(ctx) {
 
             // Validate slug format (alphanumeric, hyphens, underscores only)
             if (!/^[a-zA-Z0-9_-]+$/.test(slug)) {
-                return { status: 400, data: { error: 'Slug may only contain letters, numbers, hyphens, and underscores' } };
+                return {
+                    status: 400,
+                    data: { error: 'Slug may only contain letters, numbers, hyphens, and underscores' },
+                };
             }
 
             // Check if slug already exists for this user
-            const existing = await query.all(`
+            const existing = await query.all(
+                `
                 SELECT id FROM affiliate_landing_pages
                 WHERE user_id = ? AND slug = ?
-            `, [user.id, slug]);
+            `,
+                [user.id, slug],
+            );
 
             if (existing.length > 0) {
                 return { status: 400, data: { error: 'Landing page with this slug already exists' } };
@@ -74,21 +83,34 @@ export async function affiliateRouter(ctx) {
             const id = nanoid();
             const now = new Date().toISOString();
 
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO affiliate_landing_pages (
                     id, user_id, slug, title, description,
                     utm_source, utm_medium, utm_campaign,
                     visits, conversions, created_at, updated_at
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?, ?)
-            `, [
-                id, user.id, slug, title, description || null,
-                utm_source || null, utm_medium || null, utm_campaign || null,
-                now, now
-            ]);
+            `,
+                [
+                    id,
+                    user.id,
+                    slug,
+                    title,
+                    description || null,
+                    utm_source || null,
+                    utm_medium || null,
+                    utm_campaign || null,
+                    now,
+                    now,
+                ],
+            );
 
-            const newPage = await query.get(`
+            const newPage = await query.get(
+                `
                 SELECT * FROM affiliate_landing_pages WHERE id = ?
-            `, [id]);
+            `,
+                [id],
+            );
 
             return { status: 201, data: newPage };
         } catch (error) {
@@ -103,10 +125,13 @@ export async function affiliateRouter(ctx) {
             const { slug, title, description, utm_source, utm_medium, utm_campaign } = body;
 
             // Verify ownership
-            const existing = await query.all(`
+            const existing = await query.all(
+                `
                 SELECT id FROM affiliate_landing_pages
                 WHERE id = ? AND user_id = ?
-            `, [id, user.id]);
+            `,
+                [id, user.id],
+            );
 
             if (existing.length === 0) {
                 return { status: 404, data: { error: 'Landing page not found' } };
@@ -114,10 +139,13 @@ export async function affiliateRouter(ctx) {
 
             // Check if new slug conflicts with another page
             if (slug) {
-                const slugConflict = await query.all(`
+                const slugConflict = await query.all(
+                    `
                     SELECT id FROM affiliate_landing_pages
                     WHERE user_id = ? AND slug = ? AND id != ?
-                `, [user.id, slug, id]);
+                `,
+                    [user.id, slug, id],
+                );
 
                 if (slugConflict.length > 0) {
                     return { status: 400, data: { error: 'Landing page with this slug already exists' } };
@@ -126,7 +154,8 @@ export async function affiliateRouter(ctx) {
 
             const now = new Date().toISOString();
 
-            await query.run(`
+            await query.run(
+                `
                 UPDATE affiliate_landing_pages
                 SET slug = COALESCE(?, slug),
                     title = COALESCE(?, title),
@@ -136,15 +165,25 @@ export async function affiliateRouter(ctx) {
                     utm_campaign = ?,
                     updated_at = ?
                 WHERE id = ?
-            `, [
-                slug || null, title || null, description || null,
-                utm_source || null, utm_medium || null, utm_campaign || null,
-                now, id
-            ]);
+            `,
+                [
+                    slug || null,
+                    title || null,
+                    description || null,
+                    utm_source || null,
+                    utm_medium || null,
+                    utm_campaign || null,
+                    now,
+                    id,
+                ],
+            );
 
-            const updated = await query.get(`
+            const updated = await query.get(
+                `
                 SELECT * FROM affiliate_landing_pages WHERE id = ?
-            `, [id]);
+            `,
+                [id],
+            );
 
             return { status: 200, data: updated };
         } catch (error) {
@@ -158,18 +197,24 @@ export async function affiliateRouter(ctx) {
             const id = path.split('/').pop();
 
             // Verify ownership
-            const existing = await query.all(`
+            const existing = await query.all(
+                `
                 SELECT id FROM affiliate_landing_pages
                 WHERE id = ? AND user_id = ?
-            `, [id, user.id]);
+            `,
+                [id, user.id],
+            );
 
             if (existing.length === 0) {
                 return { status: 404, data: { error: 'Landing page not found' } };
             }
 
-            const result = await query.run(`
+            const result = await query.run(
+                `
                 DELETE FROM affiliate_landing_pages WHERE id = ? AND user_id = ?
-            `, [id, user.id]);
+            `,
+                [id, user.id],
+            );
 
             if (result.changes === 0) {
                 return { status: 404, data: { error: 'Landing page not found' } };
@@ -201,11 +246,14 @@ export async function affiliateRouter(ctx) {
     if (path === '/my-tier' && method === 'GET') {
         try {
             // Count unique referrals for this user
-            const referralCount = await query.get(`
+            const referralCount = await query.get(
+                `
                 SELECT COUNT(DISTINCT referred_user_id) as count
                 FROM affiliate_commissions
                 WHERE affiliate_user_id = ?
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             const count = referralCount?.count || 0;
 
@@ -234,8 +282,8 @@ export async function affiliateRouter(ctx) {
                 status: 200,
                 data: {
                     tier: currentTier,
-                    referralCount: count
-                }
+                    referralCount: count,
+                },
             };
         } catch (error) {
             logger.error('[Affiliate] Error fetching user tier', user?.id, { detail: error.message });
@@ -247,7 +295,8 @@ export async function affiliateRouter(ctx) {
     if (path === '/earnings' && method === 'GET') {
         try {
             // Get total earnings by status
-            const summary = await query.all(`
+            const summary = await query.all(
+                `
                 SELECT
                     status,
                     SUM(amount) as total,
@@ -255,10 +304,13 @@ export async function affiliateRouter(ctx) {
                 FROM affiliate_commissions
                 WHERE affiliate_user_id = ?
                 GROUP BY status
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             // Get earnings by month
-            const byMonth = await query.all(`
+            const byMonth = await query.all(
+                `
                 SELECT
                     TO_CHAR(created_at, 'YYYY-MM') as month,
                     SUM(amount) as total,
@@ -268,30 +320,32 @@ export async function affiliateRouter(ctx) {
                 WHERE affiliate_user_id = ?
                 GROUP BY month, status
                 ORDER BY month DESC
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             // Calculate totals
             const totals = {
                 pending: 0,
                 approved: 0,
                 paid: 0,
-                total: 0
+                total: 0,
             };
 
-            summary.forEach(item => {
+            summary.forEach((item) => {
                 totals[item.status] = parseFloat(item.total || 0);
                 totals.total += parseFloat(item.total || 0);
             });
 
             // Format monthly data
             const monthlyEarnings = {};
-            byMonth.forEach(item => {
+            byMonth.forEach((item) => {
                 if (!monthlyEarnings[item.month]) {
                     monthlyEarnings[item.month] = {
                         pending: 0,
                         approved: 0,
                         paid: 0,
-                        total: 0
+                        total: 0,
                     };
                 }
                 monthlyEarnings[item.month][item.status] = parseFloat(item.total || 0);
@@ -302,8 +356,8 @@ export async function affiliateRouter(ctx) {
                 status: 200,
                 data: {
                     summary: totals,
-                    byMonth: monthlyEarnings
-                }
+                    byMonth: monthlyEarnings,
+                },
             };
         } catch (error) {
             logger.error('[Affiliate] Error fetching earnings', user?.id, { detail: error.message });
@@ -391,9 +445,9 @@ export async function affiliateRouter(ctx) {
                     pagination: {
                         total,
                         limit: parseInt(limit),
-                        offset: parseInt(offset)
-                    }
-                }
+                        offset: parseInt(offset),
+                    },
+                },
             };
         } catch (error) {
             logger.error('[Affiliate] Error fetching commissions', user?.id, { detail: error.message });
@@ -404,40 +458,55 @@ export async function affiliateRouter(ctx) {
     if (path === '/stats' && method === 'GET') {
         try {
             // Total visits across all landing pages
-            const visitsResult = await query.get(`
+            const visitsResult = await query.get(
+                `
                 SELECT COALESCE(SUM(visits), 0) as total_visits
                 FROM affiliate_landing_pages
                 WHERE user_id = ?
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             // Total conversions across all landing pages
-            const conversionsResult = await query.get(`
+            const conversionsResult = await query.get(
+                `
                 SELECT COALESCE(SUM(conversions), 0) as total_conversions
                 FROM affiliate_landing_pages
                 WHERE user_id = ?
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             // Total unique referred users (signups)
-            const signupsResult = await query.get(`
+            const signupsResult = await query.get(
+                `
                 SELECT COUNT(DISTINCT referred_user_id) as total_signups
                 FROM affiliate_commissions
                 WHERE affiliate_user_id = ?
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             // Active users (users who have generated commissions)
-            const activeUsersResult = await query.get(`
+            const activeUsersResult = await query.get(
+                `
                 SELECT COUNT(DISTINCT referred_user_id) as active_users
                 FROM affiliate_commissions
                 WHERE affiliate_user_id = ?
                 AND status IN ('approved', 'paid')
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             // Total revenue generated
-            const revenueResult = await query.get(`
+            const revenueResult = await query.get(
+                `
                 SELECT COALESCE(SUM(amount), 0) as total_revenue
                 FROM affiliate_commissions
                 WHERE affiliate_user_id = ?
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             const stats = {
                 totalVisits: visitsResult?.total_visits || 0,
@@ -445,9 +514,14 @@ export async function affiliateRouter(ctx) {
                 totalSignups: signupsResult?.total_signups || 0,
                 activeUsers: activeUsersResult?.active_users || 0,
                 totalRevenue: parseFloat(revenueResult?.total_revenue || 0),
-                conversionRate: visitsResult?.total_visits > 0
-                    ? parseFloat(((conversionsResult?.total_conversions || 0) / visitsResult.total_visits * 100).toFixed(2))
-                    : 0
+                conversionRate:
+                    visitsResult?.total_visits > 0
+                        ? parseFloat(
+                              (((conversionsResult?.total_conversions || 0) / visitsResult.total_visits) * 100).toFixed(
+                                  2,
+                              ),
+                          )
+                        : 0,
             };
 
             return { status: 200, data: stats };
@@ -460,21 +534,26 @@ export async function affiliateRouter(ctx) {
     // POST /api/affiliate/apply - Apply to become an affiliate
     if (method === 'POST' && path === '/apply') {
         try {
-            const existingUser = await query.get(`SELECT is_affiliate, affiliate_applied_at FROM users WHERE id = ?`, [user.id]);
+            const existingUser = await query.get(`SELECT is_affiliate, affiliate_applied_at FROM users WHERE id = ?`, [
+                user.id,
+            ]);
 
             if (existingUser?.is_affiliate) {
                 return { status: 400, data: { error: 'You are already an affiliate' } };
             }
             if (existingUser?.affiliate_applied_at) {
-                return { status: 400, data: { error: 'Application already submitted — we will review it within 2 business days' } };
+                return {
+                    status: 400,
+                    data: { error: 'Application already submitted — we will review it within 2 business days' },
+                };
             }
 
-            await query.run(
-                `UPDATE users SET affiliate_applied_at = NOW() WHERE id = ?`,
-                [user.id]
-            );
+            await query.run(`UPDATE users SET affiliate_applied_at = NOW() WHERE id = ?`, [user.id]);
 
-            return { status: 200, data: { message: 'Application submitted! We will review it within 2 business days.' } };
+            return {
+                status: 200,
+                data: { message: 'Application submitted! We will review it within 2 business days.' },
+            };
         } catch (error) {
             logger.error('[Affiliate] Error submitting application', user?.id, { detail: error?.message });
             return { status: 500, data: { error: 'Failed to submit application' } };

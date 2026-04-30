@@ -6,183 +6,189 @@ import redis from '../services/redis.js';
 
 export async function barcodeRouter(ctx) {
     try {
-    const { method, path, body, query: queryParams, user } = ctx;
+        const { method, path, body, query: queryParams, user } = ctx;
 
-    // GET /api/barcode/lookup/:code - Look up barcode
-    const lookupMatch = path.match(/^\/lookup\/([0-9]+)$/);
-    if (method === 'GET' && lookupMatch) {
-        const barcode = lookupMatch[1];
+        // GET /api/barcode/lookup/:code - Look up barcode
+        const lookupMatch = path.match(/^\/lookup\/([0-9]+)$/);
+        if (method === 'GET' && lookupMatch) {
+            const barcode = lookupMatch[1];
 
-        // Check cache first
-        const cached = await redis.getJson('cache:barcode:' + barcode);
-        if (cached) {
+            // Check cache first
+            const cached = await redis.getJson('cache:barcode:' + barcode);
+            if (cached) {
+                return {
+                    status: 200,
+                    data: {
+                        ...cached,
+                        cached: true,
+                    },
+                };
+            }
+
+            // Check local database for previously saved barcodes
+            const localResult = await query.get(
+                `
+            SELECT * FROM barcode_lookups WHERE barcode = ?
+        `,
+                [barcode],
+            );
+
+            if (localResult) {
+                const data = {
+                    barcode,
+                    title: localResult.title,
+                    brand: localResult.brand,
+                    category: localResult.category,
+                    description: localResult.description,
+                    image_url: localResult.image_url,
+                    source: 'local',
+                };
+                await redis.setJson('cache:barcode:' + barcode, data, 86400);
+                return {
+                    status: 200,
+                    data: { ...data, cached: false },
+                };
+            }
+
+            // Try external API lookup (using free UPC Database API)
+            try {
+                const externalData = await lookupExternalBarcode(barcode);
+                if (externalData) {
+                    // Save to local database for future lookups
+                    saveBarcodeLookup(barcode, externalData);
+                    await redis.setJson('cache:barcode:' + barcode, externalData, 86400);
+                    return {
+                        status: 200,
+                        data: { ...externalData, cached: false },
+                    };
+                }
+            } catch (error) {
+                logger.error('[Barcode] External barcode lookup failed', user?.id || null, { detail: error.message });
+            }
+
+            // Return not found
+            return {
+                status: 404,
+                data: {
+                    error: 'Product not found',
+                    barcode,
+                    message: 'Could not find product information for this barcode. You can manually enter the details.',
+                },
+            };
+        }
+
+        // POST /api/barcode/batch - Batch barcode lookup with caching
+        if (method === 'POST' && path === '/batch') {
+            const { barcodes } = body || {};
+            if (!Array.isArray(barcodes) || barcodes.length === 0) {
+                return { status: 400, data: { error: 'barcodes array required' } };
+            }
+            if (barcodes.length > 50) {
+                return { status: 400, data: { error: 'Maximum 50 barcodes per batch' } };
+            }
+            // Validate all are numeric strings
+            const invalid = barcodes.filter((b) => !/^\d{6,14}$/.test(String(b)));
+            if (invalid.length > 0) {
+                return { status: 400, data: { error: `Invalid barcode format: ${invalid.slice(0, 3).join(', ')}` } };
+            }
+
+            const results = {};
+            const missedCache = [];
+
+            // Cache-first batch check
+            await Promise.all(
+                barcodes.map(async (code) => {
+                    const cached = await redis.getJson('cache:barcode:' + code);
+                    if (cached) {
+                        results[code] = { ...cached, cached: true };
+                    } else {
+                        missedCache.push(code);
+                    }
+                }),
+            );
+
+            // Local DB lookup for cache misses
+            if (missedCache.length > 0) {
+                const placeholders = missedCache.map(() => '?').join(',');
+                const localResults = await query.all(
+                    `SELECT * FROM barcode_lookups WHERE barcode IN (${placeholders})`,
+                    missedCache,
+                );
+                const localMap = Object.fromEntries(localResults.map((r) => [r.barcode, r]));
+                const stillMissing = [];
+
+                for (const code of missedCache) {
+                    if (localMap[code]) {
+                        const data = {
+                            barcode: code,
+                            title: localMap[code].title,
+                            brand: localMap[code].brand,
+                            category: localMap[code].category,
+                            description: localMap[code].description,
+                            image_url: localMap[code].image_url,
+                            source: 'local',
+                        };
+                        await redis.setJson('cache:barcode:' + code, data, 86400);
+                        results[code] = { ...data, cached: false };
+                    } else {
+                        stillMissing.push(code);
+                    }
+                }
+
+                // External lookup for true misses (sequential to respect rate limits)
+                for (const code of stillMissing) {
+                    try {
+                        const externalData = await lookupExternalBarcode(code);
+                        if (externalData) {
+                            saveBarcodeLookup(code, externalData);
+                            await redis.setJson('cache:barcode:' + code, externalData, 86400);
+                            results[code] = { ...externalData, cached: false };
+                        } else {
+                            results[code] = { barcode: code, found: false };
+                        }
+                    } catch {
+                        results[code] = { barcode: code, found: false, error: 'lookup_failed' };
+                    }
+                }
+            }
+
             return {
                 status: 200,
                 data: {
-                    ...cached,
-                    cached: true
-                }
+                    results,
+                    total: barcodes.length,
+                    found: Object.values(results).filter((r) => r.found !== false).length,
+                },
             };
         }
 
-        // Check local database for previously saved barcodes
-        const localResult = await query.get(`
-            SELECT * FROM barcode_lookups WHERE barcode = ?
-        `, [barcode]);
+        // POST /api/barcode/save - Save a barcode lookup manually
+        if (method === 'POST' && path === '/save') {
+            if (!user) {
+                return { status: 401, data: { error: 'Authentication required' } };
+            }
 
-        if (localResult) {
-            const data = {
-                barcode,
-                title: localResult.title,
-                brand: localResult.brand,
-                category: localResult.category,
-                description: localResult.description,
-                image_url: localResult.image_url,
-                source: 'local'
-            };
-            await redis.setJson('cache:barcode:' + barcode, data, 86400);
-            return {
-                status: 200,
-                data: { ...data, cached: false }
-            };
-        }
+            const { barcode, title, brand, category, description, image_url } = body;
 
-        // Try external API lookup (using free UPC Database API)
-        try {
-            const externalData = await lookupExternalBarcode(barcode);
-            if (externalData) {
-                // Save to local database for future lookups
-                saveBarcodeLookup(barcode, externalData);
-                await redis.setJson('cache:barcode:' + barcode, externalData, 86400);
+            if (!barcode) {
                 return {
-                    status: 200,
-                    data: { ...externalData, cached: false }
+                    status: 400,
+                    data: { error: 'Barcode is required' },
                 };
             }
-        } catch (error) {
-            logger.error('[Barcode] External barcode lookup failed', user?.id || null, { detail: error.message });
-        }
 
-        // Return not found
-        return {
-            status: 404,
-            data: {
-                error: 'Product not found',
-                barcode,
-                message: 'Could not find product information for this barcode. You can manually enter the details.'
-            }
-        };
-    }
-
-    // POST /api/barcode/batch - Batch barcode lookup with caching
-    if (method === 'POST' && path === '/batch') {
-        const { barcodes } = body || {};
-        if (!Array.isArray(barcodes) || barcodes.length === 0) {
-            return { status: 400, data: { error: 'barcodes array required' } };
-        }
-        if (barcodes.length > 50) {
-            return { status: 400, data: { error: 'Maximum 50 barcodes per batch' } };
-        }
-        // Validate all are numeric strings
-        const invalid = barcodes.filter(b => !/^\d{6,14}$/.test(String(b)));
-        if (invalid.length > 0) {
-            return { status: 400, data: { error: `Invalid barcode format: ${invalid.slice(0, 3).join(', ')}` } };
-        }
-
-        const results = {};
-        const missedCache = [];
-
-        // Cache-first batch check
-        await Promise.all(barcodes.map(async (code) => {
-            const cached = await redis.getJson('cache:barcode:' + code);
-            if (cached) {
-                results[code] = { ...cached, cached: true };
-            } else {
-                missedCache.push(code);
-            }
-        }));
-
-        // Local DB lookup for cache misses
-        if (missedCache.length > 0) {
-            const placeholders = missedCache.map(() => '?').join(',');
-            const localResults = await query.all(
-                `SELECT * FROM barcode_lookups WHERE barcode IN (${placeholders})`,
-                missedCache
-            );
-            const localMap = Object.fromEntries(localResults.map(r => [r.barcode, r]));
-            const stillMissing = [];
-
-            for (const code of missedCache) {
-                if (localMap[code]) {
-                    const data = {
-                        barcode: code,
-                        title: localMap[code].title,
-                        brand: localMap[code].brand,
-                        category: localMap[code].category,
-                        description: localMap[code].description,
-                        image_url: localMap[code].image_url,
-                        source: 'local'
-                    };
-                    await redis.setJson('cache:barcode:' + code, data, 86400);
-                    results[code] = { ...data, cached: false };
-                } else {
-                    stillMissing.push(code);
-                }
+            // Validate barcode format (UPC-A: 12 digits, EAN-13: 13 digits)
+            if (!/^\d{8,14}$/.test(barcode)) {
+                return {
+                    status: 400,
+                    data: { error: 'Invalid barcode format. Must be 8-14 digits.' },
+                };
             }
 
-            // External lookup for true misses (sequential to respect rate limits)
-            for (const code of stillMissing) {
-                try {
-                    const externalData = await lookupExternalBarcode(code);
-                    if (externalData) {
-                        saveBarcodeLookup(code, externalData);
-                        await redis.setJson('cache:barcode:' + code, externalData, 86400);
-                        results[code] = { ...externalData, cached: false };
-                    } else {
-                        results[code] = { barcode: code, found: false };
-                    }
-                } catch {
-                    results[code] = { barcode: code, found: false, error: 'lookup_failed' };
-                }
-            }
-        }
-
-        return {
-            status: 200,
-            data: {
-                results,
-                total: barcodes.length,
-                found: Object.values(results).filter(r => r.found !== false).length
-            }
-        };
-    }
-
-    // POST /api/barcode/save - Save a barcode lookup manually
-    if (method === 'POST' && path === '/save') {
-        if (!user) {
-            return { status: 401, data: { error: 'Authentication required' } };
-        }
-
-        const { barcode, title, brand, category, description, image_url } = body;
-
-        if (!barcode) {
-            return {
-                status: 400,
-                data: { error: 'Barcode is required' }
-            };
-        }
-
-        // Validate barcode format (UPC-A: 12 digits, EAN-13: 13 digits)
-        if (!/^\d{8,14}$/.test(barcode)) {
-            return {
-                status: 400,
-                data: { error: 'Invalid barcode format. Must be 8-14 digits.' }
-            };
-        }
-
-        const id = uuidv4();
-        try {
-            await query.run(`
+            const id = uuidv4();
+            try {
+                await query.run(
+                    `
                 INSERT INTO barcode_lookups
                 (id, barcode, title, brand, category, description, image_url, created_by)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -190,66 +196,71 @@ export async function barcodeRouter(ctx) {
                     title = EXCLUDED.title, brand = EXCLUDED.brand,
                     category = EXCLUDED.category, description = EXCLUDED.description,
                     image_url = EXCLUDED.image_url, updated_at = NOW()
-            `, [id, barcode, title, brand, category, description, image_url, user.id]);
+            `,
+                    [id, barcode, title, brand, category, description, image_url, user.id],
+                );
 
-            // Update cache
-            const data = { barcode, title, brand, category, description, image_url, source: 'user' };
-            await redis.setJson('cache:barcode:' + barcode, data, 86400);
+                // Update cache
+                const data = { barcode, title, brand, category, description, image_url, source: 'user' };
+                await redis.setJson('cache:barcode:' + barcode, data, 86400);
 
-            return {
-                status: 201,
-                data: {
-                    message: 'Barcode saved successfully',
-                    id,
-                    ...data
-                }
-            };
-        } catch (error) {
-            return {
-                status: 500,
-                data: { error: 'Failed to save barcode' }
-            };
-        }
-    }
-
-    // GET /api/barcode/recent - Get recently scanned barcodes
-    if (method === 'GET' && path === '/recent') {
-        if (!user) {
-            return { status: 401, data: { error: 'Authentication required' } };
+                return {
+                    status: 201,
+                    data: {
+                        message: 'Barcode saved successfully',
+                        id,
+                        ...data,
+                    },
+                };
+            } catch (error) {
+                return {
+                    status: 500,
+                    data: { error: 'Failed to save barcode' },
+                };
+            }
         }
 
-        const { limit = 10 } = queryParams;
+        // GET /api/barcode/recent - Get recently scanned barcodes
+        if (method === 'GET' && path === '/recent') {
+            if (!user) {
+                return { status: 401, data: { error: 'Authentication required' } };
+            }
 
-        const recent = await query.all(`
+            const { limit = 10 } = queryParams;
+
+            const recent = await query.all(
+                `
             SELECT DISTINCT barcode, title, brand, category, image_url, created_at
             FROM barcode_lookups
             WHERE created_by = ?
             ORDER BY created_at DESC
             LIMIT ?
-        `, [user.id, Math.min(parseInt(limit) || 10, 100)]);
+        `,
+                [user.id, Math.min(parseInt(limit) || 10, 100)],
+            );
+
+            return {
+                status: 200,
+                data: { barcodes: recent },
+            };
+        }
+
+        // POST /api/barcode/validate - Validate barcode format
+        if (method === 'POST' && path === '/validate') {
+            const { barcode } = body;
+
+            const validation = validateBarcode(barcode);
+
+            return {
+                status: 200,
+                data: validation,
+            };
+        }
 
         return {
-            status: 200,
-            data: { barcodes: recent }
+            status: 404,
+            data: { error: 'Not found' },
         };
-    }
-
-    // POST /api/barcode/validate - Validate barcode format
-    if (method === 'POST' && path === '/validate') {
-        const { barcode } = body;
-
-        const validation = validateBarcode(barcode);
-
-        return {
-            status: 200,
-            data: validation
-        };
-    }
-
-    return {
-        status: 404,
-        data: { error: 'Not found' }
-    };
     } catch (error) {
         logger.error('[Barcode] Unhandled route error', { path: ctx.path, method: ctx.method, error: error.message });
         return { status: 500, data: { error: 'Internal server error' } };
@@ -260,7 +271,9 @@ export async function barcodeRouter(ctx) {
 async function lookupExternalBarcode(barcode) {
     // Try Open Food Facts API (free, no API key required)
     try {
-        const response = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`, { signal: AbortSignal.timeout(10000) });
+        const response = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`, {
+            signal: AbortSignal.timeout(10000),
+        });
         if (response.ok) {
             const data = await response.json();
             if (data.status === 1 && data.product) {
@@ -271,7 +284,7 @@ async function lookupExternalBarcode(barcode) {
                     category: data.product.categories?.split(',')[0]?.trim() || null,
                     description: data.product.generic_name || null,
                     image_url: data.product.image_url || null,
-                    source: 'openfoodfacts'
+                    source: 'openfoodfacts',
                 };
             }
         }
@@ -284,8 +297,8 @@ async function lookupExternalBarcode(barcode) {
         const response = await fetch(`https://api.upcitemdb.com/prod/trial/lookup?upc=${barcode}`, {
             signal: AbortSignal.timeout(10000),
             headers: {
-                'Accept': 'application/json'
-            }
+                Accept: 'application/json',
+            },
         });
         if (response.ok) {
             const data = await response.json();
@@ -298,7 +311,7 @@ async function lookupExternalBarcode(barcode) {
                     category: item.category || null,
                     description: item.description || null,
                     image_url: item.images?.[0] || null,
-                    source: 'upcitemdb'
+                    source: 'upcitemdb',
                 };
             }
         }
@@ -313,7 +326,8 @@ async function lookupExternalBarcode(barcode) {
 async function saveBarcodeLookup(barcode, data) {
     try {
         const id = uuidv4();
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO barcode_lookups
             (id, barcode, title, brand, category, description, image_url, source)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -321,7 +335,9 @@ async function saveBarcodeLookup(barcode, data) {
                 title = EXCLUDED.title, brand = EXCLUDED.brand,
                 category = EXCLUDED.category, description = EXCLUDED.description,
                 image_url = EXCLUDED.image_url, source = EXCLUDED.source, updated_at = NOW()
-        `, [id, barcode, data.title, data.brand, data.category, data.description, data.image_url, data.source]);
+        `,
+            [id, barcode, data.title, data.brand, data.category, data.description, data.image_url, data.source],
+        );
     } catch (e) {
         // Non-critical, ignore errors
     }
@@ -371,7 +387,7 @@ function validateBarcode(barcode) {
         normalized: digits,
         type,
         checkDigitValid,
-        warning: !checkDigitValid ? 'Check digit may be invalid' : null
+        warning: !checkDigitValid ? 'Check digit may be invalid' : null,
     };
 }
 

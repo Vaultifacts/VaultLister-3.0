@@ -4,7 +4,6 @@ import { query } from '../db/database.js';
 import { cacheForUser } from '../middleware/cache.js';
 import { safeJsonParse } from '../shared/utils.js';
 
-
 export async function templatesRouter(ctx) {
     const { method, path, user } = ctx;
 
@@ -12,11 +11,11 @@ export async function templatesRouter(ctx) {
     if (method === 'GET' && (path === '' || path === '/')) {
         const templates = await query.all(
             'SELECT * FROM listing_templates WHERE user_id = ? ORDER BY is_favorite DESC, use_count DESC, created_at DESC LIMIT 500',
-            [user.id]
+            [user.id],
         );
 
         // Parse JSON fields
-        templates.forEach(template => {
+        templates.forEach((template) => {
             template.tags = safeJsonParse(template.tags, []);
             template.platform_settings = safeJsonParse(template.platform_settings, {});
         });
@@ -27,7 +26,10 @@ export async function templatesRouter(ctx) {
     // GET /api/templates/:id - Get single template
     if (method === 'GET' && path.match(/^\/[a-zA-Z0-9_-]+$/) && !path.startsWith('/use')) {
         const templateId = path.substring(1);
-        const template = await query.get('SELECT * FROM listing_templates WHERE id = ? AND user_id = ?', [templateId, user.id]);
+        const template = await query.get('SELECT * FROM listing_templates WHERE id = ? AND user_id = ?', [
+            templateId,
+            user.id,
+        ]);
 
         if (!template) {
             return { status: 404, data: { error: 'Template not found' } };
@@ -54,7 +56,7 @@ export async function templatesRouter(ctx) {
             platformSettings,
             shippingProfileId,
             conditionDefault,
-            isFavorite
+            isFavorite,
         } = ctx.body;
 
         if (!name) {
@@ -64,7 +66,8 @@ export async function templatesRouter(ctx) {
         const id = uuidv4();
         const now = new Date().toISOString();
 
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO listing_templates (
                 id, user_id, name, description, category,
                 title_pattern, description_template, tags,
@@ -73,14 +76,27 @@ export async function templatesRouter(ctx) {
                 condition_default, is_favorite, use_count,
                 created_at, updated_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, [
-            id, user.id, name, description || null, category || null,
-            titlePattern || null, descriptionTemplate || null, JSON.stringify(tags || []),
-            pricingStrategy || 'fixed', markupPercentage || 0,
-            JSON.stringify(platformSettings || {}), shippingProfileId || null,
-            conditionDefault || null, isFavorite ? 1 : 0, 0,
-            now, now
-        ]);
+        `,
+            [
+                id,
+                user.id,
+                name,
+                description || null,
+                category || null,
+                titlePattern || null,
+                descriptionTemplate || null,
+                JSON.stringify(tags || []),
+                pricingStrategy || 'fixed',
+                markupPercentage || 0,
+                JSON.stringify(platformSettings || {}),
+                shippingProfileId || null,
+                conditionDefault || null,
+                isFavorite ? 1 : 0,
+                0,
+                now,
+                now,
+            ],
+        );
 
         const template = await query.get('SELECT * FROM listing_templates WHERE id = ?', [id]);
 
@@ -96,7 +112,10 @@ export async function templatesRouter(ctx) {
         const templateId = path.substring(1);
 
         // Verify ownership
-        const existing = await query.get('SELECT id FROM listing_templates WHERE id = ? AND user_id = ?', [templateId, user.id]);
+        const existing = await query.get('SELECT id FROM listing_templates WHERE id = ? AND user_id = ?', [
+            templateId,
+            user.id,
+        ]);
         if (!existing) {
             return { status: 404, data: { error: 'Template not found' } };
         }
@@ -113,34 +132,67 @@ export async function templatesRouter(ctx) {
             platformSettings,
             shippingProfileId,
             conditionDefault,
-            isFavorite
+            isFavorite,
         } = ctx.body;
 
         const updates = [];
         const values = [];
 
-        if (name !== undefined) { updates.push('name = ?'); values.push(name); }
-        if (description !== undefined) { updates.push('description = ?'); values.push(description); }
-        if (category !== undefined) { updates.push('category = ?'); values.push(category); }
-        if (titlePattern !== undefined) { updates.push('title_pattern = ?'); values.push(titlePattern); }
-        if (descriptionTemplate !== undefined) { updates.push('description_template = ?'); values.push(descriptionTemplate); }
-        if (tags !== undefined) { updates.push('tags = ?'); values.push(JSON.stringify(tags)); }
-        if (pricingStrategy !== undefined) { updates.push('pricing_strategy = ?'); values.push(pricingStrategy); }
-        if (markupPercentage !== undefined) { updates.push('markup_percentage = ?'); values.push(markupPercentage); }
-        if (platformSettings !== undefined) { updates.push('platform_settings = ?'); values.push(JSON.stringify(platformSettings)); }
-        if (shippingProfileId !== undefined) { updates.push('shipping_profile_id = ?'); values.push(shippingProfileId); }
-        if (conditionDefault !== undefined) { updates.push('condition_default = ?'); values.push(conditionDefault); }
-        if (isFavorite !== undefined) { updates.push('is_favorite = ?'); values.push(isFavorite ? 1 : 0); }
+        if (name !== undefined) {
+            updates.push('name = ?');
+            values.push(name);
+        }
+        if (description !== undefined) {
+            updates.push('description = ?');
+            values.push(description);
+        }
+        if (category !== undefined) {
+            updates.push('category = ?');
+            values.push(category);
+        }
+        if (titlePattern !== undefined) {
+            updates.push('title_pattern = ?');
+            values.push(titlePattern);
+        }
+        if (descriptionTemplate !== undefined) {
+            updates.push('description_template = ?');
+            values.push(descriptionTemplate);
+        }
+        if (tags !== undefined) {
+            updates.push('tags = ?');
+            values.push(JSON.stringify(tags));
+        }
+        if (pricingStrategy !== undefined) {
+            updates.push('pricing_strategy = ?');
+            values.push(pricingStrategy);
+        }
+        if (markupPercentage !== undefined) {
+            updates.push('markup_percentage = ?');
+            values.push(markupPercentage);
+        }
+        if (platformSettings !== undefined) {
+            updates.push('platform_settings = ?');
+            values.push(JSON.stringify(platformSettings));
+        }
+        if (shippingProfileId !== undefined) {
+            updates.push('shipping_profile_id = ?');
+            values.push(shippingProfileId);
+        }
+        if (conditionDefault !== undefined) {
+            updates.push('condition_default = ?');
+            values.push(conditionDefault);
+        }
+        if (isFavorite !== undefined) {
+            updates.push('is_favorite = ?');
+            values.push(isFavorite ? 1 : 0);
+        }
 
         updates.push('updated_at = ?');
         values.push(new Date().toISOString());
 
         values.push(templateId, user.id);
 
-        await query.run(
-            `UPDATE listing_templates SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`,
-            values
-        );
+        await query.run(`UPDATE listing_templates SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`, values);
 
         const template = await query.get('SELECT * FROM listing_templates WHERE id = ?', [templateId]);
 
@@ -155,7 +207,10 @@ export async function templatesRouter(ctx) {
     if (method === 'DELETE' && path.match(/^\/[a-zA-Z0-9_-]+$/)) {
         const templateId = path.substring(1);
 
-        const result = await query.run('DELETE FROM listing_templates WHERE id = ? AND user_id = ?', [templateId, user.id]);
+        const result = await query.run('DELETE FROM listing_templates WHERE id = ? AND user_id = ?', [
+            templateId,
+            user.id,
+        ]);
 
         if (result.changes === 0) {
             return { status: 404, data: { error: 'Template not found' } };
@@ -170,7 +225,7 @@ export async function templatesRouter(ctx) {
 
         await query.run(
             'UPDATE listing_templates SET use_count = use_count + 1, updated_at = ? WHERE id = ? AND user_id = ?',
-            [new Date().toISOString(), templateId, user.id]
+            [new Date().toISOString(), templateId, user.id],
         );
 
         return { status: 200, data: { message: 'Template use count updated' } };
