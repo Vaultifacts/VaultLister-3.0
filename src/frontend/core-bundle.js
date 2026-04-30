@@ -15328,7 +15328,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '846190a0';
+    const v = '92a0f6a4';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16349,7 +16349,7 @@ const components = {
                             </button>
                         </div>
                     </div>
-                    <div class="user-menu dropdown" aria-haspopup="listbox" aria-expanded="false" aria-label="User menu" onclick="const _open=this.classList.toggle('open'); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();const _open=this.classList.toggle('open');this.setAttribute('aria-expanded',_open);}">
+                    <div class="user-menu dropdown" role="button" aria-haspopup="listbox" aria-expanded="false" aria-label="User menu" onclick="const _open=this.classList.toggle('open'); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();const _open=this.classList.toggle('open');this.setAttribute('aria-expanded',_open);}">
                         <div class="user-avatar" aria-hidden="true">${store.state.user?.username?.[0]?.toUpperCase() || 'U'}</div>
                         <div class="dropdown-menu" aria-hidden="true">
                             <button class="dropdown-item" onclick="router.navigate('account')" aria-label="Account">
@@ -20329,16 +20329,18 @@ const pages = {
             </div>
 
             <!-- Analytics Tabs -->
-            <div class="tabs mb-6" role="tablist" style="overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;">
-                ${!hiddenTabs.includes('graphs') ? `<button class="tab ${currentTab === 'graphs' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'graphs' ? 'true' : 'false'}" tabindex="${currentTab === 'graphs' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('graphs')">Graphs</button>` : ''}
-                ${!hiddenTabs.includes('heatmaps') ? `<button class="tab ${currentTab === 'heatmaps' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'heatmaps' ? 'true' : 'false'}" tabindex="${currentTab === 'heatmaps' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('heatmaps')">Heatmaps</button>` : ''}
-                ${!hiddenTabs.includes('predictions') ? `<button class="tab ${currentTab === 'predictions' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'predictions' ? 'true' : 'false'}" tabindex="${currentTab === 'predictions' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('predictions')">Predictions</button>` : ''}
-                ${!hiddenTabs.includes('ratio-analysis') ? `<button class="tab ${currentTab === 'ratio-analysis' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'ratio-analysis' ? 'true' : 'false'}" tabindex="${currentTab === 'ratio-analysis' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('ratio-analysis')">Ratio Analysis</button>` : ''}
-                ${!hiddenTabs.includes('product-analysis') ? `<button class="tab ${currentTab === 'product-analysis' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'product-analysis' ? 'true' : 'false'}" tabindex="${currentTab === 'product-analysis' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('product-analysis')">Product Analysis</button>` : ''}
-                ${!hiddenTabs.includes('market-intel') ? `<button class="tab ${currentTab === 'market-intel' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'market-intel' ? 'true' : 'false'}" tabindex="${currentTab === 'market-intel' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('market-intel')">Market Intel</button>` : ''}
-                ${!hiddenTabs.includes('sourcing') ? `<button class="tab ${currentTab === 'sourcing' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'sourcing' ? 'true' : 'false'}" tabindex="${currentTab === 'sourcing' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('sourcing')">Supplier Analytics</button>` : ''}
-                ${!hiddenTabs.includes('financials-analytics') ? `<button class="tab ${currentTab === 'financials-analytics' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'financials-analytics' ? 'true' : 'false'}" tabindex="${currentTab === 'financials-analytics' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('financials-analytics')">Financials Analytics</button>` : ''}
-                ${!hiddenTabs.includes('inventory-analytics') ? `<button class="tab ${currentTab === 'inventory-analytics' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'inventory-analytics' ? 'true' : 'false'}" tabindex="${currentTab === 'inventory-analytics' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('inventory-analytics')">Inventory</button>` : ''}
+            <div class="tabs mb-6" style="overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;">
+                <div role="tablist" style="display:contents;">
+                    ${!hiddenTabs.includes('graphs') ? `<button class="tab ${currentTab === 'graphs' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'graphs' ? 'true' : 'false'}" tabindex="${currentTab === 'graphs' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('graphs')">Graphs</button>` : ''}
+                    ${!hiddenTabs.includes('heatmaps') ? `<button class="tab ${currentTab === 'heatmaps' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'heatmaps' ? 'true' : 'false'}" tabindex="${currentTab === 'heatmaps' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('heatmaps')">Heatmaps</button>` : ''}
+                    ${!hiddenTabs.includes('predictions') ? `<button class="tab ${currentTab === 'predictions' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'predictions' ? 'true' : 'false'}" tabindex="${currentTab === 'predictions' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('predictions')">Predictions</button>` : ''}
+                    ${!hiddenTabs.includes('ratio-analysis') ? `<button class="tab ${currentTab === 'ratio-analysis' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'ratio-analysis' ? 'true' : 'false'}" tabindex="${currentTab === 'ratio-analysis' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('ratio-analysis')">Ratio Analysis</button>` : ''}
+                    ${!hiddenTabs.includes('product-analysis') ? `<button class="tab ${currentTab === 'product-analysis' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'product-analysis' ? 'true' : 'false'}" tabindex="${currentTab === 'product-analysis' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('product-analysis')">Product Analysis</button>` : ''}
+                    ${!hiddenTabs.includes('market-intel') ? `<button class="tab ${currentTab === 'market-intel' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'market-intel' ? 'true' : 'false'}" tabindex="${currentTab === 'market-intel' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('market-intel')">Market Intel</button>` : ''}
+                    ${!hiddenTabs.includes('sourcing') ? `<button class="tab ${currentTab === 'sourcing' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'sourcing' ? 'true' : 'false'}" tabindex="${currentTab === 'sourcing' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('sourcing')">Supplier Analytics</button>` : ''}
+                    ${!hiddenTabs.includes('financials-analytics') ? `<button class="tab ${currentTab === 'financials-analytics' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'financials-analytics' ? 'true' : 'false'}" tabindex="${currentTab === 'financials-analytics' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('financials-analytics')">Financials Analytics</button>` : ''}
+                    ${!hiddenTabs.includes('inventory-analytics') ? `<button class="tab ${currentTab === 'inventory-analytics' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'inventory-analytics' ? 'true' : 'false'}" tabindex="${currentTab === 'inventory-analytics' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('inventory-analytics')">Inventory</button>` : ''}
+                </div>
                 <button class="btn btn-ghost btn-sm ml-auto" onclick="handlers.showAnalyticsCustomization()" title="Customize Analytics">
                     ${components.icon('settings', 16)}
                 </button>
@@ -24496,6 +24498,12 @@ const modals = {
 
         // Check if processing
         const isProcessing = progress && (progress.status === 'starting' || progress.status === 'processing');
+        let removeBackgroundChecked = '';
+        let enhanceChecked = '';
+        let upscaleChecked = '';
+        if (transformations.removeBackground) removeBackgroundChecked = 'checked';
+        if (transformations.enhance) enhanceChecked = 'checked';
+        if (transformations.upscale) upscaleChecked = 'checked';
 
         this.show(`
             <div class="modal-header">
@@ -24561,17 +24569,17 @@ const modals = {
                             <h3>AI Transformations</h3>
                             <div class="batch-photo-transformations">
                                 <label class="batch-photo-checkbox">
-                                    <input aria-label="Toggle Remove Background (AI)" type="checkbox" ${transformations.removeBackground ? 'checked' : ''}
+                                    <input aria-label="Toggle Remove Background (AI)" type="checkbox" ${removeBackgroundChecked}
                                            onchange="handlers.setBatchPhotoTransformation('removeBackground', this.checked); modals.batchPhoto()">
                                     <span>Remove Background (AI)</span>
                                 </label>
                                 <label class="batch-photo-checkbox">
-                                    <input aria-label="Toggle Auto Enhance" type="checkbox" ${transformations.enhance ? 'checked' : ''}
+                                    <input aria-label="Toggle Auto Enhance" type="checkbox" ${enhanceChecked}
                                            onchange="handlers.setBatchPhotoTransformation('enhance', this.checked); modals.batchPhoto()">
                                     <span>Auto Enhance</span>
                                 </label>
                                 <label class="batch-photo-checkbox">
-                                    <input aria-label="Toggle AI Upscale" type="checkbox" ${transformations.upscale ? 'checked' : ''}
+                                    <input aria-label="Toggle AI Upscale" type="checkbox" ${upscaleChecked}
                                            onchange="handlers.setBatchPhotoTransformation('upscale', this.checked); modals.batchPhoto()">
                                     <span>AI Upscale</span>
                                 </label>
@@ -28278,7 +28286,7 @@ function renderApp(pageContent) {
                     ${components.sidebar()}
                     <div class="sidebar-backdrop ${store.state.sidebarOpen ? 'active' : ''}"
                          role="button" tabindex="0" onclick="store.setState({ sidebarOpen: false }); renderApp(pages[store.state.currentPage]())"></div>
-                    <div class="sidebar-overlay" role="button" tabindex="0" onclick="store.setState({sidebarOpen:false});document.querySelector('.sidebar')?.classList.remove('open');this.classList.remove('visible');"></div>
+                    <div class="sidebar-overlay" role="button" tabindex="0" aria-label="Close sidebar" onclick="store.setState({sidebarOpen:false});document.querySelector('.sidebar')?.classList.remove('open');this.classList.remove('visible');"></div>
                     <div class="mobile-header">
                         <button class="mobile-menu-btn" onclick="const _open=!store.state.sidebarOpen;store.setState({sidebarOpen:_open});document.querySelector('.sidebar')?.classList.toggle('open',_open);document.querySelector('.sidebar-overlay')?.classList.toggle('visible',_open);" aria-label="Open menu">
                             ${components.icon('menu')}

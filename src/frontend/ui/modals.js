@@ -2803,6 +2803,12 @@ const modals = {
 
         // Check if processing
         const isProcessing = progress && (progress.status === 'starting' || progress.status === 'processing');
+        let removeBackgroundChecked = '';
+        let enhanceChecked = '';
+        let upscaleChecked = '';
+        if (transformations.removeBackground) removeBackgroundChecked = 'checked';
+        if (transformations.enhance) enhanceChecked = 'checked';
+        if (transformations.upscale) upscaleChecked = 'checked';
 
         this.show(`
             <div class="modal-header">
@@ -2868,17 +2874,17 @@ const modals = {
                             <h3>AI Transformations</h3>
                             <div class="batch-photo-transformations">
                                 <label class="batch-photo-checkbox">
-                                    <input aria-label="Toggle Remove Background (AI)" type="checkbox" ${transformations.removeBackground ? 'checked' : ''}
+                                    <input aria-label="Toggle Remove Background (AI)" type="checkbox" ${removeBackgroundChecked}
                                            onchange="handlers.setBatchPhotoTransformation('removeBackground', this.checked); modals.batchPhoto()">
                                     <span>Remove Background (AI)</span>
                                 </label>
                                 <label class="batch-photo-checkbox">
-                                    <input aria-label="Toggle Auto Enhance" type="checkbox" ${transformations.enhance ? 'checked' : ''}
+                                    <input aria-label="Toggle Auto Enhance" type="checkbox" ${enhanceChecked}
                                            onchange="handlers.setBatchPhotoTransformation('enhance', this.checked); modals.batchPhoto()">
                                     <span>Auto Enhance</span>
                                 </label>
                                 <label class="batch-photo-checkbox">
-                                    <input aria-label="Toggle AI Upscale" type="checkbox" ${transformations.upscale ? 'checked' : ''}
+                                    <input aria-label="Toggle AI Upscale" type="checkbox" ${upscaleChecked}
                                            onchange="handlers.setBatchPhotoTransformation('upscale', this.checked); modals.batchPhoto()">
                                     <span>AI Upscale</span>
                                 </label>
