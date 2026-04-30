@@ -48,6 +48,7 @@ The workflow then:
 Before triggering any production deploy, verify:
 
 - [ ] CI is green on the target commit (`Actions > CI` shows all jobs passing)
+- [ ] Semgrep and SonarCloud checks pass (Railway "Wait for CI" gates on these)
 - [ ] Staging deploy succeeded for the same SHA
 - [ ] A recent database backup exists (`backups/` on the server or from the automated 3am cron)
 - [ ] No active user sessions that would be disrupted (check metrics if available)
