@@ -10,25 +10,28 @@ const RETRY_BASE_DELAY_MS = 1000;
 
 // Approximate cost per token by model (USD). Used for cost logging only — not billing.
 const MODEL_COST = {
-    'claude-haiku-4-5':          { input: 0.0000008,  output: 0.000004 },
-    'claude-haiku-4-5-20251001': { input: 0.0000008,  output: 0.000004 },
-    'claude-sonnet-4-6':         { input: 0.000003,   output: 0.000015 },
-    'claude-opus-4-6':           { input: 0.000015,   output: 0.000075 },
+    'claude-haiku-4-5': { input: 0.0000008, output: 0.000004 },
+    'claude-haiku-4-5-20251001': { input: 0.0000008, output: 0.000004 },
+    'claude-sonnet-4-6': { input: 0.000003, output: 0.000015 },
+    'claude-opus-4-6': { input: 0.000015, output: 0.000075 },
 };
 
 function logUsage(model, usage, extra = {}) {
     if (!usage || process.env.NODE_ENV === 'test') return;
     const rates = MODEL_COST[model] || MODEL_COST['claude-sonnet-4-6'];
     const estimatedCostUsd = (usage.input_tokens || 0) * rates.input + (usage.output_tokens || 0) * rates.output;
-    console.info(JSON.stringify({
-        level: 'info', msg: 'Claude API usage',
-        model,
-        input_tokens: usage.input_tokens,
-        output_tokens: usage.output_tokens,
-        estimated_cost_usd: +estimatedCostUsd.toFixed(6),
-        ts: new Date().toISOString(),
-        ...extra
-    }));
+    console.info(
+        JSON.stringify({
+            level: 'info',
+            msg: 'Claude API usage',
+            model,
+            input_tokens: usage.input_tokens,
+            output_tokens: usage.output_tokens,
+            estimated_cost_usd: +estimatedCostUsd.toFixed(6),
+            ts: new Date().toISOString(),
+            ...extra,
+        }),
+    );
     Sentry.metrics.distribution('ai.tokens.input', usage.input_tokens || 0, { tags: { model } });
     Sentry.metrics.distribution('ai.tokens.output', usage.output_tokens || 0, { tags: { model } });
     Sentry.metrics.distribution('ai.cost_usd', +estimatedCostUsd.toFixed(6), { unit: 'none', tags: { model } });
@@ -67,14 +70,22 @@ async function callWithRetry(apiFn, timeoutMs = DEFAULT_TIMEOUT_MS) {
                 apiFn(controller.signal),
                 new Promise((_, reject) =>
                     controller.signal.addEventListener('abort', () =>
-                        reject(new Error(`Claude API call timed out after ${timeoutMs}ms`))
-                    )
-                )
+                        reject(new Error(`Claude API call timed out after ${timeoutMs}ms`)),
+                    ),
+                ),
             ]);
 
             const durationMs = Date.now() - startMs;
             if (process.env.NODE_ENV !== 'test') {
-                console.info(JSON.stringify({ level: 'info', msg: 'Claude API call succeeded', durationMs, attempt, ts: new Date().toISOString() }));
+                console.info(
+                    JSON.stringify({
+                        level: 'info',
+                        msg: 'Claude API call succeeded',
+                        durationMs,
+                        attempt,
+                        ts: new Date().toISOString(),
+                    }),
+                );
             }
             return result;
         } catch (err) {
@@ -91,7 +102,16 @@ async function callWithRetry(apiFn, timeoutMs = DEFAULT_TIMEOUT_MS) {
                 const retryAfterSec = parseInt(err.headers?.['retry-after'] || '0', 10);
                 const waitMs = retryAfterSec > 0 ? retryAfterSec * 1000 : RETRY_BASE_DELAY_MS * Math.pow(2, attempt);
                 if (process.env.NODE_ENV !== 'test') {
-                    console.warn(JSON.stringify({ level: 'warn', msg: 'Claude API rate limited', waitMs, attempt, durationMs, ts: new Date().toISOString() }));
+                    console.warn(
+                        JSON.stringify({
+                            level: 'warn',
+                            msg: 'Claude API rate limited',
+                            waitMs,
+                            attempt,
+                            durationMs,
+                            ts: new Date().toISOString(),
+                        }),
+                    );
                 }
                 if (attempt < MAX_RETRIES) await sleep(waitMs);
                 continue;
@@ -101,7 +121,17 @@ async function callWithRetry(apiFn, timeoutMs = DEFAULT_TIMEOUT_MS) {
             if (err.status >= 500 || err.code === 'ECONNRESET' || err.code === 'ETIMEDOUT') {
                 const waitMs = RETRY_BASE_DELAY_MS * Math.pow(2, attempt);
                 if (process.env.NODE_ENV !== 'test') {
-                    console.warn(JSON.stringify({ level: 'warn', msg: 'Claude API transient error, retrying', error: err.message, waitMs, attempt, durationMs, ts: new Date().toISOString() }));
+                    console.warn(
+                        JSON.stringify({
+                            level: 'warn',
+                            msg: 'Claude API transient error, retrying',
+                            error: err.message,
+                            waitMs,
+                            attempt,
+                            durationMs,
+                            ts: new Date().toISOString(),
+                        }),
+                    );
                 }
                 if (attempt < MAX_RETRIES) await sleep(waitMs);
                 continue;
@@ -118,7 +148,7 @@ async function callWithRetry(apiFn, timeoutMs = DEFAULT_TIMEOUT_MS) {
 }
 
 function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
@@ -135,35 +165,68 @@ function sleep(ms) {
  * @param {string} [opts.tier]      - Subscription tier for budget limit ('free'|'starter'|'pro'|'business')
  * @returns {Promise<string>} Raw text content of the first response block
  */
-export async function callVisionAPI({ imageBase64, mimeType, prompt, model = 'claude-sonnet-4-6', maxTokens = 2000, requestId = null, timeoutMs = DEFAULT_TIMEOUT_MS, userId = null, tier = 'free' }) {
+export async function callVisionAPI({
+    imageBase64,
+    mimeType,
+    prompt,
+    model = 'claude-sonnet-4-6',
+    maxTokens = 2000,
+    requestId = null,
+    timeoutMs = DEFAULT_TIMEOUT_MS,
+    userId = null,
+    tier = 'free',
+}) {
     const client = getAnthropicClient();
     if (!client) throw new Error('AI service not configured. Please set ANTHROPIC_API_KEY environment variable.');
 
     if (userId) {
         const budget = await checkBudget(userId, tier);
         if (!budget.allowed) {
-            throw Object.assign(new Error('Monthly AI token limit reached for your plan'), { code: 'TOKEN_BUDGET_EXCEEDED', used: budget.used, limit: budget.limit });
+            throw Object.assign(new Error('Monthly AI token limit reached for your plan'), {
+                code: 'TOKEN_BUDGET_EXCEEDED',
+                used: budget.used,
+                limit: budget.limit,
+            });
         }
     }
 
     return Sentry.startSpan({ name: 'claude.vision', op: 'ai.run', attributes: { model, maxTokens } }, async () => {
         const response = await callWithRetry(
-            (signal) => client.messages.create({
-                model,
-                max_tokens: maxTokens,
-                messages: [{
-                    role: 'user',
-                    content: [
-                        { type: 'image', source: { type: 'base64', media_type: mimeType || 'image/jpeg', data: imageBase64 } },
-                        { type: 'text', text: prompt }
-                    ]
-                }],
-                ...(requestId && { metadata: { user_id: requestId } }),
-            }, { signal }),
-            timeoutMs
+            (signal) =>
+                client.messages.create(
+                    {
+                        model,
+                        max_tokens: maxTokens,
+                        messages: [
+                            {
+                                role: 'user',
+                                content: [
+                                    {
+                                        type: 'image',
+                                        source: {
+                                            type: 'base64',
+                                            media_type: mimeType || 'image/jpeg',
+                                            data: imageBase64,
+                                        },
+                                    },
+                                    { type: 'text', text: prompt },
+                                ],
+                            },
+                        ],
+                        ...(requestId && { metadata: { user_id: requestId } }),
+                    },
+                    { signal },
+                ),
+            timeoutMs,
         );
         logUsage(model, response.usage, { requestId });
-        if (userId) await trackUsage(userId, 'anthropic', response.usage?.input_tokens || 0, response.usage?.output_tokens || 0);
+        if (userId)
+            await trackUsage(
+                userId,
+                'anthropic',
+                response.usage?.input_tokens || 0,
+                response.usage?.output_tokens || 0,
+            );
         return response.content[0].text;
     });
 }
@@ -181,30 +244,54 @@ export async function callVisionAPI({ imageBase64, mimeType, prompt, model = 'cl
  * @param {string} [opts.tier]      - Subscription tier for budget limit ('free'|'starter'|'pro'|'business')
  * @returns {Promise<string>} Raw text content of the first response block
  */
-export async function callTextAPI({ system, user, model = 'claude-sonnet-4-6', maxTokens = 1500, requestId = null, timeoutMs = DEFAULT_TIMEOUT_MS, userId = null, tier = 'free', apiKey = null }) {
+export async function callTextAPI({
+    system,
+    user,
+    model = 'claude-sonnet-4-6',
+    maxTokens = 1500,
+    requestId = null,
+    timeoutMs = DEFAULT_TIMEOUT_MS,
+    userId = null,
+    tier = 'free',
+    apiKey = null,
+}) {
     const client = getAnthropicClient(apiKey);
     if (!client) throw new Error('AI service not configured. Please set ANTHROPIC_API_KEY environment variable.');
 
     if (userId) {
         const budget = await checkBudget(userId, tier);
         if (!budget.allowed) {
-            throw Object.assign(new Error('Monthly AI token limit reached for your plan'), { code: 'TOKEN_BUDGET_EXCEEDED', used: budget.used, limit: budget.limit });
+            throw Object.assign(new Error('Monthly AI token limit reached for your plan'), {
+                code: 'TOKEN_BUDGET_EXCEEDED',
+                used: budget.used,
+                limit: budget.limit,
+            });
         }
     }
 
     return Sentry.startSpan({ name: 'claude.text', op: 'ai.run', attributes: { model, maxTokens } }, async () => {
         const response = await callWithRetry(
-            (signal) => client.messages.create({
-                model,
-                max_tokens: maxTokens,
-                system,
-                messages: [{ role: 'user', content: user }],
-                ...(requestId && { metadata: { user_id: requestId } }),
-            }, { signal }),
-            timeoutMs
+            (signal) =>
+                client.messages.create(
+                    {
+                        model,
+                        max_tokens: maxTokens,
+                        system,
+                        messages: [{ role: 'user', content: user }],
+                        ...(requestId && { metadata: { user_id: requestId } }),
+                    },
+                    { signal },
+                ),
+            timeoutMs,
         );
         logUsage(model, response.usage, { requestId });
-        if (userId) await trackUsage(userId, 'anthropic', response.usage?.input_tokens || 0, response.usage?.output_tokens || 0);
+        if (userId)
+            await trackUsage(
+                userId,
+                'anthropic',
+                response.usage?.input_tokens || 0,
+                response.usage?.output_tokens || 0,
+            );
         return response.content[0].text;
     });
 }

@@ -20,10 +20,13 @@ import { query } from '../../db/database.js';
  */
 export async function syncShop(shopId, userId) {
     // Get shop details
-    const shop = await query.get(`
+    const shop = await query.get(
+        `
         SELECT * FROM shops
         WHERE id = ? AND user_id = ? AND connection_type = 'oauth' AND is_connected = TRUE
-    `, [shopId, userId]);
+    `,
+        [shopId, userId],
+    );
 
     if (!shop) {
         const err = new Error('Shop not found, not connected via OAuth, or not currently connected');
@@ -51,9 +54,14 @@ export async function syncShop(shopId, userId) {
     } catch (err) {
         // Update shop sync_error so the UI can surface it
         try {
-            await query.run(`UPDATE shops SET sync_error = ?, updated_at = ? WHERE id = ?`,
-                [err.message, new Date().toISOString(), shop.id]);
-        } catch (_) { /* sync_error column may not exist */ }
+            await query.run(`UPDATE shops SET sync_error = ?, updated_at = ? WHERE id = ?`, [
+                err.message,
+                new Date().toISOString(),
+                shop.id,
+            ]);
+        } catch (_) {
+            /* sync_error column may not exist */
+        }
         throw err;
     }
 }
@@ -85,7 +93,17 @@ function getSyncHandler(platform) {
  * @returns {boolean} Whether sync is supported
  */
 export function isSyncSupported(platform) {
-    const supportedPlatforms = ['ebay', 'poshmark', 'mercari', 'depop', 'grailed', 'etsy', 'facebook', 'whatnot', 'shopify'];
+    const supportedPlatforms = [
+        'ebay',
+        'poshmark',
+        'mercari',
+        'depop',
+        'grailed',
+        'etsy',
+        'facebook',
+        'whatnot',
+        'shopify',
+    ];
     return supportedPlatforms.includes(platform.toLowerCase());
 }
 
@@ -96,26 +114,32 @@ export function isSyncSupported(platform) {
  * @returns {Object} Sync status
  */
 export async function getSyncStatus(shopId, userId) {
-    const shop = await query.get(`
+    const shop = await query.get(
+        `
         SELECT
             id, platform, last_sync_at, sync_error,
             is_connected, connection_type
         FROM shops
         WHERE id = ? AND user_id = ?
-    `, [shopId, userId]);
+    `,
+        [shopId, userId],
+    );
 
     if (!shop) {
         throw new Error('Shop not found');
     }
 
     // Check for pending sync tasks
-    const pendingTask = await query.get(`
+    const pendingTask = await query.get(
+        `
         SELECT id, status, created_at, started_at
         FROM task_queue
         WHERE type = 'sync_shop'
         AND JSON_EXTRACT(payload, '$.shopId') = ?
         AND status IN ('pending', 'processing')
-    `, [shopId]);
+    `,
+        [shopId],
+    );
 
     return {
         shopId: shop.id,
@@ -125,12 +149,14 @@ export async function getSyncStatus(shopId, userId) {
         isConnected: Boolean(shop.is_connected),
         isSyncSupported: isSyncSupported(shop.platform),
         hasPendingSync: Boolean(pendingTask),
-        pendingTask: pendingTask ? {
-            id: pendingTask.id,
-            status: pendingTask.status,
-            createdAt: pendingTask.created_at,
-            startedAt: pendingTask.started_at
-        } : null
+        pendingTask: pendingTask
+            ? {
+                  id: pendingTask.id,
+                  status: pendingTask.status,
+                  createdAt: pendingTask.created_at,
+                  startedAt: pendingTask.started_at,
+              }
+            : null,
     };
 }
 
@@ -144,56 +170,56 @@ export function getSupportedPlatforms() {
             platform: 'ebay',
             syncSupported: true,
             capabilities: ['listings', 'orders'],
-            oauthSupported: true
+            oauthSupported: true,
         },
         {
             platform: 'poshmark',
             syncSupported: true,
             capabilities: ['listings', 'orders'],
-            oauthSupported: true
+            oauthSupported: true,
         },
         {
             platform: 'mercari',
             syncSupported: true,
             capabilities: ['listings', 'orders'],
-            oauthSupported: true
+            oauthSupported: true,
         },
         {
             platform: 'depop',
             syncSupported: true,
             capabilities: ['listings', 'orders'],
-            oauthSupported: true
+            oauthSupported: true,
         },
         {
             platform: 'grailed',
             syncSupported: true,
             capabilities: ['listings', 'orders'],
-            oauthSupported: true
+            oauthSupported: true,
         },
         {
             platform: 'etsy',
             syncSupported: true,
             capabilities: ['listings', 'orders'],
-            oauthSupported: true
+            oauthSupported: true,
         },
         {
             platform: 'facebook',
             syncSupported: true,
             capabilities: ['listings', 'orders'],
-            oauthSupported: false // Facebook OAuth removed — listing via Chrome extension/Playwright only
+            oauthSupported: false, // Facebook OAuth removed — listing via Chrome extension/Playwright only
         },
         {
             platform: 'whatnot',
             syncSupported: true,
             capabilities: ['listings', 'orders'],
-            oauthSupported: true
+            oauthSupported: true,
         },
         {
             platform: 'shopify',
             syncSupported: true,
             capabilities: ['listings', 'orders'],
-            oauthSupported: true
-        }
+            oauthSupported: true,
+        },
     ];
 }
 
@@ -201,5 +227,5 @@ export default {
     syncShop,
     isSyncSupported,
     getSyncStatus,
-    getSupportedPlatforms
+    getSupportedPlatforms,
 };

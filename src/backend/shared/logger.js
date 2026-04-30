@@ -10,11 +10,12 @@ const LOG_LEVELS = {
     INFO: 1,
     WARN: 2,
     ERROR: 3,
-    SILENT: 4
+    SILENT: 4,
 };
 
 // Get log level from environment, default to INFO in production, DEBUG in development
-const currentLevel = LOG_LEVELS[process.env.LOG_LEVEL?.toUpperCase()] ??
+const currentLevel =
+    LOG_LEVELS[process.env.LOG_LEVEL?.toUpperCase()] ??
     (process.env.NODE_ENV === 'production' ? LOG_LEVELS.INFO : LOG_LEVELS.DEBUG);
 
 // Betterstack sink — null when token is absent (local dev / CI without credentials)
@@ -24,7 +25,7 @@ let _logtail = null;
 if (BETTERSTACK_TOKEN) {
     _logtail = new Logtail(BETTERSTACK_TOKEN, {
         sendLogsToConsoleOutput: false, // we handle console output ourselves below
-        ignoreExceptions: true          // never let Betterstack errors surface to callers
+        ignoreExceptions: true, // never let Betterstack errors surface to callers
     });
 }
 
@@ -37,7 +38,7 @@ function formatMessage(level, message, meta = {}) {
         timestamp,
         level,
         message,
-        ...meta
+        ...meta,
     };
 
     // In production, output JSON for log aggregation (Railway stdout drain)
@@ -100,16 +101,22 @@ export const logger = {
 
     error(message, error = null, meta = {}) {
         if (currentLevel <= LOG_LEVELS.ERROR) {
-            if (typeof error === 'string') { meta = { ...normalizeMeta(meta), detail: error }; error = null; }
-            else { meta = normalizeMeta(meta); }
-            const errorMeta = error ? {
-                ...meta,
-                error: {
-                    message: error.message,
-                    stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
-                    code: error.code
-                }
-            } : meta;
+            if (typeof error === 'string') {
+                meta = { ...normalizeMeta(meta), detail: error };
+                error = null;
+            } else {
+                meta = normalizeMeta(meta);
+            }
+            const errorMeta = error
+                ? {
+                      ...meta,
+                      error: {
+                          message: error.message,
+                          stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+                          code: error.code,
+                      },
+                  }
+                : meta;
             console.error(formatMessage('ERROR', message, errorMeta));
             shipToBetterstack('error', message, errorMeta);
             Sentry.addBreadcrumb({ level: 'error', message, data: errorMeta });
@@ -149,9 +156,13 @@ export const logger = {
     // Flush pending Betterstack batches — call during graceful shutdown
     async flush() {
         if (_logtail) {
-            try { await _logtail.flush(); } catch { /* ignore */ }
+            try {
+                await _logtail.flush();
+            } catch {
+                /* ignore */
+            }
         }
-    }
+    },
 };
 
 /**
@@ -162,7 +173,7 @@ export function createLogger(context = {}) {
         debug: (msg, meta = {}) => logger.debug(msg, { ...context, ...normalizeMeta(meta) }),
         info: (msg, meta = {}) => logger.info(msg, { ...context, ...normalizeMeta(meta) }),
         warn: (msg, meta = {}) => logger.warn(msg, { ...context, ...normalizeMeta(meta) }),
-        error: (msg, err, meta = {}) => logger.error(msg, err, { ...context, ...normalizeMeta(meta) })
+        error: (msg, err, meta = {}) => logger.error(msg, err, { ...context, ...normalizeMeta(meta) }),
     };
 }
 

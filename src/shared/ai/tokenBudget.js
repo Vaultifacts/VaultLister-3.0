@@ -7,10 +7,10 @@ import { logger } from '../../backend/shared/logger.js';
 
 // Monthly token limits by subscription tier across all providers combined.
 const TIER_TOKEN_LIMITS = {
-    free:     50_000,
-    starter:  50_000,
-    pro:      500_000,
-    business: 2_000_000
+    free: 50_000,
+    starter: 50_000,
+    pro: 500_000,
+    business: 2_000_000,
 };
 
 function currentPeriod() {
@@ -41,7 +41,7 @@ export async function trackUsage(userId, provider, inputTokens, outputTokens) {
                output_tokens = token_usage.output_tokens + EXCLUDED.output_tokens,
                total_tokens  = token_usage.total_tokens  + EXCLUDED.total_tokens,
                updated_at    = NOW()`,
-            [userId, provider, period, inputTokens || 0, outputTokens || 0, total]
+            [userId, provider, period, inputTokens || 0, outputTokens || 0, total],
         );
     } catch (err) {
         logger.warn('[tokenBudget] trackUsage failed (fail-open)', { userId, provider, error: err.message });
@@ -65,7 +65,7 @@ export async function checkBudget(userId, tier = 'free') {
             `SELECT COALESCE(SUM(total_tokens), 0) AS used
              FROM token_usage
              WHERE user_id = ? AND period = ?`,
-            [userId, period]
+            [userId, period],
         );
         const used = Number(row?.used ?? 0);
         return { allowed: used < limit, used, limit, provider: 'all' };

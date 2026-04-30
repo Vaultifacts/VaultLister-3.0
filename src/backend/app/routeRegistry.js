@@ -80,13 +80,7 @@ import { settingsRouter } from '../routes/settings.js';
 import { contactRouter } from '../routes/contact.js';
 import { affiliateApplyRouter } from '../routes/affiliate-apply.js';
 import { featureRequestsRouter } from '../routes/feature-requests-routes.js';
-import {
-    healthRouter,
-    healthPlatformsRouter,
-    geoRouter,
-    statusRouter,
-    workersHealthRouter,
-} from '../routes/health.js';
+import { healthRouter, healthPlatformsRouter, geoRouter, statusRouter, workersHealthRouter } from '../routes/health.js';
 import { featureFlagsRouter } from '../routes/featureFlags.js';
 import { userAnalyticsRouter, csrfTokenRouter, docsRouter, cspReportRouter } from '../routes/systemHandlers.js';
 import { adminUptimeProbeRouter, adminAffiliateApplicationsRouter } from '../routes/adminOps.js';

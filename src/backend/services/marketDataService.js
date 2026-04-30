@@ -13,17 +13,16 @@ function secureRandomInt(max) {
     return randomInt(max);
 }
 
-
 // Category market data
 const CATEGORY_DATA = {
-    'Clothing': { saturation: 75, opportunity: 45, avgPrice: 42, avgDaysToSell: 12 },
-    'Shoes': { saturation: 65, opportunity: 55, avgPrice: 85, avgDaysToSell: 15 },
-    'Bags': { saturation: 55, opportunity: 65, avgPrice: 95, avgDaysToSell: 18 },
-    'Accessories': { saturation: 60, opportunity: 55, avgPrice: 35, avgDaysToSell: 10 },
-    'Electronics': { saturation: 70, opportunity: 50, avgPrice: 125, avgDaysToSell: 8 },
-    'Home': { saturation: 50, opportunity: 60, avgPrice: 65, avgDaysToSell: 20 },
-    'Collectibles': { saturation: 45, opportunity: 70, avgPrice: 150, avgDaysToSell: 25 },
-    'Vintage': { saturation: 40, opportunity: 75, avgPrice: 55, avgDaysToSell: 14 }
+    Clothing: { saturation: 75, opportunity: 45, avgPrice: 42, avgDaysToSell: 12 },
+    Shoes: { saturation: 65, opportunity: 55, avgPrice: 85, avgDaysToSell: 15 },
+    Bags: { saturation: 55, opportunity: 65, avgPrice: 95, avgDaysToSell: 18 },
+    Accessories: { saturation: 60, opportunity: 55, avgPrice: 35, avgDaysToSell: 10 },
+    Electronics: { saturation: 70, opportunity: 50, avgPrice: 125, avgDaysToSell: 8 },
+    Home: { saturation: 50, opportunity: 60, avgPrice: 65, avgDaysToSell: 20 },
+    Collectibles: { saturation: 45, opportunity: 70, avgPrice: 150, avgDaysToSell: 25 },
+    Vintage: { saturation: 40, opportunity: 75, avgPrice: 55, avgDaysToSell: 14 },
 };
 
 /**
@@ -37,7 +36,7 @@ export async function getCompetitorsForPlatform(platform, userId) {
     try {
         return await query.all(
             'SELECT * FROM competitors WHERE user_id = ? AND platform = ? AND is_active = TRUE ORDER BY listing_count DESC',
-            [userId, platform.toLowerCase()]
+            [userId, platform.toLowerCase()],
         );
     } catch {
         return [];
@@ -53,7 +52,7 @@ export async function getCompetitorsForPlatform(platform, userId) {
  */
 export function normalizeScrapedListings(competitorId, scrapedListings) {
     return scrapedListings
-        .filter(l => l.title)
+        .filter((l) => l.title)
         .map((l, i) => {
             const rawPrice = parseFloat((l.price || '').replace(/[^0-9.]/g, '')) || 0;
             // Derive a stable external_id from the listing URL path; fall back to index
@@ -74,7 +73,7 @@ export function normalizeScrapedListings(competitorId, scrapedListings) {
                 days_to_sell: null,
                 url: l.listingUrl || null,
                 image_url: l.imageUrl || null,
-                created_at: new Date().toISOString()
+                created_at: new Date().toISOString(),
             };
         });
 }
@@ -98,7 +97,7 @@ export function getMarketInsight(category, options = {}) {
     let brandMultiplier = 1.0;
     if (options.brand) {
         const premiumBrands = ['gucci', 'louis vuitton', 'chanel', 'prada', 'supreme'];
-        if (premiumBrands.some(b => options.brand.toLowerCase().includes(b))) {
+        if (premiumBrands.some((b) => options.brand.toLowerCase().includes(b))) {
             brandMultiplier = 2.5;
         }
     }
@@ -123,7 +122,7 @@ export function getMarketInsight(category, options = {}) {
         recommended_price_range: `$${Math.round(avgPrice * 0.8)}-$${Math.round(avgPrice * 1.2)}`,
         insights_json: JSON.stringify(generateInsightsDetails(category, options)),
         valid_until: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
     };
 }
 
@@ -142,12 +141,10 @@ export function findOpportunities(userId, options = {}) {
             opportunities.push({
                 category,
                 opportunity_score: data.opportunity,
-                reason: data.opportunity >= 70
-                    ? 'High demand, lower competition'
-                    : 'Growing demand trend',
+                reason: data.opportunity >= 70 ? 'High demand, lower competition' : 'Growing demand trend',
                 avg_price: data.avgPrice,
                 avg_days_to_sell: data.avgDaysToSell,
-                recommendation: `Consider sourcing more ${category.toLowerCase()} items`
+                recommendation: `Consider sourcing more ${category.toLowerCase()} items`,
             });
         }
     }
@@ -175,7 +172,7 @@ export async function comparePricesWithCompetitors(item, platform) {
     let historyRows = [];
     try {
         const params = [userId];
-        let whereClauses = "s.user_id = ? AND s.sale_price > 0";
+        let whereClauses = 's.user_id = ? AND s.sale_price > 0';
 
         if (category) {
             whereClauses += ' AND LOWER(i.category) = LOWER(?)';
@@ -190,14 +187,17 @@ export async function comparePricesWithCompetitors(item, platform) {
             params.push(platform);
         }
 
-        historyRows = await query.all(`
+        historyRows = await query.all(
+            `
             SELECT s.sale_price
             FROM sales s
             JOIN inventory i ON i.id = s.inventory_id
             WHERE ${whereClauses}
             ORDER BY s.created_at DESC
             LIMIT 50
-        `, params);
+        `,
+            params,
+        );
     } catch {
         historyRows = [];
     }
@@ -211,14 +211,17 @@ export async function comparePricesWithCompetitors(item, platform) {
                 extra = ' AND LOWER(c.platform) = LOWER(?)';
                 params.push(platform);
             }
-            const competitorRows = await query.all(`
+            const competitorRows = await query.all(
+                `
                 SELECT cl.price as sale_price
                 FROM competitor_listings cl
                 JOIN competitors c ON c.id = cl.competitor_id
                 WHERE c.user_id = ?${extra} AND cl.price > 0
                 ORDER BY cl.created_at DESC
                 LIMIT 50
-            `, params);
+            `,
+                params,
+            );
             historyRows = historyRows.concat(competitorRows);
         } catch {
             // no competitor data either
@@ -234,11 +237,11 @@ export async function comparePricesWithCompetitors(item, platform) {
             price_position: 'unknown',
             percent_difference: null,
             data_points: 0,
-            recommendation: 'No sale history found for this category/brand. Price based on your own judgment.'
+            recommendation: 'No sale history found for this category/brand. Price based on your own judgment.',
         };
     }
 
-    const prices = historyRows.map(r => r.sale_price).sort((a, b) => a - b);
+    const prices = historyRows.map((r) => r.sale_price).sort((a, b) => a - b);
     const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
     const percentDiff = avg > 0 ? ((yourPrice - avg) / avg) * 100 : 0;
 
@@ -254,11 +257,12 @@ export async function comparePricesWithCompetitors(item, platform) {
         price_position: position,
         percent_difference: Math.round(percentDiff * 10) / 10,
         data_points: prices.length,
-        recommendation: position === 'above_market'
-            ? 'Consider lowering price for faster sale'
-            : position === 'below_market'
-            ? 'You may be leaving money on the table'
-            : 'Your price is competitive'
+        recommendation:
+            position === 'above_market'
+                ? 'Consider lowering price for faster sale'
+                : position === 'below_market'
+                  ? 'You may be leaving money on the table'
+                  : 'Your price is competitive',
     };
 }
 
@@ -273,7 +277,7 @@ export function getTrendingCategories(platform = null) {
             category,
             trend_score: data.opportunity,
             avg_price: data.avgPrice,
-            demand: data.opportunity >= 60 ? 'rising' : data.opportunity >= 40 ? 'stable' : 'falling'
+            demand: data.opportunity >= 60 ? 'rising' : data.opportunity >= 40 ? 'stable' : 'falling',
         }))
         .sort((a, b) => b.trend_score - a.trend_score);
 
@@ -309,25 +313,25 @@ function generateInsightsDetails(category, options) {
     return {
         best_time_to_list: {
             day: ['Thursday', 'Friday', 'Sunday'][secureRandomInt(3)],
-            time: ['morning', 'evening'][secureRandomInt(2)]
+            time: ['morning', 'evening'][secureRandomInt(2)],
         },
         hot_keywords: generateHotKeywords(category),
         price_sweet_spot: '45-85',
         buyer_demographics: {
             primary_age: '25-34',
-            secondary_age: '18-24'
-        }
+            secondary_age: '18-24',
+        },
     };
 }
 
 function generateHotKeywords(category) {
     const keywords = {
-        'Clothing': ['vintage', 'y2k', 'cottagecore', 'oversized', 'minimal'],
-        'Shoes': ['chunky', 'platform', 'rare', 'OG', 'deadstock'],
-        'Bags': ['crossbody', 'mini', 'vintage', 'leather', 'designer'],
-        'Accessories': ['gold', 'layered', 'chunky', 'vintage', 'statement'],
-        'Electronics': ['mint', 'bundle', 'tested', 'working', 'rare'],
-        'Vintage': ['70s', '80s', '90s', 'retro', 'authentic']
+        Clothing: ['vintage', 'y2k', 'cottagecore', 'oversized', 'minimal'],
+        Shoes: ['chunky', 'platform', 'rare', 'OG', 'deadstock'],
+        Bags: ['crossbody', 'mini', 'vintage', 'leather', 'designer'],
+        Accessories: ['gold', 'layered', 'chunky', 'vintage', 'statement'],
+        Electronics: ['mint', 'bundle', 'tested', 'working', 'rare'],
+        Vintage: ['70s', '80s', '90s', 'retro', 'authentic'],
     };
     return keywords[category] || ['trending', 'popular', 'rare'];
 }
@@ -338,5 +342,5 @@ export default {
     getMarketInsight,
     findOpportunities,
     comparePricesWithCompetitors,
-    getTrendingCategories
+    getTrendingCategories,
 };

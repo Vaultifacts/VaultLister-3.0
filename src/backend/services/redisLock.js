@@ -17,14 +17,14 @@ function shouldRunWithoutRedis() {
 function unlockedResult() {
     return {
         acquired: true,
-        release: async () => {}
+        release: async () => {},
     };
 }
 
 function skippedResult() {
     return {
         acquired: false,
-        release: async () => {}
+        release: async () => {},
     };
 }
 
@@ -53,7 +53,9 @@ export async function acquireRedisLock(key, ttlMs, options = {}) {
         }
     } catch (error) {
         if (runWithoutRedis) {
-            logger.warn(`[RedisLock] Failed to acquire ${name}; running without distributed lock`, { detail: error.message });
+            logger.warn(`[RedisLock] Failed to acquire ${name}; running without distributed lock`, {
+                detail: error.message,
+            });
             return unlockedResult();
         }
 
@@ -69,7 +71,7 @@ export async function acquireRedisLock(key, ttlMs, options = {}) {
             } catch (error) {
                 logger.warn(`[RedisLock] Failed to release ${name}`, { detail: error.message });
             }
-        }
+        },
     };
 }
 

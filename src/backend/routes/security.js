@@ -11,7 +11,6 @@ import { auditLog } from '../services/auditLog.js';
 import { logger } from '../shared/logger.js';
 import { safeJsonParse } from '../shared/utils.js';
 
-
 /**
  * Security Router
  */
@@ -29,37 +28,51 @@ export async function securityRouter(ctx) {
                 return { status: 401, data: { error: 'Authentication required' } };
             }
 
-            const userData = await query.get('SELECT id, email, username, full_name, email_verified FROM users WHERE id = ?', [user.id]);
+            const userData = await query.get(
+                'SELECT id, email, username, full_name, email_verified FROM users WHERE id = ?',
+                [user.id],
+            );
 
             if (userData.email_verified) {
                 return { status: 400, data: { error: 'Email already verified' } };
             }
 
             // Check for existing pending token
-            const existingToken = await query.get(`
+            const existingToken = await query.get(
+                `
                 SELECT * FROM verification_tokens
                 WHERE user_id = ? AND type = 'email_verification'
                 AND expires_at > NOW() AND used_at IS NULL
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             if (existingToken) {
-                return { status: 429, data: { error: 'Verification email already sent. Please check your inbox or wait before requesting another.' } };
+                return {
+                    status: 429,
+                    data: {
+                        error: 'Verification email already sent. Please check your inbox or wait before requesting another.',
+                    },
+                };
             }
 
             // Generate verification token
             const token = crypto.randomBytes(32).toString('hex');
 
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO verification_tokens (id, user_id, token, type, expires_at)
                 VALUES (?, ?, ?, 'email_verification', NOW() + INTERVAL '24 hours')
-            `, [uuidv4(), user.id, token]);
+            `,
+                [uuidv4(), user.id, token],
+            );
 
             // Send verification email
             await emailService.sendVerificationEmail(userData, token);
 
             return {
                 status: 200,
-                data: { message: 'Verification email sent. Please check your inbox.' }
+                data: { message: 'Verification email sent. Please check your inbox.' },
             };
         } catch (error) {
             logger.error('[Security] Error sending verification email', user?.id, { detail: error.message });
@@ -80,33 +93,42 @@ export async function securityRouter(ctx) {
             }
 
             // SECURITY: Atomically mark token as used to prevent TOCTOU race condition
-            const updated = await query.run(`
+            const updated = await query.run(
+                `
                 UPDATE verification_tokens SET used_at = NOW()
                 WHERE token = ? AND type = 'email_verification'
                 AND expires_at > NOW() AND used_at IS NULL
-            `, [token]);
+            `,
+                [token],
+            );
 
             if (updated.changes === 0) {
                 return { status: 400, data: { error: 'Invalid or expired verification link' } };
             }
 
             // Get the token record (already marked as used, safe from reuse)
-            const tokenRecord = await query.get(`
+            const tokenRecord = await query.get(
+                `
                 SELECT vt.*, u.email FROM verification_tokens vt
                 JOIN users u ON vt.user_id = u.id
                 WHERE vt.token = ? AND vt.type = 'email_verification'
-            `, [token]);
+            `,
+                [token],
+            );
 
             // Mark email as verified
-            await query.run(`
+            await query.run(
+                `
                 UPDATE users
                 SET email_verified = TRUE, email_verified_at = NOW(), updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
-            `, [tokenRecord.user_id]);
+            `,
+                [tokenRecord.user_id],
+            );
 
             return {
                 status: 200,
-                data: { message: 'Email verified successfully!' }
+                data: { message: 'Email verified successfully!' },
             };
         } catch (error) {
             logger.error('[Security] Error verifying email', user?.id, { detail: error.message });
@@ -132,28 +154,36 @@ export async function securityRouter(ctx) {
             // Always return success to prevent email enumeration
             const successResponse = {
                 status: 200,
-                data: { message: 'If an account exists with that email, you will receive a password reset link.' }
+                data: { message: 'If an account exists with that email, you will receive a password reset link.' },
             };
 
-            const userData = await query.get('SELECT id, email, username, full_name FROM users WHERE email = ?', [email.toLowerCase()]);
+            const userData = await query.get('SELECT id, email, username, full_name FROM users WHERE email = ?', [
+                email.toLowerCase(),
+            ]);
 
             if (!userData) {
                 return successResponse;
             }
 
             // Invalidate any existing reset tokens
-            await query.run(`
+            await query.run(
+                `
                 UPDATE verification_tokens SET used_at = NOW()
                 WHERE user_id = ? AND type = 'password_reset' AND used_at IS NULL
-            `, [userData.id]);
+            `,
+                [userData.id],
+            );
 
             // Generate reset token
             const token = crypto.randomBytes(32).toString('hex');
 
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO verification_tokens (id, user_id, token, type, expires_at)
                 VALUES (?, ?, ?, 'password_reset', NOW() + INTERVAL '1 hour')
-            `, [uuidv4(), userData.id, token]);
+            `,
+                [uuidv4(), userData.id, token],
+            );
 
             // Send reset email
             await emailService.sendPasswordResetEmail(userData, token);
@@ -184,21 +214,27 @@ export async function securityRouter(ctx) {
             }
 
             // SECURITY: Atomically mark token as used to prevent TOCTOU race condition
-            const updated = await query.run(`
+            const updated = await query.run(
+                `
                 UPDATE verification_tokens SET used_at = NOW()
                 WHERE token = ? AND type = 'password_reset'
                 AND expires_at > NOW() AND used_at IS NULL
-            `, [token]);
+            `,
+                [token],
+            );
 
             if (updated.changes === 0) {
                 return { status: 400, data: { error: 'Invalid or expired reset link' } };
             }
 
             // Get the token record (already marked as used, safe from reuse)
-            const tokenRecord = await query.get(`
+            const tokenRecord = await query.get(
+                `
                 SELECT * FROM verification_tokens
                 WHERE token = ? AND type = 'password_reset'
-            `, [token]);
+            `,
+                [token],
+            );
 
             if (!tokenRecord) {
                 return { status: 400, data: { error: 'Invalid or expired reset link' } };
@@ -208,20 +244,28 @@ export async function securityRouter(ctx) {
             const passwordHash = await bcrypt.hash(password, 12);
 
             // Update password
-            await query.run(`
+            await query.run(
+                `
                 UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
-            `, [passwordHash, tokenRecord.user_id]);
+            `,
+                [passwordHash, tokenRecord.user_id],
+            );
 
             // Invalidate all sessions
             await query.run('UPDATE sessions SET is_valid = 0 WHERE user_id = ?', [tokenRecord.user_id]);
 
             // Send security alert
-            const userData = await query.get('SELECT id, email, username, full_name FROM users WHERE id = ?', [tokenRecord.user_id]);
-            await emailService.sendSecurityAlertEmail(userData, 'password_changed', { ip, time: new Date().toISOString() });
+            const userData = await query.get('SELECT id, email, username, full_name FROM users WHERE id = ?', [
+                tokenRecord.user_id,
+            ]);
+            await emailService.sendSecurityAlertEmail(userData, 'password_changed', {
+                ip,
+                time: new Date().toISOString(),
+            });
 
             return {
                 status: 200,
-                data: { message: 'Password reset successfully. Please login with your new password.' }
+                data: { message: 'Password reset successfully. Please login with your new password.' },
             };
         } catch (error) {
             logger.error('[Security] Error resetting password', user?.id, { detail: error.message });
@@ -238,7 +282,10 @@ export async function securityRouter(ctx) {
                 return { status: 401, data: { error: 'Authentication required' } };
             }
 
-            const userData = await query.get('SELECT id, email, username, full_name, mfa_enabled FROM users WHERE id = ?', [user.id]);
+            const userData = await query.get(
+                'SELECT id, email, username, full_name, mfa_enabled FROM users WHERE id = ?',
+                [user.id],
+            );
 
             if (userData.mfa_enabled) {
                 return { status: 400, data: { error: 'MFA is already enabled' } };
@@ -251,8 +298,8 @@ export async function securityRouter(ctx) {
                 data: {
                     qrCode: setupData.qrCode,
                     secret: setupData.secret, // For manual entry
-                    setupToken: setupData.setupToken
-                }
+                    setupToken: setupData.setupToken,
+                },
             };
         } catch (error) {
             logger.error('[Security] Error setting up MFA', user?.id, { detail: error.message });
@@ -278,11 +325,14 @@ export async function securityRouter(ctx) {
             }
 
             // Verify the setup token
-            const tokenRecord = await query.get(`
+            const tokenRecord = await query.get(
+                `
                 SELECT * FROM verification_tokens
                 WHERE user_id = ? AND token = ? AND type = 'mfa_setup'
                 AND expires_at > NOW() AND used_at IS NULL
-            `, [user.id, setupToken]);
+            `,
+                [user.id, setupToken],
+            );
 
             if (!tokenRecord) {
                 return { status: 400, data: { error: 'Invalid or expired setup session. Please start over.' } };
@@ -299,7 +349,9 @@ export async function securityRouter(ctx) {
             await query.run('UPDATE verification_tokens SET used_at = NOW() WHERE id = ?', [tokenRecord.id]);
 
             // Send notification email
-            const userData = await query.get('SELECT id, email, username, full_name FROM users WHERE id = ?', [user.id]);
+            const userData = await query.get('SELECT id, email, username, full_name FROM users WHERE id = ?', [
+                user.id,
+            ]);
             await emailService.sendMFAEnabledEmail(userData);
 
             return {
@@ -307,8 +359,8 @@ export async function securityRouter(ctx) {
                 data: {
                     message: 'Two-factor authentication enabled successfully!',
                     backupCodes: result.backupCodes,
-                    warning: 'Save these backup codes in a safe place. You will not be able to see them again.'
-                }
+                    warning: 'Save these backup codes in a safe place. You will not be able to see them again.',
+                },
             };
         } catch (error) {
             logger.error('[Security] Error verifying MFA setup', user?.id, { detail: error.message });
@@ -329,7 +381,10 @@ export async function securityRouter(ctx) {
                 return { status: 400, data: { error: 'Password required to disable MFA' } };
             }
 
-            const userData = await query.get('SELECT id, email, username, full_name, mfa_enabled, password_hash FROM users WHERE id = ?', [user.id]);
+            const userData = await query.get(
+                'SELECT id, email, username, full_name, mfa_enabled, password_hash FROM users WHERE id = ?',
+                [user.id],
+            );
 
             if (!userData.mfa_enabled) {
                 return { status: 400, data: { error: 'MFA is not enabled' } };
@@ -347,17 +402,23 @@ export async function securityRouter(ctx) {
             // Log to central audit trail
             try {
                 await auditLog.log({
-                    userId: user.id, action: 'mfa_disabled', category: 'security',
-                    severity: 'warning', ip: ctx.ip, userAgent: ctx.userAgent,
-                    details: { username: userData.username }
+                    userId: user.id,
+                    action: 'mfa_disabled',
+                    category: 'security',
+                    severity: 'warning',
+                    ip: ctx.ip,
+                    userAgent: ctx.userAgent,
+                    details: { username: userData.username },
                 });
             } catch (e) {
-                logger.error('[Security] Failed to write audit log for MFA disable', user?.id || null, { detail: e.message });
+                logger.error('[Security] Failed to write audit log for MFA disable', user?.id || null, {
+                    detail: e.message,
+                });
             }
 
             return {
                 status: 200,
-                data: { message: 'Two-factor authentication disabled.' }
+                data: { message: 'Two-factor authentication disabled.' },
             };
         } catch (error) {
             logger.error('[Security] Error disabling MFA', user?.id, { detail: error.message });
@@ -378,13 +439,22 @@ export async function securityRouter(ctx) {
                 return { status: 400, data: { error: 'Password required' } };
             }
 
-            const userData = await query.get('SELECT id, email, username, full_name, mfa_enabled, password_hash FROM users WHERE id = ?', [user.id]);
+            const userData = await query.get(
+                'SELECT id, email, username, full_name, mfa_enabled, password_hash FROM users WHERE id = ?',
+                [user.id],
+            );
 
             if (!userData.mfa_enabled) {
                 return { status: 400, data: { error: 'MFA is not enabled' } };
             }
 
-            const result = await mfaService.regenerateBackupCodes(user.id, password, userData.password_hash, ip, userAgent);
+            const result = await mfaService.regenerateBackupCodes(
+                user.id,
+                password,
+                userData.password_hash,
+                ip,
+                userAgent,
+            );
 
             if (!result.success) {
                 return { status: 400, data: { error: result.error } };
@@ -395,8 +465,8 @@ export async function securityRouter(ctx) {
                 data: {
                     message: 'New backup codes generated.',
                     backupCodes: result.backupCodes,
-                    warning: 'Your old backup codes are now invalid. Save these new codes in a safe place.'
-                }
+                    warning: 'Your old backup codes are now invalid. Save these new codes in a safe place.',
+                },
             };
         } catch (error) {
             logger.error('[Security] Error regenerating MFA backup codes', user?.id, { detail: error.message });
@@ -413,14 +483,14 @@ export async function securityRouter(ctx) {
 
             const userData = await query.get('SELECT mfa_enabled, mfa_backup_codes FROM users WHERE id = ?', [user.id]);
             const backupCodes = safeJsonParse(userData.mfa_backup_codes, []);
-            const remainingCodes = backupCodes.filter(c => c !== null).length;
+            const remainingCodes = backupCodes.filter((c) => c !== null).length;
 
             return {
                 status: 200,
                 data: {
                     mfaEnabled: !!userData.mfa_enabled,
-                    backupCodesRemaining: userData.mfa_enabled ? remainingCodes : 0
-                }
+                    backupCodesRemaining: userData.mfa_enabled ? remainingCodes : 0,
+                },
             };
         } catch (error) {
             logger.error('[Security] Error fetching MFA status', user?.id, { detail: error.message });
@@ -437,33 +507,38 @@ export async function securityRouter(ctx) {
                 return { status: 401, data: { error: 'Authentication required' } };
             }
 
-            const events = await query.all(`
+            const events = await query.all(
+                `
                 SELECT event_type, ip_address, user_agent, created_at
                 FROM mfa_events
                 WHERE user_id = ?
                 ORDER BY created_at DESC
                 LIMIT 50
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             // Query uses masked email because logFailedLogin stores only the masked form — never raw PII.
-            const maskedEmail = user.email.length > 0
-                ? user.email[0] + '***' + user.email.slice(user.email.indexOf('@'))
-                : '***';
+            const maskedEmail =
+                user.email.length > 0 ? user.email[0] + '***' + user.email.slice(user.email.indexOf('@')) : '***';
             const escapedEmail = maskedEmail.replace(/[%_\\]/g, '\\$&');
-            const loginEvents = await query.all(`
+            const loginEvents = await query.all(
+                `
                 SELECT 'login' as event_type, ip_or_user as ip_address, details, created_at
                 FROM security_logs
                 WHERE details ILIKE ? ESCAPE '\\'
                 ORDER BY created_at DESC
                 LIMIT 50
-            `, [`%"email":"${escapedEmail}"%`]);
+            `,
+                [`%"email":"${escapedEmail}"%`],
+            );
 
             return {
                 status: 200,
                 data: {
                     mfaEvents: events,
-                    loginEvents: loginEvents
-                }
+                    loginEvents: loginEvents,
+                },
             };
         } catch (error) {
             logger.error('[Security] Error fetching security events', user?.id, { detail: error.message });
@@ -482,25 +557,31 @@ export async function securityRouter(ctx) {
             const offset = parseInt(ctx.query?.offset) || 0;
 
             // Filter to security-relevant categories only
-            const activityRows = await query.all(`
+            const activityRows = await query.all(
+                `
                 SELECT id, action, category, severity, ip_address, user_agent, created_at
                 FROM audit_logs
                 WHERE user_id = ?
                   AND category IN ('auth', 'security')
                 ORDER BY created_at DESC
                 LIMIT ? OFFSET ?
-            `, [user.id, limit, offset]);
+            `,
+                [user.id, limit, offset],
+            );
 
-            const total = Number(
-                (await query.get(
-                    `SELECT COUNT(*) AS total FROM audit_logs WHERE user_id = ? AND category IN ('auth', 'security')`,
-                    [user.id]
-                ))?.total
-            ) || 0;
+            const total =
+                Number(
+                    (
+                        await query.get(
+                            `SELECT COUNT(*) AS total FROM audit_logs WHERE user_id = ? AND category IN ('auth', 'security')`,
+                            [user.id],
+                        )
+                    )?.total,
+                ) || 0;
 
             return {
                 status: 200,
-                data: { activity: activityRows, total, limit, offset }
+                data: { activity: activityRows, total, limit, offset },
             };
         } catch (error) {
             logger.error('[Security] Error fetching activity log', user?.id, { detail: error.message });
@@ -518,7 +599,8 @@ function validatePassword(password) {
     if (!/[A-Z]/.test(password)) errors.push('Password must contain at least one uppercase letter');
     if (!/[a-z]/.test(password)) errors.push('Password must contain at least one lowercase letter');
     if (!/[0-9]/.test(password)) errors.push('Password must contain at least one number');
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) errors.push('Password must contain at least one special character');
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password))
+        errors.push('Password must contain at least one special character');
     return errors;
 }
 

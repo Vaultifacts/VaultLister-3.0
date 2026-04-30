@@ -13,513 +13,538 @@
             sampleRate: 1.0,
             tracesSampleRate: 0.1,
         });
-    } catch (_) { /* Sentry init failed silently */ }
+    } catch (_) {
+        /* Sentry init failed silently */
+    }
 })();
 
 // ============================================
 // App Initialization
 // ============================================
 async function initApp() {
-  try {
-    // Hydrate state from localStorage
-    store.hydrate();
+    try {
+        // Hydrate state from localStorage
+        store.hydrate();
 
-    // Detect Stripe checkout return and fire GA4 purchase event
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('checkout') === 'success') {
-        const plan = urlParams.get('plan') || 'unknown';
-        const PRICING = { starter: 9, pro: 19, business: 49 };
-        if (typeof gtag === 'function') {
-            gtag('event', 'purchase', {
-                transaction_id: 'stripe_' + Date.now(),
-                value: PRICING[plan] || 0,
-                currency: 'CAD',
-                items: [{ item_name: plan, price: PRICING[plan] || 0 }]
-            });
-            gtag('event', 'subscription_start', { plan: plan, value: PRICING[plan] || 0, currency: 'CAD' });
+        // Detect Stripe checkout return and fire GA4 purchase event
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('checkout') === 'success') {
+            const plan = urlParams.get('plan') || 'unknown';
+            const PRICING = { starter: 9, pro: 19, business: 49 };
+            if (typeof gtag === 'function') {
+                gtag('event', 'purchase', {
+                    transaction_id: 'stripe_' + Date.now(),
+                    value: PRICING[plan] || 0,
+                    currency: 'CAD',
+                    items: [{ item_name: plan, price: PRICING[plan] || 0 }],
+                });
+                gtag('event', 'subscription_start', { plan: plan, value: PRICING[plan] || 0, currency: 'CAD' });
+            }
+            // Clean up URL params without triggering navigation
+            const cleanUrl = window.location.pathname + window.location.hash;
+            window.history.replaceState({}, '', cleanUrl);
         }
-        // Clean up URL params without triggering navigation
-        const cleanUrl = window.location.pathname + window.location.hash;
-        window.history.replaceState({}, '', cleanUrl);
-    }
 
-    // Auto-login with demo account if not authenticated (for development/testing)
-    // Skip auto-login if explicitly on a public auth page.
-    const currentHash = window.location.hash.slice(1) || 'dashboard';
-    const currentRoute = currentHash.split('?')[0];
-    const skipAutoLogin = ['login', 'register', 'forgot-password', 'reset-password', 'email-verification', 'verify-email', 'auth-callback'].includes(currentRoute);
+        // Auto-login with demo account if not authenticated (for development/testing)
+        // Skip auto-login if explicitly on a public auth page.
+        const currentHash = window.location.hash.slice(1) || 'dashboard';
+        const currentRoute = currentHash.split('?')[0];
+        const skipAutoLogin = [
+            'login',
+            'register',
+            'forgot-password',
+            'reset-password',
+            'email-verification',
+            'verify-email',
+            'auth-callback',
+        ].includes(currentRoute);
 
-    if (!auth.isAuthenticated() && !skipAutoLogin) {
-        // Attempt token refresh if we have a stored refresh token
-        if (store.state.refreshToken) {
-            try {
-                await api.refreshAccessToken();
-            } catch (refreshErr) {
-                console.warn('Token refresh failed:', refreshErr.message);
+        if (!auth.isAuthenticated() && !skipAutoLogin) {
+            // Attempt token refresh if we have a stored refresh token
+            if (store.state.refreshToken) {
+                try {
+                    await api.refreshAccessToken();
+                } catch (refreshErr) {
+                    console.warn('Token refresh failed:', refreshErr.message);
+                }
+            }
+
+            // If still not authenticated, set hash to login so router.init()
+            // picks it up after routes are registered (calling router.navigate
+            // here would trigger handleRoute before routes exist, causing a
+            // routing loop in Firefox that exhausts the History API limit).
+            if (!auth.isAuthenticated()) {
+                window.location.hash = '#login';
             }
         }
 
-        // If still not authenticated, set hash to login so router.init()
-        // picks it up after routes are registered (calling router.navigate
-        // here would trigger handleRoute before routes exist, causing a
-        // routing loop in Firefox that exhausts the History API limit).
-        if (!auth.isAuthenticated()) {
-            window.location.hash = '#login';
-        }
-    }
+        // Dark mode disabled pre-launch
+        document.body.classList.remove('dark-mode');
+        store.setState({ darkMode: false });
+        localStorage.removeItem('vaultlister_dark_mode');
 
-    // Dark mode disabled pre-launch
-    document.body.classList.remove('dark-mode');
-    store.setState({ darkMode: false });
-    localStorage.removeItem('vaultlister_dark_mode');
-
-    // Global keyboard delegation: Enter/Space on role="button" elements triggers click
-    document.addEventListener('keydown', e => {
-        if (e.key !== 'Enter' && e.key !== ' ') return;
-        const el = e.target;
-        if (el.getAttribute('role') === 'button' && el.tagName !== 'BUTTON' && el.tagName !== 'A') {
-            e.preventDefault();
-            el.click();
-        }
-    }, true);
-
-    // Restore sidebar collapse state from localStorage
-    try {
-        const sidebarCollapsed = localStorage.getItem('vaultlister_sidebar_collapsed') === '1';
-        if (sidebarCollapsed) store.state.sidebarCollapsed = true;
-    } catch(e) {}
-
-    // Initialize UI helpers
-    themeManager.init();
-    offlineManager.init();
-    backToTopManager.init();
-    onboarding.init();
-    commandPalette.init();
-    contextMenu.init();
-    sessionMonitor.init();
-    notificationCenter.init();
-    // Wire WebSocket offer + notification events to badge and toast
-    setTimeout(() => {
-        if (window.wsSubscribe) {
-            wsSubscribe.onOfferReceived((data) => {
-                const offer = data.offer || data;
-                const title = offer.listing_title || 'your listing';
-                const amt = offer.offer_amount != null ? 'C$' + Number(offer.offer_amount).toFixed(2) : '';
-                notificationCenter.add({ title: 'New offer received', message: `${amt} offer on ${title}`, type: 'offer', icon: 'offers' });
-                if (typeof toast !== 'undefined') toast.info(`New offer received: ${amt} on ${title}`);
-            });
-            wsSubscribe.onNotification((data) => {
-                const n = data.notification || data;
-                if (n && n.title) notificationCenter.add({ title: n.title, message: n.message || '', type: n.type || 'info', icon: 'bell' });
-            });
-            wsSubscribe.onMonitoringUpdated((data) => {
-                if (data.platform === 'poshmark' && data.data) {
-                    if (window.store) store.setState({ poshmarkMonitoring: data.data });
-                    if (window.handlers && typeof handlers.loadPoshmarkMonitoring === 'function') {
-                        handlers.loadPoshmarkMonitoring();
-                    }
+        // Global keyboard delegation: Enter/Space on role="button" elements triggers click
+        document.addEventListener(
+            'keydown',
+            (e) => {
+                if (e.key !== 'Enter' && e.key !== ' ') return;
+                const el = e.target;
+                if (el.getAttribute('role') === 'button' && el.tagName !== 'BUTTON' && el.tagName !== 'A') {
+                    e.preventDefault();
+                    el.click();
                 }
-            });
-        }
-    }, 2000);
-    savedViews.init();
+            },
+            true,
+        );
 
-    // Add global UI elements
-    const globalUI = document.createElement('div');
-    globalUI.id = 'global-ui';
-    // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-    globalUI.innerHTML =sanitizeHTML( sanitizeHTML(`
+        // Restore sidebar collapse state from localStorage
+        try {
+            const sidebarCollapsed = localStorage.getItem('vaultlister_sidebar_collapsed') === '1';
+            if (sidebarCollapsed) store.state.sidebarCollapsed = true;
+        } catch (e) {}
+
+        // Initialize UI helpers
+        themeManager.init();
+        offlineManager.init();
+        backToTopManager.init();
+        onboarding.init();
+        commandPalette.init();
+        contextMenu.init();
+        sessionMonitor.init();
+        notificationCenter.init();
+        // Wire WebSocket offer + notification events to badge and toast
+        setTimeout(() => {
+            if (window.wsSubscribe) {
+                wsSubscribe.onOfferReceived((data) => {
+                    const offer = data.offer || data;
+                    const title = offer.listing_title || 'your listing';
+                    const amt = offer.offer_amount != null ? 'C$' + Number(offer.offer_amount).toFixed(2) : '';
+                    notificationCenter.add({
+                        title: 'New offer received',
+                        message: `${amt} offer on ${title}`,
+                        type: 'offer',
+                        icon: 'offers',
+                    });
+                    if (typeof toast !== 'undefined') toast.info(`New offer received: ${amt} on ${title}`);
+                });
+                wsSubscribe.onNotification((data) => {
+                    const n = data.notification || data;
+                    if (n && n.title)
+                        notificationCenter.add({
+                            title: n.title,
+                            message: n.message || '',
+                            type: n.type || 'info',
+                            icon: 'bell',
+                        });
+                });
+                wsSubscribe.onMonitoringUpdated((data) => {
+                    if (data.platform === 'poshmark' && data.data) {
+                        if (window.store) store.setState({ poshmarkMonitoring: data.data });
+                        if (window.handlers && typeof handlers.loadPoshmarkMonitoring === 'function') {
+                            handlers.loadPoshmarkMonitoring();
+                        }
+                    }
+                });
+            }
+        }, 2000);
+        savedViews.init();
+
+        // Add global UI elements
+        const globalUI = document.createElement('div');
+        globalUI.id = 'global-ui';
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        globalUI.innerHTML = sanitizeHTML(
+            sanitizeHTML(`
         ${components.backToTop()}
         ${components.offlineIndicator()}
         ${components.pullToRefresh()}
         ${notificationCenter.render()}
         ${mobileUI.renderBottomNav()}
         ${mobileUI.renderFAB()}
-    `));
-    document.body.appendChild(globalUI);
+    `),
+        );
+        document.body.appendChild(globalUI);
 
-    // Initialize mobile pull-to-refresh
-    if (mobileUI.isMobile()) {
-        mobileUI.initPullToRefresh(async () => {
-            const page = store.state.currentPage || 'inventory';
-            const pageObj = window.pages && window.pages[page];
-            if (pageObj && typeof pageObj.refresh === 'function') {
-                await pageObj.refresh();
-            } else {
-                location.reload();
+        // Initialize mobile pull-to-refresh
+        if (mobileUI.isMobile()) {
+            mobileUI.initPullToRefresh(async () => {
+                const page = store.state.currentPage || 'inventory';
+                const pageObj = window.pages && window.pages[page];
+                if (pageObj && typeof pageObj.refresh === 'function') {
+                    await pageObj.refresh();
+                } else {
+                    location.reload();
+                }
+            });
+        }
+
+        // Register routes
+        router.register('login', () => render(window.pages.login()));
+        router.register('auth-callback', async () => {
+            // Capture OTT immediately — the hash may change during async operations.
+            const hashParts = window.location.hash.slice(1).split('?');
+            const ott = new URLSearchParams(hashParts[1] || '').get('ott');
+            // Show spinner directly — cannot use renderApp() because the user is not
+            // yet authenticated (OTT exchange hasn't happened) and renderApp's auth
+            // guard would redirect to #login, wiping the OTT from the hash.
+            const app = document.getElementById('app');
+            if (app) {
+                const spinner = document.createElement('div');
+                spinner.style.cssText = 'display:flex;align-items:center;justify-content:center;min-height:60vh';
+                const dot = document.createElement('div');
+                dot.className = 'loading-spinner';
+                const msg = document.createElement('p');
+                msg.style.cssText = 'margin-left:1rem;color:var(--gray-500)';
+                msg.textContent = 'Completing sign-in\u2026';
+                spinner.appendChild(dot);
+                spinner.appendChild(msg);
+                app.replaceChildren(spinner);
+            }
+            await auth.handleOAuthCallback(ott);
+        });
+        router.register('register', () => render(window.pages.register()));
+        router.register('forgot-password', () => render(window.pages.forgotPassword()));
+        router.register('reset-password', () => render(window.pages.resetPassword({ mode: 'form' })));
+        router.register('email-verification', () => render(window.pages.emailVerification()));
+        router.register('verify-email', async () => {
+            const params = new URLSearchParams(window.location.hash.split('?')[1] || '');
+            const token = params.get('token');
+            if (!token) {
+                render(window.pages.verifyEmail(false, 'No verification token found in the link.'));
+                return;
+            }
+            render(window.pages.verifyEmail(null, 'Verifying your email\u2026'));
+            try {
+                const data = await api.get(`/auth/verify-email?token=${encodeURIComponent(token)}`);
+                render(
+                    window.pages.verifyEmail(true, data.message || 'Email verified successfully! You can now log in.'),
+                );
+            } catch (err) {
+                render(window.pages.verifyEmail(false, err.message || 'Verification failed. Please try again.'));
             }
         });
-    }
+        router.register('dashboard', () => {
+            renderApp(window.pages.dashboard());
+            // Initialize resize handles and animations after DOM update
+            setTimeout(() => {
+                widgetManager.initResize();
+                widgetManager.initDragDrop();
+                handlers.animateCountUp();
+                // On mobile, override FAB for dashboard quick actions
+                if (mobileUI.isMobile()) {
+                    const fab = document.querySelector('.fab');
+                    if (fab) fab.setAttribute('onclick', 'handlers.showDashboardQuickActions()');
+                }
+            }, 100);
+        });
+        router.register('inventory', async () => {
+            renderApp(window.pages.inventory());
+            await handlers.loadInventory();
+            renderApp(window.pages.inventory());
+        });
+        router.register('listings', async () => {
+            store.setState({ listingsTab: 'listings' });
+            renderApp(window.pages.listings());
+        });
+        router.register('crosslist', () => router.navigate('listings'));
+        router.register('templates', () => {
+            store.setState({ listingsTab: 'templates' });
+            renderApp(window.pages.listings());
+        });
+        router.register('automations', () => renderApp(window.pages.automations()));
+        router.register('offers', async () => {
+            renderApp(window.pages.offers());
+            await handlers.loadOffers();
+            renderApp(window.pages.offers());
+        });
+        router.register('sales', () => renderApp(window.pages.sales()));
+        router.register('analytics', () => {
+            requestAnimationFrame(() => renderApp(window.pages.analytics()));
+        });
+        router.register('financials', () => renderApp(window.pages.financials()));
+        router.register('shops', () => renderApp(window.pages.shops()));
+        router.register('platform-health', async () => {
+            renderApp(window.pages.platformHealth());
+            await handlers.loadPlatformHealth();
+            renderApp(window.pages.platformHealth());
+        });
+        router.register('recently-deleted', async () => {
+            renderApp(window.pages.recentlyDeleted());
+            await handlers.loadDeletedItems();
+            renderApp(window.pages.recentlyDeleted());
+        });
+        router.register('report-builder', async () => {
+            renderApp(window.pages.reportBuilder());
+            await handlers.loadReports();
+            renderApp(window.pages.reportBuilder());
+        });
+        router.register('settings', () => renderApp(window.pages.settings()));
+        router.register('account', () => renderApp(window.pages.account()));
+        router.register('admin-metrics', async () => {
+            renderApp(window.pages.adminMetrics());
+            await handlers.refreshAdminMetrics?.();
+            renderApp(window.pages.adminMetrics());
+        });
+        router.register('admin-business-metrics', () => renderApp(window.pages.adminBusinessMetrics()));
+        router.register('community', () => renderApp(window.pages.community()));
+        router.register('help', () => router.navigate('help-support'));
 
-    // Register routes
-    router.register('login', () => render(window.pages.login()));
-    router.register('auth-callback', async () => {
-        // Capture OTT immediately — the hash may change during async operations.
-        const hashParts = window.location.hash.slice(1).split('?');
-        const ott = new URLSearchParams(hashParts[1] || '').get('ott');
-        // Show spinner directly — cannot use renderApp() because the user is not
-        // yet authenticated (OTT exchange hasn't happened) and renderApp's auth
-        // guard would redirect to #login, wiping the OTT from the hash.
-        const app = document.getElementById('app');
-        if (app) {
-            const spinner = document.createElement('div');
-            spinner.style.cssText = 'display:flex;align-items:center;justify-content:center;min-height:60vh';
-            const dot = document.createElement('div');
-            dot.className = 'loading-spinner';
-            const msg = document.createElement('p');
-            msg.style.cssText = 'margin-left:1rem;color:var(--gray-500)';
-            msg.textContent = 'Completing sign-in\u2026';
-            spinner.appendChild(dot);
-            spinner.appendChild(msg);
-            app.replaceChildren(spinner);
-        }
-        await auth.handleOAuthCallback(ott);
-    });
-    router.register('register', () => render(window.pages.register()));
-    router.register('forgot-password', () => render(window.pages.forgotPassword()));
-    router.register('reset-password', () => render(window.pages.resetPassword({ mode: 'form' })));
-    router.register('email-verification', () => render(window.pages.emailVerification()));
-    router.register('verify-email', async () => {
-        const params = new URLSearchParams(window.location.hash.split('?')[1] || '');
-        const token = params.get('token');
-        if (!token) {
-            render(window.pages.verifyEmail(false, 'No verification token found in the link.'));
-            return;
-        }
-        render(window.pages.verifyEmail(null, 'Verifying your email\u2026'));
-        try {
-            const data = await api.get(`/auth/verify-email?token=${encodeURIComponent(token)}`);
-            render(window.pages.verifyEmail(true, data.message || 'Email verified successfully! You can now log in.'));
-        } catch (err) {
-            render(window.pages.verifyEmail(false, err.message || 'Verification failed. Please try again.'));
-        }
-    });
-    router.register('dashboard', () => {
-        renderApp(window.pages.dashboard());
-        // Initialize resize handles and animations after DOM update
-        setTimeout(() => {
-            widgetManager.initResize();
-            widgetManager.initDragDrop();
-            handlers.animateCountUp();
-            // On mobile, override FAB for dashboard quick actions
-            if (mobileUI.isMobile()) {
-                const fab = document.querySelector('.fab');
-                if (fab) fab.setAttribute('onclick', 'handlers.showDashboardQuickActions()');
+        // Main section pages
+        router.register('orders', async () => {
+            renderApp(window.pages.orders());
+            await handlers.loadOrders();
+            renderApp(window.pages.orders());
+        });
+        // Consolidated: Orders & Sales page
+        router.register('orders-sales', async () => {
+            renderApp(window.pages.orders());
+            await Promise.all([handlers.loadOrders(), handlers.loadSales()]);
+            renderApp(window.pages.orders());
+        });
+        router.register('checklist', () => {
+            store.setState({ planningTab: 'checklist' });
+            renderApp(window.pages.checklist());
+        });
+        router.register('calendar', () => {
+            store.setState({ planningTab: 'calendar' });
+            renderApp(window.pages.calendar());
+        });
+        // Consolidated: Planner page
+        router.register('planner', async () => {
+            store.setState({ planningTab: 'checklist' });
+            renderApp(window.pages.checklist());
+            await handlers.loadChecklistItems();
+            renderApp(window.pages.checklist());
+        });
+        router.register('size-charts', () => renderApp(window.pages.sizeCharts()));
+        router.register('image-bank', async () => {
+            renderApp(window.pages.imageBank());
+            await handlers.loadImageStorageStats();
+            renderApp(window.pages.imageBank());
+        });
+
+        // Tools section pages
+        router.register('sku-rules', async () => {
+            renderApp(window.pages.skuRules());
+            await handlers.loadSkuRules();
+            renderApp(window.pages.skuRules());
+        });
+
+        // Business section pages
+        router.register('receipt-parser', async () => {
+            renderApp(window.pages.receiptParser());
+            await handlers.loadReceiptQueue();
+            await handlers.loadReceiptVendors();
+            await handlers.loadEmailAccounts();
+            renderApp(window.pages.receiptParser());
+        });
+
+        // Intelligence section pages
+        router.register('heatmaps', async () => {
+            renderApp(window.pages.heatmaps());
+            await handlers.loadHeatmapData();
+            renderApp(window.pages.heatmaps());
+        });
+        router.register('predictions', async () => {
+            renderApp(window.pages.predictions());
+            await handlers.loadPredictions();
+            renderApp(window.pages.predictions());
+        });
+        router.register('suppliers', async () => {
+            renderApp(window.pages.suppliers());
+            await handlers.loadSuppliers();
+            renderApp(window.pages.suppliers());
+        });
+        router.register('market-intel', async () => {
+            renderApp(window.pages.marketIntel());
+            await handlers.loadMarketIntel();
+            renderApp(window.pages.marketIntel());
+        });
+        router.register('sourcing', () => renderApp(window.pages.sourcing()));
+        router.register('tools', () => renderApp(window.pages.tools()));
+
+        // Integrations section pages
+        router.register('webhooks', async () => {
+            renderApp(window.pages.webhooks());
+            await handlers.loadWebhooks();
+            renderApp(window.pages.webhooks());
+        });
+        router.register('push-notifications', async () => {
+            renderApp(window.pages.pushNotifications());
+            await handlers.loadPushStatus();
+            renderApp(window.pages.pushNotifications());
+        });
+
+        // Settings section pages
+        router.register('shipping-profiles', async () => {
+            renderApp(window.pages.shippingProfiles());
+            await handlers.loadShippingProfiles();
+            renderApp(window.pages.shippingProfiles());
+        });
+        router.register('teams', async () => {
+            renderApp(window.pages.teams());
+            await handlers.loadTeamsPage();
+            renderApp(window.pages.teams());
+        });
+        router.register('plans-billing', () => {
+            requestAnimationFrame(() => renderApp(window.pages.plansBilling()));
+        });
+        router.register('affiliate', () => renderApp(window.pages.affiliate()));
+        router.register('notifications', () => renderApp(window.pages.notifications()));
+        router.register('connections', async () => {
+            renderApp(window.pages.connections());
+            await Promise.all([handlers.loadShops(), handlers.loadEmailAccounts(), handlers.loadEmailProviders()]);
+            renderApp(window.pages.connections());
+        });
+        router.register('terms-of-service', () => renderApp(window.pages.termsOfService()));
+        router.register('privacy-policy', () => renderApp(window.pages.privacyPolicy()));
+        router.register('refer-friend', () => renderApp(window.pages.referFriend()));
+
+        // Help section pages
+        router.register('support-articles', async () => {
+            renderApp(window.pages.supportArticles());
+            await Promise.all([handlers.loadFAQs(), handlers.loadArticles()]);
+            renderApp(window.pages.supportArticles());
+        });
+        router.register('report-bug', () => renderApp(window.pages.reportBug()));
+        router.register('tutorials', () => renderApp(window.pages.tutorials()));
+
+        // Other section pages
+        router.register('roadmap', async () => {
+            // Keep signed-in and public navigation aligned on the public roadmap page.
+            window.location.href = '/roadmap-public.html';
+        });
+        router.register('suggest-features', () => renderApp(window.pages.suggestFeatures()));
+        router.register('submit-feedback', async () => {
+            renderApp(window.pages.submitFeedback());
+            await handlers.loadUserFeedback();
+            renderApp(window.pages.submitFeedback());
+        });
+        router.register('changelog', () => {
+            // Keep signed-in and public navigation aligned on the public changelog page.
+            window.location.href = '/changelog.html';
+        });
+
+        // Help & Support, Feedback, and Transactions pages
+        router.register('help-support', () => renderApp(window.pages.helpSupport()));
+        router.register('feedback-suggestions', async () => {
+            renderApp(window.pages.feedbackSuggestions());
+            await handlers.loadTrendingFeedback();
+            renderApp(window.pages.feedbackSuggestions());
+        });
+        router.register('feedback-analytics', async () => {
+            renderApp(window.pages.feedbackAnalytics());
+            await handlers.loadFeedbackAnalytics();
+            renderApp(window.pages.feedbackAnalytics());
+        });
+        router.register('transactions', () => renderApp(window.pages.transactions()));
+
+        // Phase 5 feature pages
+        router.register('smart-relisting', async () => {
+            renderApp(window.pages.smartRelisting());
+            await handlers.loadRelistingData();
+            renderApp(window.pages.smartRelisting());
+        });
+        router.register('shipping-labels', async () => {
+            renderApp(window.pages.shippingLabelsPage());
+            await handlers.loadShippingLabelsData();
+            renderApp(window.pages.shippingLabelsPage());
+        });
+        router.register('inventory-import', async () => {
+            renderApp(window.pages.inventoryImport());
+            await handlers.loadImportData();
+            renderApp(window.pages.inventoryImport());
+        });
+
+        // Phase 6 feature pages
+        router.register('whatnot-live', async () => {
+            renderApp(window.pages.whatnotLive());
+            await handlers.loadWhatnotData();
+            renderApp(window.pages.whatnotLive());
+        });
+        router.register('reports', async () => {
+            requestAnimationFrame(() => renderApp(window.pages.reports()));
+            await handlers.loadReportsData();
+            renderApp(window.pages.reports());
+        });
+
+        // AR Preview
+        router.register('ar-preview', async () => {
+            if (!store.state.inventory || store.state.inventory.length === 0) {
+                await handlers.loadInventory().catch(() => {});
             }
-        }, 100);
-    });
-    router.register('inventory', async () => {
-        renderApp(window.pages.inventory());
-        await handlers.loadInventory();
-        renderApp(window.pages.inventory());
-    });
-    router.register('listings', async () => {
-        store.setState({ listingsTab: 'listings' });
-        renderApp(window.pages.listings());
-    });
-    router.register('crosslist', () => router.navigate('listings'));
-    router.register('templates', () => {
-        store.setState({ listingsTab: 'templates' });
-        renderApp(window.pages.listings());
-    });
-    router.register('automations', () => renderApp(window.pages.automations()));
-    router.register('offers', async () => {
-        renderApp(window.pages.offers());
-        await handlers.loadOffers();
-        renderApp(window.pages.offers());
-    });
-    router.register('sales', () => renderApp(window.pages.sales()));
-    router.register('analytics', () => { requestAnimationFrame(() => renderApp(window.pages.analytics())); });
-    router.register('financials', () => renderApp(window.pages.financials()));
-    router.register('shops', () => renderApp(window.pages.shops()));
-    router.register('platform-health', async () => {
-        renderApp(window.pages.platformHealth());
-        await handlers.loadPlatformHealth();
-        renderApp(window.pages.platformHealth());
-    });
-    router.register('recently-deleted', async () => {
-        renderApp(window.pages.recentlyDeleted());
-        await handlers.loadDeletedItems();
-        renderApp(window.pages.recentlyDeleted());
-    });
-    router.register('report-builder', async () => {
-        renderApp(window.pages.reportBuilder());
-        await handlers.loadReports();
-        renderApp(window.pages.reportBuilder());
-    });
-    router.register('settings', () => renderApp(window.pages.settings()));
-    router.register('account', () => renderApp(window.pages.account()));
-    router.register('admin-metrics', async () => {
-        renderApp(window.pages.adminMetrics());
-        await handlers.refreshAdminMetrics?.();
-        renderApp(window.pages.adminMetrics());
-    });
-    router.register('admin-business-metrics', () => renderApp(window.pages.adminBusinessMetrics()));
-    router.register('community', () => renderApp(window.pages.community()));
-    router.register('help', () => router.navigate('help-support'));
+            renderApp(window.pages.arPreview());
+        });
 
-    // Main section pages
-    router.register('orders', async () => {
-        renderApp(window.pages.orders());
-        await handlers.loadOrders();
-        renderApp(window.pages.orders());
-    });
-    // Consolidated: Orders & Sales page
-    router.register('orders-sales', async () => {
-        renderApp(window.pages.orders());
-        await Promise.all([handlers.loadOrders(), handlers.loadSales()]);
-        renderApp(window.pages.orders());
-    });
-    router.register('checklist', () => {
-        store.setState({ planningTab: 'checklist' });
-        renderApp(window.pages.checklist());
-    });
-    router.register('calendar', () => {
-        store.setState({ planningTab: 'calendar' });
-        renderApp(window.pages.calendar());
-    });
-    // Consolidated: Planner page
-    router.register('planner', async () => {
-        store.setState({ planningTab: 'checklist' });
-        renderApp(window.pages.checklist());
-        await handlers.loadChecklistItems();
-        renderApp(window.pages.checklist());
-    });
-    router.register('size-charts', () => renderApp(window.pages.sizeCharts()));
-    router.register('image-bank', async () => {
-        renderApp(window.pages.imageBank());
-        await handlers.loadImageStorageStats();
-        renderApp(window.pages.imageBank());
-    });
+        // Company section pages
+        router.register('about', () => renderApp(window.pages.about()));
+        router.register('terms', () => renderApp(window.pages.terms()));
+        router.register('privacy', () => renderApp(window.pages.privacy()));
 
-    // Tools section pages
-    router.register('sku-rules', async () => {
-        renderApp(window.pages.skuRules());
-        await handlers.loadSkuRules();
-        renderApp(window.pages.skuRules());
-    });
+        router.register('404', () => renderApp(window.pages.notFound()));
 
-    // Business section pages
-    router.register('receipt-parser', async () => {
-        renderApp(window.pages.receiptParser());
-        await handlers.loadReceiptQueue();
-        await handlers.loadReceiptVendors();
-        await handlers.loadEmailAccounts();
-        renderApp(window.pages.receiptParser());
-    });
+        // Initialize voice commands - disabled
+        // voiceCommands.init();
 
-    // Intelligence section pages
-    router.register('heatmaps', async () => {
-        renderApp(window.pages.heatmaps());
-        await handlers.loadHeatmapData();
-        renderApp(window.pages.heatmaps());
-    });
-    router.register('predictions', async () => {
-        renderApp(window.pages.predictions());
-        await handlers.loadPredictions();
-        renderApp(window.pages.predictions());
-    });
-    router.register('suppliers', async () => {
-        renderApp(window.pages.suppliers());
-        await handlers.loadSuppliers();
-        renderApp(window.pages.suppliers());
-    });
-    router.register('market-intel', async () => {
-        renderApp(window.pages.marketIntel());
-        await handlers.loadMarketIntel();
-        renderApp(window.pages.marketIntel());
-    });
-    router.register('sourcing', () => renderApp(window.pages.sourcing()));
-    router.register('tools', () => renderApp(window.pages.tools()));
+        // Online/offline handlers are in offlineManager.init()
 
-    // Integrations section pages
-    router.register('webhooks', async () => {
-        renderApp(window.pages.webhooks());
-        await handlers.loadWebhooks();
-        renderApp(window.pages.webhooks());
-    });
-    router.register('push-notifications', async () => {
-        renderApp(window.pages.pushNotifications());
-        await handlers.loadPushStatus();
-        renderApp(window.pages.pushNotifications());
-    });
+        // OAuth callback handler via postMessage (handles both same-origin and cross-origin via ngrok)
+        window.addEventListener('message', (event) => {
+            // nosemgrep: javascript.browser.security.insufficient-postmessage-origin-validation.insufficient-postmessage-origin-validation
+            // Verify message origin — accept same-origin and configured API base
+            const allowedOrigins = [window.location.origin];
+            const apiBase = store.state?.apiBase || window.location.origin;
+            if (apiBase && apiBase !== window.location.origin) allowedOrigins.push(apiBase);
+            if (!allowedOrigins.includes(event.origin)) return;
 
-    // Settings section pages
-    router.register('shipping-profiles', async () => {
-        renderApp(window.pages.shippingProfiles());
-        await handlers.loadShippingProfiles();
-        renderApp(window.pages.shippingProfiles());
-    });
-    router.register('teams', async () => {
-        renderApp(window.pages.teams());
-        await handlers.loadTeamsPage();
-        renderApp(window.pages.teams());
-    });
-    router.register('plans-billing', () => { requestAnimationFrame(() => renderApp(window.pages.plansBilling())); });
-    router.register('affiliate', () => renderApp(window.pages.affiliate()));
-    router.register('notifications', () => renderApp(window.pages.notifications()));
-    router.register('connections', async () => {
-        renderApp(window.pages.connections());
-        await Promise.all([
-            handlers.loadShops(),
-            handlers.loadEmailAccounts(),
-            handlers.loadEmailProviders()
-        ]);
-        renderApp(window.pages.connections());
-    });
-    router.register('terms-of-service', () => renderApp(window.pages.termsOfService()));
-    router.register('privacy-policy', () => renderApp(window.pages.privacyPolicy()));
-    router.register('refer-friend', () => renderApp(window.pages.referFriend()));
+            if (event.data && event.data.type === 'email-oauth-success') {
+                // Handled in connectGmail function
+            } else if (event.data && event.data.type === 'email-oauth-error') {
+                // Handled in connectGmail function
+            } else if (event.data && event.data.type === 'oauthComplete') {
+                // Marketplace OAuth complete — dispatch as CustomEvent so shop handler picks it up
+                window.dispatchEvent(new CustomEvent('oauthComplete', { detail: event.data }));
+            }
+        });
 
-    // Help section pages
-    router.register('support-articles', async () => {
-        renderApp(window.pages.supportArticles());
-        await Promise.all([handlers.loadFAQs(), handlers.loadArticles()]);
-        renderApp(window.pages.supportArticles());
-    });
-    router.register('report-bug', () => renderApp(window.pages.reportBug()));
-    router.register('tutorials', () => renderApp(window.pages.tutorials()));
+        // Load initial data if authenticated
+        if (auth.isAuthenticated()) {
+            try {
+                // Add 5 second timeout to prevent hanging on server issues
+                const dataPromise = Promise.all([api.get('/inventory?limit=200'), api.get('/analytics/dashboard')]);
 
-    // Other section pages
-    router.register('roadmap', async () => {
-        // Keep signed-in and public navigation aligned on the public roadmap page.
-        window.location.href = '/roadmap-public.html';
-    });
-    router.register('suggest-features', () => renderApp(window.pages.suggestFeatures()));
-    router.register('submit-feedback', async () => {
-        renderApp(window.pages.submitFeedback());
-        await handlers.loadUserFeedback();
-        renderApp(window.pages.submitFeedback());
-    });
-    router.register('changelog', () => {
-        // Keep signed-in and public navigation aligned on the public changelog page.
-        window.location.href = '/changelog.html';
-    });
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Data load timeout')), 5000),
+                );
 
-    // Help & Support, Feedback, and Transactions pages
-    router.register('help-support', () => renderApp(window.pages.helpSupport()));
-    router.register('feedback-suggestions', async () => {
-        renderApp(window.pages.feedbackSuggestions());
-        await handlers.loadTrendingFeedback();
-        renderApp(window.pages.feedbackSuggestions());
-    });
-    router.register('feedback-analytics', async () => {
-        renderApp(window.pages.feedbackAnalytics());
-        await handlers.loadFeedbackAnalytics();
-        renderApp(window.pages.feedbackAnalytics());
-    });
-    router.register('transactions', () => renderApp(window.pages.transactions()));
+                const [inventoryData, analyticsData] = await Promise.race([dataPromise, timeoutPromise]);
 
-    // Phase 5 feature pages
-    router.register('smart-relisting', async () => {
-        renderApp(window.pages.smartRelisting());
-        await handlers.loadRelistingData();
-        renderApp(window.pages.smartRelisting());
-    });
-    router.register('shipping-labels', async () => {
-        renderApp(window.pages.shippingLabelsPage());
-        await handlers.loadShippingLabelsData();
-        renderApp(window.pages.shippingLabelsPage());
-    });
-    router.register('inventory-import', async () => {
-        renderApp(window.pages.inventoryImport());
-        await handlers.loadImportData();
-        renderApp(window.pages.inventoryImport());
-    });
-
-    // Phase 6 feature pages
-    router.register('whatnot-live', async () => {
-        renderApp(window.pages.whatnotLive());
-        await handlers.loadWhatnotData();
-        renderApp(window.pages.whatnotLive());
-    });
-    router.register('reports', async () => {
-        requestAnimationFrame(() => renderApp(window.pages.reports()));
-        await handlers.loadReportsData();
-        renderApp(window.pages.reports());
-    });
-
-    // AR Preview
-    router.register('ar-preview', async () => {
-        if (!store.state.inventory || store.state.inventory.length === 0) {
-            await handlers.loadInventory().catch(() => {});
+                store.setState({
+                    inventory: inventoryData.items || [],
+                });
+            } catch (e) {
+                // Silently handle - app will still load with empty state
+                // Set empty data so app can still load
+                store.setState({ inventory: [] });
+            }
         }
-        renderApp(window.pages.arPreview());
-    });
 
-    // Company section pages
-    router.register('about', () => renderApp(window.pages.about()));
-    router.register('terms', () => renderApp(window.pages.terms()));
-    router.register('privacy', () => renderApp(window.pages.privacy()));
+        // Load to-do lists from localStorage
+        handlers.loadTodoListsFromStorage();
 
-    router.register('404', () => renderApp(window.pages.notFound()));
+        // Load automation schedule and category filter from localStorage
+        handlers.loadAutomationScheduleFromStorage();
+        handlers.loadAutomationCategoryFilterFromStorage();
 
-    // Initialize voice commands - disabled
-    // voiceCommands.init();
-
-    // Online/offline handlers are in offlineManager.init()
-
-    // OAuth callback handler via postMessage (handles both same-origin and cross-origin via ngrok)
-    window.addEventListener('message', (event) => { // nosemgrep: javascript.browser.security.insufficient-postmessage-origin-validation.insufficient-postmessage-origin-validation
-        // Verify message origin — accept same-origin and configured API base
-        const allowedOrigins = [window.location.origin];
-        const apiBase = store.state?.apiBase || window.location.origin;
-        if (apiBase && apiBase !== window.location.origin) allowedOrigins.push(apiBase);
-        if (!allowedOrigins.includes(event.origin)) return;
-
-        if (event.data && event.data.type === 'email-oauth-success') {
-            // Handled in connectGmail function
-        } else if (event.data && event.data.type === 'email-oauth-error') {
-            // Handled in connectGmail function
-        } else if (event.data && event.data.type === 'oauthComplete') {
-            // Marketplace OAuth complete — dispatch as CustomEvent so shop handler picks it up
-            window.dispatchEvent(new CustomEvent('oauthComplete', { detail: event.data }));
-        }
-    });
-
-    // Load initial data if authenticated
-    if (auth.isAuthenticated()) {
-        try {
-            // Add 5 second timeout to prevent hanging on server issues
-            const dataPromise = Promise.all([
-                api.get('/inventory?limit=200'),
-                api.get('/analytics/dashboard')
-            ]);
-
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Data load timeout')), 5000)
-            );
-
-            const [inventoryData, analyticsData] = await Promise.race([
-                dataPromise,
-                timeoutPromise
-            ]);
-
-            store.setState({
-                inventory: inventoryData.items || []
-            });
-        } catch (e) {
-            // Silently handle - app will still load with empty state
-            // Set empty data so app can still load
-            store.setState({ inventory: [] });
-        }
-    }
-
-    // Load to-do lists from localStorage
-    handlers.loadTodoListsFromStorage();
-
-    // Load automation schedule and category filter from localStorage
-    handlers.loadAutomationScheduleFromStorage();
-    handlers.loadAutomationCategoryFilterFromStorage();
-
-    // Webhook modal function
-    window.showAddWebhookModal = function() {
-        const eventTypes = store.state.webhookEventTypes || [];
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
-        modal.id = 'webhook-modal';
-        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-        modal.innerHTML =sanitizeHTML( sanitizeHTML(`
+        // Webhook modal function
+        window.showAddWebhookModal = function () {
+            const eventTypes = store.state.webhookEventTypes || [];
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.id = 'webhook-modal';
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            modal.innerHTML = sanitizeHTML(
+                sanitizeHTML(`
             <div class="modal" style="max-width: 500px;">
                 <div class="modal-header">
                     <h3>Add Webhook Endpoint</h3>
@@ -535,14 +560,18 @@ async function initApp() {
                         <input type="url" id="wh-url" class="form-input" placeholder="https://example.com/webhook" aria-label="URL">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Events</label>
+                        <p class="form-label">Events</p>
                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-                            ${eventTypes.map(et => `
+                            ${eventTypes
+                                .map(
+                                    (et) => `
                                 <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.85rem;">
                                     <input aria-label="Event type filter" type="checkbox" class="wh-event-cb" value="${escapeHtml(et.type)}">
                                     ${escapeHtml(et.type)}
                                 </label>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
                     </div>
                 </div>
@@ -551,34 +580,39 @@ async function initApp() {
                     <button class="btn btn-primary" onclick="window.submitWebhookEndpoint()">Create Endpoint</button>
                 </div>
             </div>
-        `));
-        document.body.appendChild(modal);
-    };
+        `),
+            );
+            document.body.appendChild(modal);
+        };
 
-    window.submitWebhookEndpoint = async function() {
-        const name = document.getElementById('wh-name').value.trim();
-        const url = document.getElementById('wh-url').value.trim();
-        const events = [...document.querySelectorAll('.wh-event-cb:checked')].map(cb => cb.value);
-        if (!name || !url) { toast.error('Name and URL required'); return; }
-        await handlers.createWebhookEndpoint({ name, url, events });
-        document.getElementById('webhook-modal')?.remove();
-    };
+        window.submitWebhookEndpoint = async function () {
+            const name = document.getElementById('wh-name').value.trim();
+            const url = document.getElementById('wh-url').value.trim();
+            const events = [...document.querySelectorAll('.wh-event-cb:checked')].map((cb) => cb.value);
+            if (!name || !url) {
+                toast.error('Name and URL required');
+                return;
+            }
+            await handlers.createWebhookEndpoint({ name, url, events });
+            document.getElementById('webhook-modal')?.remove();
+        };
 
-    // Initialize router
-    try {
-        router.init();
+        // Initialize router
+        try {
+            router.init();
+        } catch (error) {
+            console.error('Router init error:', error);
+        }
     } catch (error) {
-        console.error('Router init error:', error);
+        console.error('App initialization error:', error);
+        // On fatal init error, force-show login page so user isn't stuck
+        hideLoadingScreen();
+        try {
+            render(window.pages.login());
+        } catch (_) {}
+    } finally {
+        hideLoadingScreen();
     }
-
-  } catch (error) {
-    console.error('App initialization error:', error);
-    // On fatal init error, force-show login page so user isn't stuck
-    hideLoadingScreen();
-    try { render(window.pages.login()); } catch (_) {}
-  } finally {
-    hideLoadingScreen();
-  }
 }
 
 // Hide the loading screen, clear fail-safe timer, and signal success to index.html
@@ -601,8 +635,8 @@ function hideLoadingScreen() {
 function render(content) {
     // Wrap in <main> so public pages (login, register, etc.) have a landmark
     // that screen readers can jump to, matching the skip-link target used in renderApp.
-    document.getElementById('app').innerHTML =  // nosemgrep: javascript.browser.security.insecure-document-method  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-       sanitizeHTML( sanitizeHTML(`<main id="main-content" tabindex="-1" aria-label="Page content">${content}</main>`));
+    document.getElementById('app').innerHTML = // nosemgrep: javascript.browser.security.insecure-document-method  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        sanitizeHTML(sanitizeHTML(`<main id="main-content" tabindex="-1" aria-label="Page content">${content}</main>`));
     hideLoadingScreen();
 }
 
@@ -625,14 +659,15 @@ function renderApp(pageContent) {
 
     try {
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-        document.getElementById('app').innerHTML =sanitizeHTML( sanitizeHTML(`
+        document.getElementById('app').innerHTML = sanitizeHTML(
+            sanitizeHTML(`
             <a class="skip-link" href="#main-content">Skip to main content</a>
             <div class="app-layout">
                 <div class="app-body">
                     ${components.sidebar()}
                     <div class="sidebar-backdrop ${store.state.sidebarOpen ? 'active' : ''}"
                          role="button" tabindex="0" onclick="store.setState({ sidebarOpen: false }); renderApp(pages[store.state.currentPage]())"></div>
-                    <div class="sidebar-overlay" role="button" tabindex="0" onclick="store.setState({sidebarOpen:false});document.querySelector('.sidebar')?.classList.remove('open');this.classList.remove('visible');"></div>
+                    <div class="sidebar-overlay" role="button" tabindex="0" aria-label="Close sidebar" onclick="store.setState({sidebarOpen:false});document.querySelector('.sidebar')?.classList.remove('open');this.classList.remove('visible');"></div>
                     <div class="mobile-header">
                         <button class="mobile-menu-btn" onclick="const _open=!store.state.sidebarOpen;store.setState({sidebarOpen:_open});document.querySelector('.sidebar')?.classList.toggle('open',_open);document.querySelector('.sidebar-overlay')?.classList.toggle('visible',_open);" aria-label="Open menu">
                             ${components.icon('menu')}
@@ -655,7 +690,8 @@ function renderApp(pageContent) {
             </div>
             ${components.vaultBuddy()}
             ${components.photoEditorModal()}
-        `));
+        `),
+        );
 
         // Move focus to main content on route change for screen readers
         const mainEl = document.getElementById('main-content');
@@ -666,6 +702,9 @@ function renderApp(pageContent) {
 
         hideLoadingScreen();
 
+        // Ensure all scrollable table containers are keyboard-reachable (WCAG SC 2.1.1)
+        document.querySelectorAll('.table-container:not([tabindex])').forEach((el) => el.setAttribute('tabindex', '0'));
+
         // Update browser tab badge with unread notification count
         if (typeof handlers !== 'undefined' && handlers.updateTabBadge) {
             handlers.updateTabBadge();
@@ -674,7 +713,8 @@ function renderApp(pageContent) {
         console.error('renderApp error:', err);
         hideLoadingScreen();
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-        document.getElementById('app').innerHTML =sanitizeHTML( sanitizeHTML(`
+        document.getElementById('app').innerHTML = sanitizeHTML(
+            sanitizeHTML(`
             <div style="padding: 40px; text-align: center; font-family: system-ui;">
                 <h2>Something went wrong</h2>
                 <p style="color: #666;">An error occurred while rendering the page.</p>
@@ -682,13 +722,13 @@ function renderApp(pageContent) {
                     Reload Page
                 </button>
             </div>
-        `));
+        `),
+        );
     }
 }
 
-
 // Responsive resize handler — zoom + desktop-lock to prevent layout jumps
-(function() {
+(function () {
     // Lock threshold: above the highest CSS breakpoint (1024px sidebar).
     // When viewport < LOCK_WIDTH, zoom the page AND lock desktop layout
     // so CSS media queries don't cause jarring layout shifts.
@@ -727,7 +767,7 @@ function renderApp(pageContent) {
     // Set initial state on page load
     applyLayout();
 
-    window.addEventListener('resize', function() {
+    window.addEventListener('resize', function () {
         // Disable ALL CSS transitions during resize to prevent rubber-banding
         document.documentElement.classList.add('is-resizing');
 
@@ -736,7 +776,7 @@ function renderApp(pageContent) {
 
         // After resize stops, re-enable transitions
         clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(function() {
+        resizeTimer = setTimeout(function () {
             document.documentElement.classList.remove('is-resizing');
         }, 300);
     });
@@ -775,27 +815,28 @@ window.LAUNCH_PLATFORMS = LAUNCH_PLATFORMS;
 initApp();
 
 // Startup assertions — surface immediately if init failed (Build Order T1.1)
-if (typeof handlers === 'undefined') console.error('[VaultLister] CRITICAL: handlers not initialised — interactive buttons will not work');
+if (typeof handlers === 'undefined')
+    console.error('[VaultLister] CRITICAL: handlers not initialised — interactive buttons will not work');
 if (typeof modals === 'undefined') console.error('[VaultLister] CRITICAL: modals not initialised');
 
 // Preload current route chunk + eagerly load deferred chunk after first render
 // The deferred chunk contains handlers called from inline onclick in core templates;
 // it must be loaded before users can interact with modals and pages.
 (function preloadCurrentChunk() {
-    requestAnimationFrame(function() {
-        setTimeout(function() {
+    requestAnimationFrame(function () {
+        setTimeout(function () {
             var path = window.location.hash.slice(1) || 'dashboard';
             if (path.startsWith('settings/')) path = 'settings';
             var chunk = typeof pageChunkMap !== 'undefined' && pageChunkMap[path];
             if (chunk && typeof loadChunk === 'function') {
-                loadChunk(chunk).catch(function(err) {
+                loadChunk(chunk).catch(function (err) {
                     console.warn('[Preload] Failed to preload chunk:', chunk, err);
                 });
             }
             // Always eagerly load the deferred chunk — it registers handlers used by
             // inline onclick attributes in modals.js and other core bundle templates.
             if (typeof loadChunk === 'function') {
-                loadChunk('deferred').catch(function(err) {
+                loadChunk('deferred').catch(function (err) {
                     console.warn('[Preload] Failed to preload deferred chunk:', err);
                 });
             }
@@ -805,7 +846,8 @@ if (typeof modals === 'undefined') console.error('[VaultLister] CRITICAL: modals
 
 // Service Worker message listener
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.addEventListener('message', function(event) { // nosemgrep: javascript.browser.security.postmessage-origin-validation
+    navigator.serviceWorker.addEventListener('message', function (event) {
+        // nosemgrep: javascript.browser.security.postmessage-origin-validation
         if (!event.data) return;
         // Respond to GET_AUTH_TOKEN requests from the SW (used by background sync)
         if (event.data.type === 'GET_AUTH_TOKEN') {
@@ -862,7 +904,7 @@ window.storageGauge = storageGauge;
 
 // Advanced New Listing window functions
 window._advNewActiveTab = null;
-window.toggleAdvancedNewPlatform = function(platform, checked) {
+window.toggleAdvancedNewPlatform = function (platform, checked) {
     const tab = document.querySelector(`#adv-new-tabs [data-platform="${platform}"]`);
     const panel = document.getElementById(`adv-new-panel-${platform}`);
     const tabsBar = document.getElementById('adv-new-tabs');
@@ -876,7 +918,10 @@ window.toggleAdvancedNewPlatform = function(platform, checked) {
             window.switchAdvancedNewTab(platform);
         }
     } else {
-        if (tab) { tab.style.display = 'none'; tab.classList.remove('active'); }
+        if (tab) {
+            tab.style.display = 'none';
+            tab.classList.remove('active');
+        }
         if (panel) panel.style.display = 'none';
         // If this was the active tab, switch to first visible
         if (window._advNewActiveTab === platform) {
@@ -894,10 +939,10 @@ window.toggleAdvancedNewPlatform = function(platform, checked) {
     if (noMsg) noMsg.style.display = anySelected ? 'none' : '';
 };
 
-window.switchAdvancedNewTab = function(platform) {
+window.switchAdvancedNewTab = function (platform) {
     // Deactivate all tabs and panels
-    document.querySelectorAll('.advanced-platform-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.advanced-platform-panel').forEach(p => p.style.display = 'none');
+    document.querySelectorAll('.advanced-platform-tab').forEach((t) => t.classList.remove('active'));
+    document.querySelectorAll('.advanced-platform-panel').forEach((p) => (p.style.display = 'none'));
 
     // Activate selected
     const tab = document.querySelector(`#adv-new-tabs [data-platform="${platform}"]`);
@@ -907,7 +952,7 @@ window.switchAdvancedNewTab = function(platform) {
     window._advNewActiveTab = platform;
 };
 
-window.applyToAllNewPlatforms = function() {
+window.applyToAllNewPlatforms = function () {
     const active = window._advNewActiveTab;
     if (!active) return toast.warning('No active tab to copy from');
 
@@ -922,7 +967,7 @@ window.applyToAllNewPlatforms = function() {
     const tags = sourcePanel.querySelector(`[name="${active}_tags"]`)?.value || '';
 
     const platforms = ['poshmark', 'ebay', 'whatnot', 'depop', 'shopify', 'facebook'];
-    platforms.forEach(p => {
+    platforms.forEach((p) => {
         if (p === active) return;
         const panel = document.getElementById(`adv-new-panel-${p}`);
         if (!panel) return;
@@ -943,20 +988,19 @@ window.applyToAllNewPlatforms = function() {
     toast.success('Common fields applied to all platforms');
 };
 
-
 // Plans & Billing handlers
-handlers.showUsageDashboard = async function() {
+handlers.showUsageDashboard = async function () {
     try {
         const response = await api.get('/billing/usage');
         const usageArray = response?.usage || [];
 
         // Transform API array into keyed lookup
-        const getMetric = (name) => usageArray.find(m => m.metric === name) || { current_value: 0, plan_limit: 0 };
+        const getMetric = (name) => usageArray.find((m) => m.metric === name) || { current_value: 0, plan_limit: 0 };
         const usage = {
             listings: getMetric('listings_count'),
             orders: getMetric('orders_count'),
             automations: getMetric('automation_runs'),
-            storage: getMetric('storage_mb')
+            storage: getMetric('storage_mb'),
         };
 
         const getColorStatus = (percent) => {
@@ -967,7 +1011,7 @@ handlers.showUsageDashboard = async function() {
 
         const renderMeter = (label, current, limit, unit = '') => {
             const isUnlimited = limit === -1;
-            const percent = isUnlimited ? 0 : (limit > 0 ? Math.min(100, (current / limit) * 100) : 0);
+            const percent = isUnlimited ? 0 : limit > 0 ? Math.min(100, (current / limit) * 100) : 0;
             const colorInfo = isUnlimited ? { color: '#10b981', status: 'success' } : getColorStatus(percent);
             return `
                 <div class="usage-meter-item">
@@ -1006,15 +1050,18 @@ handlers.showUsageDashboard = async function() {
     }
 };
 
-handlers.showProrationCalculator = async function() {
+handlers.showProrationCalculator = async function () {
     try {
         const currentPlan = store.state.user?.subscription_tier || 'free';
         const plansData = await api.get('/billing/plans');
         const plans = plansData?.plans || plansData || [];
 
-        const selectedPlanName = document.getElementById('proration-plan-select')?.value || (plans.find(p => p.name !== currentPlan)?.name || 'pro');
-        const selectedPlan = plans.find(p => p.name === selectedPlanName) || plans[0];
-        const currentPlanObj = plans.find(p => p.name === currentPlan);
+        const selectedPlanName =
+            document.getElementById('proration-plan-select')?.value ||
+            plans.find((p) => p.name !== currentPlan)?.name ||
+            'pro';
+        const selectedPlan = plans.find((p) => p.name === selectedPlanName) || plans[0];
+        const currentPlanObj = plans.find((p) => p.name === currentPlan);
 
         // Calculate days remaining in current billing cycle
         const now = new Date();
@@ -1030,7 +1077,7 @@ handlers.showProrationCalculator = async function() {
         const proratedCharge = (newPrice / totalDays) * daysRemaining;
         const amountDue = proratedCharge - prorationCredit;
 
-        const formatLimit = (val) => val === -1 ? 'Unlimited' : val;
+        const formatLimit = (val) => (val === -1 ? 'Unlimited' : val);
 
         modals.show(`
             <div class="modal-header">
@@ -1040,13 +1087,18 @@ handlers.showProrationCalculator = async function() {
             <div class="modal-body">
                 <div style="display: grid; gap: 20px;">
                     <div class="form-group">
-                        <label class="form-label">Select New Plan</label>
+                        <label class="form-label" for="proration-plan-select">Select New Plan</label>
                         <select id="proration-plan-select" class="form-select" onchange="handlers.showProrationCalculator()" aria-label="Proration Plan Select">
-                            ${plans.filter(p => p.name !== currentPlan).map(plan => `
+                            ${plans
+                                .filter((p) => p.name !== currentPlan)
+                                .map(
+                                    (plan) => `
                                 <option value="${plan.name}" ${plan.name === selectedPlanName ? 'selected' : ''}>
                                     ${escapeHtml(plan.display_name)} - C$${plan.price}/month (${formatLimit(plan.limits?.listings)} listings)
                                 </option>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </select>
                     </div>
 
@@ -1084,7 +1136,7 @@ handlers.showProrationCalculator = async function() {
     }
 };
 
-handlers.confirmPlanChange = async function(planId) {
+handlers.confirmPlanChange = async function (planId) {
     try {
         await api.post('/billing/change-plan', { planId });
         toast.success(`Plan changed to ${planId} successfully`);
@@ -1097,19 +1149,25 @@ handlers.confirmPlanChange = async function(planId) {
     }
 };
 
-handlers.showPlanComparison = async function() {
+handlers.showPlanComparison = async function () {
     try {
         const plansData = await api.get('/billing/plans');
         const plans = plansData?.plans || plansData || [];
 
         const currentPlan = store.state.user?.subscription_tier || 'free';
-        const formatLimit = (val) => val === -1 ? 'Unlimited' : val;
+        const formatLimit = (val) => (val === -1 ? 'Unlimited' : val);
         const features = [
             { label: 'Monthly Price', getValue: (p) => `C$${p.price}/mo` },
             { label: 'Active Listings', getValue: (p) => formatLimit(p.limits?.listings) },
             { label: 'Order Limit', getValue: (p) => formatLimit(p.limits?.orders) },
-            { label: 'Storage', getValue: (p) => p.limits?.storage_mb >= 1000 ? `${(p.limits.storage_mb / 1000).toFixed(0)} GB` : `${p.limits?.storage_mb} MB` },
-            { label: 'Automations', getValue: (p) => formatLimit(p.limits?.automations) }
+            {
+                label: 'Storage',
+                getValue: (p) =>
+                    p.limits?.storage_mb >= 1000
+                        ? `${(p.limits.storage_mb / 1000).toFixed(0)} GB`
+                        : `${p.limits?.storage_mb} MB`,
+            },
+            { label: 'Automations', getValue: (p) => formatLimit(p.limits?.automations) },
         ];
 
         modals.show(`
@@ -1123,36 +1181,52 @@ handlers.showPlanComparison = async function() {
                         <thead>
                             <tr style="border-bottom: 2px solid var(--gray-200);">
                                 <th style="padding: 12px; text-align: left;">Feature</th>
-                                ${plans.map(plan => `
+                                ${plans
+                                    .map(
+                                        (plan) => `
                                     <th style="padding: 12px; text-align: center; ${plan.name === currentPlan ? 'background: var(--primary-50); color: var(--primary-600); font-weight: 600;' : ''}">
                                         ${escapeHtml(plan.display_name)}
                                     </th>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </tr>
                         </thead>
                         <tbody>
-                            ${features.map((feature, idx) => `
+                            ${features
+                                .map(
+                                    (feature, idx) => `
                                 <tr style="border-bottom: 1px solid var(--gray-100); ${idx % 2 === 0 ? 'background: var(--gray-50);' : ''}">
                                     <td style="padding: 12px; font-weight: 500;">${escapeHtml(feature.label)}</td>
-                                    ${plans.map(plan => `
+                                    ${plans
+                                        .map(
+                                            (plan) => `
                                         <td style="padding: 12px; text-align: center; ${plan.name === currentPlan ? 'background: var(--primary-50); font-weight: 600;' : ''}">
                                             ${feature.getValue(plan)}
                                         </td>
-                                    `).join('')}
+                                    `,
+                                        )
+                                        .join('')}
                                 </tr>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </tbody>
                     </table>
                 </div>
             </div>
             <div class="modal-footer">
-                ${plans.map(plan => `
+                ${plans
+                    .map(
+                        (plan) => `
                     <button class="btn ${plan.name === currentPlan ? 'btn-secondary' : 'btn-primary'}"
                             onclick="handlers.selectPlan('${plan.name}'); modals.close();"
                             ${plan.name === currentPlan ? 'disabled' : ''}>
                         ${plan.name === currentPlan ? 'Current Plan' : 'Select'}
                     </button>
-                `).join('')}
+                `,
+                    )
+                    .join('')}
             </div>
         `);
     } catch (error) {
@@ -1160,17 +1234,44 @@ handlers.showPlanComparison = async function() {
     }
 };
 
-
-handlers.showBuyerProfiles = async function() {
+handlers.showBuyerProfiles = async function () {
     try {
-        const buyers = await api.get('/sales-tools/buyers').catch(() => [
-            { id: 1, name: 'John Collector', platform: 'eBay', purchases: 45, returns: 2, return_rate: 4.4, rating: 4.8, blocked: false },
-            { id: 2, name: 'Sarah Reseller', platform: 'Mercari', purchases: 28, returns: 1, return_rate: 3.6, rating: 4.9, blocked: false },
-            { id: 3, name: 'Mike Bulk Buyer', platform: 'eBay', purchases: 156, returns: 8, return_rate: 5.1, rating: 4.5, blocked: false }
-        ]) || [];
+        const buyers =
+            (await api.get('/sales-tools/buyers').catch(() => [
+                {
+                    id: 1,
+                    name: 'John Collector',
+                    platform: 'eBay',
+                    purchases: 45,
+                    returns: 2,
+                    return_rate: 4.4,
+                    rating: 4.8,
+                    blocked: false,
+                },
+                {
+                    id: 2,
+                    name: 'Sarah Reseller',
+                    platform: 'Mercari',
+                    purchases: 28,
+                    returns: 1,
+                    return_rate: 3.6,
+                    rating: 4.9,
+                    blocked: false,
+                },
+                {
+                    id: 3,
+                    name: 'Mike Bulk Buyer',
+                    platform: 'eBay',
+                    purchases: 156,
+                    returns: 8,
+                    return_rate: 5.1,
+                    rating: 4.5,
+                    blocked: false,
+                },
+            ])) || [];
 
         const currentFilter = store.state.buyerFilter || 'all';
-        const filteredBuyers = buyers.filter(b => {
+        const filteredBuyers = buyers.filter((b) => {
             if (currentFilter === 'flagged') return b.return_rate > 5;
             if (currentFilter === 'blocked') return b.blocked;
             return true;
@@ -1204,7 +1305,9 @@ handlers.showBuyerProfiles = async function() {
                             </tr>
                         </thead>
                         <tbody>
-                            ${filteredBuyers.map(buyer => `
+                            ${filteredBuyers
+                                .map(
+                                    (buyer) => `
                                 <tr style="border-bottom: 1px solid var(--gray-100); cursor: pointer;" onclick="handlers.viewBuyerDetail(${buyer.id})">
                                     <td style="padding: 12px;">${escapeHtml(buyer.name)}</td>
                                     <td style="padding: 12px; text-align: center;">${escapeHtml(buyer.platform)}</td>
@@ -1213,14 +1316,16 @@ handlers.showBuyerProfiles = async function() {
                                         ${buyer.returns} (${buyer.return_rate}%)
                                     </td>
                                     <td style="padding: 12px; text-align: center;">
-                                        <span style="color: var(--primary-500);">${'★'.repeat(Math.floor(buyer.rating))}${'☆'.repeat(5-Math.floor(buyer.rating))}</span>
+                                        <span style="color: var(--primary-500);">${'★'.repeat(Math.floor(buyer.rating))}${'☆'.repeat(5 - Math.floor(buyer.rating))}</span>
                                         <span style="font-size: 12px; color: #666;">${buyer.rating}</span>
                                     </td>
                                     <td style="padding: 12px; text-align: center;">
                                         ${buyer.blocked ? '<span style="background: var(--error-200); color: var(--red-800); padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">BLOCKED</span>' : ''}
                                     </td>
                                 </tr>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </tbody>
                     </table>
                 </div>
@@ -1235,7 +1340,7 @@ handlers.showBuyerProfiles = async function() {
     }
 };
 
-handlers.viewBuyerDetail = async function(buyerId) {
+handlers.viewBuyerDetail = async function (buyerId) {
     try {
         const response = await api.get(`/sales-tools/buyers/${buyerId}`);
         const buyer = response || {
@@ -1248,7 +1353,7 @@ handlers.viewBuyerDetail = async function(buyerId) {
             rating: 4.8,
             blocked: false,
             notes: 'Reliable buyer',
-            purchase_history: []
+            purchase_history: [],
         };
 
         modals.show(`
@@ -1301,7 +1406,7 @@ handlers.viewBuyerDetail = async function(buyerId) {
     }
 };
 
-handlers.blockBuyer = async function(buyerId) {
+handlers.blockBuyer = async function (buyerId) {
     try {
         await api.post(`/sales-tools/buyers/${buyerId}/block`, {});
         toast.success('Buyer blocked successfully');
@@ -1311,7 +1416,7 @@ handlers.blockBuyer = async function(buyerId) {
     }
 };
 
-handlers.syncBuyersFromOrders = async function() {
+handlers.syncBuyersFromOrders = async function () {
     try {
         await api.post('/sales-tools/buyers/sync', {});
         toast.success('Buyers synced from orders');
@@ -1321,12 +1426,14 @@ handlers.syncBuyersFromOrders = async function() {
     }
 };
 
-handlers.rateBuyer = function(buyerId) {
+handlers.rateBuyer = function (buyerId) {
     const ratingHtml = `
         <div style="text-align: center; padding: 20px;">
-            <label class="form-label">Rate this buyer (1-5 stars)</label>
+            <p class="form-label">Rate this buyer (1-5 stars)</p>
             <div style="display: flex; justify-content: center; gap: 12px; margin: 16px 0;">
-                ${[1, 2, 3, 4, 5].map(star => `
+                ${[1, 2, 3, 4, 5]
+                    .map(
+                        (star) => `
                     <button style="font-size: 32px; cursor: pointer; border: none; background: none; transition: color 0.2s; padding: 4px 8px;"
                             role="radio" aria-label="${star} star${star > 1 ? 's' : ''}" aria-checked="false" tabindex="0"
                             onmouseover="this.style.color = 'var(--primary-500)'"
@@ -1336,7 +1443,9 @@ handlers.rateBuyer = function(buyerId) {
                             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}"
                             onclick="handlers.submitBuyerRating(${buyerId}, ${star})"
                             class="star-btn" data-star="${star}">★</button>
-                `).join('')}
+                `,
+                    )
+                    .join('')}
             </div>
         </div>
     `;
@@ -1352,14 +1461,19 @@ handlers.rateBuyer = function(buyerId) {
     `);
 };
 
-handlers.submitBuyerRating = async function(buyerId, rating) {
+handlers.submitBuyerRating = async function (buyerId, rating) {
     try {
         await api.ensureCSRFToken();
         await api.post(`/orders/buyers/${buyerId}/rating`, { rating });
         toast.success(`Buyer rated ${rating} stars`);
     } catch (err) {
         // Fallback: store locally if API not available
-        let ratings; try { ratings = JSON.parse(localStorage.getItem('vl_buyer_ratings') || '{}'); } catch { ratings = {}; }
+        let ratings;
+        try {
+            ratings = JSON.parse(localStorage.getItem('vl_buyer_ratings') || '{}');
+        } catch {
+            ratings = {};
+        }
         ratings[buyerId] = { rating, date: new Date().toISOString() };
         localStorage.setItem('vl_buyer_ratings', JSON.stringify(ratings));
         toast.success(`Buyer rated ${rating} stars (saved locally)`);
@@ -1368,7 +1482,7 @@ handlers.submitBuyerRating = async function(buyerId, rating) {
 };
 
 // Mobile Quick Photo Capture handlers
-handlers.showQuickPhotoCapture = function() {
+handlers.showQuickPhotoCapture = function () {
     const photosStore = store.state._quickPhotos || [];
 
     modals.show(`
@@ -1388,31 +1502,42 @@ handlers.showQuickPhotoCapture = function() {
                     <button class="btn btn-secondary" onclick="handlers.captureFromCamera();">
                         ${components.icon('camera', 16)} Use Camera
                     </button>
-                    ${photosStore.length > 0 ? `
+                    ${
+                        photosStore.length > 0
+                            ? `
                         <button class="btn btn-success" onclick="handlers.addPhotosToBank();">
                             ${components.icon('upload', 16)} Add ${photosStore.length} to Bank
                         </button>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                 </div>
 
                 <div id="quick-photo-preview" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px;">
-                    ${photosStore.map((photo, idx) => `
+                    ${photosStore
+                        .map(
+                            (photo, idx) => `
                         <div style="position: relative; border-radius: 8px; overflow: hidden; background: #f0f0f0;">
                             <img src="${photo}" alt="Photo ${idx + 1}" style="width: 100%; height: 120px; object-fit: cover;">
                             <button type="button" style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px;"
                                     onclick="handlers.removeQuickPhoto(${idx});"><span aria-hidden="true">×</span></button>
                             <div style="position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.6); color: white; padding: 2px 6px; border-radius: 3px; font-size: 12px;">${idx + 1}</div>
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
 
-                ${photosStore.length > 0 ? `
+                ${
+                    photosStore.length > 0
+                        ? `
                     <div style="border-top: 1px solid var(--gray-200); padding-top: 16px;">
                         <h3 style="margin-bottom: 12px; font-weight: 600;">Quick Enhancement</h3>
                         <div style="display: grid; gap: 8px;">
-                            ${[0, 1, 2].map(idx => {
-                                if (idx < photosStore.length) {
-                                    return `
+                            ${[0, 1, 2]
+                                .map((idx) => {
+                                    if (idx < photosStore.length) {
+                                        return `
                                         <div style="display: flex; gap: 8px; align-items: center;">
                                             <span style="font-size: 12px; color: #666;">Photo ${idx + 1}:</span>
                                             <button class="btn btn-sm btn-secondary" onclick="handlers.enhanceQuickPhoto(${idx});">
@@ -1420,12 +1545,15 @@ handlers.showQuickPhotoCapture = function() {
                                             </button>
                                         </div>
                                     `;
-                                }
-                                return '';
-                            }).join('')}
+                                    }
+                                    return '';
+                                })
+                                .join('')}
                         </div>
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
             </div>
         </div>
         <div class="modal-footer">
@@ -1434,11 +1562,11 @@ handlers.showQuickPhotoCapture = function() {
     `);
 };
 
-handlers.processQuickPhotos = function(event) {
+handlers.processQuickPhotos = function (event) {
     const files = Array.from(event.target.files);
     const photos = store.state._quickPhotos || [];
 
-    files.forEach(file => {
+    files.forEach((file) => {
         if (file.type.startsWith('image/')) {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -1451,7 +1579,7 @@ handlers.processQuickPhotos = function(event) {
     });
 };
 
-handlers.captureFromCamera = function() {
+handlers.captureFromCamera = function () {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
@@ -1462,14 +1590,14 @@ handlers.captureFromCamera = function() {
     input.click();
 };
 
-handlers.removeQuickPhoto = function(idx) {
+handlers.removeQuickPhoto = function (idx) {
     const photos = store.state._quickPhotos || [];
     photos.splice(idx, 1);
     store.setState({ _quickPhotos: photos });
     handlers.showQuickPhotoCapture();
 };
 
-handlers.enhanceQuickPhoto = function(idx) {
+handlers.enhanceQuickPhoto = function (idx) {
     const photos = store.state._quickPhotos || [];
     if (idx < photos.length) {
         // Mock enhancement - in production, use canvas API to adjust brightness/contrast
@@ -1478,7 +1606,7 @@ handlers.enhanceQuickPhoto = function(idx) {
     }
 };
 
-handlers.addPhotosToBank = async function() {
+handlers.addPhotosToBank = async function () {
     const photos = store.state._quickPhotos || [];
     if (photos.length === 0) {
         toast.warning('No photos to add');
@@ -1498,8 +1626,8 @@ handlers.addPhotosToBank = async function() {
             }
             const uploadRes = await fetch('/api/image-bank/upload', {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${store.state.token}`, 'X-CSRF-Token': api.csrfToken || '' },
-                body: formData
+                headers: { Authorization: `Bearer ${store.state.token}`, 'X-CSRF-Token': api.csrfToken || '' },
+                body: formData,
             });
             if (!uploadRes.ok) {
                 const errData = await uploadRes.json().catch(() => ({}));
@@ -1517,18 +1645,18 @@ handlers.addPhotosToBank = async function() {
 };
 
 // Legal page handlers
-handlers.toggleLegalSection = function(header) {
+handlers.toggleLegalSection = function (header) {
     const section = header.closest('.legal-section');
     if (section) {
         section.classList.toggle('collapsed');
     }
 };
 
-handlers.scrollToSection = function(sectionId) {
+handlers.scrollToSection = function (sectionId) {
     const section = document.getElementById(sectionId);
     if (section) {
         // Remove active from all TOC links
-        document.querySelectorAll('.toc-link').forEach(link => link.classList.remove('active'));
+        document.querySelectorAll('.toc-link').forEach((link) => link.classList.remove('active'));
         // Add active to clicked link
         const tocLink = document.querySelector(`.toc-link[href="#${sectionId}"]`);
         if (tocLink) tocLink.classList.add('active');
@@ -1541,11 +1669,11 @@ handlers.scrollToSection = function(sectionId) {
     }
 };
 
-handlers.printLegalDocument = function() {
+handlers.printLegalDocument = function () {
     window.print();
 };
 
-handlers.downloadLegalPDF = function(type) {
+handlers.downloadLegalPDF = function (type) {
     // Create a simple text download since we don't have PDF library
     const title = type === 'terms' ? 'Terms of Service' : 'Privacy Policy';
     const content = document.querySelector('.legal-content');
@@ -1556,7 +1684,7 @@ handlers.downloadLegalPDF = function(type) {
     text += `VaultLister - ${title}\n`;
     text += `Last updated: ${new Date().toLocaleDateString()}\n\n`;
 
-    content.querySelectorAll('.legal-section').forEach(section => {
+    content.querySelectorAll('.legal-section').forEach((section) => {
         const heading = section.querySelector('h2');
         const body = section.querySelector('.section-body');
         if (heading && body) {
@@ -1580,7 +1708,7 @@ handlers.downloadLegalPDF = function(type) {
 };
 
 // Reading progress indicator for legal pages
-document.addEventListener('scroll', function() {
+document.addEventListener('scroll', function () {
     const progressBar = document.querySelector('.legal-progress .progress-fill');
     if (!progressBar) return;
     const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
@@ -1589,7 +1717,7 @@ document.addEventListener('scroll', function() {
 });
 
 // Dropdown keyboard navigation: ArrowDown/Up to move between items, Escape to close (#232)
-document.addEventListener('keydown', function(e) {
+document.addEventListener('keydown', function (e) {
     const openDropdown = document.querySelector('.dropdown.open');
     if (!openDropdown) return;
 
@@ -1603,8 +1731,11 @@ document.addEventListener('keydown', function(e) {
 
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         e.preventDefault();
-        const items = Array.from(openDropdown.querySelectorAll('.dropdown-menu button:not([disabled]), .dropdown-menu a:not([disabled]), .shop-switch-menu button:not([disabled])'))
-            .filter(el => el.offsetParent !== null);
+        const items = Array.from(
+            openDropdown.querySelectorAll(
+                '.dropdown-menu button:not([disabled]), .dropdown-menu a:not([disabled]), .shop-switch-menu button:not([disabled])',
+            ),
+        ).filter((el) => el.offsetParent !== null);
         if (items.length === 0) return;
         const current = document.activeElement;
         const idx = items.indexOf(current);
@@ -1617,7 +1748,7 @@ document.addEventListener('keydown', function(e) {
 });
 
 // === Real User Monitoring (RUM) ===
-(function() {
+(function () {
     var rumSessionId = crypto.randomUUID();
     var rumBuffer = [];
     var FLUSH_INTERVAL = 30000;
@@ -1629,7 +1760,7 @@ document.addEventListener('keydown', function(e) {
             url: location.href,
             userAgent: navigator.userAgent,
             connectionType: (navigator.connection && navigator.connection.effectiveType) || null,
-            metadata: metadata || {}
+            metadata: metadata || {},
         });
     }
 
@@ -1637,7 +1768,7 @@ document.addEventListener('keydown', function(e) {
     if (typeof PerformanceObserver !== 'undefined') {
         // Largest Contentful Paint
         try {
-            new PerformanceObserver(function(list) {
+            new PerformanceObserver(function (list) {
                 var entries = list.getEntries();
                 if (entries.length > 0) {
                     rumRecord('LCP', entries[entries.length - 1].startTime);
@@ -1647,7 +1778,7 @@ document.addEventListener('keydown', function(e) {
 
         // First Input Delay
         try {
-            new PerformanceObserver(function(list) {
+            new PerformanceObserver(function (list) {
                 var entries = list.getEntries();
                 for (var i = 0; i < entries.length; i++) {
                     rumRecord('FID', entries[i].processingStart - entries[i].startTime);
@@ -1658,7 +1789,7 @@ document.addEventListener('keydown', function(e) {
         // Cumulative Layout Shift
         try {
             var clsValue = 0;
-            new PerformanceObserver(function(list) {
+            new PerformanceObserver(function (list) {
                 var entries = list.getEntries();
                 for (var i = 0; i < entries.length; i++) {
                     if (!entries[i].hadRecentInput) clsValue += entries[i].value;
@@ -1687,15 +1818,21 @@ document.addEventListener('keydown', function(e) {
 
     // JS Error tracking
     // Warn before closing tab if a form with unsaved data is open
-    window.addEventListener('beforeunload', function(e) {
+    window.addEventListener('beforeunload', function (e) {
         const activeForms = ['add-item-form', 'edit-item-form', 'add-event-form'];
-        if (activeForms.some(id => document.getElementById(id))) { e.preventDefault(); }
+        if (activeForms.some((id) => document.getElementById(id))) {
+            e.preventDefault();
+        }
     });
 
-    window.addEventListener('error', function(e) {
-        rumRecord('JS_ERROR', 1, { message: (e.message || '').slice(0, 200), source: (e.filename || '').slice(0, 200), line: e.lineno });
+    window.addEventListener('error', function (e) {
+        rumRecord('JS_ERROR', 1, {
+            message: (e.message || '').slice(0, 200),
+            source: (e.filename || '').slice(0, 200),
+            line: e.lineno,
+        });
     });
-    window.addEventListener('unhandledrejection', function(e) {
+    window.addEventListener('unhandledrejection', function (e) {
         rumRecord('UNHANDLED_REJECTION', 1, { message: String(e.reason || '').slice(0, 200) });
     });
 
@@ -1712,14 +1849,14 @@ document.addEventListener('keydown', function(e) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: payload,
-                keepalive: true
-            }).catch(function() {});
+                keepalive: true,
+            }).catch(function () {});
         }
     }
 
     // Flush on interval and on page hide
     setInterval(rumFlush, FLUSH_INTERVAL);
-    document.addEventListener('visibilitychange', function() {
+    document.addEventListener('visibilitychange', function () {
         if (document.visibilityState === 'hidden') rumFlush();
     });
 })();
@@ -1727,7 +1864,7 @@ document.addEventListener('keydown', function(e) {
 // ============================================
 // PWA Install Prompt
 // ============================================
-(function() {
+(function () {
     var DISMISS_KEY = 'vaultlister_pwa_dismiss_until';
     var DELAY_MS = 30000; // 30 seconds
     var SNOOZE_DAYS = 7;
@@ -1764,19 +1901,22 @@ document.addEventListener('keydown', function(e) {
             'max-width:calc(100vw - 2rem)',
             'width:max-content',
             'transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1)',
-            'will-change:transform'
+            'will-change:transform',
         ].join(';');
 
-        var icon = '<img src="/assets/logo/icon/icon-64.png" width="28" height="28" alt="" aria-hidden="true" style="border-radius:7px;flex-shrink:0;">';
-        var text = '<span style="flex:1;line-height:1.3"><strong style="display:block;font-size:0.9375rem">Install VaultLister</strong><span style="color:var(--gray-400);font-size:0.8125rem">Add to home screen for quick access</span></span>';
+        var icon =
+            '<img src="/assets/logo/icon/icon-64.png" width="28" height="28" alt="" aria-hidden="true" style="border-radius:7px;flex-shrink:0;">';
+        var text =
+            '<span style="flex:1;line-height:1.3"><strong style="display:block;font-size:0.9375rem">Install VaultLister</strong><span style="color:var(--gray-400);font-size:0.8125rem">Add to home screen for quick access</span></span>';
 
         var btnInstall = document.createElement('button');
         btnInstall.textContent = 'Install';
-        btnInstall.style.cssText = 'background:var(--primary-500);color:#18181b;border:none;padding:0.4rem 0.875rem;border-radius:0.5rem;font-size:0.8125rem;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0';
-        btnInstall.addEventListener('click', function() {
+        btnInstall.style.cssText =
+            'background:var(--primary-500);color:#18181b;border:none;padding:0.4rem 0.875rem;border-radius:0.5rem;font-size:0.8125rem;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0';
+        btnInstall.addEventListener('click', function () {
             if (!deferredPrompt) return;
             deferredPrompt.prompt();
-            deferredPrompt.userChoice.then(function() {
+            deferredPrompt.userChoice.then(function () {
                 deferredPrompt = null;
                 hideBanner();
             });
@@ -1785,13 +1925,14 @@ document.addEventListener('keydown', function(e) {
         var btnDismiss = document.createElement('button');
         btnDismiss.textContent = 'Dismiss';
         btnDismiss.setAttribute('aria-label', 'Dismiss install prompt for 7 days');
-        btnDismiss.style.cssText = 'background:transparent;color:var(--gray-400);border:none;padding:0.4rem 0.5rem;border-radius:0.5rem;font-size:0.8125rem;cursor:pointer;white-space:nowrap;flex-shrink:0';
-        btnDismiss.addEventListener('click', function() {
+        btnDismiss.style.cssText =
+            'background:transparent;color:var(--gray-400);border:none;padding:0.4rem 0.5rem;border-radius:0.5rem;font-size:0.8125rem;cursor:pointer;white-space:nowrap;flex-shrink:0';
+        btnDismiss.addEventListener('click', function () {
             localStorage.setItem(DISMISS_KEY, String(Date.now() + SNOOZE_DAYS * 86400000));
             hideBanner();
         });
 
-        el.innerHTML =sanitizeHTML( sanitizeHTML(icon + text));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        el.innerHTML = sanitizeHTML(sanitizeHTML(icon + text)); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         el.appendChild(btnInstall);
         el.appendChild(btnDismiss);
         return el;
@@ -1811,13 +1952,13 @@ document.addEventListener('keydown', function(e) {
     function hideBanner() {
         if (!bannerEl) return;
         bannerEl.style.transform = 'translateX(-50%) translateY(120%)';
-        setTimeout(function() {
+        setTimeout(function () {
             if (bannerEl && bannerEl.parentNode) bannerEl.parentNode.removeChild(bannerEl);
             bannerEl = null;
         }, 350);
     }
 
-    window.addEventListener('beforeinstallprompt', function(e) {
+    window.addEventListener('beforeinstallprompt', function (e) {
         e.preventDefault();
         deferredPrompt = e;
         if (!isDismissed()) {
@@ -1826,7 +1967,7 @@ document.addEventListener('keydown', function(e) {
     });
 
     // Clean up if the user installs via browser UI directly
-    window.addEventListener('appinstalled', function() {
+    window.addEventListener('appinstalled', function () {
         deferredPrompt = null;
         hideBanner();
     });

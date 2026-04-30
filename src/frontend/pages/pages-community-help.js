@@ -9,7 +9,7 @@ Object.assign(pages, {
         const leaderboard = store.state.leaderboard || [];
 
         // Filter posts by tab
-        const filteredPosts = posts.filter(p => {
+        const filteredPosts = posts.filter((p) => {
             if (activeTab === 'discussion') return p.type === 'discussion';
             if (activeTab === 'success') return p.type === 'success';
             if (activeTab === 'tips') return p.type === 'tip';
@@ -48,16 +48,22 @@ Object.assign(pages, {
             </div>
 
             <div id="community-tab-panel" role="tabpanel">
-            ${activeTab === 'leaderboard' ? `
+            ${
+                activeTab === 'leaderboard'
+                    ? `
                 <!-- Leaderboard Tab -->
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Top Contributors</h2>
                     </div>
                     <div class="card-body">
-                        ${leaderboard.length > 0 ? `
+                        ${
+                            leaderboard.length > 0
+                                ? `
                             <div class="leaderboard-list">
-                                ${leaderboard.map((user, index) => `
+                                ${leaderboard
+                                    .map(
+                                        (user, index) => `
                                     <div class="leaderboard-item">
                                         <div class="leaderboard-rank ${index < 3 ? 'top-3' : ''}">
                                             ${index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
@@ -73,20 +79,29 @@ Object.assign(pages, {
                                             <div class="text-xs text-gray-500">points</div>
                                         </div>
                                     </div>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="empty-state">
                                 <div class="text-4xl mb-2">📊</div>
                                 <p>No leaderboard data yet. Be the first to contribute!</p>
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
-            ` : `
+            `
+                    : `
                 <!-- Posts Tab -->
                 <div class="community-posts">
-                    ${filteredPosts.length > 0 ? filteredPosts.map(post => `
+                    ${
+                        filteredPosts.length > 0
+                            ? filteredPosts
+                                  .map(
+                                      (post) => `
                         <div role="button" tabindex="0" class="community-post-card" onclick="handlers.viewPost('${post.id}')">
                             <div class="post-header">
                                 <div>
@@ -96,8 +111,13 @@ Object.assign(pages, {
                                         ${new Date(post.created_at).toLocaleDateString()}
                                     </div>
                                 </div>
-                                ${post.type === 'success' ? '<div class="badge badge-success">Success Story</div>' :
-                                  post.type === 'tip' ? '<div class="badge badge-primary">Tip</div>' : ''}
+                                ${
+                                    post.type === 'success'
+                                        ? '<div class="badge badge-success">Success Story</div>'
+                                        : post.type === 'tip'
+                                          ? '<div class="badge badge-primary">Tip</div>'
+                                          : ''
+                                }
                             </div>
                             <div class="post-content-preview">
                                 ${escapeHtml((post.content || post.body || '').slice(0, 150))}${(post.content || post.body || '').length > 150 ? '...' : ''}
@@ -107,21 +127,32 @@ Object.assign(pages, {
                                     <span>👍 ${post.upvote_count || 0}</span>
                                     <span>💬 ${post.reply_count || 0}</span>
                                 </div>
-                                ${post.tags && post.tags.length > 0 ? `
+                                ${
+                                    post.tags && post.tags.length > 0
+                                        ? `
                                     <div class="post-tags">
-                                        ${post.tags.slice(0, 3).map(tag => `
+                                        ${post.tags
+                                            .slice(0, 3)
+                                            .map(
+                                                (tag) => `
                                             <span class="tag">${escapeHtml(tag)}</span>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </div>
-                                ` : ''}
+                                `
+                                        : ''
+                                }
                             </div>
                         </div>
-                    `).join('') : `
+                    `,
+                                  )
+                                  .join('')
+                            : `
                         <div class="card">
                             <div class="card-body text-center py-12">
                                 <div class="text-6xl mb-4">
-                                    ${activeTab === 'discussion' ? '💬' :
-                                      activeTab === 'success' ? '🏆' : '💡'}
+                                    ${activeTab === 'discussion' ? '💬' : activeTab === 'success' ? '🏆' : '💡'}
                                 </div>
                                 <p class="font-semibold text-gray-500">No posts yet</p>
                                 <p class="text-gray-600 mb-4">Be the first to share!</p>
@@ -130,16 +161,16 @@ Object.assign(pages, {
                                 </button>
                             </div>
                         </div>
-                    `}
+                    `
+                    }
                 </div>
-            `}
+            `
+            }
             </div>
         `;
     },
 
-
     // Help page,
-
 
     help() {
         return `
@@ -189,7 +220,6 @@ Object.assign(pages, {
     },
 
     // 404 page,
-
 
     termsOfService() {
         return `
@@ -252,7 +282,6 @@ Object.assign(pages, {
     },
 
     // Privacy Policy page,
-
 
     privacyPolicy() {
         return `
@@ -354,27 +383,101 @@ Object.assign(pages, {
 
     // About Us page,
 
-
     about() {
         const features = [
-            { icon: 'globe', title: 'Multi-Platform Support', description: 'Cross-list to Poshmark, eBay, Mercari, Depop, Grailed, and Facebook', color: 'primary' },
-            { icon: 'zap', title: 'AI-Powered Tools', description: 'Smart listing generation, receipt parsing, and photo editing', color: 'warning' },
-            { icon: 'wifi-off', title: 'Offline Capable', description: 'Your data stays on your device - work anywhere, anytime', color: 'success' },
-            { icon: 'bar-chart', title: 'Comprehensive Analytics', description: 'Track sales, profits, and performance across all platforms', color: 'info' },
-            { icon: 'package', title: 'Inventory Management', description: 'Track stock levels, costs, SKUs, and get low-stock alerts', color: 'primary' },
-            { icon: 'dollar-sign', title: 'Financial Tracking', description: 'Chart of accounts, profit/loss statements, and financial reports', color: 'success' },
-            { icon: 'image', title: 'Image Bank', description: 'Organize photos in folders, batch edit, and reuse across listings', color: 'purple' },
-            { icon: 'truck', title: 'Order Management', description: 'Track orders, print labels, and manage shipping across platforms', color: 'info' },
-            { icon: 'settings', title: 'Smart Automations', description: 'Auto-relist, scheduled shares, and workflow automations', color: 'warning' },
-            { icon: 'users', title: 'Team Collaboration', description: 'Invite team members with role-based permissions', color: 'primary' },
-            { icon: 'ruler', title: 'Size Charts & Guides', description: 'Built-in sizing references for clothing, shoes, and accessories', color: 'gray' },
-            { icon: 'message-circle', title: 'Vault Buddy Assistant', description: 'AI chatbot to answer questions and guide you through features', color: 'success' }
+            {
+                icon: 'globe',
+                title: 'Multi-Platform Support',
+                description: 'Cross-list to Poshmark, eBay, Mercari, Depop, Grailed, and Facebook',
+                color: 'primary',
+            },
+            {
+                icon: 'zap',
+                title: 'AI-Powered Tools',
+                description: 'Smart listing generation, receipt parsing, and photo editing',
+                color: 'warning',
+            },
+            {
+                icon: 'wifi-off',
+                title: 'Offline Capable',
+                description: 'Your data stays on your device - work anywhere, anytime',
+                color: 'success',
+            },
+            {
+                icon: 'bar-chart',
+                title: 'Comprehensive Analytics',
+                description: 'Track sales, profits, and performance across all platforms',
+                color: 'info',
+            },
+            {
+                icon: 'package',
+                title: 'Inventory Management',
+                description: 'Track stock levels, costs, SKUs, and get low-stock alerts',
+                color: 'primary',
+            },
+            {
+                icon: 'dollar-sign',
+                title: 'Financial Tracking',
+                description: 'Chart of accounts, profit/loss statements, and financial reports',
+                color: 'success',
+            },
+            {
+                icon: 'image',
+                title: 'Image Bank',
+                description: 'Organize photos in folders, batch edit, and reuse across listings',
+                color: 'purple',
+            },
+            {
+                icon: 'truck',
+                title: 'Order Management',
+                description: 'Track orders, print labels, and manage shipping across platforms',
+                color: 'info',
+            },
+            {
+                icon: 'settings',
+                title: 'Smart Automations',
+                description: 'Auto-relist, scheduled shares, and workflow automations',
+                color: 'warning',
+            },
+            {
+                icon: 'users',
+                title: 'Team Collaboration',
+                description: 'Invite team members with role-based permissions',
+                color: 'primary',
+            },
+            {
+                icon: 'ruler',
+                title: 'Size Charts & Guides',
+                description: 'Built-in sizing references for clothing, shoes, and accessories',
+                color: 'gray',
+            },
+            {
+                icon: 'message-circle',
+                title: 'Vault Buddy Assistant',
+                description: 'AI chatbot to answer questions and guide you through features',
+                color: 'success',
+            },
         ];
 
         const testimonials = [
-            { name: 'Sarah M.', role: 'Full-time Reseller', quote: 'VaultLister has completely transformed how I manage my reselling business. The cross-listing feature alone saves me hours every week!', rating: 5 },
-            { name: 'Mike T.', role: 'Part-time Seller', quote: 'Finally, a tool that works offline! I can update my inventory at estate sales without worrying about internet connection.', rating: 5 },
-            { name: 'Jessica L.', role: 'Boutique Owner', quote: 'The AI listing generation is incredible. It writes better descriptions than I could and helps my items sell faster.', rating: 5 }
+            {
+                name: 'Sarah M.',
+                role: 'Full-time Reseller',
+                quote: 'VaultLister has completely transformed how I manage my reselling business. The cross-listing feature alone saves me hours every week!',
+                rating: 5,
+            },
+            {
+                name: 'Mike T.',
+                role: 'Part-time Seller',
+                quote: 'Finally, a tool that works offline! I can update my inventory at estate sales without worrying about internet connection.',
+                rating: 5,
+            },
+            {
+                name: 'Jessica L.',
+                role: 'Boutique Owner',
+                quote: 'The AI listing generation is incredible. It writes better descriptions than I could and helps my items sell faster.',
+                rating: 5,
+            },
         ];
 
         return `
@@ -479,7 +582,9 @@ Object.assign(pages, {
                     <p class="section-description">Comprehensive tools designed specifically for resellers</p>
                 </div>
                 <div class="features-grid">
-                    ${features.map(f => `
+                    ${features
+                        .map(
+                            (f) => `
                         <div class="about-feature-card">
                             <div class="feature-icon-wrapper ${f.color}">
                                 ${components.icon(f.icon, 24)}
@@ -487,7 +592,9 @@ Object.assign(pages, {
                             <h3 class="feature-title">${f.title}</h3>
                             <p class="feature-description">${f.description}</p>
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
             </div>
 
@@ -498,7 +605,9 @@ Object.assign(pages, {
                     <h2 class="section-title">Loved by Resellers</h2>
                 </div>
                 <div class="testimonials-grid">
-                    ${testimonials.map(t => `
+                    ${testimonials
+                        .map(
+                            (t) => `
                         <div class="testimonial-card">
                             <div class="testimonial-stars">
                                 ${'★'.repeat(t.rating)}
@@ -512,7 +621,9 @@ Object.assign(pages, {
                                 </div>
                             </div>
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
             </div>
 
@@ -522,11 +633,37 @@ Object.assign(pages, {
                 <p class="about-section-subtitle">The people behind VaultLister</p>
                 <div class="about-team-grid">
                     ${[
-                        { name: 'Matt', role: 'Founder & Lead Developer', avatar: 'M', color: 'primary', bio: 'Full-stack developer and reseller who built VaultLister to solve his own pain points.' },
-                        { name: 'Alex R.', role: 'UX Designer', avatar: 'A', color: 'success', bio: 'Designs intuitive interfaces that help resellers work faster and smarter.' },
-                        { name: 'Jordan K.', role: 'Backend Engineer', avatar: 'J', color: 'warning', bio: 'Keeps the platform fast, secure, and reliable for thousands of users.' },
-                        { name: 'Sam P.', role: 'Community Manager', avatar: 'S', color: 'info', bio: 'Connects with resellers to bring their feedback into the product roadmap.' }
-                    ].map(member => `
+                        {
+                            name: 'Matt',
+                            role: 'Founder & Lead Developer',
+                            avatar: 'M',
+                            color: 'primary',
+                            bio: 'Full-stack developer and reseller who built VaultLister to solve his own pain points.',
+                        },
+                        {
+                            name: 'Alex R.',
+                            role: 'UX Designer',
+                            avatar: 'A',
+                            color: 'success',
+                            bio: 'Designs intuitive interfaces that help resellers work faster and smarter.',
+                        },
+                        {
+                            name: 'Jordan K.',
+                            role: 'Backend Engineer',
+                            avatar: 'J',
+                            color: 'warning',
+                            bio: 'Keeps the platform fast, secure, and reliable for thousands of users.',
+                        },
+                        {
+                            name: 'Sam P.',
+                            role: 'Community Manager',
+                            avatar: 'S',
+                            color: 'info',
+                            bio: 'Connects with resellers to bring their feedback into the product roadmap.',
+                        },
+                    ]
+                        .map(
+                            (member) => `
                         <div class="team-member-card team-card-hover">
                             <div class="team-avatar ${member.color}">${member.avatar}</div>
                             <h3 class="team-name">${member.name}</h3>
@@ -537,7 +674,9 @@ Object.assign(pages, {
                                 <span class="team-social-icon" title="GitHub">${components.icon('code', 14)}</span>
                             </div>
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
             </div>
 
@@ -547,13 +686,40 @@ Object.assign(pages, {
                 <p class="about-section-subtitle">Key milestones in VaultLister's growth</p>
                 <div class="about-timeline">
                     ${[
-                        { date: 'Mar 2026', title: 'Alpha Launch', description: 'v0.1.0 released with inventory management and 6-platform cross-listing.' },
-                        { date: 'Mar 2026', title: 'AI Tools Added', description: 'Introduced AI listing generation, receipt parser, and smart pricing.' },
-                        { date: 'Apr 2026', title: 'Community & Support', description: 'Added Help Center, tutorials, support tickets, and community features.' },
-                        { date: 'Apr 2026', title: 'Advanced Analytics', description: 'Launched analytics dashboard, predictions, and financial tracking.' },
-                        { date: 'Apr 2026', title: '170+ Features Milestone', description: 'Reached 171+ features including calendar, automations, and image bank.' },
-                        { date: 'Apr 2026', title: 'Release Candidate', description: 'v0.9.0 RC — continuing to add features based on community feedback and votes.' }
-                    ].map((milestone, idx) => `
+                        {
+                            date: 'Mar 2026',
+                            title: 'Alpha Launch',
+                            description: 'v0.1.0 released with inventory management and 6-platform cross-listing.',
+                        },
+                        {
+                            date: 'Mar 2026',
+                            title: 'AI Tools Added',
+                            description: 'Introduced AI listing generation, receipt parser, and smart pricing.',
+                        },
+                        {
+                            date: 'Apr 2026',
+                            title: 'Community & Support',
+                            description: 'Added Help Center, tutorials, support tickets, and community features.',
+                        },
+                        {
+                            date: 'Apr 2026',
+                            title: 'Advanced Analytics',
+                            description: 'Launched analytics dashboard, predictions, and financial tracking.',
+                        },
+                        {
+                            date: 'Apr 2026',
+                            title: '170+ Features Milestone',
+                            description: 'Reached 171+ features including calendar, automations, and image bank.',
+                        },
+                        {
+                            date: 'Apr 2026',
+                            title: 'Release Candidate',
+                            description:
+                                'v0.9.0 RC — continuing to add features based on community feedback and votes.',
+                        },
+                    ]
+                        .map(
+                            (milestone, idx) => `
                         <div class="timeline-milestone ${idx === 5 ? 'current' : ''}">
                             <div class="milestone-dot"></div>
                             <div class="milestone-content">
@@ -562,7 +728,9 @@ Object.assign(pages, {
                                 <p class="milestone-description">${milestone.description}</p>
                             </div>
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
             </div>
 
@@ -580,8 +748,10 @@ Object.assign(pages, {
                         { name: 'Vanilla JS', desc: 'Frontend (Zero Dependencies)', icon: '⚡', color: '#fff3cd' },
                         { name: 'REST API', desc: 'Backend Services', icon: '🔌', color: '#d4edda' },
                         { name: 'Claude AI', desc: 'AI-Powered Features', icon: '🧠', color: '#f0e6ff' },
-                        { name: 'PWA', desc: 'Offline Support', icon: '📱', color: '#e8f0fe' }
-                    ].map(tech => `
+                        { name: 'PWA', desc: 'Offline Support', icon: '📱', color: '#e8f0fe' },
+                    ]
+                        .map(
+                            (tech) => `
                         <div class="tech-stack-card">
                             <div class="tech-stack-icon" style="background: ${tech.color};">${tech.icon}</div>
                             <div class="tech-stack-info">
@@ -589,7 +759,9 @@ Object.assign(pages, {
                                 <p class="tech-stack-desc">${tech.desc}</p>
                             </div>
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
             </div>
 
@@ -604,13 +776,17 @@ Object.assign(pages, {
                         { name: 'Mercari', icon: 'M', color: '#4dc3fc' },
                         { name: 'Depop', icon: 'D', color: '#ff2300' },
                         { name: 'Grailed', icon: 'G', color: '#000000' },
-                        { name: 'Facebook', icon: 'f', color: '#1877f2' }
-                    ].map(partner => `
+                        { name: 'Facebook', icon: 'f', color: '#1877f2' },
+                    ]
+                        .map(
+                            (partner) => `
                         <div class="partner-logo-card">
                             <div class="partner-icon" style="background: ${partner.color}; color: white;">${partner.icon}</div>
                             <span class="partner-name">${partner.name}</span>
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
             </div>
 
@@ -737,7 +913,6 @@ Object.assign(pages, {
     },
 
     // Refer a Friend page,
-
 
     referFriend() {
         const user = store.state.user || {};
@@ -883,7 +1058,6 @@ Object.assign(pages, {
 
     // Support Articles page,
 
-
     supportArticles() {
         const articles = store.state.helpArticles || [];
         const faqs = store.state.helpFAQs || [];
@@ -919,11 +1093,17 @@ Object.assign(pages, {
                     <h2 class="card-title">Frequently Asked Questions</h2>
                 </div>
                 <div class="card-body">
-                    ${faqs.length === 0 ? `
+                    ${
+                        faqs.length === 0
+                            ? `
                         <p class="text-gray-600 text-center py-8">No FAQs found.</p>
-                    ` : `
+                    `
+                            : `
                         <div style="display: flex; flex-direction: column; gap: 1rem;">
-                            ${faqs.slice(0, 10).map(faq => `
+                            ${faqs
+                                .slice(0, 10)
+                                .map(
+                                    (faq) => `
                                 <div class="faq-item" style="border-bottom: 1px solid var(--gray-200); padding-bottom: 1rem;">
                                     <details>
                                         <summary style="cursor: pointer; font-weight: 600; padding: 0.5rem 0;">
@@ -943,9 +1123,12 @@ Object.assign(pages, {
                                         </div>
                                     </details>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
@@ -955,11 +1138,16 @@ Object.assign(pages, {
                     <h2 class="card-title">Help Articles</h2>
                 </div>
                 <div class="card-body">
-                    ${articles.length === 0 ? `
+                    ${
+                        articles.length === 0
+                            ? `
                         <p class="text-gray-600 text-center py-8">No articles found.</p>
-                    ` : `
+                    `
+                            : `
                         <div style="display: grid; gap: 1rem;">
-                            ${articles.map(article => `
+                            ${articles
+                                .map(
+                                    (article) => `
                                 <div role="button" tabindex="0" class="article-card" style="border: 1px solid var(--gray-200); border-radius: 8px; padding: 1.5rem; cursor: pointer; transition: all 0.2s;"
                                      onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.borderColor='var(--primary-500)'"
                                      onmouseout="this.style.boxShadow='none'; this.style.borderColor='var(--gray-200)'"
@@ -967,36 +1155,59 @@ Object.assign(pages, {
                                     <h2 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">
                                         ${searchQuery ? highlightText(article.title, searchQuery) : escapeHtml(article.title)}
                                     </h2>
-                                    ${article.excerpt ? `
+                                    ${
+                                        article.excerpt
+                                            ? `
                                         <p style="color: var(--gray-500); margin-bottom: 0.75rem;">${searchQuery ? highlightText(article.excerpt, searchQuery) : escapeHtml(article.excerpt)}</p>
-                                    ` : ''}
+                                    `
+                                            : ''
+                                    }
                                     <div style="display: flex; gap: 1rem; align-items: center; font-size: 0.875rem; color: var(--gray-400);">
-                                        ${article.category ? `
+                                        ${
+                                            article.category
+                                                ? `
                                             <span class="badge">${article.category}</span>
-                                        ` : ''}
+                                        `
+                                                : ''
+                                        }
                                         <span>${article.view_count || 0} views</span>
-                                        ${article.helpful_count > 0 ? `
+                                        ${
+                                            article.helpful_count > 0
+                                                ? `
                                             <span>👍 ${article.helpful_count}</span>
-                                        ` : ''}
-                                        ${article.tags && article.tags.length > 0 ? `
+                                        `
+                                                : ''
+                                        }
+                                        ${
+                                            article.tags && article.tags.length > 0
+                                                ? `
                                             <div style="display: flex; gap: 0.25rem;">
-                                                ${article.tags.slice(0, 3).map(tag => `
+                                                ${article.tags
+                                                    .slice(0, 3)
+                                                    .map(
+                                                        (tag) => `
                                                     <span class="tag">${escapeHtml(tag)}</span>
-                                                `).join('')}
+                                                `,
+                                                    )
+                                                    .join('')}
                                             </div>
-                                        ` : ''}
+                                        `
+                                                : ''
+                                        }
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
         `;
     },
 
     // Report a Bug page,
-
 
     reportBug() {
         const tickets = store.state.supportTickets || [];
@@ -1020,7 +1231,9 @@ Object.assign(pages, {
                     <h2 class="card-title">Your Tickets</h2>
                 </div>
                 <div class="card-body">
-                    ${tickets.length === 0 ? `
+                    ${
+                        tickets.length === 0
+                            ? `
                         <div class="text-center py-12">
                             <div class="text-6xl mb-4">🎫</div>
                             <h2 class="text-xl font-bold mb-2">No Tickets Yet</h2>
@@ -1029,22 +1242,24 @@ Object.assign(pages, {
                                 Submit Your First Ticket
                             </button>
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div style="display: flex; flex-direction: column; gap: 1rem;">
-                            ${tickets.map(ticket => {
-                                const statusColors = {
-                                    open: 'primary',
-                                    in_progress: 'warning',
-                                    resolved: 'success',
-                                    closed: 'secondary'
-                                };
-                                const typeIcons = {
-                                    contact: '💬',
-                                    bug: '🐛',
-                                    feature_request: '💡'
-                                };
+                            ${tickets
+                                .map((ticket) => {
+                                    const statusColors = {
+                                        open: 'primary',
+                                        in_progress: 'warning',
+                                        resolved: 'success',
+                                        closed: 'secondary',
+                                    };
+                                    const typeIcons = {
+                                        contact: '💬',
+                                        bug: '🐛',
+                                        feature_request: '💡',
+                                    };
 
-                                return `
+                                    return `
                                     <div role="button" tabindex="0" class="ticket-card"
                                          style="border: 1px solid var(--gray-200); border-radius: 8px; padding: 1.5rem; cursor: pointer; transition: all 0.2s;"
                                          onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'"
@@ -1071,16 +1286,17 @@ Object.assign(pages, {
                                         </div>
                                     </div>
                                 `;
-                            }).join('')}
+                                })
+                                .join('')}
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
         `;
     },
 
     // Tutorials page - Text-based guides,
-
 
     tutorials() {
         const selectedCategory = store.state.tutorialCategory || 'getting_started';
@@ -1095,7 +1311,7 @@ Object.assign(pages, {
 1. **Create Your Account** - Sign up with your email and create a secure password.
 2. **Connect Your Shops** - Go to My Shops and link your marketplace accounts (eBay, Poshmark, etc.).
 3. **Add Your First Item** - Click "Add Item" in Inventory to create your first listing.
-4. **Cross-List** - Select items and use "Cross-List" to publish to multiple platforms at once.`
+4. **Cross-List** - Select items and use "Cross-List" to publish to multiple platforms at once.`,
                 },
                 {
                     title: 'Understanding the Dashboard',
@@ -1106,7 +1322,7 @@ Object.assign(pages, {
 - **Recent Sales** - Your latest completed sales
 - **Revenue** - Track your earnings over time
 
-Use the dashboard to monitor performance and identify which items need attention.`
+Use the dashboard to monitor performance and identify which items need attention.`,
                 },
                 {
                     title: 'Navigating VaultLister',
@@ -1118,8 +1334,8 @@ Use the dashboard to monitor performance and identify which items need attention
 - **Sales** - Track completed sales
 - **Analytics** - Detailed performance reports
 - **Automations** - Set up time-saving rules
-- **Settings** - Customize your experience`
-                }
+- **Settings** - Customize your experience`,
+                },
             ],
             inventory: [
                 {
@@ -1133,7 +1349,7 @@ Use the dashboard to monitor performance and identify which items need attention
 5. Add labels/tags for easy organization.
 6. Click **Save** to add to your inventory.
 
-**Pro Tip:** Use the AI Generate feature to automatically create descriptions from your photos!`
+**Pro Tip:** Use the AI Generate feature to automatically create descriptions from your photos!`,
                 },
                 {
                     title: 'Bulk Operations',
@@ -1143,7 +1359,7 @@ Use the dashboard to monitor performance and identify which items need attention
 - **Bulk Export** - Export inventory to CSV for spreadsheets
 - **Bulk Delete** - Remove multiple items simultaneously
 
-Select items using the checkboxes, then choose your action from the toolbar.`
+Select items using the checkboxes, then choose your action from the toolbar.`,
                 },
                 {
                     title: 'Organizing with Labels',
@@ -1154,8 +1370,8 @@ Select items using the checkboxes, then choose your action from the toolbar.`
 3. Filter inventory by label to find items fast
 4. Use colors to visually distinguish categories
 
-Labels are especially useful for seasonal inventory and sourcing trips.`
-                }
+Labels are especially useful for seasonal inventory and sourcing trips.`,
+                },
             ],
             cross_listing: [
                 {
@@ -1168,7 +1384,7 @@ Labels are especially useful for seasonal inventory and sourcing trips.`
 4. Review and customize per-platform settings
 5. Click **Publish** to go live
 
-VaultLister automatically adjusts your listing format for each platform's requirements.`
+VaultLister automatically adjusts your listing format for each platform's requirements.`,
                 },
                 {
                     title: 'Platform-Specific Tips',
@@ -1179,7 +1395,7 @@ VaultLister automatically adjusts your listing format for each platform's requir
 **Whatnot** - Great for live selling and auctions
 **Shopify** - Perfect for building your own brand
 
-Customize pricing per platform to account for different fees and audiences.`
+Customize pricing per platform to account for different fees and audiences.`,
                 },
                 {
                     title: 'Managing Listings',
@@ -1190,8 +1406,8 @@ Customize pricing per platform to account for different fees and audiences.`
 - **End** - Remove listings that have sold elsewhere
 - **Promote** - Use platform-specific promotion tools
 
-The Listings page shows all your active items across platforms in one view.`
-                }
+The Listings page shows all your active items across platforms in one view.`,
+                },
             ],
             automations: [
                 {
@@ -1204,7 +1420,7 @@ The Listings page shows all your active items across platforms in one view.`
 4. Configure the schedule (time of day, frequency)
 5. Let VaultLister work while you sleep!
 
-Popular automations include daily sharing, auto-offers, and price drops.`
+Popular automations include daily sharing, auto-offers, and price drops.`,
                 },
                 {
                     title: 'Sharing Automations',
@@ -1214,7 +1430,7 @@ Popular automations include daily sharing, auto-offers, and price drops.`
 - **Party Share** - Auto-shares during Poshmark parties
 - **Community Share** - Shares from other closets for visibility
 
-Set your preferred time window and VaultLister handles the rest.`
+Set your preferred time window and VaultLister handles the rest.`,
                 },
                 {
                     title: 'Offer & Pricing Automations',
@@ -1225,8 +1441,8 @@ Set your preferred time window and VaultLister handles the rest.`
 - **Weekly Price Drop** - Gradually reduce prices on stale items
 - **Bundle Discounts** - Offer deals on multiple items
 
-Configure your minimum prices to protect your margins.`
-                }
+Configure your minimum prices to protect your margins.`,
+                },
             ],
             advanced: [
                 {
@@ -1238,7 +1454,7 @@ Configure your minimum prices to protect your margins.`
 - **Sell-Through Rate** - Understand how fast items sell
 - **Profitability Analysis** - Know your actual margins
 
-Export reports to CSV for further analysis in spreadsheets.`
+Export reports to CSV for further analysis in spreadsheets.`,
                 },
                 {
                     title: 'Image Bank & Photo Editor',
@@ -1249,9 +1465,9 @@ Export reports to CSV for further analysis in spreadsheets.`
 - **Batch Processing** - Edit multiple photos at once
 - **Smart Crop** - Auto-crop for platform requirements
 
-Upload photos once, use them across all your listings.`
+Upload photos once, use them across all your listings.`,
                 },
-            ]
+            ],
         };
 
         const categories = [
@@ -1259,7 +1475,7 @@ Upload photos once, use them across all your listings.`
             { id: 'inventory', label: 'Inventory', icon: 'box' },
             { id: 'cross_listing', label: 'Cross-Listing', icon: 'share' },
             { id: 'automations', label: 'Automations', icon: 'automation' },
-            { id: 'advanced', label: 'Advanced', icon: 'settings' }
+            { id: 'advanced', label: 'Advanced', icon: 'settings' },
         ];
 
         const currentTutorials = tutorials[selectedCategory] || [];
@@ -1272,17 +1488,23 @@ Upload photos once, use them across all your listings.`
 
             <!-- Category Filter -->
             <div class="mb-6" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                ${categories.map(cat => `
+                ${categories
+                    .map(
+                        (cat) => `
                     <button class="btn ${selectedCategory === cat.id ? 'btn-primary' : 'btn-secondary'}"
                             onclick="handlers.switchTutorialCategory('${cat.id}')">
                         ${components.icon(cat.icon, 16)} ${cat.label}
                     </button>
-                `).join('')}
+                `,
+                    )
+                    .join('')}
             </div>
 
             <!-- Tutorial Cards -->
             <div style="display: grid; gap: 1.5rem;">
-                ${currentTutorials.map((tutorial, index) => `
+                ${currentTutorials
+                    .map(
+                        (tutorial, index) => `
                     <div class="card">
                         <div role="button" tabindex="0" class="card-header" style="cursor: pointer;" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('.expand-icon').classList.toggle('rotated');">
                             <div style="display: flex; align-items: center; gap: 12px; pointer-events: none;">
@@ -1297,7 +1519,9 @@ Upload photos once, use them across all your listings.`
                             <div style="white-space: pre-wrap; line-height: 1.8; color: var(--gray-700);">${escapeHtml(tutorial.content).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')}</div>
                         </div>
                     </div>
-                `).join('')}
+                `,
+                    )
+                    .join('')}
             </div>
 
             <style>
@@ -1308,12 +1532,11 @@ Upload photos once, use them across all your listings.`
 
     // Roadmap page,
 
-
     roadmap() {
         const roadmapSearch = store.state.roadmapSearch || '';
         // Deduplicate features by title (DB may have duplicates)
         const seen = new Set();
-        const allFeatures = (store.state.roadmapFeatures || []).filter(f => {
+        const allFeatures = (store.state.roadmapFeatures || []).filter((f) => {
             if (seen.has(f.title)) return false;
             seen.add(f.title);
             return true;
@@ -1321,36 +1544,48 @@ Upload photos once, use them across all your listings.`
 
         // Apply search filter across all features
         const features = roadmapSearch
-            ? allFeatures.filter(f => {
-                const q = roadmapSearch.toLowerCase();
-                return f.title?.toLowerCase().includes(q) ||
-                    f.description?.toLowerCase().includes(q) ||
-                    f.category?.toLowerCase().includes(q);
+            ? allFeatures.filter((f) => {
+                  const q = roadmapSearch.toLowerCase();
+                  return (
+                      f.title?.toLowerCase().includes(q) ||
+                      f.description?.toLowerCase().includes(q) ||
+                      f.category?.toLowerCase().includes(q)
+                  );
               })
             : allFeatures;
 
         // Kanban columns in spec order:
         // Feature Requests | Features Planned | Features In Progress | Released Features
         const columns = [
-            { key: 'requested',   label: 'Feature Requests',     color: 'var(--gray-600)', isRequests: true },
-            { key: 'planned',     label: 'Features Planned',      color: 'var(--gray-600)', isRequests: false },
-            { key: 'in-progress', label: 'Features In Progress',  color: 'var(--primary-600)', isRequests: false },
-            { key: 'released',    label: 'Released Features',     color: 'var(--gray-600)', isRequests: false },
+            { key: 'requested', label: 'Feature Requests', color: 'var(--gray-600)', isRequests: true },
+            { key: 'planned', label: 'Features Planned', color: 'var(--gray-600)', isRequests: false },
+            { key: 'in-progress', label: 'Features In Progress', color: 'var(--primary-600)', isRequests: false },
+            { key: 'released', label: 'Released Features', color: 'var(--gray-600)', isRequests: false },
         ];
 
         // Map legacy status values used in existing data
-        const statusMap = { 'in_progress': 'in-progress', 'completed': 'released', 'planned': 'planned', 'requested': 'requested' };
+        const statusMap = {
+            in_progress: 'in-progress',
+            completed: 'released',
+            planned: 'planned',
+            requested: 'requested',
+        };
         const getCol = (f) => statusMap[f.status] || f.status;
 
         // Platform components per spec
         const componentPlatforms = ['eBay', 'Poshmark', 'Depop', 'Facebook', 'Whatnot', 'Shopify'];
 
         const renderCard = (feature) => {
-            const priorityClass = feature.priority === 'high' ? 'badge-error' :
-                                  feature.priority === 'medium' ? 'badge-warning' : 'badge-secondary';
-            const component = feature.category && componentPlatforms.includes(feature.category)
-                ? feature.category
-                : (feature.component || feature.category || null);
+            const priorityClass =
+                feature.priority === 'high'
+                    ? 'badge-error'
+                    : feature.priority === 'medium'
+                      ? 'badge-warning'
+                      : 'badge-secondary';
+            const component =
+                feature.category && componentPlatforms.includes(feature.category)
+                    ? feature.category
+                    : feature.component || feature.category || null;
             const shortDesc = feature.description
                 ? escapeHtml(feature.description.slice(0, 100)) + (feature.description.length > 100 ? '...' : '')
                 : '';
@@ -1373,7 +1608,7 @@ Upload photos once, use them across all your listings.`
         };
 
         // Recent releases for What's New banner
-        const recentReleases = allFeatures.filter(f => getCol(f) === 'released').slice(0, 3);
+        const recentReleases = allFeatures.filter((f) => getCol(f) === 'released').slice(0, 3);
 
         return `
             <div class="page-header">
@@ -1401,24 +1636,32 @@ Upload photos once, use them across all your listings.`
                 </div>
             </div>
 
-            ${recentReleases.length > 0 ? `
+            ${
+                recentReleases.length > 0
+                    ? `
                 <div class="whats-new-banner">
                     <div class="whats-new-header">
                         <span class="whats-new-badge">What's New</span>
                         <button class="btn btn-sm btn-secondary" onclick="router.navigate('changelog')">View Changelog</button>
                     </div>
                     <div class="whats-new-items">
-                        ${recentReleases.map(feature => `
+                        ${recentReleases
+                            .map(
+                                (feature) => `
                             <div class="whats-new-item">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2">
                                     <polyline points="20 6 9 17 4 12"></polyline>
                                 </svg>
                                 <span>${escapeHtml(feature.title)}</span>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <style>
                 .roadmap-kanban { display: flex; gap: 16px; overflow-x: auto; align-items: flex-start; padding-bottom: 16px; }
@@ -1431,37 +1674,43 @@ Upload photos once, use them across all your listings.`
 
             <!-- Kanban Board -->
             <div class="roadmap-kanban" role="region" aria-label="Product Roadmap Kanban Board">
-                ${columns.map(col => {
-                    const colFeatures = features.filter(f => getCol(f) === col.key);
-                    return `
+                ${columns
+                    .map((col) => {
+                        const colFeatures = features.filter((f) => getCol(f) === col.key);
+                        return `
                     <div class="roadmap-column" aria-label="${escapeHtml(col.label)} column">
                         <div class="roadmap-column-header">
                             <span class="font-semibold text-sm" style="color:${col.color};">${col.label}</span>
                             <span class="badge badge-sm" style="background:var(--gray-200);color:var(--gray-700);">${colFeatures.length}</span>
                         </div>
-                        ${col.isRequests ? `
+                        ${
+                            col.isRequests
+                                ? `
                             <button class="btn btn-sm btn-outline w-full" style="margin-bottom:8px;min-height:44px;" onclick="store.setState({ feedbackFormType: 'feature' }); router.navigate('submit-feedback')" aria-label="Submit a feature request">
                                 + Submit Request
                             </button>
-                        ` : ''}
-                        ${colFeatures.length === 0
-                            ? `<div style="text-align:center;padding:24px 8px;color:var(--gray-400);font-size:12px;">No items</div>`
-                            : colFeatures.map(f => renderCard(f)).join('')
+                        `
+                                : ''
+                        }
+                        ${
+                            colFeatures.length === 0
+                                ? `<div style="text-align:center;padding:24px 8px;color:var(--gray-400);font-size:12px;">No items</div>`
+                                : colFeatures.map((f) => renderCard(f)).join('')
                         }
                     </div>`;
-                }).join('')}
+                    })
+                    .join('')}
             </div>
         `;
     },
 
-        // Suggest Features page,
-
+    // Suggest Features page,
 
     suggestFeatures() {
         const features = store.state.roadmapFeatures || [];
         // Sort by votes descending, take top 5
         const topFeatures = [...features]
-            .filter(f => f.status === 'planned')
+            .filter((f) => f.status === 'planned')
             .sort((a, b) => (b.votes || 0) - (a.votes || 0))
             .slice(0, 5);
 
@@ -1528,7 +1777,9 @@ Upload photos once, use them across all your listings.`
             </div>
 
             <!-- Top Requested Features -->
-            ${topFeatures.length > 0 ? `
+            ${
+                topFeatures.length > 0
+                    ? `
                 <div class="card mt-6">
                     <div class="card-header">
                         <h2 class="card-title">Most Requested Features</h2>
@@ -1536,7 +1787,9 @@ Upload photos once, use them across all your listings.`
                     </div>
                     <div class="card-body" style="padding: 0;">
                         <div class="divide-y">
-                            ${topFeatures.map((feature, index) => `
+                            ${topFeatures
+                                .map(
+                                    (feature, index) => `
                                 <div class="flex items-center gap-4 p-4">
                                     <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: var(--gray-100); display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--gray-600);">
                                         #${index + 1}
@@ -1552,11 +1805,15 @@ Upload photos once, use them across all your listings.`
                                         </button>
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Categories -->
             <div class="card mt-6">
@@ -1593,7 +1850,6 @@ Upload photos once, use them across all your listings.`
 
     // Submit Feedback page,
 
-
     submitFeedback() {
         const userFeedback = store.state.userFeedback || [];
         const feedbackType = store.state.feedbackFormType || 'feature';
@@ -1603,7 +1859,7 @@ Upload photos once, use them across all your listings.`
             feature: '✨',
             improvement: '📈',
             bug: '🐛',
-            general: '💬'
+            general: '💬',
         };
 
         const statusColors = {
@@ -1611,7 +1867,7 @@ Upload photos once, use them across all your listings.`
             reviewing: 'badge-primary',
             planned: 'badge-success',
             completed: 'badge-success',
-            declined: 'badge-danger'
+            declined: 'badge-danger',
         };
 
         return `
@@ -1629,7 +1885,7 @@ Upload photos once, use them across all your listings.`
                     <form id="feedback-form" onsubmit="handlers.submitFeedbackForm(event)">
                         <!-- Type Selection -->
                         <div style="margin-bottom: 20px;">
-                            <label class="form-label">Feedback Type <span style="color: var(--danger-600);">*</span></label>
+                            <p class="form-label">Feedback Type <span style="color: var(--danger-600);">*</span></p>
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
                                 <button type="button"
                                         class="btn ${feedbackType === 'feature' ? 'btn-primary' : 'btn-outline'}"
@@ -1694,7 +1950,9 @@ Upload photos once, use them across all your listings.`
                                     ${components.icon('notification', 14)} Similar feedback already exists:
                                 </div>
                                 <div id="similar-feedback-list">
-                                    ${(store.state.similarFeedback || []).map(item => `
+                                    ${(store.state.similarFeedback || [])
+                                        .map(
+                                            (item) => `
                                         <div role="button" tabindex="0" style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; cursor: pointer;" onclick="handlers.showFeedbackDetail('${item.id}')">
                                             <span style="font-size: 13px; color: var(--gray-700);">${escapeHtml(item.title)}</span>
                                             <div style="display: flex; align-items: center; gap: 8px;">
@@ -1702,7 +1960,9 @@ Upload photos once, use them across all your listings.`
                                                 <span style="font-size: 12px; color: var(--gray-500);">${(item.votes_up || 0) - (item.votes_down || 0)} votes</span>
                                             </div>
                                         </div>
-                                    `).join('')}
+                                    `,
+                                        )
+                                        .join('')}
                                 </div>
                             </div>
                         </div>
@@ -1722,14 +1982,17 @@ Upload photos once, use them across all your listings.`
 
                         <!-- Screenshot Upload (shown for bug reports) -->
                         <div id="screenshot-section" style="margin-bottom: 24px; display: ${feedbackType === 'bug' ? 'block' : 'none'};">
-                            <label class="form-label">Screenshot (Optional)</label>
+                            <p class="form-label">Screenshot (Optional)</p>
                             <div role="button" tabindex="0" style="border: 2px dashed var(--gray-300); border-radius: 8px; padding: 24px; text-align: center; cursor: pointer; transition: border-color 0.2s;" onclick="document.getElementById('screenshot-input').click()" id="screenshot-drop-zone">
-                                ${store.state.feedbackScreenshot ? `
+                                ${
+                                    store.state.feedbackScreenshot
+                                        ? `
                                     <div style="position: relative; display: inline-block;">
                                         <img src="${store.state.feedbackScreenshot}" style="max-width: 300px; max-height: 200px; border-radius: 4px;" alt="Screenshot preview">
                                         <button type="button" onclick="event.stopPropagation(); handlers.clearScreenshot();" style="position: absolute; top: -8px; right: -8px; background: var(--danger-600); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;">x</button>
                                     </div>
-                                ` : `
+                                `
+                                        : `
                                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2" style="margin-bottom: 8px;">
                                         <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                                         <circle cx="8.5" cy="8.5" r="1.5"></circle>
@@ -1737,7 +2000,8 @@ Upload photos once, use them across all your listings.`
                                     </svg>
                                     <p style="margin: 0; color: var(--gray-500); font-size: 14px;">Click to upload a screenshot</p>
                                     <p style="margin: 4px 0 0 0; color: var(--gray-400); font-size: 12px;">PNG, JPEG, GIF, or WebP (max 2MB)</p>
-                                `}
+                                `
+                                }
                             </div>
                             <input type="file" id="screenshot-input" accept="image/png,image/jpeg,image/gif,image/webp" style="display: none;" onchange="handlers.handleScreenshotUpload(event)" aria-label="Screenshot Input">
                         </div>
@@ -1769,15 +2033,20 @@ Upload photos once, use them across all your listings.`
                     <h2 style="margin: 0; font-size: 18px; font-weight: 600;">Your Recent Feedback</h2>
                 </div>
                 <div class="card-body" style="padding: 0;">
-                    ${userFeedback.length === 0 ? `
+                    ${
+                        userFeedback.length === 0
+                            ? `
                         <div style="text-align: center; padding: 48px 24px; color: var(--gray-500);">
                             <div style="font-size: 48px; margin-bottom: 12px;">📬</div>
                             <p style="margin: 0;">No feedback submitted yet</p>
                             <p style="margin: 8px 0 0 0; font-size: 14px;">Your submissions will appear here</p>
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div>
-                            ${userFeedback.map((feedback, idx) => `
+                            ${userFeedback
+                                .map(
+                                    (feedback, idx) => `
                                 <div style="padding: 20px 24px; ${idx < userFeedback.length - 1 ? 'border-bottom: 1px solid var(--gray-100);' : ''}">
                                     <div style="display: flex; gap: 12px; align-items: start;">
                                         <div style="font-size: 24px; line-height: 1; flex-shrink: 0;">${typeIcons[feedback.type] || '💬'}</div>
@@ -1799,7 +2068,9 @@ Upload photos once, use them across all your listings.`
                                             <p style="margin: 0 0 8px 0; color: var(--gray-600); font-size: 14px; line-height: 1.6;">
                                                 ${escapeHtml(feedback.description)}
                                             </p>
-                                            ${feedback.admin_response ? `
+                                            ${
+                                                feedback.admin_response
+                                                    ? `
                                                 <div style="background: var(--primary-50); border-left: 3px solid var(--primary-500); padding: 12px; border-radius: 4px; margin-top: 12px;">
                                                     <div style="font-weight: 600; font-size: 13px; color: var(--primary-700); margin-bottom: 4px;">
                                                         ${components.icon('notification', 14)} Admin Response
@@ -1808,7 +2079,9 @@ Upload photos once, use them across all your listings.`
                                                         ${escapeHtml(feedback.admin_response)}
                                                     </p>
                                                 </div>
-                                            ` : ''}
+                                            `
+                                                    : ''
+                                            }
                                             <div style="margin-top: 8px;">
                                                 <button class="btn btn-sm btn-outline" onclick="handlers.showFeedbackDetail('${feedback.id}')">
                                                     View Detail & Responses
@@ -1817,9 +2090,12 @@ Upload photos once, use them across all your listings.`
                                         </div>
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
         `;
@@ -1827,57 +2103,206 @@ Upload photos once, use them across all your listings.`
 
     // Changelog page,
 
-
     changelog() {
         const versions = store.state.changelogVersions || [
             {
                 version: 'v0.9.0',
                 date: '2026-04-01',
                 changes: [
-                    { type: 'feature', title: 'Sidebar Icon-Only Mode', description: 'Collapsed sidebar now shows icons for quick navigation with hover tooltips', areas: ['Navigation', 'UI'] },
-                    { type: 'feature', title: 'Pie Chart Component', description: 'New pie chart visualization option for analytics', areas: ['Analytics'] },
-                    { type: 'feature', title: 'Chart Type Toggle', description: 'Switch between bar and pie charts for platform revenue and sales data', areas: ['Analytics', 'Dashboard'] },
-                    { type: 'feature', title: 'About Us Page', description: 'Company information and VaultLister stats page', areas: ['Company'] },
-                    { type: 'feature', title: 'Gmail Integration', description: 'Automatic receipt detection and import from Gmail inbox', areas: ['Integrations', 'Settings'] },
-                    { type: 'feature', title: 'Batch Photo Processing', description: 'Apply AI edits to multiple images at once with presets', areas: ['Image Bank'] },
-                    { type: 'feature', title: 'Receipt Parser AI', description: 'Upload receipts and let AI extract vendor, items, and totals', areas: ['Transactions'] },
-                    { type: 'feature', title: 'Calendar View', description: 'Track listings, orders, and events in a visual calendar', areas: ['Calendar'] },
-                    { type: 'feature', title: 'Product Roadmap', description: 'See upcoming features and vote for your favorites', areas: ['Roadmap'] },
-                    { type: 'feature', title: 'Enhanced Notifications', description: 'Bell dropdown with search and filters', areas: ['Navigation', 'UI'] },
-                    { type: 'feature', title: 'Help & Support System', description: 'Tutorials, FAQs, and knowledge base articles', areas: ['Help & Support'] },
-                    { type: 'feature', title: 'Support Tickets', description: 'Submit and track bug reports and feature requests', areas: ['Help & Support'] },
-                    { type: 'feature', title: 'Chrome Extension', description: 'Import listings directly from marketplace pages', areas: ['My Listings', 'Integrations'] },
-                    { type: 'feature', title: 'Image Bank', description: 'Organize photos in folders with drag-and-drop support', areas: ['Image Bank'] },
-                    { type: 'feature', title: 'Community Features', description: 'Tips library and seller discussions', areas: ['Community'] },
-                    { type: 'improvement', title: 'Analytics Sales Tab', description: 'Added summary stat cards with key metrics', areas: ['Analytics'] },
-                    { type: 'improvement', title: 'Full OAuth Integration', description: 'Enhanced platform sync with real-time status tracking', areas: ['My Shops', 'Integrations'] },
-                    { type: 'improvement', title: 'Navigation Reorganization', description: 'Added Tools and Company sections for better organization', areas: ['Navigation'] },
-                    { type: 'improvement', title: 'Sidebar Collapse', description: 'Fixed text visibility when sidebar is collapsed', areas: ['Navigation', 'UI'] },
-                    { type: 'security', title: 'Token Encryption', description: 'AES-256-GCM encryption for stored OAuth tokens', areas: ['Security', 'Settings'] }
-                ]
+                    {
+                        type: 'feature',
+                        title: 'Sidebar Icon-Only Mode',
+                        description: 'Collapsed sidebar now shows icons for quick navigation with hover tooltips',
+                        areas: ['Navigation', 'UI'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Pie Chart Component',
+                        description: 'New pie chart visualization option for analytics',
+                        areas: ['Analytics'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Chart Type Toggle',
+                        description: 'Switch between bar and pie charts for platform revenue and sales data',
+                        areas: ['Analytics', 'Dashboard'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'About Us Page',
+                        description: 'Company information and VaultLister stats page',
+                        areas: ['Company'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Gmail Integration',
+                        description: 'Automatic receipt detection and import from Gmail inbox',
+                        areas: ['Integrations', 'Settings'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Batch Photo Processing',
+                        description: 'Apply AI edits to multiple images at once with presets',
+                        areas: ['Image Bank'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Receipt Parser AI',
+                        description: 'Upload receipts and let AI extract vendor, items, and totals',
+                        areas: ['Transactions'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Calendar View',
+                        description: 'Track listings, orders, and events in a visual calendar',
+                        areas: ['Calendar'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Product Roadmap',
+                        description: 'See upcoming features and vote for your favorites',
+                        areas: ['Roadmap'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Enhanced Notifications',
+                        description: 'Bell dropdown with search and filters',
+                        areas: ['Navigation', 'UI'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Help & Support System',
+                        description: 'Tutorials, FAQs, and knowledge base articles',
+                        areas: ['Help & Support'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Support Tickets',
+                        description: 'Submit and track bug reports and feature requests',
+                        areas: ['Help & Support'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Chrome Extension',
+                        description: 'Import listings directly from marketplace pages',
+                        areas: ['My Listings', 'Integrations'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Image Bank',
+                        description: 'Organize photos in folders with drag-and-drop support',
+                        areas: ['Image Bank'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Community Features',
+                        description: 'Tips library and seller discussions',
+                        areas: ['Community'],
+                    },
+                    {
+                        type: 'improvement',
+                        title: 'Analytics Sales Tab',
+                        description: 'Added summary stat cards with key metrics',
+                        areas: ['Analytics'],
+                    },
+                    {
+                        type: 'improvement',
+                        title: 'Full OAuth Integration',
+                        description: 'Enhanced platform sync with real-time status tracking',
+                        areas: ['My Shops', 'Integrations'],
+                    },
+                    {
+                        type: 'improvement',
+                        title: 'Navigation Reorganization',
+                        description: 'Added Tools and Company sections for better organization',
+                        areas: ['Navigation'],
+                    },
+                    {
+                        type: 'improvement',
+                        title: 'Sidebar Collapse',
+                        description: 'Fixed text visibility when sidebar is collapsed',
+                        areas: ['Navigation', 'UI'],
+                    },
+                    {
+                        type: 'security',
+                        title: 'Token Encryption',
+                        description: 'AES-256-GCM encryption for stored OAuth tokens',
+                        areas: ['Security', 'Settings'],
+                    },
+                ],
             },
             {
                 version: 'v0.5.0',
                 date: '2026-03-15',
                 changes: [
-                    { type: 'feature', title: 'Listing Templates', description: 'Save and reuse item details for faster listing', areas: ['My Listings'] },
-                    { type: 'feature', title: 'Low Stock Alerts', description: 'Get notified when inventory runs low', areas: ['Inventory', 'Notifications'] },
-                    { type: 'feature', title: 'AI Listing Generation', description: 'Generate listing titles and descriptions using Claude AI', areas: ['My Listings', 'AI'] },
-                    { type: 'feature', title: 'Price Predictions', description: 'AI-powered pricing suggestions and demand forecasts', areas: ['Intelligence'] },
-                    { type: 'improvement', title: 'OAuth Integration', description: 'Connect marketplace accounts securely', areas: ['Settings', 'Integrations'] },
-                    { type: 'fix', title: 'Cross-listing', description: 'Fixed image upload issues on certain platforms', areas: ['My Listings'] }
-                ]
+                    {
+                        type: 'feature',
+                        title: 'Listing Templates',
+                        description: 'Save and reuse item details for faster listing',
+                        areas: ['My Listings'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Low Stock Alerts',
+                        description: 'Get notified when inventory runs low',
+                        areas: ['Inventory', 'Notifications'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'AI Listing Generation',
+                        description: 'Generate listing titles and descriptions using Claude AI',
+                        areas: ['My Listings', 'AI'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Price Predictions',
+                        description: 'AI-powered pricing suggestions and demand forecasts',
+                        areas: ['Intelligence'],
+                    },
+                    {
+                        type: 'improvement',
+                        title: 'OAuth Integration',
+                        description: 'Connect marketplace accounts securely',
+                        areas: ['Settings', 'Integrations'],
+                    },
+                    {
+                        type: 'fix',
+                        title: 'Cross-listing',
+                        description: 'Fixed image upload issues on certain platforms',
+                        areas: ['My Listings'],
+                    },
+                ],
             },
             {
                 version: 'v0.1.0',
                 date: '2026-03-02',
                 changes: [
-                    { type: 'feature', title: 'Initial Alpha', description: 'Inventory management and cross-listing tools', areas: ['Inventory', 'My Listings'] },
-                    { type: 'feature', title: 'Multi-Platform Support', description: 'Poshmark, eBay, Mercari, Depop, Grailed, Facebook', areas: ['My Shops'] },
-                    { type: 'feature', title: 'Analytics Dashboard', description: 'Track sales, revenue, and performance metrics', areas: ['Analytics', 'Dashboard'] },
-                    { type: 'feature', title: 'Automation Rules', description: 'Automate pricing, sharing, and listing updates', areas: ['Automations'] }
-                ]
-            }
+                    {
+                        type: 'feature',
+                        title: 'Initial Alpha',
+                        description: 'Inventory management and cross-listing tools',
+                        areas: ['Inventory', 'My Listings'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Multi-Platform Support',
+                        description: 'Poshmark, eBay, Mercari, Depop, Grailed, Facebook',
+                        areas: ['My Shops'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Analytics Dashboard',
+                        description: 'Track sales, revenue, and performance metrics',
+                        areas: ['Analytics', 'Dashboard'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Automation Rules',
+                        description: 'Automate pricing, sharing, and listing updates',
+                        areas: ['Automations'],
+                    },
+                ],
+            },
         ];
 
         const changelogVotes = store.state.changelogVotes || {};
@@ -1886,44 +2311,57 @@ Upload photos once, use them across all your listings.`
         const versionFilter = store.state.changelogVersionFilter || 'all';
 
         // Track "New since last visit"
-        const lastChangelogVisit = (() => { try { return localStorage.getItem('vaultlister_changelog_last_visit'); } catch { return null; } })();
+        const lastChangelogVisit = (() => {
+            try {
+                return localStorage.getItem('vaultlister_changelog_last_visit');
+            } catch {
+                return null;
+            }
+        })();
         const lastVisitDate = lastChangelogVisit ? new Date(lastChangelogVisit) : null;
-        setTimeout(() => { try { localStorage.setItem('vaultlister_changelog_last_visit', new Date().toISOString()); } catch(e) {} }, 2000);
+        setTimeout(() => {
+            try {
+                localStorage.setItem('vaultlister_changelog_last_visit', new Date().toISOString());
+            } catch (e) {}
+        }, 2000);
 
         // Count changes by type
-        const allChanges = versions.flatMap(v => v.changes);
+        const allChanges = versions.flatMap((v) => v.changes);
 
         // Filter versions and changes
-        const filteredVersions = versions.map(version => {
-            if (versionFilter !== 'all' && version.version !== versionFilter) return { ...version, changes: [] };
-            let changes = version.changes;
-            if (typeFilter !== 'all') {
-                changes = changes.filter(c => c.type === typeFilter);
-            }
-            if (searchQuery) {
-                const query = searchQuery.toLowerCase();
-                changes = changes.filter(c =>
-                    c.title.toLowerCase().includes(query) ||
-                    (c.description && c.description.toLowerCase().includes(query)) ||
-                    (c.areas && c.areas.some(a => a.toLowerCase().includes(query)))
-                );
-            }
-            return { ...version, changes };
-        }).filter(v => v.changes.length > 0);
+        const filteredVersions = versions
+            .map((version) => {
+                if (versionFilter !== 'all' && version.version !== versionFilter) return { ...version, changes: [] };
+                let changes = version.changes;
+                if (typeFilter !== 'all') {
+                    changes = changes.filter((c) => c.type === typeFilter);
+                }
+                if (searchQuery) {
+                    const query = searchQuery.toLowerCase();
+                    changes = changes.filter(
+                        (c) =>
+                            c.title.toLowerCase().includes(query) ||
+                            (c.description && c.description.toLowerCase().includes(query)) ||
+                            (c.areas && c.areas.some((a) => a.toLowerCase().includes(query))),
+                    );
+                }
+                return { ...version, changes };
+            })
+            .filter((v) => v.changes.length > 0);
 
         // When search is active, show counts from filtered results; otherwise use global counts
-        const countSource = searchQuery ? filteredVersions.flatMap(v => v.changes) : allChanges;
-        const featureCount = countSource.filter(c => c.type === 'feature').length;
-        const improvementCount = countSource.filter(c => c.type === 'improvement').length;
-        const fixCount = countSource.filter(c => c.type === 'fix').length;
-        const securityCount = countSource.filter(c => c.type === 'security').length;
+        const countSource = searchQuery ? filteredVersions.flatMap((v) => v.changes) : allChanges;
+        const featureCount = countSource.filter((c) => c.type === 'feature').length;
+        const improvementCount = countSource.filter((c) => c.type === 'improvement').length;
+        const fixCount = countSource.filter((c) => c.type === 'fix').length;
+        const securityCount = countSource.filter((c) => c.type === 'security').length;
 
         const typeIcons = {
             feature: '✨',
             improvement: '📈',
             fix: '🐛',
             breaking: '⚠️',
-            security: '🔒'
+            security: '🔒',
         };
 
         const typeBadges = {
@@ -1931,7 +2369,7 @@ Upload photos once, use them across all your listings.`
             improvement: 'badge-success',
             fix: 'badge-warning',
             breaking: 'badge-danger',
-            security: 'badge-danger'
+            security: 'badge-danger',
         };
 
         return `
@@ -1973,13 +2411,19 @@ Upload photos once, use them across all your listings.`
                 <!-- Version Timeline Sidebar -->
                 <div class="changelog-timeline">
                     <h2 class="timeline-header">Versions</h2>
-                    ${versionFilter !== 'all' ? `
+                    ${
+                        versionFilter !== 'all'
+                            ? `
                         <button class="btn btn-sm btn-secondary mb-2" style="width: 100%; font-size: 11px;" onclick="handlers.filterChangelogVersion('all')">
                             Clear Filter
                         </button>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                     <div class="timeline-list">
-                        ${versions.map((version, idx) => `
+                        ${versions
+                            .map(
+                                (version, idx) => `
                             <button class="timeline-item ${idx === 0 ? 'latest' : ''} ${versionFilter === version.version ? 'active-filter' : ''}" onclick="handlers.filterChangelogVersion('${version.version}')">
                                 <div class="timeline-dot"></div>
                                 <div class="timeline-content">
@@ -1988,7 +2432,9 @@ Upload photos once, use them across all your listings.`
                                 </div>
                                 ${idx === 0 ? '<span class="badge badge-success badge-sm">Latest</span>' : ''}
                             </button>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
 
@@ -2016,15 +2462,21 @@ Upload photos once, use them across all your listings.`
                             <button class="type-filter-btn ${typeFilter === 'fix' ? 'active' : ''}" onclick="handlers.filterChangelogType('fix')">
                                 🐛 Fixes <span class="filter-count">${fixCount}</span>
                             </button>
-                            ${securityCount > 0 ? `
+                            ${
+                                securityCount > 0
+                                    ? `
                                 <button class="type-filter-btn ${typeFilter === 'security' ? 'active' : ''}" onclick="handlers.filterChangelogType('security')">
                                     🔒 Security <span class="filter-count">${securityCount}</span>
                                 </button>
-                            ` : ''}
+                            `
+                                    : ''
+                            }
                         </div>
                     </div>
 
-                    ${filteredVersions.length === 0 ? `
+                    ${
+                        filteredVersions.length === 0
+                            ? `
                         <div class="card">
                             <div class="card-body text-center py-12">
                                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--gray-300)" stroke-width="1.5" style="margin: 0 auto 16px;">
@@ -2035,9 +2487,12 @@ Upload photos once, use them across all your listings.`
                                 <p style="color: var(--gray-500);">Try adjusting your search or filters</p>
                             </div>
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div class="changelog-versions">
-                            ${filteredVersions.map((version, vIdx) => `
+                            ${filteredVersions
+                                .map(
+                                    (version, vIdx) => `
                                 <div class="changelog-version-card" id="version-${version.version.replace(/\./g, '-')}">
                                     <div class="version-header">
                                         <div class="version-info">
@@ -2059,10 +2514,15 @@ Upload photos once, use them across all your listings.`
                                         </div>
                                     </div>
                                     <div class="version-changes">
-                                        ${version.changes.map((change, idx) => {
-                                            const changeKey = version.version + '-' + idx;
-                                            const votes = changelogVotes[changeKey] || { helpful: 0, notHelpful: 0, voted: null };
-                                            return `
+                                        ${version.changes
+                                            .map((change, idx) => {
+                                                const changeKey = version.version + '-' + idx;
+                                                const votes = changelogVotes[changeKey] || {
+                                                    helpful: 0,
+                                                    notHelpful: 0,
+                                                    voted: null,
+                                                };
+                                                return `
                                             <div class="change-item" role="button" tabindex="0" aria-expanded="false" onclick="handlers.toggleChangeDetails(this)" onkeydown="if(event.key==='Enter'||event.key===' '){handlers.toggleChangeDetails(this)}">
                                                 <div class="change-icon">${typeIcons[change.type] || '📌'}</div>
                                                 <div class="change-content">
@@ -2070,14 +2530,22 @@ Upload photos once, use them across all your listings.`
                                                         <h2 class="change-title">${escapeHtml(change.title)}</h2>
                                                         <span class="badge badge-sm changelog-type-badge changelog-type-${change.type}">${typeIcons[change.type] || ''} ${change.type}</span>
                                                     </div>
-                                                    ${change.description ? `
+                                                    ${
+                                                        change.description
+                                                            ? `
                                                         <p class="change-description">${escapeHtml(change.description)}</p>
-                                                    ` : ''}
-                                                    ${change.areas && change.areas.length > 0 ? `
+                                                    `
+                                                            : ''
+                                                    }
+                                                    ${
+                                                        change.areas && change.areas.length > 0
+                                                            ? `
                                                         <div class="change-areas">
-                                                            ${change.areas.map(area => `<span class="change-area-tag">${escapeHtml(area)}</span>`).join('')}
+                                                            ${change.areas.map((area) => `<span class="change-area-tag">${escapeHtml(area)}</span>`).join('')}
                                                         </div>
-                                                    ` : ''}
+                                                    `
+                                                            : ''
+                                                    }
                                                 </div>
                                                 <button type="button" class="change-expand-btn" aria-label="Expand" onclick="handlers.toggleChangeDetails(this.closest('.change-item'))">
                                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2088,37 +2556,53 @@ Upload photos once, use them across all your listings.`
                                             <div class="change-details">
                                                 <div class="change-details-inner">
                                                     <p style="color: var(--gray-600); font-size: 13px; margin-bottom: 8px;">${escapeHtml(change.description || 'No additional details available.')}</p>
-                                                    ${change.areas && change.areas.length > 0 ? `
+                                                    ${
+                                                        change.areas && change.areas.length > 0
+                                                            ? `
                                                         <div style="margin-bottom: 8px;">
                                                             <span style="font-size: 11px; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.5px;">Affected Areas</span>
                                                             <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px;">
-                                                                ${change.areas.map(area => `<span class="badge badge-outline badge-sm">${escapeHtml(area)}</span>`).join('')}
+                                                                ${change.areas.map((area) => `<span class="badge badge-outline badge-sm">${escapeHtml(area)}</span>`).join('')}
                                                             </div>
                                                         </div>
-                                                    ` : ''}
-                                                    ${change.screenshots ? `
+                                                    `
+                                                            : ''
+                                                    }
+                                                    ${
+                                                        change.screenshots
+                                                            ? `
                                                         <div class="change-screenshots" style="margin-bottom: 8px;">
                                                             <span style="font-size: 11px; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.5px;">Before / After</span>
                                                             <div class="screenshot-comparison" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 6px;">
-                                                                ${change.screenshots.before ? `
+                                                                ${
+                                                                    change.screenshots.before
+                                                                        ? `
                                                                     <div class="screenshot-panel">
                                                                         <span class="screenshot-label" style="font-size: 10px; font-weight: 600; color: var(--danger); text-transform: uppercase;">Before</span>
                                                                         <div class="screenshot-img" style="border: 1px solid var(--gray-200); border-radius: 8px; padding: 8px; background: var(--gray-50); min-height: 80px; display: flex; align-items: center; justify-content: center;">
                                                                             <img src="${change.screenshots.before}" alt="Before" style="max-width: 100%; border-radius: 4px;" onerror="this.style.display='none'">
                                                                         </div>
                                                                     </div>
-                                                                ` : ''}
-                                                                ${change.screenshots.after ? `
+                                                                `
+                                                                        : ''
+                                                                }
+                                                                ${
+                                                                    change.screenshots.after
+                                                                        ? `
                                                                     <div class="screenshot-panel">
                                                                         <span class="screenshot-label" style="font-size: 10px; font-weight: 600; color: var(--success); text-transform: uppercase;">After</span>
                                                                         <div class="screenshot-img" style="border: 1px solid var(--gray-200); border-radius: 8px; padding: 8px; background: var(--gray-50); min-height: 80px; display: flex; align-items: center; justify-content: center;">
                                                                             <img src="${change.screenshots.after}" alt="After" style="max-width: 100%; border-radius: 4px;" onerror="this.style.display='none'">
                                                                         </div>
                                                                     </div>
-                                                                ` : ''}
+                                                                `
+                                                                        : ''
+                                                                }
                                                             </div>
                                                         </div>
-                                                    ` : ''}
+                                                    `
+                                                            : ''
+                                                    }
                                                     <div class="change-vote-section" onclick="event.stopPropagation()">
                                                         <span style="font-size: 12px; color: var(--gray-500);">Was this helpful?</span>
                                                         <div class="change-vote-buttons">
@@ -2138,12 +2622,17 @@ Upload photos once, use them across all your listings.`
                                                     </div>
                                                 </div>
                                             </div>
-                                        `}).join('')}
+                                        `;
+                                            })
+                                            .join('')}
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
-                    `}
+                    `
+                    }
 
                     <!-- Subscribe CTA -->
                     <div class="changelog-subscribe-cta">
@@ -2170,24 +2659,86 @@ Upload photos once, use them across all your listings.`
 
     // Terms of Service page,
 
-
     terms() {
         const sections = [
-            { id: 'acceptance', icon: '✓', title: 'Acceptance of Terms', content: 'By accessing and using VaultLister, you accept and agree to be bound by the terms and provision of this agreement.' },
-            { id: 'license', icon: '📋', title: 'Use License', content: 'Permission is granted to temporarily use VaultLister for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title.', list: ['Modify or copy the materials', 'Use the materials for any commercial purpose', 'Attempt to decompile or reverse engineer any software contained in VaultLister', 'Remove any copyright or other proprietary notations from the materials'] },
-            { id: 'accounts', icon: '👤', title: 'User Accounts', content: 'When you create an account with us, you must provide accurate, complete, and current information at all times. Failure to do so constitutes a breach of the Terms, which may result in immediate termination of your account.' },
-            { id: 'availability', icon: '🌐', title: 'Service Availability', content: 'We reserve the right to withdraw or amend our service, and any service or material we provide, in our sole discretion without notice. We will not be liable if for any reason all or any part of the service is unavailable at any time or for any period.' },
-            { id: 'ip', icon: '©', title: 'Intellectual Property', content: 'The service and its original content, features, and functionality are and will remain the exclusive property of VaultLister and its licensors. The service is protected by copyright, trademark, and other laws.' },
-            { id: 'liability', icon: '⚖️', title: 'Limitation of Liability', content: 'In no event shall VaultLister or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use VaultLister.' },
-            { id: 'law', icon: '📜', title: 'Governing Law', content: 'These terms shall be governed and construed in accordance with the laws, without regard to its conflict of law provisions.' },
-            { id: 'changes', icon: '🔄', title: 'Changes to Terms', content: 'We reserve the right, at our sole discretion, to modify or replace these Terms at any time. We will provide notice of any changes by posting the new Terms on this page.' },
-            { id: 'contact', icon: '📧', title: 'Contact Us', content: 'If you have any questions about these Terms, please contact us at hello@vaultlister.com' }
+            {
+                id: 'acceptance',
+                icon: '✓',
+                title: 'Acceptance of Terms',
+                content:
+                    'By accessing and using VaultLister, you accept and agree to be bound by the terms and provision of this agreement.',
+            },
+            {
+                id: 'license',
+                icon: '📋',
+                title: 'Use License',
+                content:
+                    'Permission is granted to temporarily use VaultLister for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title.',
+                list: [
+                    'Modify or copy the materials',
+                    'Use the materials for any commercial purpose',
+                    'Attempt to decompile or reverse engineer any software contained in VaultLister',
+                    'Remove any copyright or other proprietary notations from the materials',
+                ],
+            },
+            {
+                id: 'accounts',
+                icon: '👤',
+                title: 'User Accounts',
+                content:
+                    'When you create an account with us, you must provide accurate, complete, and current information at all times. Failure to do so constitutes a breach of the Terms, which may result in immediate termination of your account.',
+            },
+            {
+                id: 'availability',
+                icon: '🌐',
+                title: 'Service Availability',
+                content:
+                    'We reserve the right to withdraw or amend our service, and any service or material we provide, in our sole discretion without notice. We will not be liable if for any reason all or any part of the service is unavailable at any time or for any period.',
+            },
+            {
+                id: 'ip',
+                icon: '©',
+                title: 'Intellectual Property',
+                content:
+                    'The service and its original content, features, and functionality are and will remain the exclusive property of VaultLister and its licensors. The service is protected by copyright, trademark, and other laws.',
+            },
+            {
+                id: 'liability',
+                icon: '⚖️',
+                title: 'Limitation of Liability',
+                content:
+                    'In no event shall VaultLister or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use VaultLister.',
+            },
+            {
+                id: 'law',
+                icon: '📜',
+                title: 'Governing Law',
+                content:
+                    'These terms shall be governed and construed in accordance with the laws, without regard to its conflict of law provisions.',
+            },
+            {
+                id: 'changes',
+                icon: '🔄',
+                title: 'Changes to Terms',
+                content:
+                    'We reserve the right, at our sole discretion, to modify or replace these Terms at any time. We will provide notice of any changes by posting the new Terms on this page.',
+            },
+            {
+                id: 'contact',
+                icon: '📧',
+                title: 'Contact Us',
+                content: 'If you have any questions about these Terms, please contact us at hello@vaultlister.com',
+            },
         ];
 
         const keyPoints = [
             { icon: '✓', title: 'Free to Use', description: 'VaultLister is free for personal use' },
-            { icon: '🔒', title: 'Your Data, Your Control', description: 'Data stored securely in encrypted cloud databases' },
-            { icon: '📋', title: 'Fair Use Policy', description: 'Use responsibly and ethically' }
+            {
+                icon: '🔒',
+                title: 'Your Data, Your Control',
+                description: 'Data stored securely in encrypted cloud databases',
+            },
+            { icon: '📋', title: 'Fair Use Policy', description: 'Use responsibly and ethically' },
         ];
 
         return `
@@ -2232,7 +2783,9 @@ Upload photos once, use them across all your listings.`
                 <div class="legal-key-points">
                     <h2>Key Points</h2>
                     <div class="key-points-grid">
-                        ${keyPoints.map(p => `
+                        ${keyPoints
+                            .map(
+                                (p) => `
                             <div class="key-point-card">
                                 <span class="key-point-icon">${p.icon}</span>
                                 <div>
@@ -2240,7 +2793,9 @@ Upload photos once, use them across all your listings.`
                                     <p>${p.description}</p>
                                 </div>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
 
@@ -2249,18 +2804,24 @@ Upload photos once, use them across all your listings.`
                     <div class="legal-toc">
                         <h2>Table of Contents</h2>
                         <nav class="toc-nav" aria-label="Table of contents">
-                            ${sections.map((s, i) => `
+                            ${sections
+                                .map(
+                                    (s, i) => `
                                 <a href="#${s.id}" class="toc-link" onclick="handlers.scrollToSection('${s.id}')">
                                     <span class="toc-number">${i + 1}</span>
                                     ${s.title}
                                 </a>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </nav>
                     </div>
 
                     <!-- Content -->
                     <div class="legal-content">
-                        ${sections.map((s, i) => `
+                        ${sections
+                            .map(
+                                (s, i) => `
                             <div class="legal-section" id="${s.id}">
                                 <div role="button" tabindex="0" class="section-header" onclick="handlers.toggleLegalSection(this)">
                                     <div class="section-icon">${s.icon}</div>
@@ -2271,15 +2832,21 @@ Upload photos once, use them across all your listings.`
                                 </div>
                                 <div class="section-body">
                                     <p>${s.content}</p>
-                                    ${s.list ? `
+                                    ${
+                                        s.list
+                                            ? `
                                         <p style="margin-top: 12px;">Under this license you may not:</p>
                                         <ul class="legal-list">
-                                            ${s.list.map(item => `<li>${item}</li>`).join('')}
+                                            ${s.list.map((item) => `<li>${item}</li>`).join('')}
                                         </ul>
-                                    ` : ''}
+                                    `
+                                            : ''
+                                    }
                                 </div>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
 
                         <!-- Contact Card -->
                         <div class="legal-contact-card">
@@ -2309,32 +2876,118 @@ Upload photos once, use them across all your listings.`
 
     // Privacy Policy page,
 
-
     privacy() {
         const sections = [
-            { id: 'collect', icon: '📊', title: 'Information We Collect', content: 'We collect information that you provide directly to us when you:', list: ['Create or modify your account', 'Use our services to manage your inventory and listings', 'Connect your marketplace accounts', 'Communicate with us', 'Participate in surveys or promotions'] },
-            { id: 'use', icon: '🔧', title: 'How We Use Your Information', content: 'We use the information we collect to:', list: ['Provide, maintain, and improve our services', 'Process transactions and send related information', 'Send technical notices and support messages', 'Respond to your comments and questions', 'Monitor and analyze trends and usage'] },
-            { id: 'sharing', icon: '🤝', title: 'Information Sharing', content: 'We do not share, sell, rent, or trade your personal information with third parties for their promotional purposes. We may share your information with third-party service providers who perform services on our behalf, such as payment processing and data analysis.' },
-            { id: 'security', icon: '🔒', title: 'Data Security', content: 'We take reasonable measures to help protect your personal information from loss, theft, misuse, unauthorized access, disclosure, alteration, and destruction. However, no internet or email transmission is ever fully secure or error free.' },
-            { id: 'rights', icon: '⚖️', title: 'Your Rights', content: 'You have the right to:', list: ['Access and receive a copy of your personal data', 'Rectify or update your personal information', 'Delete your account and personal data', 'Object to or restrict certain processing of your data', 'Data portability'] },
-            { id: 'cookies', icon: '🍪', title: 'Cookies and Tracking', content: 'We use cookies and similar tracking technologies to track activity on our service and hold certain information. You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent.' },
-            { id: 'children', icon: '👶', title: "Children's Privacy", content: 'Our service does not address anyone under the age of 13. We do not knowingly collect personally identifiable information from children under 13.' },
-            { id: 'changes', icon: '🔄', title: 'Changes to Privacy Policy', content: 'We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.' },
-            { id: 'contact', icon: '📧', title: 'Contact Us', content: 'If you have any questions about this Privacy Policy, please contact us at privacy@vaultlister.com' }
+            {
+                id: 'collect',
+                icon: '📊',
+                title: 'Information We Collect',
+                content: 'We collect information that you provide directly to us when you:',
+                list: [
+                    'Create or modify your account',
+                    'Use our services to manage your inventory and listings',
+                    'Connect your marketplace accounts',
+                    'Communicate with us',
+                    'Participate in surveys or promotions',
+                ],
+            },
+            {
+                id: 'use',
+                icon: '🔧',
+                title: 'How We Use Your Information',
+                content: 'We use the information we collect to:',
+                list: [
+                    'Provide, maintain, and improve our services',
+                    'Process transactions and send related information',
+                    'Send technical notices and support messages',
+                    'Respond to your comments and questions',
+                    'Monitor and analyze trends and usage',
+                ],
+            },
+            {
+                id: 'sharing',
+                icon: '🤝',
+                title: 'Information Sharing',
+                content:
+                    'We do not share, sell, rent, or trade your personal information with third parties for their promotional purposes. We may share your information with third-party service providers who perform services on our behalf, such as payment processing and data analysis.',
+            },
+            {
+                id: 'security',
+                icon: '🔒',
+                title: 'Data Security',
+                content:
+                    'We take reasonable measures to help protect your personal information from loss, theft, misuse, unauthorized access, disclosure, alteration, and destruction. However, no internet or email transmission is ever fully secure or error free.',
+            },
+            {
+                id: 'rights',
+                icon: '⚖️',
+                title: 'Your Rights',
+                content: 'You have the right to:',
+                list: [
+                    'Access and receive a copy of your personal data',
+                    'Rectify or update your personal information',
+                    'Delete your account and personal data',
+                    'Object to or restrict certain processing of your data',
+                    'Data portability',
+                ],
+            },
+            {
+                id: 'cookies',
+                icon: '🍪',
+                title: 'Cookies and Tracking',
+                content:
+                    'We use cookies and similar tracking technologies to track activity on our service and hold certain information. You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent.',
+            },
+            {
+                id: 'children',
+                icon: '👶',
+                title: "Children's Privacy",
+                content:
+                    'Our service does not address anyone under the age of 13. We do not knowingly collect personally identifiable information from children under 13.',
+            },
+            {
+                id: 'changes',
+                icon: '🔄',
+                title: 'Changes to Privacy Policy',
+                content:
+                    'We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.',
+            },
+            {
+                id: 'contact',
+                icon: '📧',
+                title: 'Contact Us',
+                content:
+                    'If you have any questions about this Privacy Policy, please contact us at privacy@vaultlister.com',
+            },
         ];
 
         const dataCategories = [
-            { icon: '👤', category: 'Account Data', examples: 'Name, email, username', retention: 'Until account deletion' },
-            { icon: '📦', category: 'Inventory Data', examples: 'Listings, photos, prices', retention: 'Until account deletion' },
+            {
+                icon: '👤',
+                category: 'Account Data',
+                examples: 'Name, email, username',
+                retention: 'Until account deletion',
+            },
+            {
+                icon: '📦',
+                category: 'Inventory Data',
+                examples: 'Listings, photos, prices',
+                retention: 'Until account deletion',
+            },
             { icon: '📈', category: 'Usage Data', examples: 'Features used, preferences', retention: '90 days' },
-            { icon: '🔗', category: 'Integration Data', examples: 'Connected platform tokens', retention: 'Until disconnection' }
+            {
+                icon: '🔗',
+                category: 'Integration Data',
+                examples: 'Connected platform tokens',
+                retention: 'Until disconnection',
+            },
         ];
 
         const yourRights = [
             { icon: '👁️', title: 'Access', description: 'View all data we have about you' },
             { icon: '✏️', title: 'Rectify', description: 'Correct any inaccurate information' },
             { icon: '🗑️', title: 'Delete', description: 'Request deletion of your data' },
-            { icon: '📤', title: 'Export', description: 'Download your data anytime' }
+            { icon: '📤', title: 'Export', description: 'Download your data anytime' },
         ];
 
         return `
@@ -2406,7 +3059,9 @@ Upload photos once, use them across all your listings.`
                 <div class="data-categories-section">
                     <h2>Data We Handle</h2>
                     <div class="data-categories-grid">
-                        ${dataCategories.map(d => `
+                        ${dataCategories
+                            .map(
+                                (d) => `
                             <div class="data-category-card">
                                 <div class="data-category-icon">${d.icon}</div>
                                 <div class="data-category-info">
@@ -2415,7 +3070,9 @@ Upload photos once, use them across all your listings.`
                                     <p class="data-retention">Retention: ${d.retention}</p>
                                 </div>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
 
@@ -2423,13 +3080,17 @@ Upload photos once, use them across all your listings.`
                 <div class="your-rights-section">
                     <h2>Your Privacy Rights</h2>
                     <div class="rights-grid">
-                        ${yourRights.map(r => `
+                        ${yourRights
+                            .map(
+                                (r) => `
                             <div class="right-card">
                                 <div class="right-icon">${r.icon}</div>
                                 <h3>${r.title}</h3>
                                 <p>${r.description}</p>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                     <button class="btn btn-primary" onclick="router.navigate('settings')" style="margin-top: 16px;">
                         Manage Your Data
@@ -2441,18 +3102,24 @@ Upload photos once, use them across all your listings.`
                     <div class="legal-toc">
                         <h2>Table of Contents</h2>
                         <nav class="toc-nav" aria-label="Table of contents">
-                            ${sections.map((s, i) => `
+                            ${sections
+                                .map(
+                                    (s, i) => `
                                 <a href="#${s.id}" class="toc-link" onclick="handlers.scrollToSection('${s.id}')">
                                     <span class="toc-number">${i + 1}</span>
                                     ${s.title}
                                 </a>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </nav>
                     </div>
 
                     <!-- Content -->
                     <div class="legal-content">
-                        ${sections.map((s, i) => `
+                        ${sections
+                            .map(
+                                (s, i) => `
                             <div class="legal-section" id="${s.id}">
                                 <div role="button" tabindex="0" class="section-header" onclick="handlers.toggleLegalSection(this)">
                                     <div class="section-icon">${s.icon}</div>
@@ -2463,14 +3130,20 @@ Upload photos once, use them across all your listings.`
                                 </div>
                                 <div class="section-body">
                                     <p>${s.content}</p>
-                                    ${s.list ? `
+                                    ${
+                                        s.list
+                                            ? `
                                         <ul class="legal-list">
-                                            ${s.list.map(item => `<li>${item}</li>`).join('')}
+                                            ${s.list.map((item) => `<li>${item}</li>`).join('')}
                                         </ul>
-                                    ` : ''}
+                                    `
+                                            : ''
+                                    }
                                 </div>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
 
                         <!-- Contact Card -->
                         <div class="legal-contact-card">
@@ -2499,26 +3172,45 @@ Upload photos once, use them across all your listings.`
 
     // SKU Rules page,
 
-
     helpSupport() {
         const _helpSearchQuery = store.state.helpSearchQuery || '';
         const _helpFAQs = store.state.helpFAQs || [];
         const _helpArticles = store.state.helpArticles || [];
         const supportStats = store.state.supportStats || { articlesRead: 0, ticketsOpen: 0, avgResponseTime: '< 24h' };
         const popularArticles = store.state.popularArticles || [
-            { id: 'art_getting_started_cross_listing', slug: 'art_getting_started_cross_listing', title: 'Getting Started with Cross-Listing', category: 'Basics' },
-            { id: 'art_connect_ebay_account', slug: 'art_connect_ebay_account', title: 'How to Connect Your eBay Account', category: 'Integrations' },
-            { id: 'art_analytics_dashboard', slug: 'art_analytics_dashboard', title: 'Understanding Analytics Dashboard', category: 'Analytics' },
-            { id: 'art_setting_up_automations', slug: 'art_setting_up_automations', title: 'Setting Up Automations', category: 'Automations' }
+            {
+                id: 'art_getting_started_cross_listing',
+                slug: 'art_getting_started_cross_listing',
+                title: 'Getting Started with Cross-Listing',
+                category: 'Basics',
+            },
+            {
+                id: 'art_connect_ebay_account',
+                slug: 'art_connect_ebay_account',
+                title: 'How to Connect Your eBay Account',
+                category: 'Integrations',
+            },
+            {
+                id: 'art_analytics_dashboard',
+                slug: 'art_analytics_dashboard',
+                title: 'Understanding Analytics Dashboard',
+                category: 'Analytics',
+            },
+            {
+                id: 'art_setting_up_automations',
+                slug: 'art_setting_up_automations',
+                title: 'Setting Up Automations',
+                category: 'Automations',
+            },
         ];
         const gettingStartedSteps = [
             { id: 1, title: 'Create your account', completed: true },
             { id: 2, title: 'Add your first item', completed: (store.state.inventoryItems || []).length > 0 },
             { id: 3, title: 'Create your first listing', completed: (store.state.listings || []).length > 0 },
             { id: 4, title: 'Set up an automation', completed: (store.state.automations || []).length > 0 },
-            { id: 5, title: 'Record your first sale', completed: (store.state.sales || []).length > 0 }
+            { id: 5, title: 'Record your first sale', completed: (store.state.sales || []).length > 0 },
         ];
-        const completedSteps = gettingStartedSteps.filter(s => s.completed).length;
+        const completedSteps = gettingStartedSteps.filter((s) => s.completed).length;
 
         return `
             <div class="page-header">
@@ -2535,20 +3227,44 @@ Upload photos once, use them across all your listings.`
                     </svg>
                     <input type="text" class="help-search-input" aria-label="Search help" placeholder="Search help articles, FAQs, and tutorials..." oninput="handlers.searchHelp(this.value)">
                 </div>
-                <div id="help-search-results" class="help-search-results ${_helpSearchQuery ? '' : 'hidden'}">${_helpSearchQuery ? `
-                    ${(_helpFAQs.length === 0 && _helpArticles.length === 0) ? `
+                <div id="help-search-results" class="help-search-results ${_helpSearchQuery ? '' : 'hidden'}">${
+                    _helpSearchQuery
+                        ? `
+                    ${
+                        _helpFAQs.length === 0 && _helpArticles.length === 0
+                            ? `
                         <div class="help-search-empty">No results for "${escapeHtml(_helpSearchQuery)}"</div>
-                    ` : `
-                        ${_helpFAQs.length > 0 ? `<div class="help-search-section-label">FAQs</div>${_helpFAQs.map(f => `
+                    `
+                            : `
+                        ${
+                            _helpFAQs.length > 0
+                                ? `<div class="help-search-section-label">FAQs</div>${_helpFAQs
+                                      .map(
+                                          (f) => `
                             <button class="help-search-result-item" onclick="router.navigate('support-articles')">
                                 <span>${escapeHtml(f.question)}</span>
-                            </button>`).join('')}` : ''}
-                        ${_helpArticles.length > 0 ? `<div class="help-search-section-label">Articles</div>${_helpArticles.map(a => `
+                            </button>`,
+                                      )
+                                      .join('')}`
+                                : ''
+                        }
+                        ${
+                            _helpArticles.length > 0
+                                ? `<div class="help-search-section-label">Articles</div>${_helpArticles
+                                      .map(
+                                          (a) => `
                             <button class="help-search-result-item" onclick="handlers.loadArticle('${escapeHtml(a.slug)}')">
                                 <span>${escapeHtml(a.title)}</span>
-                            </button>`).join('')}` : ''}
-                    `}
-                ` : ''}</div>
+                            </button>`,
+                                      )
+                                      .join('')}`
+                                : ''
+                        }
+                    `
+                    }
+                `
+                        : ''
+                }</div>
             </div>
 
             <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 24px;">
@@ -2631,18 +3347,26 @@ Upload photos once, use them across all your listings.`
                             <span class="progress-label">${Math.round((completedSteps / gettingStartedSteps.length) * 100)}% complete</span>
                         </div>
                         <div class="getting-started-list">
-                            ${gettingStartedSteps.map(step => `
+                            ${gettingStartedSteps
+                                .map(
+                                    (step) => `
                                 <div role="button" tabindex="0" class="getting-started-item ${step.completed ? 'completed' : ''}" onclick="handlers.toggleGettingStartedStep(${step.id})">
                                     <div class="step-checkbox">
-                                        ${step.completed ? `
+                                        ${
+                                            step.completed
+                                                ? `
                                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                                                 <polyline points="20 6 9 17 4 12"></polyline>
                                             </svg>
-                                        ` : ''}
+                                        `
+                                                : ''
+                                        }
                                     </div>
                                     <span class="step-title">${step.title}</span>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
                     </div>
                 </div>
@@ -2656,23 +3380,38 @@ Upload photos once, use them across all your listings.`
                 </div>
                 <div class="card-body">
                     <div class="popular-articles-grid">
-                        ${popularArticles.map(article => {
-                            const categoryIcons = { 'Basics': '🚀', 'Integrations': '🔗', 'Analytics': '📊', 'Automations': '⚡', 'Inventory': '📦', 'Pricing': '💰', 'Shipping': '📬', 'Account': '👤' };
-                            const icon = categoryIcons[article.category] || '📄';
-                            return `
+                        ${popularArticles
+                            .map((article) => {
+                                const categoryIcons = {
+                                    Basics: '🚀',
+                                    Integrations: '🔗',
+                                    Analytics: '📊',
+                                    Automations: '⚡',
+                                    Inventory: '📦',
+                                    Pricing: '💰',
+                                    Shipping: '📬',
+                                    Account: '👤',
+                                };
+                                const icon = categoryIcons[article.category] || '📄';
+                                return `
                             <button class="popular-article-card" onclick="modals.viewArticle('${article.slug || article.id}')">
                                 <div style="font-size: 24px; margin-bottom: 8px;" aria-hidden="true">${icon}</div>
                                 <div class="article-category">${escapeHtml(article.category)}</div>
                                 <h3 class="article-title">${escapeHtml(article.title)}</h3>
-                                ${article.views != null ? `<div class="article-meta">
+                                ${
+                                    article.views != null
+                                        ? `<div class="article-meta">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                         <circle cx="12" cy="12" r="3"></circle>
                                     </svg>
                                     ${article.views.toLocaleString()} views
-                                </div>` : ''}
+                                </div>`
+                                        : ''
+                                }
                             </button>`;
-                        }).join('')}
+                            })
+                            .join('')}
                     </div>
                 </div>
             </div>
@@ -2740,13 +3479,51 @@ Upload photos once, use them across all your listings.`
                     <p class="text-gray-500 mb-4">Step-by-step guides to help you master each section of VaultLister.</p>
                     <div class="grid grid-cols-3 gap-3">
                         ${[
-                            { page: 'inventory', title: 'Inventory Management', icon: 'package', steps: 5, desc: 'Learn to add, organize, and track your items' },
-                            { page: 'listings', title: 'Creating Listings', icon: 'tag', steps: 4, desc: 'Cross-list items across multiple platforms' },
-                            { page: 'orders', title: 'Order Fulfillment', icon: 'truck', steps: 4, desc: 'Process orders and print shipping labels' },
-                            { page: 'analytics', title: 'Analytics Dashboard', icon: 'bar-chart-2', steps: 3, desc: 'Understand your sales data and trends' },
-                            { page: 'automations', title: 'Setting Up Automations', icon: 'zap', steps: 4, desc: 'Automate sharing, relisting, and pricing' },
-                            { page: 'image-bank', title: 'Image Bank', icon: 'image', steps: 3, desc: 'Manage and organize product photos' }
-                        ].map(t => `
+                            {
+                                page: 'inventory',
+                                title: 'Inventory Management',
+                                icon: 'package',
+                                steps: 5,
+                                desc: 'Learn to add, organize, and track your items',
+                            },
+                            {
+                                page: 'listings',
+                                title: 'Creating Listings',
+                                icon: 'tag',
+                                steps: 4,
+                                desc: 'Cross-list items across multiple platforms',
+                            },
+                            {
+                                page: 'orders',
+                                title: 'Order Fulfillment',
+                                icon: 'truck',
+                                steps: 4,
+                                desc: 'Process orders and print shipping labels',
+                            },
+                            {
+                                page: 'analytics',
+                                title: 'Analytics Dashboard',
+                                icon: 'bar-chart-2',
+                                steps: 3,
+                                desc: 'Understand your sales data and trends',
+                            },
+                            {
+                                page: 'automations',
+                                title: 'Setting Up Automations',
+                                icon: 'zap',
+                                steps: 4,
+                                desc: 'Automate sharing, relisting, and pricing',
+                            },
+                            {
+                                page: 'image-bank',
+                                title: 'Image Bank',
+                                icon: 'image',
+                                steps: 3,
+                                desc: 'Manage and organize product photos',
+                            },
+                        ]
+                            .map(
+                                (t) => `
                             <div role="button" tabindex="0" class="walkthrough-card" onclick="handlers.startWalkthrough('${t.page}')" style="cursor: pointer; padding: 16px; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); transition: all 0.2s;">
                                 <div class="flex items-center gap-2 mb-2">
                                     ${components.icon(t.icon, 18)}
@@ -2758,7 +3535,9 @@ Upload photos once, use them across all your listings.`
                                     <span class="badge badge-sm badge-primary">Start</span>
                                 </div>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
             </div>
@@ -2766,7 +3545,6 @@ Upload photos once, use them across all your listings.`
     },
 
     // Feedback & Suggestions page,
-
 
     feedbackSuggestions() {
         const feedbackStats = store.state.feedbackStats || { submitted: 0, accepted: 0, implemented: 0 };
@@ -2888,7 +3666,9 @@ Upload photos once, use them across all your listings.`
                                 <div class="impact-stat-label">Features Influenced</div>
                             </div>
                         </div>
-                        ${userImpact.feedbackSubmitted > 0 ? `<div class="contributor-badge-section">
+                        ${
+                            userImpact.feedbackSubmitted > 0
+                                ? `<div class="contributor-badge-section">
                             <div class="contributor-badge">
                                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2">
                                     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
@@ -2896,7 +3676,9 @@ Upload photos once, use them across all your listings.`
                                 <span>Top Contributor</span>
                             </div>
                             <p class="badge-description">You're in the top 10% of contributors this month!</p>
-                        </div>` : ''}
+                        </div>`
+                                : ''
+                        }
                     </div>
                 </div>
             </div>
@@ -2957,13 +3739,18 @@ Upload photos once, use them across all your listings.`
                     <button class="btn btn-sm btn-secondary" onclick="router.navigate('feedback-analytics')">View All</button>
                 </div>
                 <div class="card-body">
-                    ${trendingSuggestions.length === 0 ? `
+                    ${
+                        trendingSuggestions.length === 0
+                            ? `
                         <div style="text-align: center; padding: 32px; color: var(--gray-500);">
                             <p style="margin: 0;">No suggestions yet. Be the first to submit feedback!</p>
                         </div>
-                    ` : `
+                    `
+                            : `
                     <div class="trending-suggestions-list">
-                        ${trendingSuggestions.map((suggestion, idx) => `
+                        ${trendingSuggestions
+                            .map(
+                                (suggestion, idx) => `
                             <div role="button" tabindex="0" class="trending-suggestion-item" style="cursor: pointer;" onclick="handlers.showFeedbackDetail('${suggestion.id}')">
                                 <div class="suggestion-rank">#${idx + 1}</div>
                                 <div class="suggestion-content">
@@ -2989,16 +3776,18 @@ Upload photos once, use them across all your listings.`
                                     </button>
                                 </div>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
         `;
     },
 
     // Feedback Analytics page,
-
 
     feedbackAnalytics() {
         const analytics = store.state.feedbackAnalytics || {};
@@ -3008,8 +3797,19 @@ Upload photos once, use them across all your listings.`
         const topVoted = analytics.topVoted || [];
         const recentActivity = analytics.recentActivity || [];
 
-        const typeColors = { feature: 'var(--primary-500)', improvement: 'var(--success)', bug: 'var(--danger-600)', general: 'var(--gray-500)' };
-        const statusColors = { pending: 'var(--gray-400)', reviewing: 'var(--primary-500)', planned: 'var(--success)', completed: '#059669', declined: 'var(--danger-600)' };
+        const typeColors = {
+            feature: 'var(--primary-500)',
+            improvement: 'var(--success)',
+            bug: 'var(--danger-600)',
+            general: 'var(--gray-500)',
+        };
+        const statusColors = {
+            pending: 'var(--gray-400)',
+            reviewing: 'var(--primary-500)',
+            planned: 'var(--success)',
+            completed: '#059669',
+            declined: 'var(--danger-600)',
+        };
 
         return `
             <div class="page-header">
@@ -3035,11 +3835,11 @@ Upload photos once, use them across all your listings.`
                     <div style="font-size: 13px; color: var(--gray-500); margin-top: 4px;">Total Votes</div>
                 </div>
                 <div class="card" style="padding: 20px; text-align: center;">
-                    <div style="font-size: 28px; font-weight: 700; color: var(--warning, var(--primary-500));">${byType.find(t => t.type === 'feature')?.count || 0}</div>
+                    <div style="font-size: 28px; font-weight: 700; color: var(--warning, var(--primary-500));">${byType.find((t) => t.type === 'feature')?.count || 0}</div>
                     <div style="font-size: 13px; color: var(--gray-500); margin-top: 4px;">Feature Requests</div>
                 </div>
                 <div class="card" style="padding: 20px; text-align: center;">
-                    <div style="font-size: 28px; font-weight: 700; color: var(--danger-600);">${byType.find(t => t.type === 'bug')?.count || 0}</div>
+                    <div style="font-size: 28px; font-weight: 700; color: var(--danger-600);">${byType.find((t) => t.type === 'bug')?.count || 0}</div>
                     <div style="font-size: 13px; color: var(--gray-500); margin-top: 4px;">Bug Reports</div>
                 </div>
             </div>
@@ -3049,16 +3849,24 @@ Upload photos once, use them across all your listings.`
                 <div class="card">
                     <div class="card-header"><h2 class="card-title">By Type</h2></div>
                     <div class="card-body">
-                        ${byType.length === 0 ? '<p style="color: var(--gray-500); text-align: center;">No data yet</p>' : byType.map(item => `
+                        ${
+                            byType.length === 0
+                                ? '<p style="color: var(--gray-500); text-align: center;">No data yet</p>'
+                                : byType
+                                      .map(
+                                          (item) => `
                             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                                 <div style="width: 12px; height: 12px; border-radius: 50%; background: ${typeColors[item.type] || 'var(--gray-400)'}; flex-shrink: 0;"></div>
                                 <span style="flex: 1; font-size: 14px; text-transform: capitalize;">${item.type}</span>
                                 <div style="flex: 2; background: var(--gray-100); border-radius: 4px; height: 8px; overflow: hidden;">
-                                    <div style="width: ${analytics.totalFeedback ? Math.round(item.count / analytics.totalFeedback * 100) : 0}%; height: 100%; background: ${typeColors[item.type] || 'var(--gray-400)'}; border-radius: 4px;"></div>
+                                    <div style="width: ${analytics.totalFeedback ? Math.round((item.count / analytics.totalFeedback) * 100) : 0}%; height: 100%; background: ${typeColors[item.type] || 'var(--gray-400)'}; border-radius: 4px;"></div>
                                 </div>
                                 <span style="font-weight: 600; font-size: 14px; min-width: 30px; text-align: right;">${item.count}</span>
                             </div>
-                        `).join('')}
+                        `,
+                                      )
+                                      .join('')
+                        }
                     </div>
                 </div>
 
@@ -3066,16 +3874,24 @@ Upload photos once, use them across all your listings.`
                 <div class="card">
                     <div class="card-header"><h2 class="card-title">By Status</h2></div>
                     <div class="card-body">
-                        ${byStatus.length === 0 ? '<p style="color: var(--gray-500); text-align: center;">No data yet</p>' : byStatus.map(item => `
+                        ${
+                            byStatus.length === 0
+                                ? '<p style="color: var(--gray-500); text-align: center;">No data yet</p>'
+                                : byStatus
+                                      .map(
+                                          (item) => `
                             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                                 <div style="width: 12px; height: 12px; border-radius: 50%; background: ${statusColors[item.status] || 'var(--gray-400)'}; flex-shrink: 0;"></div>
                                 <span style="flex: 1; font-size: 14px; text-transform: capitalize;">${item.status}</span>
                                 <div style="flex: 2; background: var(--gray-100); border-radius: 4px; height: 8px; overflow: hidden;">
-                                    <div style="width: ${analytics.totalFeedback ? Math.round(item.count / analytics.totalFeedback * 100) : 0}%; height: 100%; background: ${statusColors[item.status] || 'var(--gray-400)'}; border-radius: 4px;"></div>
+                                    <div style="width: ${analytics.totalFeedback ? Math.round((item.count / analytics.totalFeedback) * 100) : 0}%; height: 100%; background: ${statusColors[item.status] || 'var(--gray-400)'}; border-radius: 4px;"></div>
                                 </div>
                                 <span style="font-weight: 600; font-size: 14px; min-width: 30px; text-align: right;">${item.count}</span>
                             </div>
-                        `).join('')}
+                        `,
+                                      )
+                                      .join('')
+                        }
                     </div>
                 </div>
             </div>
@@ -3084,9 +3900,12 @@ Upload photos once, use them across all your listings.`
             <div class="card" style="margin-bottom: 24px;">
                 <div class="card-header"><h2 class="card-title">Most Popular Feedback</h2></div>
                 <div class="card-body" style="padding: 0;">
-                    ${topVoted.length === 0 ? `
+                    ${
+                        topVoted.length === 0
+                            ? `
                         <div style="text-align: center; padding: 32px; color: var(--gray-500);">No feedback yet</div>
-                    ` : `
+                    `
+                            : `
                         <table style="width: 100%; border-collapse: collapse;">
                             <thead>
                                 <tr style="border-bottom: 1px solid var(--gray-200);">
@@ -3098,7 +3917,9 @@ Upload photos once, use them across all your listings.`
                                 </tr>
                             </thead>
                             <tbody>
-                                ${topVoted.map((item, idx) => `
+                                ${topVoted
+                                    .map(
+                                        (item, idx) => `
                                     <tr style="border-bottom: 1px solid var(--gray-100); cursor: pointer;" onclick="handlers.showFeedbackDetail('${item.id}')">
                                         <td style="padding: 12px 16px; font-weight: 600; color: var(--gray-400);">#${idx + 1}</td>
                                         <td style="padding: 12px 16px; font-weight: 500;">${escapeHtml(item.title)}</td>
@@ -3106,10 +3927,13 @@ Upload photos once, use them across all your listings.`
                                         <td style="padding: 12px 16px;"><span class="badge badge-sm badge-${item.status === 'planned' ? 'success' : item.status === 'reviewing' ? 'primary' : 'outline'}">${item.status}</span></td>
                                         <td style="padding: 12px 16px; text-align: right; font-weight: 600; color: ${item.net_votes > 0 ? 'var(--success)' : item.net_votes < 0 ? 'var(--danger-600)' : 'var(--gray-500)'};">${item.net_votes > 0 ? '+' : ''}${item.net_votes}</td>
                                     </tr>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </tbody>
                         </table>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
@@ -3117,21 +3941,28 @@ Upload photos once, use them across all your listings.`
             <div class="card">
                 <div class="card-header"><h2 class="card-title">Feedback by Category</h2></div>
                 <div class="card-body">
-                    ${byCategory.length === 0 ? '<p style="color: var(--gray-500); text-align: center;">No data yet</p>' : `
+                    ${
+                        byCategory.length === 0
+                            ? '<p style="color: var(--gray-500); text-align: center;">No data yet</p>'
+                            : `
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
-                            ${byCategory.map(item => `
+                            ${byCategory
+                                .map(
+                                    (item) => `
                                 <div style="background: var(--gray-50); border-radius: 8px; padding: 16px; text-align: center;">
                                     <div style="font-size: 24px; font-weight: 700; color: var(--primary-600);">${item.count}</div>
                                     <div style="font-size: 13px; color: var(--gray-600); text-transform: capitalize; margin-top: 4px;">${item.category}</div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
         `;
     },
 
     // Smart Relisting page,
-
 });

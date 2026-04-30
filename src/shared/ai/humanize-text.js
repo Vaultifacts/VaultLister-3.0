@@ -41,8 +41,8 @@ function varyOpeners(text) {
     const replacements = [
         [/^This (?:item |piece )?features /im, () => pick(['Has ', 'Comes with ', 'Got ', 'Includes '])],
         [/^Perfect for /im, () => pick(['Great for ', 'Ideal for ', 'Works well for ', 'Good for '])],
-        [/^Whether you're /im, () => pick(["If you're ", "For anyone who's ", "If you "])],
-        [/^This is a /im, () => pick(["Here's a ", "Selling a ", "Got a "])],
+        [/^Whether you're /im, () => pick(["If you're ", "For anyone who's ", 'If you '])],
+        [/^This is a /im, () => pick(["Here's a ", 'Selling a ', 'Got a '])],
         [/^Featuring /im, () => pick(['Has ', 'With ', 'Comes with '])],
         [/^Experience /im, () => pick(['Enjoy ', 'Check out ', 'Try '])],
     ];
@@ -60,15 +60,17 @@ function varyPunctuation(text) {
     const sentences = text.split(/(?<=[.!]) /);
     if (sentences.length < 3) return text;
 
-    return sentences.map((s, i) => {
-        // Occasionally replace period with dash or semicolon between mid-sentences
-        if (i > 0 && i < sentences.length - 1 && Math.random() < 0.15) {
-            if (s.endsWith('.')) {
-                return s.slice(0, -1) + (Math.random() < 0.5 ? ' -' : ';');
+    return sentences
+        .map((s, i) => {
+            // Occasionally replace period with dash or semicolon between mid-sentences
+            if (i > 0 && i < sentences.length - 1 && Math.random() < 0.15) {
+                if (s.endsWith('.')) {
+                    return s.slice(0, -1) + (Math.random() < 0.5 ? ' -' : ';');
+                }
             }
-        }
-        return s;
-    }).join(' ');
+            return s;
+        })
+        .join(' ');
 }
 
 // Add natural contractions

@@ -16,7 +16,9 @@ function readHeader(headers, name) {
 }
 
 export function normalizeCountryCode(value) {
-    const code = String(value || '').trim().toUpperCase();
+    const code = String(value || '')
+        .trim()
+        .toUpperCase();
     if (!/^[A-Z0-9]{2}$/.test(code)) return '';
     if (UNKNOWN_COUNTRY_CODES.has(code)) return '';
     if (!/^[A-Z]{2}$/.test(code)) return '';
@@ -26,8 +28,8 @@ export function normalizeCountryCode(value) {
 export function getCountryCodeFromHeaders(headers = {}) {
     return normalizeCountryCode(
         readHeader(headers, 'CF-IPCountry') ||
-        readHeader(headers, 'X-Vercel-IP-Country') ||
-        readHeader(headers, 'X-Country-Code') ||
-        readHeader(headers, 'CloudFront-Viewer-Country')
+            readHeader(headers, 'X-Vercel-IP-Country') ||
+            readHeader(headers, 'X-Country-Code') ||
+            readHeader(headers, 'CloudFront-Viewer-Country'),
     );
 }

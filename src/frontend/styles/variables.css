@@ -27,7 +27,7 @@
     --gray-50: #f9fafb;
     --gray-100: #f3f4f6;
     --gray-200: #e5e7eb;
-    --gray-300: #d1d5db;
+    --gray-300: #b0b6bf;
     --gray-400: #6b7280;
     --gray-500: #4b5563;
     --gray-600: #4b5563;
@@ -60,7 +60,7 @@
     --sky-900: #0c4a6e;
 
     /* Colors - Yellow (for warnings, badges, swipe actions) */
-    --yellow-50:  #fefce8;
+    --yellow-50: #fefce8;
     --yellow-100: #fef9c3;
     --yellow-200: #fef08a;
     --yellow-300: #fde047;
@@ -205,10 +205,17 @@ body.dark-mode .sidebar-title,
 body.dark-mode .page-title,
 body.dark-mode .card-title,
 body.dark-mode .nav-item,
-body.dark-mode h1, body.dark-mode h2, body.dark-mode h3,
-body.dark-mode h4, body.dark-mode h5, body.dark-mode h6,
-body.dark-mode p, body.dark-mode span, body.dark-mode div,
-body.dark-mode label, body.dark-mode td {
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6,
+body.dark-mode p,
+body.dark-mode span,
+body.dark-mode div,
+body.dark-mode label,
+body.dark-mode td {
     color: #ffffff !important;
 }
 
@@ -217,12 +224,12 @@ body.dark-mode .nav-item:hover {
 }
 
 body.dark-mode .nav-item.active {
-    background: rgba(245,158,11,0.15) !important;
+    background: rgba(245, 158, 11, 0.15) !important;
     color: #f59e0b !important;
 }
 
 body.dark-mode .nav-item.active:hover {
-    background: rgba(245,158,11,0.22) !important;
+    background: rgba(245, 158, 11, 0.22) !important;
 }
 
 body.dark-mode .text-gray-500,
@@ -313,7 +320,7 @@ body.dark-mode .table .btn-ghost {
 }
 
 body.dark-mode .table .btn-ghost:hover:not(:disabled) {
-    background: #f3f4f6 !important;  /* Light gray on hover */
+    background: #f3f4f6 !important; /* Light gray on hover */
     color: #000000 !important;
 }
 
@@ -362,8 +369,8 @@ body.dark-mode .modal-close:hover {
 body.dark-mode .modal .form-input,
 body.dark-mode .modal .form-select,
 body.dark-mode .modal .form-textarea,
-body.dark-mode .modal input[type="text"],
-body.dark-mode .modal input[type="number"],
+body.dark-mode .modal input[type='text'],
+body.dark-mode .modal input[type='number'],
 body.dark-mode .modal textarea,
 body.dark-mode .modal select {
     background: #374151 !important;
@@ -383,11 +390,20 @@ body.dark-mode .modal label {
     color: #e5e7eb !important;
 }
 
-body.dark-mode .modal button:not(.btn-primary):not(.btn-secondary):not(.btn-danger):not(.btn-error):not(.btn-success):not(.btn-ghost):not(.modal-close) {
+body.dark-mode
+    .modal
+    button:not(.btn-primary):not(.btn-secondary):not(.btn-danger):not(.btn-error):not(.btn-success):not(.btn-ghost):not(
+        .modal-close
+    ) {
     color: #000000 !important;
 }
 
-body.dark-mode .modal button:not(.btn-primary):not(.btn-secondary):not(.btn-danger):not(.btn-error):not(.btn-success):not(.btn-ghost):not(.modal-close) svg {
+body.dark-mode
+    .modal
+    button:not(.btn-primary):not(.btn-secondary):not(.btn-danger):not(.btn-error):not(.btn-success):not(.btn-ghost):not(
+        .modal-close
+    )
+    svg {
     stroke: #000000 !important;
 }
 
@@ -626,11 +642,11 @@ body.dark-mode .btn-icon svg {
 
 /* Dark mode - Dropdown menu icons */
 body.dark-mode .dropdown-item svg {
-    color: #1f2937 !important;  /* Darker grey for better visibility */
+    color: #1f2937 !important; /* Darker grey for better visibility */
 }
 
 body.dark-mode .user-menu .dropdown-item svg {
-    color: #111827 !important;  /* Near-black for user menu icons */
+    color: #111827 !important; /* Near-black for user menu icons */
 }
 
 /* Dark mode - Notifications page */
@@ -650,15 +666,15 @@ body.dark-mode .notification-item.read {
     background: transparent !important;
 }
 
-body.dark-mode .notification-item [style*="font-weight: 600"] {
+body.dark-mode .notification-item [style*='font-weight: 600'] {
     color: #e5e7eb !important;
 }
 
-body.dark-mode .notification-item [style*="color: var(--gray-600)"] {
+body.dark-mode .notification-item [style*='color: var(--gray-600)'] {
     color: #9ca3af !important;
 }
 
-body.dark-mode .notification-item [style*="color: var(--gray-400)"] {
+body.dark-mode .notification-item [style*='color: var(--gray-400)'] {
     color: #6b7280 !important;
 }
 
@@ -770,7 +786,7 @@ body.dark-mode .badge-gray {
 
 /* Dark mode - Crosslist buttons */
 body.dark-mode .crosslist-method-btn,
-body.dark-mode [onclick*="crosslist"] .btn-secondary {
+body.dark-mode [onclick*='crosslist'] .btn-secondary {
     color: #ffffff !important;
 }
 
@@ -832,7 +848,10 @@ body.dark-mode .text-gray-700 {
     color: #d1d5db !important;
 }
 
-body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, body.dark-mode h4 {
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4 {
     color: #f3f4f6 !important;
 }
 
@@ -879,13 +898,13 @@ body.dark-mode .table tbody tr {
 
 /* Dark mode - Crosslist method buttons */
 body.dark-mode .method-btn,
-body.dark-mode [class*="crosslist"] .btn,
+body.dark-mode [class*='crosslist'] .btn,
 body.dark-mode .listing-method-btn {
     color: #ffffff !important;
 }
 
 body.dark-mode .method-btn svg,
-body.dark-mode [class*="crosslist"] .btn svg,
+body.dark-mode [class*='crosslist'] .btn svg,
 body.dark-mode .listing-method-btn svg {
     color: #ffffff !important;
     stroke: #ffffff !important;
@@ -897,11 +916,11 @@ body.dark-mode .modal .form-group label {
 }
 
 body.dark-mode .modal select,
-body.dark-mode .modal input[type="text"],
-body.dark-mode .modal input[type="number"],
-body.dark-mode .modal input[type="date"],
-body.dark-mode .modal input[type="password"],
-body.dark-mode .modal input[type="email"],
+body.dark-mode .modal input[type='text'],
+body.dark-mode .modal input[type='number'],
+body.dark-mode .modal input[type='date'],
+body.dark-mode .modal input[type='password'],
+body.dark-mode .modal input[type='email'],
 body.dark-mode .modal textarea {
     background: #374151 !important;
     border-color: #4b5563 !important;
@@ -911,8 +930,8 @@ body.dark-mode .modal textarea {
 /* Dark mode - Receipt parser upload area */
 body.dark-mode .upload-zone,
 body.dark-mode .upload-area,
-body.dark-mode [class*="upload-zone"],
-body.dark-mode [class*="drop-zone"] {
+body.dark-mode [class*='upload-zone'],
+body.dark-mode [class*='drop-zone'] {
     background: #374151 !important;
     border-color: #4b5563 !important;
     color: #d1d5db !important;
@@ -920,15 +939,15 @@ body.dark-mode [class*="drop-zone"] {
 
 body.dark-mode .upload-zone *,
 body.dark-mode .upload-area *,
-body.dark-mode [class*="upload-zone"] *,
-body.dark-mode [class*="drop-zone"] * {
+body.dark-mode [class*='upload-zone'] *,
+body.dark-mode [class*='drop-zone'] * {
     color: #d1d5db !important;
 }
 
 body.dark-mode .upload-zone svg,
 body.dark-mode .upload-area svg,
-body.dark-mode [class*="upload-zone"] svg,
-body.dark-mode [class*="drop-zone"] svg {
+body.dark-mode [class*='upload-zone'] svg,
+body.dark-mode [class*='drop-zone'] svg {
     stroke: #9ca3af !important;
 }
 
@@ -970,17 +989,17 @@ body.dark-mode .size-chart-table td {
 body.dark-mode .calendar-grid,
 body.dark-mode .calendar-grid td,
 body.dark-mode .calendar-grid th,
-body.dark-mode [class*="calendar"] td,
-body.dark-mode [class*="calendar"] th {
+body.dark-mode [class*='calendar'] td,
+body.dark-mode [class*='calendar'] th {
     border-color: #374151 !important;
     color: #d1d5db !important;
 }
 
-body.dark-mode [class*="calendar"] .day-number {
+body.dark-mode [class*='calendar'] .day-number {
     color: #e5e7eb !important;
 }
 
-body.dark-mode [class*="calendar"] td[style*="background"] {
+body.dark-mode [class*='calendar'] td[style*='background'] {
     background: #374151 !important;
 }
 
@@ -994,15 +1013,15 @@ body.dark-mode .selection-popup .btn {
 
 /* Dark mode - Quick Cross List button text */
 body.dark-mode .btn-crosslist,
-body.dark-mode [onclick*="crossList"] .btn,
+body.dark-mode [onclick*='crossList'] .btn,
 body.dark-mode .quick-crosslist-btn {
     color: #ffffff !important;
 }
 
 /* Dark mode - Shipped status badge (dark text on light background) */
 body.dark-mode .badge-shipped,
-body.dark-mode .badge[class*="shipped"],
-body.dark-mode span[class*="shipped"] {
+body.dark-mode .badge[class*='shipped'],
+body.dark-mode span[class*='shipped'] {
     color: #111827 !important;
     background: #86efac !important;
 }
@@ -1010,7 +1029,7 @@ body.dark-mode span[class*="shipped"] {
 /* Dark mode - Calendar header row with day names */
 body.dark-mode .calendar-header th,
 body.dark-mode .calendar-days-header th,
-body.dark-mode [class*="calendar"] thead th {
+body.dark-mode [class*='calendar'] thead th {
     background: #374151 !important;
     color: #e5e7eb !important;
 }
@@ -1032,20 +1051,20 @@ body.dark-mode .size-chart-categories button:not(.active):hover {
 /* Dark mode - Receipt parser dropzone */
 body.dark-mode .receipt-dropzone,
 body.dark-mode .receipt-upload-zone,
-body.dark-mode [class*="receipt-dropzone"] {
+body.dark-mode [class*='receipt-dropzone'] {
     background: #374151 !important;
     border-color: #4b5563 !important;
 }
 
 body.dark-mode .receipt-dropzone *,
 body.dark-mode .receipt-upload-zone *,
-body.dark-mode [class*="receipt-dropzone"] * {
+body.dark-mode [class*='receipt-dropzone'] * {
     color: #e5e7eb !important;
 }
 
 body.dark-mode .receipt-dropzone svg,
 body.dark-mode .receipt-upload-zone svg,
-body.dark-mode [class*="receipt-dropzone"] svg {
+body.dark-mode [class*='receipt-dropzone'] svg {
     stroke: #9ca3af !important;
 }
 
@@ -1135,17 +1154,17 @@ body.dark-mode .dropzone span {
 
 /* Dark mode - Template modal fields */
 body.dark-mode .template-modal .form-input,
-body.dark-mode [class*="template"] .modal .form-input,
-body.dark-mode .modal[data-modal-type="template"] input,
-body.dark-mode .modal[data-modal-type="template"] textarea,
-body.dark-mode .modal[data-modal-type="template"] select {
+body.dark-mode [class*='template'] .modal .form-input,
+body.dark-mode .modal[data-modal-type='template'] input,
+body.dark-mode .modal[data-modal-type='template'] textarea,
+body.dark-mode .modal[data-modal-type='template'] select {
     background: #374151 !important;
     color: #ffffff !important;
     border-color: #4b5563 !important;
 }
 
 body.dark-mode .template-modal .form-input::placeholder,
-body.dark-mode [class*="template"] .modal .form-input::placeholder {
+body.dark-mode [class*='template'] .modal .form-input::placeholder {
     color: #9ca3af !important;
 }
 
@@ -1237,4 +1256,3 @@ body.dark-mode .dropzone .dropzone-content {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-

@@ -46,11 +46,9 @@ export function stopSyncScheduler() {
  * Find shops due for auto-sync and queue a sync task for each
  */
 async function checkAndQueueDueShops() {
-    const lock = await acquireRedisLock(
-        SYNC_SCHEDULER_LOCK_KEY,
-        SYNC_SCHEDULER_LOCK_TTL_MS,
-        { name: 'sync scheduler' }
-    );
+    const lock = await acquireRedisLock(SYNC_SCHEDULER_LOCK_KEY, SYNC_SCHEDULER_LOCK_TTL_MS, {
+        name: 'sync scheduler',
+    });
 
     if (!lock.acquired) {
         return;
@@ -88,7 +86,9 @@ async function checkAndQueueDueShops() {
         for (const shop of dueShops) {
             try {
                 await queueTask('sync_shop', { platform: shop.platform, shopId: shop.id, userId: shop.user_id });
-                logger.info(`[SyncScheduler] Queued auto-sync for ${shop.platform} (shop: ${shop.id}, user: ${shop.user_id})`);
+                logger.info(
+                    `[SyncScheduler] Queued auto-sync for ${shop.platform} (shop: ${shop.id}, user: ${shop.user_id})`,
+                );
             } catch (err) {
                 logger.error(`[SyncScheduler] Failed to queue sync for shop ${shop.id}:`, err.message);
             }

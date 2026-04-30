@@ -6,11 +6,75 @@ import { safeJsonParse } from '../shared/utils.js';
 
 // Allowed columns per table for offline sync (prevents SQL injection via dynamic keys)
 const ALLOWED_SYNC_COLUMNS = {
-    inventory: ['id', 'sku', 'title', 'description', 'brand', 'category', 'subcategory', 'size', 'color', 'condition', 'cost_price', 'list_price', 'quantity', 'low_stock_threshold', 'weight', 'dimensions', 'material', 'tags', 'images', 'thumbnail_url', 'status', 'location', 'notes', 'custom_fields'],
-    listings: ['id', 'inventory_id', 'platform', 'platform_listing_id', 'platform_url', 'title', 'description', 'price', 'original_price', 'shipping_price', 'category_path', 'condition_tag', 'status', 'images', 'platform_specific_data', 'listed_at', 'notes'],
-    orders: ['id', 'order_number', 'platform', 'status', 'buyer_username', 'buyer_email', 'buyer_address', 'item_id', 'item_title', 'item_sku', 'sale_price', 'shipping_cost', 'platform_fee', 'tracking_number', 'shipping_provider', 'shipping_label_url', 'expected_delivery', 'actual_delivery', 'notes', 'shipped_at', 'delivered_at']
+    inventory: [
+        'id',
+        'sku',
+        'title',
+        'description',
+        'brand',
+        'category',
+        'subcategory',
+        'size',
+        'color',
+        'condition',
+        'cost_price',
+        'list_price',
+        'quantity',
+        'low_stock_threshold',
+        'weight',
+        'dimensions',
+        'material',
+        'tags',
+        'images',
+        'thumbnail_url',
+        'status',
+        'location',
+        'notes',
+        'custom_fields',
+    ],
+    listings: [
+        'id',
+        'inventory_id',
+        'platform',
+        'platform_listing_id',
+        'platform_url',
+        'title',
+        'description',
+        'price',
+        'original_price',
+        'shipping_price',
+        'category_path',
+        'condition_tag',
+        'status',
+        'images',
+        'platform_specific_data',
+        'listed_at',
+        'notes',
+    ],
+    orders: [
+        'id',
+        'order_number',
+        'platform',
+        'status',
+        'buyer_username',
+        'buyer_email',
+        'buyer_address',
+        'item_id',
+        'item_title',
+        'item_sku',
+        'sale_price',
+        'shipping_cost',
+        'platform_fee',
+        'tracking_number',
+        'shipping_provider',
+        'shipping_label_url',
+        'expected_delivery',
+        'actual_delivery',
+        'notes',
+        'shipped_at',
+        'delivered_at',
+    ],
 };
-
 
 function sanitizeSyncPayload(payload, table) {
     const allowed = ALLOWED_SYNC_COLUMNS[table];
@@ -43,9 +107,9 @@ export async function offlineSyncRouter(ctx) {
             const queue = await query.all(sql, params);
 
             // Parse payload JSON for each item
-            const enrichedQueue = queue.map(item => ({
+            const enrichedQueue = queue.map((item) => ({
                 ...item,
-                payload: safeJsonParse(item.payload, null)
+                payload: safeJsonParse(item.payload, null),
             }));
 
             return { status: 200, data: enrichedQueue };
@@ -79,7 +143,7 @@ export async function offlineSyncRouter(ctx) {
                 `INSERT INTO offline_sync_queue
                 (id, user_id, action, entity_type, entity_id, payload, status)
                 VALUES (?, ?, ?, ?, ?, ?, 'pending')`,
-                [id, user.id, action, entity_type, entity_id || null, payload ? JSON.stringify(payload) : null]
+                [id, user.id, action, entity_type, entity_id || null, payload ? JSON.stringify(payload) : null],
             );
 
             const queueItem = await query.get('SELECT * FROM offline_sync_queue WHERE id = ?', [id]);
@@ -88,8 +152,8 @@ export async function offlineSyncRouter(ctx) {
                 status: 201,
                 data: {
                     ...queueItem,
-                    payload: safeJsonParse(queueItem.payload, null)
-                }
+                    payload: safeJsonParse(queueItem.payload, null),
+                },
             };
         } catch (error) {
             logger.error('[OfflineSync] Add to queue error', user?.id, { detail: error?.message });
@@ -102,7 +166,7 @@ export async function offlineSyncRouter(ctx) {
         try {
             const pendingItems = await query.all(
                 'SELECT * FROM offline_sync_queue WHERE user_id = ? AND status = ? ORDER BY created_at ASC',
-                [user.id, 'pending']
+                [user.id, 'pending'],
             );
 
             let synced = 0;
@@ -131,23 +195,24 @@ export async function offlineSyncRouter(ctx) {
                     // Mark as synced
                     await query.run(
                         'UPDATE offline_sync_queue SET status = ?, synced_at = CURRENT_TIMESTAMP WHERE id = ?',
-                        ['synced', item.id]
+                        ['synced', item.id],
                     );
 
                     synced++;
                 } catch (syncError) {
                     // Mark as failed
-                    await query.run(
-                        'UPDATE offline_sync_queue SET status = ?, error_message = ? WHERE id = ?',
-                        ['failed', syncError.message, item.id]
-                    );
+                    await query.run('UPDATE offline_sync_queue SET status = ?, error_message = ? WHERE id = ?', [
+                        'failed',
+                        syncError.message,
+                        item.id,
+                    ]);
 
                     failed++;
                     errors.push({
                         queue_id: item.id,
                         entity_type: item.entity_type,
                         action: item.action,
-                        error: syncError.message
+                        error: syncError.message,
                     });
                 }
             }
@@ -159,8 +224,8 @@ export async function offlineSyncRouter(ctx) {
                     synced,
                     failed,
                     total: pendingItems.length,
-                    errors: errors.length > 0 ? errors : undefined
-                }
+                    errors: errors.length > 0 ? errors : undefined,
+                },
             };
         } catch (error) {
             logger.error('[OfflineSync] Sync error', user?.id, { detail: error?.message });
@@ -173,10 +238,10 @@ export async function offlineSyncRouter(ctx) {
         try {
             const queueId = path.split('/')[2];
 
-            const existing = await query.get(
-                'SELECT id FROM offline_sync_queue WHERE id = ? AND user_id = ?',
-                [queueId, user.id]
-            );
+            const existing = await query.get('SELECT id FROM offline_sync_queue WHERE id = ? AND user_id = ?', [
+                queueId,
+                user.id,
+            ]);
 
             if (!existing) {
                 return { status: 404, data: { error: 'Queue item not found' } };
@@ -196,17 +261,17 @@ export async function offlineSyncRouter(ctx) {
         try {
             const pendingCount = await query.get(
                 'SELECT COUNT(*) as count FROM offline_sync_queue WHERE user_id = ? AND status = ?',
-                [user.id, 'pending']
+                [user.id, 'pending'],
             );
 
             const failedCount = await query.get(
                 'SELECT COUNT(*) as count FROM offline_sync_queue WHERE user_id = ? AND status = ?',
-                [user.id, 'failed']
+                [user.id, 'failed'],
             );
 
             const lastSync = await query.get(
                 'SELECT MAX(synced_at) as last_sync FROM offline_sync_queue WHERE user_id = ? AND status = ?',
-                [user.id, 'synced']
+                [user.id, 'synced'],
             );
 
             return {
@@ -215,8 +280,8 @@ export async function offlineSyncRouter(ctx) {
                     pending_count: pendingCount?.count || 0,
                     failed_count: failedCount?.count || 0,
                     last_sync_at: lastSync?.last_sync || null,
-                    is_online: true // Client determines this
-                }
+                    is_online: true, // Client determines this
+                },
             };
         } catch (error) {
             logger.error('[OfflineSync] Get status error', user?.id, { detail: error?.message });
@@ -230,14 +295,14 @@ export async function offlineSyncRouter(ctx) {
             // Count pending orders
             const pendingOrders = await query.get(
                 'SELECT COUNT(*) as count FROM orders WHERE user_id = ? AND status = ?',
-                [user.id, 'pending']
+                [user.id, 'pending'],
             );
 
             // Count low stock items
             const lowStock = await query.get(
                 `SELECT COUNT(*) as count FROM inventory
                 WHERE user_id = ? AND quantity > 0 AND quantity <= low_stock_threshold`,
-                [user.id]
+                [user.id],
             );
 
             // Count upcoming events (next 7 days)
@@ -245,7 +310,7 @@ export async function offlineSyncRouter(ctx) {
                 `SELECT COUNT(*) as count FROM calendar_events
                 WHERE user_id = ? AND start_time > NOW()
                 AND start_time <= NOW() + INTERVAL '7 days'`,
-                [user.id]
+                [user.id],
             );
 
             const badgeCount = (pendingOrders?.count || 0) + (lowStock?.count || 0) + (upcomingEvents?.count || 0);
@@ -256,7 +321,7 @@ export async function offlineSyncRouter(ctx) {
                 notifications.push({
                     type: 'pending_orders',
                     count: pendingOrders.count,
-                    message: `${pendingOrders.count} pending order${pendingOrders.count > 1 ? 's' : ''}`
+                    message: `${pendingOrders.count} pending order${pendingOrders.count > 1 ? 's' : ''}`,
                 });
             }
 
@@ -264,7 +329,7 @@ export async function offlineSyncRouter(ctx) {
                 notifications.push({
                     type: 'low_stock',
                     count: lowStock.count,
-                    message: `${lowStock.count} low stock alert${lowStock.count > 1 ? 's' : ''}`
+                    message: `${lowStock.count} low stock alert${lowStock.count > 1 ? 's' : ''}`,
                 });
             }
 
@@ -272,7 +337,7 @@ export async function offlineSyncRouter(ctx) {
                 notifications.push({
                     type: 'upcoming_events',
                     count: upcomingEvents.count,
-                    message: `${upcomingEvents.count} upcoming event${upcomingEvents.count > 1 ? 's' : ''}`
+                    message: `${upcomingEvents.count} upcoming event${upcomingEvents.count > 1 ? 's' : ''}`,
                 });
             }
 
@@ -293,16 +358,16 @@ export async function offlineSyncRouter(ctx) {
                             {
                                 src: '/assets/icon-192.png',
                                 sizes: '192x192',
-                                type: 'image/png'
+                                type: 'image/png',
                             },
                             {
                                 src: '/assets/icon-512.png',
                                 sizes: '512x512',
-                                type: 'image/png'
-                            }
-                        ]
-                    }
-                }
+                                type: 'image/png',
+                            },
+                        ],
+                    },
+                },
             };
         } catch (error) {
             logger.error('[OfflineSync] Manifest error', user?.id, { detail: error?.message });
@@ -322,10 +387,10 @@ async function syncInventoryItem(item, payload, userId) {
             const keys = Object.keys(payload);
             const values = Object.values(payload);
             const placeholders = keys.map(() => '?').join(', ');
-            await query.run(
-                `INSERT INTO inventory (${keys.join(', ')}, user_id) VALUES (${placeholders}, ?)`,
-                [...values, userId]
-            );
+            await query.run(`INSERT INTO inventory (${keys.join(', ')}, user_id) VALUES (${placeholders}, ?)`, [
+                ...values,
+                userId,
+            ]);
             break;
 
         case 'update':
@@ -333,10 +398,10 @@ async function syncInventoryItem(item, payload, userId) {
             const updateKeys = Object.keys(payload);
             if (updateKeys.length === 0) throw new Error('No valid fields to update');
             const updateValues = Object.values(payload);
-            const set = updateKeys.map(k => `${k} = ?`).join(', ');
+            const set = updateKeys.map((k) => `${k} = ?`).join(', ');
             await query.run(
                 `UPDATE inventory SET ${set}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
-                [...updateValues, item.entity_id, userId]
+                [...updateValues, item.entity_id, userId],
             );
             break;
 
@@ -358,10 +423,10 @@ async function syncListingItem(item, payload, userId) {
             const keys = Object.keys(payload);
             const values = Object.values(payload);
             const placeholders = keys.map(() => '?').join(', ');
-            await query.run(
-                `INSERT INTO listings (${keys.join(', ')}, user_id) VALUES (${placeholders}, ?)`,
-                [...values, userId]
-            );
+            await query.run(`INSERT INTO listings (${keys.join(', ')}, user_id) VALUES (${placeholders}, ?)`, [
+                ...values,
+                userId,
+            ]);
             break;
 
         case 'update':
@@ -369,11 +434,12 @@ async function syncListingItem(item, payload, userId) {
             const updateKeys = Object.keys(payload);
             if (updateKeys.length === 0) throw new Error('No valid fields to update');
             const updateValues = Object.values(payload);
-            const set = updateKeys.map(k => `${k} = ?`).join(', ');
-            await query.run(
-                `UPDATE listings SET ${set}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
-                [...updateValues, item.entity_id, userId]
-            );
+            const set = updateKeys.map((k) => `${k} = ?`).join(', ');
+            await query.run(`UPDATE listings SET ${set}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`, [
+                ...updateValues,
+                item.entity_id,
+                userId,
+            ]);
             break;
 
         case 'delete':
@@ -394,10 +460,10 @@ async function syncOrderItem(item, payload, userId) {
             const keys = Object.keys(payload);
             const values = Object.values(payload);
             const placeholders = keys.map(() => '?').join(', ');
-            await query.run(
-                `INSERT INTO orders (${keys.join(', ')}, user_id) VALUES (${placeholders}, ?)`,
-                [...values, userId]
-            );
+            await query.run(`INSERT INTO orders (${keys.join(', ')}, user_id) VALUES (${placeholders}, ?)`, [
+                ...values,
+                userId,
+            ]);
             break;
 
         case 'update':
@@ -405,11 +471,12 @@ async function syncOrderItem(item, payload, userId) {
             const updateKeys = Object.keys(payload);
             if (updateKeys.length === 0) throw new Error('No valid fields to update');
             const updateValues = Object.values(payload);
-            const set = updateKeys.map(k => `${k} = ?`).join(', ');
-            await query.run(
-                `UPDATE orders SET ${set}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
-                [...updateValues, item.entity_id, userId]
-            );
+            const set = updateKeys.map((k) => `${k} = ?`).join(', ');
+            await query.run(`UPDATE orders SET ${set}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`, [
+                ...updateValues,
+                item.entity_id,
+                userId,
+            ]);
             break;
 
         case 'delete':

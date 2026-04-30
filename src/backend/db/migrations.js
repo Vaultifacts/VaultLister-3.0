@@ -46,7 +46,7 @@ async function runMigrations() {
         const pgMigrationsDir = join(__dirname, 'migrations', 'pg');
         if (existsSync(pgMigrationsDir)) {
             const pgFiles = readdirSync(pgMigrationsDir)
-                .filter(f => f.endsWith('.sql'))
+                .filter((f) => f.endsWith('.sql'))
                 .sort();
 
             for (const migrationFile of pgFiles) {
@@ -66,11 +66,17 @@ async function runMigrations() {
                         logger.info(`  Applied migration: ${migrationFile}`);
                     } catch (migrationError) {
                         const errorMsg = migrationError.message || '';
-                        if (errorMsg.includes('already exists') ||
+                        if (
+                            errorMsg.includes('already exists') ||
                             errorMsg.includes('duplicate column') ||
-                            errorMsg.includes('unique constraint')) {
-                            await query.run('INSERT INTO migrations (name) VALUES (?) ON CONFLICT (name) DO NOTHING', [migrationFile]);
-                            logger.info(`  Migration ${migrationFile} skipped (schema mismatch: ${errorMsg.slice(0, 60)})`);
+                            errorMsg.includes('unique constraint')
+                        ) {
+                            await query.run('INSERT INTO migrations (name) VALUES (?) ON CONFLICT (name) DO NOTHING', [
+                                migrationFile,
+                            ]);
+                            logger.info(
+                                `  Migration ${migrationFile} skipped (schema mismatch: ${errorMsg.slice(0, 60)})`,
+                            );
                         } else {
                             throw migrationError;
                         }
@@ -119,22 +125,29 @@ export async function initializeDatabase() {
 // Cleanup expired data (tokens, sessions, etc.)
 export async function cleanupExpiredData() {
     const tables = [
-        { name: 'verification_tokens', condition: "expires_at < NOW() OR used_at IS NOT NULL" },
-        { name: 'oauth_states', condition: "expires_at < NOW()" },
-        { name: 'email_oauth_states', condition: "expires_at < NOW()" },
-        { name: 'sms_codes', condition: "expires_at < NOW()" },
-        { name: 'sessions', condition: "expires_at < NOW()" },
+        { name: 'verification_tokens', condition: 'expires_at < NOW() OR used_at IS NOT NULL' },
+        { name: 'oauth_states', condition: 'expires_at < NOW()' },
+        { name: 'email_oauth_states', condition: 'expires_at < NOW()' },
+        { name: 'sms_codes', condition: 'expires_at < NOW()' },
+        { name: 'sessions', condition: 'expires_at < NOW()' },
         { name: 'webhook_events', condition: "created_at < NOW() - INTERVAL '30 days'" },
         { name: 'automation_logs', condition: "created_at < NOW() - INTERVAL '30 days'" },
         { name: 'security_logs', condition: "created_at < NOW() - INTERVAL '90 days'" },
-        { name: 'email_queue', condition: "(status = 'sent' AND created_at < NOW() - INTERVAL '30 days') OR (status = 'failed' AND created_at < NOW() - INTERVAL '7 days')" },
+        {
+            name: 'email_queue',
+            condition:
+                "(status = 'sent' AND created_at < NOW() - INTERVAL '30 days') OR (status = 'failed' AND created_at < NOW() - INTERVAL '7 days')",
+        },
         { name: 'team_invitations', condition: "status = 'expired' OR expires_at < NOW() - INTERVAL '30 days'" },
         { name: 'request_logs', condition: "created_at < NOW() - INTERVAL '30 days'" },
         { name: 'audit_logs', condition: "created_at < NOW() - INTERVAL '1 year'" },
         { name: 'push_notification_log', condition: "created_at < NOW() - INTERVAL '30 days'" },
         // Status-page retention (audit #36): keep resolved incidents 1 year, uptime samples 90 days
-        { name: 'platform_incidents', condition: "resolved_at IS NOT NULL AND resolved_at < NOW() - INTERVAL '1 year'" },
-        { name: 'platform_uptime_samples', condition: "sampled_at < NOW() - INTERVAL '90 days'" }
+        {
+            name: 'platform_incidents',
+            condition: "resolved_at IS NOT NULL AND resolved_at < NOW() - INTERVAL '1 year'",
+        },
+        { name: 'platform_uptime_samples', condition: "sampled_at < NOW() - INTERVAL '90 days'" },
     ];
 
     const results = {};
@@ -145,7 +158,7 @@ export async function cleanupExpiredData() {
             // Check if table exists (PostgreSQL equivalent of information_schema.tables)
             const tableExists = await query.get(
                 "SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename = ?",
-                [table.name]
+                [table.name],
             );
 
             if (!tableExists) {

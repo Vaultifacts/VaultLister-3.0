@@ -152,7 +152,7 @@ if (existsSync(swPath)) {
 mkdirSync(DIST, { recursive: true });
 
 // ── Helper: concatenate files, minify, rename ─────────────────────────────────
-function buildBundle(files, outName, versionToInject) {
+function buildBundle(files, outName, versionToInject, isChunk = false) {
     const content = files
         .map(f => {
             let src = readFileSync(join(ROOT, f), 'utf-8');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
@@ -165,7 +165,10 @@ function buildBundle(files, outName, versionToInject) {
 
     const tmpName = outName.replace(/\.js$/, '.tmp.js');
     const tmpFile = join(DIST, tmpName);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
-    writeFileSync(tmpFile, content);
+    // Wrap chunks in IIFE to prevent top-level var declarations (from Bun's ESM shim
+    // and module-level consts like PLATFORM_DISPLAY_NAMES) from polluting global scope
+    // and overwriting same-letter variables in the core bundle.
+    writeFileSync(tmpFile, isChunk ? `(function(){\n${content}\n})();` : content);
 
     try {
         const rawBunPath = process.argv[0] || 'bun';
@@ -207,7 +210,7 @@ const manifest = { version: bundleVersion, chunks: {} };
 for (const chunk of chunkDefs) {
     const outName = `chunk-${chunk.name}.js`;
     console.log(`  Building ${outName}...`);
-    buildBundle(chunk.files, outName, bundleVersion);
+    buildBundle(chunk.files, outName, bundleVersion, true);
 
     // Compute per-chunk content hash for the manifest
     const chunkContent = chunk.files.map(f => readFileSync(join(ROOT, f), 'utf-8')).join('');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal

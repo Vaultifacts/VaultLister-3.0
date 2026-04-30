@@ -5,7 +5,6 @@ import { logger } from '../shared/logger.js';
 import { safeJsonParse } from '../shared/utils.js';
 import { parseIntSafe } from '../../shared/utils/validation.js';
 
-
 export async function tasksRouter(ctx) {
     const { method, path, body, query: queryParams, user } = ctx;
 
@@ -28,18 +27,39 @@ export async function tasksRouter(ctx) {
             }
 
             sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
-            params.push(parseIntSafe(limit, { min: 1, max: 200, fallback: 50 }), parseIntSafe(offset, { min: 0, fallback: 0 }));
+            params.push(
+                parseIntSafe(limit, { min: 1, max: 200, fallback: 50 }),
+                parseIntSafe(offset, { min: 0, fallback: 0 }),
+            );
 
             const tasks = await query.all(sql, params);
 
-            tasks.forEach(task => {
+            tasks.forEach((task) => {
                 task.payload = safeJsonParse(task.payload, {});
                 task.result = safeJsonParse(task.result, null);
             });
 
-            const total = Number((await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ?', [user.id]))?.count) || 0;
-            const pending = Number((await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'pending']))?.count) || 0;
-            const processing = Number((await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'processing']))?.count) || 0;
+            const total =
+                Number((await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ?', [user.id]))?.count) ||
+                0;
+            const pending =
+                Number(
+                    (
+                        await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [
+                            user.id,
+                            'pending',
+                        ])
+                    )?.count,
+                ) || 0;
+            const processing =
+                Number(
+                    (
+                        await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [
+                            user.id,
+                            'processing',
+                        ])
+                    )?.count,
+                ) || 0;
 
             return { status: 200, data: { tasks, total, pending, processing } };
         } catch (error) {
@@ -78,12 +98,23 @@ export async function tasksRouter(ctx) {
             }
 
             const validTypes = [
-                'share_listing', 'share_closet', 'follow_user', 'unfollow_user',
-                'accept_offer', 'decline_offer', 'counter_offer',
-                'create_listing', 'update_listing', 'delete_listing',
-                'sync_shop', 'import_listings', 'export_data',
-                'run_automation', 'bulk_action',
-                'generate_ai_content', 'analyze_image'
+                'share_listing',
+                'share_closet',
+                'follow_user',
+                'unfollow_user',
+                'accept_offer',
+                'decline_offer',
+                'counter_offer',
+                'create_listing',
+                'update_listing',
+                'delete_listing',
+                'sync_shop',
+                'import_listings',
+                'export_data',
+                'run_automation',
+                'bulk_action',
+                'generate_ai_content',
+                'analyze_image',
             ];
 
             if (!validTypes.includes(type)) {
@@ -92,13 +123,21 @@ export async function tasksRouter(ctx) {
 
             const id = uuidv4();
 
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO tasks (id, user_id, type, payload, priority, status, scheduled_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
-            `, [
-                id, user.id, type, JSON.stringify(payload), priority, 'pending',
-                scheduledAt || new Date().toISOString()
-            ]);
+            `,
+                [
+                    id,
+                    user.id,
+                    type,
+                    JSON.stringify(payload),
+                    priority,
+                    'pending',
+                    scheduledAt || new Date().toISOString(),
+                ],
+            );
 
             const task = await query.get('SELECT * FROM tasks WHERE id = ?', [id]);
             task.payload = safeJsonParse(task.payload, {});
@@ -149,10 +188,13 @@ export async function tasksRouter(ctx) {
                 return { status: 400, data: { error: 'Can only retry failed tasks' } };
             }
 
-            await query.run(`
+            await query.run(
+                `
                 UPDATE tasks SET status = ?, attempts = 0, error_message = NULL, scheduled_at = CURRENT_TIMESTAMP
                 WHERE id = ? AND user_id = ?
-            `, ['pending', id, user.id]);
+            `,
+                ['pending', id, user.id],
+            );
 
             return { status: 200, data: { message: 'Task queued for retry' } };
         } catch (error) {
@@ -195,12 +237,23 @@ export async function tasksRouter(ctx) {
             }
 
             const validTypes = [
-                'share_listing', 'share_closet', 'follow_user', 'unfollow_user',
-                'accept_offer', 'decline_offer', 'counter_offer',
-                'create_listing', 'update_listing', 'delete_listing',
-                'sync_shop', 'import_listings', 'export_data',
-                'run_automation', 'bulk_action',
-                'generate_ai_content', 'analyze_image'
+                'share_listing',
+                'share_closet',
+                'follow_user',
+                'unfollow_user',
+                'accept_offer',
+                'decline_offer',
+                'counter_offer',
+                'create_listing',
+                'update_listing',
+                'delete_listing',
+                'sync_shop',
+                'import_listings',
+                'export_data',
+                'run_automation',
+                'bulk_action',
+                'generate_ai_content',
+                'analyze_image',
             ];
 
             const created = [];
@@ -213,14 +266,20 @@ export async function tasksRouter(ctx) {
                         continue;
                     }
                     const id = uuidv4();
-                    await query.run(`
+                    await query.run(
+                        `
                         INSERT INTO tasks (id, user_id, type, payload, priority, status)
                         VALUES (?, ?, ?, ?, ?, ?)
-                    `, [
-                        id, user.id, taskData.type,
-                        JSON.stringify(taskData.payload || {}),
-                        taskData.priority || 5, 'pending'
-                    ]);
+                    `,
+                        [
+                            id,
+                            user.id,
+                            taskData.type,
+                            JSON.stringify(taskData.payload || {}),
+                            taskData.priority || 5,
+                            'pending',
+                        ],
+                    );
                     created.push(id);
                 } catch (error) {
                     errors.push({ task: taskData, error: error.message });
@@ -265,24 +324,62 @@ export async function tasksRouter(ctx) {
     if (method === 'GET' && path === '/queue') {
         try {
             const stats = {
-                pending: Number((await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'pending']))?.count) || 0,
-                processing: Number((await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'processing']))?.count) || 0,
-                completed: Number((await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'completed']))?.count) || 0,
-                failed: Number((await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'failed']))?.count) || 0,
-                byType: await query.all(`
+                pending:
+                    Number(
+                        (
+                            await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [
+                                user.id,
+                                'pending',
+                            ])
+                        )?.count,
+                    ) || 0,
+                processing:
+                    Number(
+                        (
+                            await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [
+                                user.id,
+                                'processing',
+                            ])
+                        )?.count,
+                    ) || 0,
+                completed:
+                    Number(
+                        (
+                            await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [
+                                user.id,
+                                'completed',
+                            ])
+                        )?.count,
+                    ) || 0,
+                failed:
+                    Number(
+                        (
+                            await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [
+                                user.id,
+                                'failed',
+                            ])
+                        )?.count,
+                    ) || 0,
+                byType: await query.all(
+                    `
                     SELECT type, status, COUNT(*) as count
                     FROM tasks WHERE user_id = ?
                     GROUP BY type, status
-                `, [user.id]),
-                nextUp: await query.all(`
+                `,
+                    [user.id],
+                ),
+                nextUp: await query.all(
+                    `
                     SELECT * FROM tasks
                     WHERE user_id = ? AND status = 'pending'
                     ORDER BY priority ASC, scheduled_at ASC
                     LIMIT 5
-                `, [user.id])
+                `,
+                    [user.id],
+                ),
             };
 
-            stats.nextUp.forEach(task => {
+            stats.nextUp.forEach((task) => {
                 task.payload = safeJsonParse(task.payload || '{}', {});
             });
 

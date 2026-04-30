@@ -16,7 +16,10 @@
     font-weight: 600;
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
-    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    transition:
+        background 0.2s,
+        transform 0.15s,
+        box-shadow 0.2s;
 }
 
 #vl-import-fab:hover {

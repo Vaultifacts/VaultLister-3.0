@@ -59,7 +59,9 @@ export async function healthRouter(ctx) {
             if (redisClient) {
                 const pong = await Promise.race([
                     redisClient.ping(),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), TIMEOUTS.DB_HEALTH_CHECK_MS))
+                    new Promise((_, reject) =>
+                        setTimeout(() => reject(new Error('timeout')), TIMEOUTS.DB_HEALTH_CHECK_MS),
+                    ),
                 ]);
                 checks.redis = pong === 'PONG' ? 'ok' : 'degraded';
             } else {
@@ -75,7 +77,7 @@ export async function healthRouter(ctx) {
                 status: ready ? 'ok' : 'degraded',
                 checks,
                 timestamp: new Date().toISOString(),
-            }
+            },
         };
     }
 
@@ -97,11 +99,11 @@ export async function healthRouter(ctx) {
                 memory: {
                     rss: Math.round(mem.rss / (1024 * 1024)),
                     heapUsed: Math.round(mem.heapUsed / (1024 * 1024)),
-                    heapTotal: Math.round(mem.heapTotal / (1024 * 1024))
+                    heapTotal: Math.round(mem.heapTotal / (1024 * 1024)),
                 },
                 db: { connected: dbConnected },
-                timestamp: new Date().toISOString()
-            }
+                timestamp: new Date().toISOString(),
+            },
         };
     }
 
@@ -121,8 +123,8 @@ export async function healthRouter(ctx) {
             timestamp: new Date().toISOString(),
             version: _APP_VERSION,
             uptime: Math.floor(process.uptime()),
-            database: { status: dbStatus }
-        }
+            database: { status: dbStatus },
+        },
     };
 }
 
@@ -133,7 +135,7 @@ export async function healthRouter(ctx) {
  */
 export async function healthPlatformsRouter() {
     const now = Date.now();
-    if (_platformHealthCache && (now - _platformHealthCache.t) < 30_000) {
+    if (_platformHealthCache && now - _platformHealthCache.t < 30_000) {
         return { status: 200, data: _platformHealthCache.body };
     }
 
@@ -158,8 +160,8 @@ export async function healthPlatformsRouter() {
     for (const p of UPTIME_PROBE_PLATFORMS) {
         out[p.id] = {
             market: { state: 'operational', uptime90d: 100, buckets: emptyBuckets() },
-            vl:     { state: 'operational', uptime90d: 100, buckets: emptyBuckets() },
-            issues: []
+            vl: { state: 'operational', uptime90d: 100, buckets: emptyBuckets() },
+            issues: [],
         };
     }
 
@@ -218,17 +220,23 @@ export async function healthPlatformsRouter() {
         `);
 
         var pastIncidentRows;
-        [dailyRows, recentRows, issueRows, incidentRows, pastIncidentRows] = await Promise.all([dailyP, recentP, issueP, incidentP, pastP]);
+        [dailyRows, recentRows, issueRows, incidentRows, pastIncidentRows] = await Promise.all([
+            dailyP,
+            recentP,
+            issueP,
+            incidentP,
+            pastP,
+        ]);
         out._pastIncidents = pastIncidentRows;
     } catch (_) {
         // Table may not exist yet on first deploy before migration — fall through to defaults
     }
 
-    const OUTAGE_DOWN_RATIO    = 0.5;
-    const DEGRADED_DOWN_RATIO  = 0.1;
-    const RECENT_OUTAGE_MIN    = 3;
-    const RECENT_DEGRADED_MIN  = 1;
-    const MAX_ISSUES_PER_KIND  = 5;
+    const OUTAGE_DOWN_RATIO = 0.5;
+    const DEGRADED_DOWN_RATIO = 0.1;
+    const RECENT_OUTAGE_MIN = 3;
+    const RECENT_DEGRADED_MIN = 1;
+    const MAX_ISSUES_PER_KIND = 5;
 
     const todayUtcMs = today.getTime();
     for (const row of dailyRows) {
@@ -243,7 +251,7 @@ export async function healthPlatformsRouter() {
         const downCount = Number(row.down_count);
         const downRatio = downCount / Math.max(1, total);
         const bucket = kindObj.buckets[idx];
-        bucket.state = downRatio >= OUTAGE_DOWN_RATIO ? 'outage' : (downRatio > DEGRADED_DOWN_RATIO ? 'degraded' : 'up');
+        bucket.state = downRatio >= OUTAGE_DOWN_RATIO ? 'outage' : downRatio > DEGRADED_DOWN_RATIO ? 'degraded' : 'up';
         bucket.total = total;
         bucket.downCount = downCount;
     }
@@ -251,7 +259,7 @@ export async function healthPlatformsRouter() {
     for (const id of platformIds) {
         for (const kind of ['market', 'vl']) {
             const buckets = out[id][kind].buckets;
-            const upCount = buckets.filter(b => b.state === 'up').length;
+            const upCount = buckets.filter((b) => b.state === 'up').length;
             out[id][kind].uptime90d = Math.round((upCount / 90) * 10000) / 100;
         }
     }
@@ -268,14 +276,18 @@ export async function healthPlatformsRouter() {
             if (!arr || arr.length === 0) continue;
             out[id][kind].state = deriveRecentHealthState(arr, {
                 outageMin: RECENT_OUTAGE_MIN,
-                degradedMin: RECENT_DEGRADED_MIN
+                degradedMin: RECENT_DEGRADED_MIN,
             });
         }
     }
 
     const ISSUE_LABEL = {
-        ebay: 'eBay', shopify: 'Shopify', poshmark: 'Poshmark',
-        depop: 'Depop', facebook: 'Facebook Marketplace', whatnot: 'Whatnot'
+        ebay: 'eBay',
+        shopify: 'Shopify',
+        poshmark: 'Poshmark',
+        depop: 'Depop',
+        facebook: 'Facebook Marketplace',
+        whatnot: 'Whatnot',
     };
     const coveredByIncident = new Set();
     for (const inc of incidentRows) {
@@ -289,7 +301,7 @@ export async function healthPlatformsRouter() {
             startedAt: inc.started_at,
             resolvedAt: inc.resolved_at,
             postmortemUrl: inc.postmortem_url,
-            source: 'manual'
+            source: 'manual',
         });
     }
     for (const r of issueRows) {
@@ -297,9 +309,8 @@ export async function healthPlatformsRouter() {
         if (coveredByIncident.has(r.platform_id + '|' + r.kind)) continue;
         if (!shouldShowAutoProbeIssue(out[r.platform_id][r.kind])) continue;
         const label = ISSUE_LABEL[r.platform_id] || r.platform_id;
-        const title = r.kind === 'market'
-            ? `${label} marketplace reachability degraded`
-            : `VaultLister ${label} sync delayed`;
+        const title =
+            r.kind === 'market' ? `${label} marketplace reachability degraded` : `VaultLister ${label} sync delayed`;
         out[r.platform_id].issues.push({
             title,
             status: 'investigating',
@@ -307,7 +318,7 @@ export async function healthPlatformsRouter() {
             startedAt: r.last_seen,
             resolvedAt: null,
             postmortemUrl: null,
-            source: 'auto'
+            source: 'auto',
         });
     }
 
@@ -317,7 +328,7 @@ export async function healthPlatformsRouter() {
         }
     }
 
-    const pastIncidents = (out._pastIncidents || []).map(function(r) {
+    const pastIncidents = (out._pastIncidents || []).map(function (r) {
         return {
             platformId: r.platform_id,
             kind: r.kind,
@@ -325,7 +336,7 @@ export async function healthPlatformsRouter() {
             severity: r.severity,
             startedAt: r.started_at,
             resolvedAt: r.resolved_at,
-            postmortemUrl: r.postmortem_url
+            postmortemUrl: r.postmortem_url,
         };
     });
     delete out._pastIncidents;
@@ -333,7 +344,7 @@ export async function healthPlatformsRouter() {
     const body = {
         platforms: out,
         pastIncidents,
-        generatedAt: new Date().toISOString()
+        generatedAt: new Date().toISOString(),
     };
     _platformHealthCache = { t: now, body };
     return { status: 200, data: body };
@@ -347,8 +358,8 @@ export async function geoRouter({ headers }) {
         status: 200,
         cacheControl: 'private, max-age=3600',
         data: {
-            country_code: getCountryCodeFromHeaders(headers)
-        }
+            country_code: getCountryCodeFromHeaders(headers),
+        },
     };
 }
 
@@ -363,8 +374,8 @@ export async function statusRouter() {
             status: 200,
             data: {
                 status: 'ok',
-                timestamp: new Date().toISOString()
-            }
+                timestamp: new Date().toISOString(),
+            },
         };
     }
 
@@ -378,8 +389,8 @@ export async function statusRouter() {
             environment: process.env.NODE_ENV || 'development',
             database: monMetrics.database,
             statementCache: getStatementCacheStats(),
-            websocket: websocketService.getStats()
-        }
+            websocket: websocketService.getStats(),
+        },
     };
 }
 
@@ -390,12 +401,12 @@ export async function statusRouter() {
 export async function workersHealthRouter() {
     const now = Date.now();
     const workerDefs = [
-        { key: 'taskWorker',            intervalMs: 10 * 1000,      staleThresholdMs: 30_000 },
-        { key: 'gdprWorker',            intervalMs: 60 * 60 * 1000, staleThresholdMs: 3 * 60 * 60 * 1000 },
-        { key: 'priceCheckWorker',      intervalMs: 30 * 60 * 1000, staleThresholdMs: 90 * 60 * 1000 },
-        { key: 'emailPollingWorker',    intervalMs: 5 * 60 * 1000,  staleThresholdMs: 15 * 60 * 1000 },
-        { key: 'tokenRefreshScheduler', intervalMs: 5 * 60 * 1000,  staleThresholdMs: 15 * 60 * 1000 },
-        { key: 'uptimeProbeWorker',     intervalMs: 60 * 60 * 1000, staleThresholdMs: 3 * 60 * 60 * 1000 },
+        { key: 'taskWorker', intervalMs: 10 * 1000, staleThresholdMs: 30_000 },
+        { key: 'gdprWorker', intervalMs: 60 * 60 * 1000, staleThresholdMs: 3 * 60 * 60 * 1000 },
+        { key: 'priceCheckWorker', intervalMs: 30 * 60 * 1000, staleThresholdMs: 90 * 60 * 1000 },
+        { key: 'emailPollingWorker', intervalMs: 5 * 60 * 1000, staleThresholdMs: 15 * 60 * 1000 },
+        { key: 'tokenRefreshScheduler', intervalMs: 5 * 60 * 1000, staleThresholdMs: 15 * 60 * 1000 },
+        { key: 'uptimeProbeWorker', intervalMs: 60 * 60 * 1000, staleThresholdMs: 3 * 60 * 60 * 1000 },
     ];
 
     const workers = {};
@@ -438,6 +449,6 @@ export async function workersHealthRouter() {
             overall: overallOk ? 'ok' : 'degraded',
             workers,
             timestamp: new Date().toISOString(),
-        }
+        },
     };
 }

@@ -4,7 +4,7 @@ const register = new Registry();
 
 register.setDefaultLabels({
     app: 'vaultlister',
-    env: process.env.NODE_ENV || 'development'
+    env: process.env.NODE_ENV || 'development',
 });
 
 collectDefaultMetrics({ register });
@@ -13,7 +13,7 @@ export const httpRequestsTotal = new Counter({
     name: 'http_requests_total',
     help: 'Total HTTP requests',
     labelNames: ['method', 'route', 'status'],
-    registers: [register]
+    registers: [register],
 });
 
 export const httpRequestDuration = new Histogram({
@@ -21,34 +21,34 @@ export const httpRequestDuration = new Histogram({
     help: 'HTTP request duration in seconds',
     labelNames: ['method', 'route', 'status'],
     buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5],
-    registers: [register]
+    registers: [register],
 });
 
 export const logEntriesTotal = new Counter({
     name: 'log_entries_total',
     help: 'Total log entries by level',
     labelNames: ['level'],
-    registers: [register]
+    registers: [register],
 });
 
 export const activeWebsockets = new Gauge({
     name: 'websocket_connections_active',
     help: 'Active WebSocket connections',
-    registers: [register]
+    registers: [register],
 });
 
 export const dbQueryDuration = new Histogram({
     name: 'db_query_duration_seconds',
     help: 'Database query duration in seconds',
     buckets: [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1],
-    registers: [register]
+    registers: [register],
 });
 
 export const backgroundJobsTotal = new Counter({
     name: 'background_jobs_total',
     help: 'Total background jobs processed',
     labelNames: ['type', 'status'],
-    registers: [register]
+    registers: [register],
 });
 
 /**

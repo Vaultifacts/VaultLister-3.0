@@ -1,929 +1,1426 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="VaultLister Reseller Glossary — definitions for common reselling, marketplace, and inventory management terms.">
-    <meta name="theme-color" content="#f59e0b">
-    <!-- Open Graph -->
-    <meta property="og:title" content="Reseller Glossary — VaultLister">
-    <meta property="og:description" content="Plain-English definitions for cross-listing, STR, COGS, comps, and every other term resellers use daily.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://vaultlister.com/glossary">
-    <meta property="og:image" content="https://vaultlister.com/assets/logo/lockups/vertical-1024.png">
-    <title>Reseller Glossary — Cross-Listing and Selling Defined</title>
-    <!-- Google Analytics (GA4) with Consent Mode -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('consent', 'default', {
-        analytics_storage: localStorage.getItem('cookie_consent') === 'accepted' ? 'granted' : 'denied'
-      });
-      gtag('js', new Date());
-      gtag('config', 'G-LXETN4PYRM');
-    </script>
-    <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png">
-    <style>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="description"
+            content="VaultLister Reseller Glossary — definitions for common reselling, marketplace, and inventory management terms."
+        />
+        <meta name="theme-color" content="#f59e0b" />
+        <!-- Open Graph -->
+        <meta property="og:title" content="Reseller Glossary — VaultLister" />
+        <meta
+            property="og:description"
+            content="Plain-English definitions for cross-listing, STR, COGS, comps, and every other term resellers use daily."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://vaultlister.com/glossary" />
+        <meta property="og:image" content="https://vaultlister.com/assets/logo/lockups/vertical-1024.png" />
+        <title>Reseller Glossary — Cross-Listing and Selling Defined</title>
+        <!-- Google Analytics (GA4) with Consent Mode -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+                dataLayer.push(arguments);
+            }
+            gtag('consent', 'default', {
+                analytics_storage: localStorage.getItem('cookie_consent') === 'accepted' ? 'granted' : 'denied',
+            });
+            gtag('js', new Date());
+            gtag('config', 'G-LXETN4PYRM');
+        </script>
+        <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png" />
+        <style>
+            /* Page layout */
+            .page-wrap {
+                max-width: 760px;
+                margin: 0 auto;
+                padding: 3.5rem 2rem 5rem;
+            }
 
-/* Page layout */
-        .page-wrap {
-            max-width: 760px;
-            margin: 0 auto;
-            padding: 3.5rem 2rem 5rem;
-        }
+            .page-header {
+                margin-bottom: 3rem;
+                padding-bottom: 2rem;
+                border-bottom: 1px solid var(--gray-200);
+            }
 
-        .page-header {
-            margin-bottom: 3rem;
-            padding-bottom: 2rem;
-            border-bottom: 1px solid var(--gray-200);
-        }
+            .page-label {
+                font-size: 0.8125rem;
+                font-weight: 700;
+                color: var(--amber-600);
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+                margin-bottom: 0.75rem;
+            }
 
-        .page-label {
-            font-size: 0.8125rem;
-            font-weight: 700;
-            color: var(--amber-600);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 0.75rem;
-        }
+            .page-header h1 {
+                font-size: 2rem;
+                font-weight: 800;
+                letter-spacing: -0.03em;
+                color: var(--gray-900);
+                margin-bottom: 0.75rem;
+            }
 
-        .page-header h1 {
-            font-size: 2rem;
-            font-weight: 800;
-            letter-spacing: -0.03em;
-            color: var(--gray-900);
-            margin-bottom: 0.75rem;
-        }
+            .page-meta {
+                font-size: 0.875rem;
+                color: var(--gray-400);
+            }
 
-        .page-meta {
-            font-size: 0.875rem;
-            color: var(--gray-400);
-        }
+            /* Alpha index */
+            .alpha-nav {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.375rem;
+                margin-bottom: 2.5rem;
+            }
 
-        /* Alpha index */
-        .alpha-nav {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.375rem;
-            margin-bottom: 2.5rem;
-        }
+            .alpha-nav a {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 32px;
+                height: 32px;
+                padding: 0 0.5rem;
+                border-radius: 6px;
+                font-size: 0.8125rem;
+                font-weight: 600;
+                color: var(--amber-600);
+                background: var(--gray-50);
+                text-decoration: none;
+                border: 1px solid var(--gray-200);
+                transition:
+                    background 0.15s,
+                    color 0.15s;
+            }
 
-        .alpha-nav a {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 32px;
-            height: 32px;
-            padding: 0 0.5rem;
-            border-radius: 6px;
-            font-size: 0.8125rem;
-            font-weight: 600;
-            color: var(--amber-600);
-            background: var(--gray-50);
-            text-decoration: none;
-            border: 1px solid var(--gray-200);
-            transition: background 0.15s, color 0.15s;
-        }
+            .alpha-nav a:hover,
+            .alpha-nav a:focus {
+                background: var(--amber-500);
+                color: var(--white);
+                border-color: var(--amber-500);
+                outline: none;
+            }
 
-        .alpha-nav a:hover,
-        .alpha-nav a:focus {
-            background: var(--amber-500);
-            color: var(--white);
-            border-color: var(--amber-500);
-            outline: none;
-        }
+            .alpha-nav a:focus-visible {
+                outline: 2px solid var(--amber-500);
+                outline-offset: 2px;
+            }
 
-        .alpha-nav a:focus-visible {
-            outline: 2px solid var(--amber-500);
-            outline-offset: 2px;
-        }
+            /* Glossary section (one per letter group) */
+            .glossary-section {
+                margin-bottom: 2.5rem;
+            }
 
-        /* Glossary section (one per letter group) */
-        .glossary-section {
-            margin-bottom: 2.5rem;
-        }
+            .glossary-letter {
+                font-size: 0.75rem;
+                font-weight: 700;
+                color: var(--amber-600);
+                text-transform: uppercase;
+                letter-spacing: 0.12em;
+                margin-bottom: 1rem;
+                padding-bottom: 0.375rem;
+                border-bottom: 2px solid var(--amber-500);
+                display: inline-block;
+            }
 
-        .glossary-letter {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--amber-600);
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-            margin-bottom: 1rem;
-            padding-bottom: 0.375rem;
-            border-bottom: 2px solid var(--amber-500);
-            display: inline-block;
-        }
+            /* Definition list */
+            .glossary-list {
+                display: grid;
+                gap: 0;
+            }
 
-        /* Definition list */
-        .glossary-list {
-            display: grid;
-            gap: 0;
-        }
+            .glossary-item {
+                padding: 1.125rem 0;
+                border-bottom: 1px solid var(--gray-100);
+            }
 
-        .glossary-item {
-            padding: 1.125rem 0;
-            border-bottom: 1px solid var(--gray-100);
-        }
+            .glossary-item:last-child {
+                border-bottom: none;
+            }
 
-        .glossary-item:last-child {
-            border-bottom: none;
-        }
+            .term {
+                font-size: 1rem;
+                font-weight: 700;
+                color: var(--gray-900);
+                letter-spacing: -0.01em;
+                margin-bottom: 0.25rem;
+            }
 
-        .term {
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--gray-900);
-            letter-spacing: -0.01em;
-            margin-bottom: 0.25rem;
-        }
+            .term abbr {
+                font-style: normal;
+                text-decoration: none;
+                border: none;
+            }
 
-        .term abbr {
-            font-style: normal;
-            text-decoration: none;
-            border: none;
-        }
+            .term-badge {
+                display: inline-block;
+                font-size: 0.6875rem;
+                font-weight: 600;
+                padding: 0.125rem 0.5rem;
+                border-radius: 99px;
+                margin-left: 0.5rem;
+                vertical-align: middle;
+                letter-spacing: 0.04em;
+                text-transform: uppercase;
+            }
 
-        .term-badge {
-            display: inline-block;
-            font-size: 0.6875rem;
-            font-weight: 600;
-            padding: 0.125rem 0.5rem;
-            border-radius: 99px;
-            margin-left: 0.5rem;
-            vertical-align: middle;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-        }
+            .badge-platform {
+                background: #ede9fe;
+                color: var(--amber-600);
+            }
 
-        .badge-platform {
-            background: #ede9fe;
-            color: var(--amber-600);
-        }
+            .badge-metric {
+                background: #dcfce7;
+                color: #15803d;
+            }
 
-        .badge-metric {
-            background: #dcfce7;
-            color: #15803d;
-        }
+            .badge-acronym {
+                background: var(--gray-100);
+                color: var(--gray-600);
+            }
 
-        .badge-acronym {
-            background: var(--gray-100);
-            color: var(--gray-600);
-        }
+            .definition {
+                font-size: 0.9375rem;
+                color: var(--gray-600);
+                line-height: 1.65;
+            }
 
-        .definition {
-            font-size: 0.9375rem;
-            color: var(--gray-600);
-            line-height: 1.65;
-        }
+            .definition strong {
+                color: var(--gray-700);
+                font-weight: 600;
+            }
 
-        .definition strong {
-            color: var(--gray-700);
-            font-weight: 600;
-        }
+            /* Footer */
+            .footer a {
+                color: var(--gray-400);
+                text-decoration: none;
+            }
 
-        /* Footer */
-.footer a {
-            color: var(--gray-400);
-            text-decoration: none;
-        }
+            @media (max-width: 600px) {
+                .page-wrap {
+                    padding: 2.5rem 1rem 4rem;
+                }
+                .page-header h1 {
+                    font-size: 1.625rem;
+                }
+            }
 
-@media (max-width: 600px) {
-.page-wrap { padding: 2.5rem 1rem 4rem; }
-            .page-header h1 { font-size: 1.625rem; }
-        }
-    
-        /* Lang selector */
-        .lang-selector { position: relative; }
-        .lang-btn { background: transparent; color: #fff; display: flex; align-items: center; gap: 0.25rem; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); border-radius: 0.5rem; padding: 0.4rem 0.75rem; font-size: 0.875rem; font-weight: 500; transition: border-color 0.15s, background 0.15s; }
-        .lang-btn:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.08); }
-        .lang-dropdown { display: none; position: absolute; top: calc(100% + 6px); right: 0; background: #27272a; border: 1px solid #3f3f46; border-radius: 0.5rem; box-shadow: 0 8px 24px rgba(0,0,0,0.35); z-index: 100; min-width: 160px; padding: 0.25rem; }
-        .lang-dropdown.open { display: flex; flex-direction: column; }
-        .lang-option { text-align: left; padding: 0.5rem 1rem; background: transparent; border: none; color: #fff; cursor: pointer; font-size: 0.875rem; border-radius: 0.375rem; white-space: nowrap; }
-        .lang-option:hover { background: #3f3f46; }
-        .lang-option.active { color: #f59e0b; }
-    </style>
-    <link rel="preload" href="/styles/public-base.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="/styles/public-base.css"></noscript>
-</head>
-<body>
-<a href="#main-content" class="skip-link">Skip to main content</a>
+            /* Lang selector */
+            .lang-selector {
+                position: relative;
+            }
+            .lang-btn {
+                background: transparent;
+                color: #fff;
+                display: flex;
+                align-items: center;
+                gap: 0.25rem;
+                cursor: pointer;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 0.5rem;
+                padding: 0.4rem 0.75rem;
+                font-size: 0.875rem;
+                font-weight: 500;
+                transition:
+                    border-color 0.15s,
+                    background 0.15s;
+            }
+            .lang-btn:hover {
+                border-color: rgba(255, 255, 255, 0.4);
+                background: rgba(255, 255, 255, 0.08);
+            }
+            .lang-dropdown {
+                display: none;
+                position: absolute;
+                top: calc(100% + 6px);
+                right: 0;
+                background: #27272a;
+                border: 1px solid #3f3f46;
+                border-radius: 0.5rem;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+                z-index: 100;
+                min-width: 160px;
+                padding: 0.25rem;
+            }
+            .lang-dropdown.open {
+                display: flex;
+                flex-direction: column;
+            }
+            .lang-option {
+                text-align: left;
+                padding: 0.5rem 1rem;
+                background: transparent;
+                border: none;
+                color: #fff;
+                cursor: pointer;
+                font-size: 0.875rem;
+                border-radius: 0.375rem;
+                white-space: nowrap;
+            }
+            .lang-option:hover {
+                background: #3f3f46;
+            }
+            .lang-option.active {
+                color: #f59e0b;
+            }
+        </style>
+        <link
+            rel="preload"
+            href="/styles/public-base.css"
+            as="style"
+            onload="
+                this.onload = null;
+                this.rel = 'stylesheet';
+            "
+        />
+        <noscript><link rel="stylesheet" href="/styles/public-base.css" /></noscript>
+    </head>
+    <body>
+        <a href="#main-content" class="skip-link">Skip to main content</a>
 
-
-<!-- Navigation -->
-<nav class="nav" aria-label="Main navigation">
-    <a class="nav-logo" href="/">
-        <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" width="348" height="87" style="display:block;">
-    </a>
-    <div class="nav-links">
-        <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="features-menu" aria-haspopup="menu" aria-expanded="false">Features &#9662;</button>
-            <div id="features-menu" class="nav-dropdown-menu" role="menu" aria-hidden="true">
-                <a href="#cross-listing" role="menuitem">Cross-Listing</a>
-                <a href="#inventory-management" role="menuitem">Inventory Management</a>
-                <a href="#sale-purchase-sync" role="menuitem">Sale &amp; Purchase Sync</a>
-                <a href="#analytics" role="menuitem">Analytics</a>
-                <a href="#offer-management" role="menuitem">Offer Management</a>
-                <a href="#marketplace-sharing" role="menuitem">Marketplace Sharing</a>
-                <a href="#bulk-actions" role="menuitem">Bulk Actions</a>
-                <a href="#photo-tools" role="menuitem">Photo Tools</a>
-                <a href="#ai-listing-generation" role="menuitem">AI Listing Generation</a>
-                <a href="#financial-management" role="menuitem">Financial Management</a>
-                <a href="#productivity-tools" role="menuitem">Productivity Tools</a>
+        <!-- Navigation -->
+        <nav class="nav" aria-label="Main navigation">
+            <a class="nav-logo" href="/">
+                <img
+                    src="/assets/logo/lockups/horizontal-2048.svg"
+                    alt="VaultLister"
+                    width="348"
+                    height="87"
+                    style="display: block"
+                />
+            </a>
+            <div class="nav-links">
+                <div class="nav-dropdown">
+                    <button
+                        type="button"
+                        class="nav-link nav-dropdown-btn"
+                        data-dropdown="features-menu"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                    >
+                        Features &#9662;
+                    </button>
+                    <div id="features-menu" class="nav-dropdown-menu" role="menu" inert>
+                        <a href="#cross-listing" role="menuitem">Cross-Listing</a>
+                        <a href="#inventory-management" role="menuitem">Inventory Management</a>
+                        <a href="#sale-purchase-sync" role="menuitem">Sale &amp; Purchase Sync</a>
+                        <a href="#analytics" role="menuitem">Analytics</a>
+                        <a href="#offer-management" role="menuitem">Offer Management</a>
+                        <a href="#marketplace-sharing" role="menuitem">Marketplace Sharing</a>
+                        <a href="#bulk-actions" role="menuitem">Bulk Actions</a>
+                        <a href="#photo-tools" role="menuitem">Photo Tools</a>
+                        <a href="#ai-listing-generation" role="menuitem">AI Listing Generation</a>
+                        <a href="#financial-management" role="menuitem">Financial Management</a>
+                        <a href="#productivity-tools" role="menuitem">Productivity Tools</a>
+                    </div>
+                </div>
+                <a class="nav-link" href="/platforms.html">Marketplaces</a>
+                <a class="nav-link" href="/pricing.html">Pricing</a>
+                <div class="nav-dropdown">
+                    <button
+                        type="button"
+                        class="nav-link nav-dropdown-btn"
+                        data-dropdown="resources-menu"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                    >
+                        Resources &#9662;
+                    </button>
+                    <div id="resources-menu" class="nav-dropdown-menu" role="menu" inert>
+                        <a href="/learning.html" role="menuitem">Learning</a>
+                        <a href="/documentation.html" role="menuitem">Documentation</a>
+                        <a href="/blog/index.html" role="menuitem">Blog</a>
+                        <a href="/affiliate.html" role="menuitem">Affiliate Program</a>
+                    </div>
+                </div>
+                <div class="nav-dropdown">
+                    <button
+                        type="button"
+                        class="nav-link nav-dropdown-btn"
+                        data-dropdown="feedback-menu"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                    >
+                        Feedback &amp; Support &#9662;
+                    </button>
+                    <div id="feedback-menu" class="nav-dropdown-menu" role="menu" inert>
+                        <a href="/help.html" role="menuitem">Help Center</a>
+                        <a href="/faq.html" role="menuitem">FAQs</a>
+                        <a href="/request-feature.html" role="menuitem">Request a Feature</a>
+                        <a href="/contact.html#contact-form" role="menuitem">Report a Bug</a>
+                        <a href="/contact.html" role="menuitem">Contact Us</a>
+                    </div>
+                </div>
+                <div class="nav-dropdown">
+                    <button
+                        type="button"
+                        class="nav-link nav-dropdown-btn"
+                        data-dropdown="product-updates-menu"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                    >
+                        Status &amp; Updates &#9662;
+                    </button>
+                    <div id="product-updates-menu" class="nav-dropdown-menu" role="menu" inert>
+                        <a href="/changelog.html" role="menuitem">Changelog</a>
+                        <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
+                        <a href="/status.html" role="menuitem">Status Page</a>
+                    </div>
+                </div>
             </div>
-        </div>
-        <a class="nav-link" href="/platforms.html">Marketplaces</a>
-        <a class="nav-link" href="/pricing.html">Pricing</a>
-        <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="resources-menu" aria-haspopup="menu" aria-expanded="false">Resources &#9662;</button>
-            <div id="resources-menu" class="nav-dropdown-menu" role="menu" aria-hidden="true">
-                <a href="/learning.html" role="menuitem">Learning</a>
-                <a href="/documentation.html" role="menuitem">Documentation</a>
-                <a href="/blog/index.html" role="menuitem">Blog</a>
-                <a href="/affiliate.html" role="menuitem">Affiliate Program</a>
-            </div>
-        </div>
-        <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="feedback-menu" aria-haspopup="menu" aria-expanded="false">Feedback &amp; Support &#9662;</button>
-            <div id="feedback-menu" class="nav-dropdown-menu" role="menu" aria-hidden="true">
-                <a href="/help.html" role="menuitem">Help Center</a>
-                <a href="/faq.html" role="menuitem">FAQs</a>
-                <a href="/request-feature.html" role="menuitem">Request a Feature</a>
-                <a href="/contact.html#contact-form" role="menuitem">Report a Bug</a>
-                <a href="/contact.html" role="menuitem">Contact Us</a>
-            </div>
-        </div>
-        <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="product-updates-menu" aria-haspopup="menu" aria-expanded="false">Status &amp; Updates &#9662;</button>
-            <div id="product-updates-menu" class="nav-dropdown-menu" role="menu" aria-hidden="true">
-                <a href="/changelog.html" role="menuitem">Changelog</a>
-                <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
-                <a href="/status.html" role="menuitem">Status Page</a>
-            </div>
-        </div>
-    </div>
-    <button type="button" class="nav-hamburger" aria-label="Open menu" aria-expanded="false">
-        <span></span>
-        <span></span>
-        <span></span>
-    </button>
-    <div class="nav-actions">
-        <div class="currency-selector">
-            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false" aria-haspopup="listbox"><span id="current-currency-code">CAD</span>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            <button type="button" class="nav-hamburger" aria-label="Open menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
             </button>
-            <div class="currency-dropdown" id="currency-dropdown">
-                <div style="padding:0.375rem 0.75rem;font-size:0.7rem;color:#a1a1aa;text-align:center;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:0.25rem;">Coming Soon</div>
-                <button type="button" class="currency-option" data-currency="CAD" data-symbol="$">$ CAD</button>
-                <button type="button" class="currency-option" data-currency="USD" data-symbol="$">$ USD</button>
-                <button type="button" class="currency-option" data-currency="GBP" data-symbol="£">£ GBP</button>
-                <button type="button" class="currency-option" data-currency="EUR" data-symbol="€">€ EUR</button>
-                <button type="button" class="currency-option" data-currency="AUD" data-symbol="$">$ AUD</button>
+            <div class="nav-actions">
+                <div class="currency-selector">
+                    <button
+                        type="button"
+                        class="currency-btn"
+                        title="Change currency"
+                        aria-expanded="false"
+                        aria-haspopup="listbox"
+                    >
+                        <span id="current-currency-code">CAD</span>
+                        <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path d="M6 9l6 6 6-6" />
+                        </svg>
+                    </button>
+                    <div class="currency-dropdown" id="currency-dropdown">
+                        <div
+                            style="
+                                padding: 0.375rem 0.75rem;
+                                font-size: 0.7rem;
+                                color: #a1a1aa;
+                                text-align: center;
+                                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                                margin-bottom: 0.25rem;
+                            "
+                        >
+                            Coming Soon
+                        </div>
+                        <button type="button" class="currency-option" data-currency="CAD" data-symbol="$">$ CAD</button>
+                        <button type="button" class="currency-option" data-currency="USD" data-symbol="$">$ USD</button>
+                        <button type="button" class="currency-option" data-currency="GBP" data-symbol="£">£ GBP</button>
+                        <button type="button" class="currency-option" data-currency="EUR" data-symbol="€">€ EUR</button>
+                        <button type="button" class="currency-option" data-currency="AUD" data-symbol="$">$ AUD</button>
+                    </div>
+                </div>
+                <div class="lang-selector">
+                    <button
+                        type="button"
+                        class="lang-btn"
+                        title="Change language"
+                        aria-expanded="false"
+                        aria-haspopup="listbox"
+                    >
+                        <span class="lang-code" id="current-lang-code">EN</span>
+                        <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path d="M6 9l6 6 6-6" />
+                        </svg>
+                    </button>
+                    <div class="lang-dropdown" id="lang-dropdown">
+                        <div
+                            style="
+                                padding: 0.375rem 0.75rem;
+                                font-size: 0.7rem;
+                                color: #a1a1aa;
+                                text-align: center;
+                                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                                margin-bottom: 0.25rem;
+                            "
+                        >
+                            Coming Soon
+                        </div>
+                        <button type="button" class="lang-option" data-lang="en">English (U.S)</button>
+                        <button type="button" class="lang-option" data-lang="en-ca">English (CA)</button>
+                        <button type="button" class="lang-option" data-lang="es">Español</button>
+                        <button type="button" class="lang-option" data-lang="fr">Français</button>
+                        <button type="button" class="lang-option" data-lang="de">Deutsch</button>
+                        <button type="button" class="lang-option" data-lang="it">Italiano</button>
+                        <button type="button" class="lang-option" data-lang="pt">Português</button>
+                        <button type="button" class="lang-option" data-lang="ja">日本語</button>
+                        <button type="button" class="lang-option" data-lang="zh">中文</button>
+                        <button type="button" class="lang-option" data-lang="ko">한국어</button>
+                        <button type="button" class="lang-option" data-lang="ar">العربية</button>
+                    </div>
+                </div>
+
+                <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
+                <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
             </div>
-        </div>
-        <div class="lang-selector">
-        <button type="button" class="lang-btn" title="Change language" aria-expanded="false" aria-haspopup="listbox">
-            <span class="lang-code" id="current-lang-code">EN</span>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-        </button>
-        <div class="lang-dropdown" id="lang-dropdown">
-                <div style="padding:0.375rem 0.75rem;font-size:0.7rem;color:#a1a1aa;text-align:center;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:0.25rem;">Coming Soon</div>
-            <button type="button" class="lang-option" data-lang="en">English (U.S)</button>
-            <button type="button" class="lang-option" data-lang="en-ca">English (CA)</button>
-            <button type="button" class="lang-option" data-lang="es">Español</button>
-            <button type="button" class="lang-option" data-lang="fr">Français</button>
-            <button type="button" class="lang-option" data-lang="de">Deutsch</button>
-            <button type="button" class="lang-option" data-lang="it">Italiano</button>
-            <button type="button" class="lang-option" data-lang="pt">Português</button>
-            <button type="button" class="lang-option" data-lang="ja">日本語</button>
-            <button type="button" class="lang-option" data-lang="zh">中文</button>
-            <button type="button" class="lang-option" data-lang="ko">한국어</button>
-            <button type="button" class="lang-option" data-lang="ar">العربية</button>
-        </div>
-    </div>
+        </nav>
 
-        <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
-        <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
-    </div>
-</nav>
-
-<!-- Mobile nav drawer -->
-<nav class="mobile-nav-drawer" aria-hidden="true" id="mobile-nav-drawer" aria-label="Mobile navigation">
-    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-features-sub" aria-controls="mobile-features-sub" aria-expanded="false">Features</button>
-    <div class="mobile-nav-sub" id="mobile-features-sub">
-        <a href="#cross-listing">Cross-Listing</a>
-        <a href="#inventory-management">Inventory Management</a>
-        <a href="#sale-purchase-sync">Sale &amp; Purchase Sync</a>
-        <a href="#analytics">Analytics</a>
-        <a href="#offer-management">Offer Management</a>
-        <a href="#marketplace-sharing">Marketplace Sharing</a>
-        <a href="#bulk-actions">Bulk Actions</a>
-        <a href="#photo-tools">Photo Tools</a>
-        <a href="#ai-listing-generation">AI Listing Generation</a>
-        <a href="#financial-management">Financial Management</a>
-        <a href="#productivity-tools">Productivity Tools</a>
-    </div>
-    <a class="mobile-nav-item" href="/platforms.html">Marketplaces</a>
-    <a class="mobile-nav-item" href="/pricing.html">Pricing</a>
-    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-resources-sub" aria-controls="mobile-resources-sub" aria-expanded="false">Resources</button>
-    <div class="mobile-nav-sub" id="mobile-resources-sub">
-        <a href="/learning.html">Learning</a>
-        <a href="/documentation.html">Documentation</a>
-        <a href="/blog/index.html">Blog</a>
-        <a href="/affiliate.html">Affiliate Program</a>
-    </div>
-    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-feedback-sub" aria-controls="mobile-feedback-sub" aria-expanded="false">Feedback &amp; Support</button>
-    <div class="mobile-nav-sub" id="mobile-feedback-sub">
-        <a href="/help.html">Help Center</a>
-        <a href="/faq.html">FAQs</a>
-        <a href="/request-feature.html">Request a Feature</a>
-        <a href="/contact.html#contact-form">Report a Bug</a>
-        <a href="/contact.html">Contact Us</a>
-    </div>
-    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-product-updates-sub" aria-controls="mobile-product-updates-sub" aria-expanded="false">Status &amp; Updates</button>
-    <div class="mobile-nav-sub" id="mobile-product-updates-sub">
-        <a href="/changelog.html">Changelog</a>
-        <a href="/roadmap-public.html">Roadmap</a>
-        <a href="/status.html">Status Page</a>
-    </div>
-    <div class="mobile-nav-actions">
-        <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
-        <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
-    </div>
-</nav>
-
-<main class="page-wrap" id="main-content">
-    <header class="page-header">
-        <p class="page-label">Reference</p>
-        <h1>Reseller Glossary</h1>
-        <p class="page-meta">Plain-English definitions for common reselling, marketplace, and inventory terms — alphabetical order.</p>
-    </header>
-
-    <nav class="alpha-nav" aria-label="Jump to letter">
-        <a href="#B">B</a>
-        <a href="#C">C</a>
-        <a href="#D">D</a>
-        <a href="#F">F</a>
-        <a href="#L">L</a>
-        <a href="#N">N</a>
-        <a href="#O">O</a>
-        <a href="#R">R</a>
-        <a href="#S">S</a>
-        <a href="#T">T</a>
-    </nav>
-
-    <section class="glossary-section" aria-labelledby="letter-A">
-        <h2 class="glossary-letter" id="A">A</h2>
-        <dl class="glossary-list">
-
-            <div class="glossary-item" id="term-arbitrage">
-                <dt class="term">Arbitrage</dt>
-                <dd class="definition">The practice of buying items at a lower price from one marketplace and reselling them at a higher price on another. Common in reselling when price discrepancies exist between platforms like eBay, Poshmark, and Mercari.</dd>
+        <!-- Mobile nav drawer -->
+        <nav class="mobile-nav-drawer" inert id="mobile-nav-drawer" aria-label="Mobile navigation">
+            <button
+                type="button"
+                class="mobile-nav-section-btn"
+                data-mobile-section="mobile-features-sub"
+                aria-controls="mobile-features-sub"
+                aria-expanded="false"
+            >
+                Features
+            </button>
+            <div class="mobile-nav-sub" id="mobile-features-sub">
+                <a href="#cross-listing">Cross-Listing</a>
+                <a href="#inventory-management">Inventory Management</a>
+                <a href="#sale-purchase-sync">Sale &amp; Purchase Sync</a>
+                <a href="#analytics">Analytics</a>
+                <a href="#offer-management">Offer Management</a>
+                <a href="#marketplace-sharing">Marketplace Sharing</a>
+                <a href="#bulk-actions">Bulk Actions</a>
+                <a href="#photo-tools">Photo Tools</a>
+                <a href="#ai-listing-generation">AI Listing Generation</a>
+                <a href="#financial-management">Financial Management</a>
+                <a href="#productivity-tools">Productivity Tools</a>
             </div>
-
-            <div class="glossary-item" id="term-authentication">
-                <dt class="term">Authentication</dt>
-                <dd class="definition">The process of verifying a user's identity before granting access to VaultLister features. VaultLister uses JWT-based authentication with optional two-factor authentication (TOTP) for enhanced security.</dd>
-            </div>
-
-            <div class="glossary-item" id="term-average-order-value">
-                <dt class="term">Average Order Value (AOV)</dt>
-                <dd class="definition">A key metric calculated by dividing total revenue by the number of orders. Used in VaultLister's Analytics dashboard to track sales performance over time.</dd>
-            </div>
-
-        </dl>
-    </section>
-
-    <section class="glossary-section" aria-labelledby="letter-B">
-        <h2 class="glossary-letter" id="B">B</h2>
-        <dl class="glossary-list">
-
-            <div class="glossary-item" id="term-bundle">
-                <dt class="term">Bundle</dt>
-                <dd class="definition">Two or more inventory items sold together as a single listing, typically at a combined discount. Bundles increase average order value and help move slow-moving stock alongside popular items.</dd>
-            </div>
-
-        </dl>
-    </section>
-
-    <section class="glossary-section" aria-labelledby="letter-C">
-        <h2 class="glossary-letter" id="C">C</h2>
-        <dl class="glossary-list">
-
-            <div class="glossary-item" id="term-closet-sharing">
-                <dt class="term">Closet Sharing <span class="term-badge badge-platform">Poshmark</span></dt>
-                <dd class="definition">A Poshmark-specific action that reshares your active listings to your followers' feeds and the platform's Just In feed. Regular sharing boosts visibility and listing recency. VaultLister can automate scheduled closet shares via its Poshmark bot.</dd>
-            </div>
-
-            <div class="glossary-item" id="term-cogs">
-                <dt class="term"><abbr title="Cost of Goods Sold">COGS</abbr> <span class="term-badge badge-acronym">Acronym</span> <span class="term-badge badge-metric">Metric</span></dt>
-                <dd class="definition">The total direct cost to acquire inventory: purchase price, shipping in, authentication fees, and any prep costs. COGS is subtracted from sale price to calculate gross profit. VaultLister tracks COGS per InventoryItem so your analytics reflect true margin.</dd>
-            </div>
-
-            <div class="glossary-item" id="term-comps">
-                <dt class="term">Comps (Comparables)</dt>
-                <dd class="definition">Recently sold listings for the same or similar item used as pricing benchmarks. Pulling comps before listing prevents both under-pricing (leaving money on the table) and over-pricing (stalling inventory). VaultLister's AI price suggestion pulls comps automatically.</dd>
-            </div>
-
-            <div class="glossary-item" id="term-counter-offer">
-                <dt class="term">Counter-Offer</dt>
-                <dd class="definition">A seller's response to a buyer's Offer that proposes a different price, typically between the listed price and the buyer's original offer. Counter-offers keep negotiations alive without accepting a lowball price outright.</dd>
-            </div>
-
-            <div class="glossary-item" id="term-cross-listing">
-                <dt class="term">Cross-Listing</dt>
-                <dd class="definition">Publishing the same InventoryItem as an active Listing on multiple marketplaces simultaneously (e.g., Poshmark, eBay, Mercari, Depop). Cross-listing maximises exposure without duplicating effort. VaultLister manages cross-listings from a single inventory record and marks items sold across all platforms when one sells.</dd>
-            </div>
-
-        </dl>
-    </section>
-
-    <section class="glossary-section" aria-labelledby="letter-D">
-        <h2 class="glossary-letter" id="D">D</h2>
-        <dl class="glossary-list">
-
-            <div class="glossary-item" id="term-dead-stock">
-                <dt class="term">Dead Stock</dt>
-                <dd class="definition">Inventory that has not sold within 90 or more days of listing. Dead stock ties up capital and storage space. VaultLister flags dead stock in the Inventory screen and can suggest repricing or bundling actions to clear it.</dd>
-            </div>
-
-            <div class="glossary-item" id="term-delist">
-                <dt class="term">Delist</dt>
-                <dd class="definition">Removing an active Listing from a marketplace without marking the item as sold. Common reasons include pulling inventory to relist at a higher price, taking an item to a local sale, or seasonal storage. Delisting in VaultLister updates status across all connected platforms.</dd>
-            </div>
-
-        </dl>
-    </section>
-
-    <section class="glossary-section" aria-labelledby="letter-F">
-        <h2 class="glossary-letter" id="F">F</h2>
-        <dl class="glossary-list">
-
-            <div class="glossary-item" id="term-fba">
-                <dt class="term"><abbr title="Fulfilled by Amazon">FBA</abbr> <span class="term-badge badge-acronym">Acronym</span> <span class="term-badge badge-platform">Amazon</span></dt>
-                <dd class="definition">Fulfilled by Amazon — a fulfilment programme where sellers ship inventory to Amazon warehouses and Amazon handles storage, packing, and shipping on the seller's behalf. FBA items qualify for Prime shipping, which can significantly increase conversion.</dd>
-            </div>
-
-            <div class="glossary-item" id="term-follow-back">
-                <dt class="term">Follow-Back</dt>
-                <dd class="definition">The practice of following Poshmark users who follow you, which grows your audience and increases the reach of future closet shares. VaultLister's Poshmark bot can automate follow-back within the platform's daily action limits.</dd>
-            </div>
-
-        </dl>
-    </section>
-
-    <section class="glossary-section" aria-labelledby="letter-L">
-        <h2 class="glossary-letter" id="L">L</h2>
-        <dl class="glossary-list">
-
-            <div class="glossary-item" id="term-listing">
-                <dt class="term">Listing</dt>
-                <dd class="definition">A published record of an InventoryItem on a specific marketplace, including title, description, photos, price, and condition. A single InventoryItem can have multiple active Listings across different platforms. In VaultLister, a Listing is a distinct entity linked to its parent InventoryItem.</dd>
-            </div>
-
-        </dl>
-    </section>
-
-    <section class="glossary-section" aria-labelledby="letter-N">
-        <h2 class="glossary-letter" id="N">N</h2>
-        <dl class="glossary-list">
-
-            <div class="glossary-item" id="term-nwot">
-                <dt class="term"><abbr title="New Without Tags">NWOT</abbr> <span class="term-badge badge-acronym">Acronym</span></dt>
-                <dd class="definition">New Without Original Tags — an item that is unused and in new condition but no longer has its original retail tags attached. NWOT typically commands a higher price than used but less than NWT.</dd>
-            </div>
-
-            <div class="glossary-item" id="term-nwt">
-                <dt class="term"><abbr title="New With Tags">NWT</abbr> <span class="term-badge badge-acronym">Acronym</span></dt>
-                <dd class="definition">New With Tags — an item that is unused and still has its original retail tags attached. NWT is the highest-condition designation in most resale categories and typically supports the highest price relative to comps.</dd>
-            </div>
-
-        </dl>
-    </section>
-
-    <section class="glossary-section" aria-labelledby="letter-O">
-        <h2 class="glossary-letter" id="O">O</h2>
-        <dl class="glossary-list">
-
-            <div class="glossary-item" id="term-offer">
-                <dt class="term">Offer</dt>
-                <dd class="definition">A buyer's proposed purchase price below the listed price, submitted through a marketplace's offer system. The seller can accept, decline, or counter. In VaultLister, Offers are tracked as a distinct entity with timestamps and status, separate from the Listing price.</dd>
-            </div>
-
-            <div class="glossary-item" id="term-offer-to-likers">
-                <dt class="term">Offer to Likers <span class="term-badge badge-platform">Poshmark</span></dt>
-                <dd class="definition">A Poshmark feature that lets sellers send a private discounted price to users who have liked a listing. Offer to Likers messages expire after 24 hours. VaultLister's automation rules can trigger these offers based on like age and item age.</dd>
-            </div>
-
-        </dl>
-    </section>
-
-    <section class="glossary-section" aria-labelledby="letter-R">
-        <h2 class="glossary-letter" id="R">R</h2>
-        <dl class="glossary-list">
-
-            <div class="glossary-item" id="term-relist">
-                <dt class="term">Relist</dt>
-                <dd class="definition">Creating a new Listing for an item that was previously listed and either expired, was deleted, or is being refreshed to appear as new on a marketplace. Relisting resets the listing date and can improve visibility on platforms that sort by recency.</dd>
-            </div>
-
-            <div class="glossary-item" id="term-roi">
-                <dt class="term"><abbr title="Return on Investment">ROI</abbr> <span class="term-badge badge-acronym">Acronym</span> <span class="term-badge badge-metric">Metric</span></dt>
-                <dd class="definition">Return on Investment — calculated as <strong>(Sale Price &minus; COGS &minus; Fees) &divide; COGS &times; 100</strong>. A key profitability metric in VaultLister's analytics. Monitoring ROI by category or source helps identify which buying channels produce the best margins.</dd>
-            </div>
-
-        </dl>
-    </section>
-
-    <section class="glossary-section" aria-labelledby="letter-S">
-        <h2 class="glossary-letter" id="S">S</h2>
-        <dl class="glossary-list">
-
-            <div class="glossary-item" id="term-sale">
-                <dt class="term">Sale</dt>
-                <dd class="definition">A completed transaction where a Listing is purchased by a buyer. In VaultLister, recording a Sale marks the parent InventoryItem as sold, delists it from all other platforms, and records revenue, COGS, fees, and net profit for analytics.</dd>
-            </div>
-
-            <div class="glossary-item" id="term-str">
-                <dt class="term"><abbr title="Sell-Through Rate">STR</abbr> <span class="term-badge badge-acronym">Acronym</span> <span class="term-badge badge-metric">Metric</span></dt>
-                <dd class="definition">Sell-Through Rate — the percentage of listed inventory that sold within a given period, calculated as <strong>(Units Sold &divide; Units Listed) &times; 100</strong>. A high STR indicates strong demand or competitive pricing; a low STR suggests repricing, better photos, or a different platform may be needed.</dd>
-            </div>
-
-            <div class="glossary-item" id="term-sourcing">
-                <dt class="term">Sourcing</dt>
-                <dd class="definition">The process of acquiring inventory to resell — through thrift stores, estate sales, retail arbitrage, wholesale, or online platforms. Sourcing strategy directly determines COGS and available margin.</dd>
-            </div>
-
-        </dl>
-    </section>
-
-    <section class="glossary-section" aria-labelledby="letter-T">
-        <h2 class="glossary-letter" id="T">T</h2>
-        <dl class="glossary-list">
-
-            <div class="glossary-item" id="term-tag">
-                <dt class="term">Tag</dt>
-                <dd class="definition">A user-defined label applied to an InventoryItem for filtering, grouping, and reporting. Examples: "thrifted", "bundle-ready", "electronics", "Q2-haul". VaultLister supports multi-tag filtering across Inventory and Analytics views.</dd>
-            </div>
-
-            <div class="glossary-item" id="term-turnaround-time">
-                <dt class="term">Turnaround Time</dt>
-                <dd class="definition">The number of days between acquiring an item and selling it. Shorter turnaround time means faster capital recycling. VaultLister calculates average turnaround time per category in the Analytics screen.</dd>
-            </div>
-
-        </dl>
-    </section>
-
-</main>
-
-<footer class="footer" aria-label="Footer">
-    <div class="footer-social-bar">
-        <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" width="144" height="36" style="display:block;"></a>
-        <div class="footer-social-links">
-            <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg></a>
-            <a href="https://www.facebook.com/profile.php?id=61570865723233" aria-label="Facebook"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
-            <a href="https://x.com/VaultListerCo" aria-label="X"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
-            <a href="https://www.tiktok.com/@vaultlister.co" aria-label="TikTok"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.92a8.24 8.24 0 0 0 4.83 1.56v-3.5a4.84 4.84 0 0 1-1.07-.29z"/></svg></a>
-            <a href="https://www.reddit.com/user/VaultLister/" aria-label="Reddit"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg></a>
-            <a href="https://www.youtube.com/@VaultLister" aria-label="YouTube"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
-        </div>
-    </div>
-    <div class="footer-inner">
-                <div class="footer-cols">
-            <div class="footer-col">
-                <h3 class="footer-col-label">Resources</h3>
-                <a href="/blog/index.html">Blog</a>
-                <a href="/changelog.html">Changelog</a>
+            <a class="mobile-nav-item" href="/platforms.html">Marketplaces</a>
+            <a class="mobile-nav-item" href="/pricing.html">Pricing</a>
+            <button
+                type="button"
+                class="mobile-nav-section-btn"
+                data-mobile-section="mobile-resources-sub"
+                aria-controls="mobile-resources-sub"
+                aria-expanded="false"
+            >
+                Resources
+            </button>
+            <div class="mobile-nav-sub" id="mobile-resources-sub">
+                <a href="/learning.html">Learning</a>
                 <a href="/documentation.html">Documentation</a>
-                <a href="/faq.html">FAQs</a>
-                <a href="/help.html">Help Center</a>
-            </div>
-            <div class="footer-col">
-                <h3 class="footer-col-label">Company</h3>
-                <a href="/about.html">About Us</a>
-                <a href="/careers.html">Careers</a>
-                <a href="/documentation.html#media-kit">Media Kit</a>
+                <a href="/blog/index.html">Blog</a>
                 <a href="/affiliate.html">Affiliate Program</a>
             </div>
-            <div class="footer-col">
-                <h3 class="footer-col-label">Legal</h3>
-                <a href="/privacy.html">Privacy Policy</a>
-                <a href="/terms.html">Terms of Service</a>
-                <a href="/cookies.html">Cookie Policy</a>
+            <button
+                type="button"
+                class="mobile-nav-section-btn"
+                data-mobile-section="mobile-feedback-sub"
+                aria-controls="mobile-feedback-sub"
+                aria-expanded="false"
+            >
+                Feedback &amp; Support
+            </button>
+            <div class="mobile-nav-sub" id="mobile-feedback-sub">
+                <a href="/help.html">Help Center</a>
+                <a href="/faq.html">FAQs</a>
+                <a href="/request-feature.html">Request a Feature</a>
+                <a href="/contact.html#contact-form">Report a Bug</a>
+                <a href="/contact.html">Contact Us</a>
             </div>
-            <div class="footer-col">
-                <h3 class="footer-col-label">Compare</h3>
-                <a href="/compare/crosslist.html">Crosslist</a>
-                <a href="/compare/crosslist-magic.html">Crosslist Magic</a>
-                <a href="/compare/flyp.html">Flyp</a>
-                <a href="/compare/list-perfectly.html">List Perfectly</a>
-                <a href="/compare/nifty.html">Nifty</a>
-                <a href="/compare/oneshop.html">OneShop</a>
-                <a href="/compare/primelister.html">Primelister</a>
-                <a href="/compare/vendoo.html">Vendoo</a>
+            <button
+                type="button"
+                class="mobile-nav-section-btn"
+                data-mobile-section="mobile-product-updates-sub"
+                aria-controls="mobile-product-updates-sub"
+                aria-expanded="false"
+            >
+                Status &amp; Updates
+            </button>
+            <div class="mobile-nav-sub" id="mobile-product-updates-sub">
+                <a href="/changelog.html">Changelog</a>
+                <a href="/roadmap-public.html">Roadmap</a>
+                <a href="/status.html">Status Page</a>
+            </div>
+            <div class="mobile-nav-actions">
+                <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
+                <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
+            </div>
+        </nav>
+
+        <main class="page-wrap" id="main-content">
+            <header class="page-header">
+                <p class="page-label">Reference</p>
+                <h1>Reseller Glossary</h1>
+                <p class="page-meta">
+                    Plain-English definitions for common reselling, marketplace, and inventory terms — alphabetical
+                    order.
+                </p>
+            </header>
+
+            <nav class="alpha-nav" aria-label="Jump to letter">
+                <a href="#letter-B">B</a>
+                <a href="#letter-C">C</a>
+                <a href="#letter-D">D</a>
+                <a href="#letter-F">F</a>
+                <a href="#letter-L">L</a>
+                <a href="#letter-N">N</a>
+                <a href="#letter-O">O</a>
+                <a href="#letter-R">R</a>
+                <a href="#letter-S">S</a>
+                <a href="#letter-T">T</a>
+            </nav>
+
+            <section class="glossary-section" aria-labelledby="letter-A">
+                <h2 class="glossary-letter" id="letter-A">A</h2>
+                <dl class="glossary-list">
+                    <div class="glossary-item" id="term-arbitrage">
+                        <dt class="term">Arbitrage</dt>
+                        <dd class="definition">
+                            The practice of buying items at a lower price from one marketplace and reselling them at a
+                            higher price on another. Common in reselling when price discrepancies exist between
+                            platforms like eBay, Poshmark, and Mercari.
+                        </dd>
+                    </div>
+
+                    <div class="glossary-item" id="term-authentication">
+                        <dt class="term">Authentication</dt>
+                        <dd class="definition">
+                            The process of verifying a user's identity before granting access to VaultLister features.
+                            VaultLister uses JWT-based authentication with optional two-factor authentication (TOTP) for
+                            enhanced security.
+                        </dd>
+                    </div>
+
+                    <div class="glossary-item" id="term-average-order-value">
+                        <dt class="term">Average Order Value (AOV)</dt>
+                        <dd class="definition">
+                            A key metric calculated by dividing total revenue by the number of orders. Used in
+                            VaultLister's Analytics dashboard to track sales performance over time.
+                        </dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section class="glossary-section" aria-labelledby="letter-B">
+                <h2 class="glossary-letter" id="letter-B">B</h2>
+                <dl class="glossary-list">
+                    <div class="glossary-item" id="term-bundle">
+                        <dt class="term">Bundle</dt>
+                        <dd class="definition">
+                            Two or more inventory items sold together as a single listing, typically at a combined
+                            discount. Bundles increase average order value and help move slow-moving stock alongside
+                            popular items.
+                        </dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section class="glossary-section" aria-labelledby="letter-C">
+                <h2 class="glossary-letter" id="letter-C">C</h2>
+                <dl class="glossary-list">
+                    <div class="glossary-item" id="term-closet-sharing">
+                        <dt class="term">Closet Sharing <span class="term-badge badge-platform">Poshmark</span></dt>
+                        <dd class="definition">
+                            A Poshmark-specific action that reshares your active listings to your followers' feeds and
+                            the platform's Just In feed. Regular sharing boosts visibility and listing recency.
+                            VaultLister can automate scheduled closet shares via its Poshmark bot.
+                        </dd>
+                    </div>
+
+                    <div class="glossary-item" id="term-cogs">
+                        <dt class="term">
+                            <abbr title="Cost of Goods Sold">COGS</abbr>
+                            <span class="term-badge badge-acronym">Acronym</span>
+                            <span class="term-badge badge-metric">Metric</span>
+                        </dt>
+                        <dd class="definition">
+                            The total direct cost to acquire inventory: purchase price, shipping in, authentication
+                            fees, and any prep costs. COGS is subtracted from sale price to calculate gross profit.
+                            VaultLister tracks COGS per InventoryItem so your analytics reflect true margin.
+                        </dd>
+                    </div>
+
+                    <div class="glossary-item" id="term-comps">
+                        <dt class="term">Comps (Comparables)</dt>
+                        <dd class="definition">
+                            Recently sold listings for the same or similar item used as pricing benchmarks. Pulling
+                            comps before listing prevents both under-pricing (leaving money on the table) and
+                            over-pricing (stalling inventory). VaultLister's AI price suggestion pulls comps
+                            automatically.
+                        </dd>
+                    </div>
+
+                    <div class="glossary-item" id="term-counter-offer">
+                        <dt class="term">Counter-Offer</dt>
+                        <dd class="definition">
+                            A seller's response to a buyer's Offer that proposes a different price, typically between
+                            the listed price and the buyer's original offer. Counter-offers keep negotiations alive
+                            without accepting a lowball price outright.
+                        </dd>
+                    </div>
+
+                    <div class="glossary-item" id="term-cross-listing">
+                        <dt class="term">Cross-Listing</dt>
+                        <dd class="definition">
+                            Publishing the same InventoryItem as an active Listing on multiple marketplaces
+                            simultaneously (e.g., Poshmark, eBay, Mercari, Depop). Cross-listing maximises exposure
+                            without duplicating effort. VaultLister manages cross-listings from a single inventory
+                            record and marks items sold across all platforms when one sells.
+                        </dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section class="glossary-section" aria-labelledby="letter-D">
+                <h2 class="glossary-letter" id="letter-D">D</h2>
+                <dl class="glossary-list">
+                    <div class="glossary-item" id="term-dead-stock">
+                        <dt class="term">Dead Stock</dt>
+                        <dd class="definition">
+                            Inventory that has not sold within 90 or more days of listing. Dead stock ties up capital
+                            and storage space. VaultLister flags dead stock in the Inventory screen and can suggest
+                            repricing or bundling actions to clear it.
+                        </dd>
+                    </div>
+
+                    <div class="glossary-item" id="term-delist">
+                        <dt class="term">Delist</dt>
+                        <dd class="definition">
+                            Removing an active Listing from a marketplace without marking the item as sold. Common
+                            reasons include pulling inventory to relist at a higher price, taking an item to a local
+                            sale, or seasonal storage. Delisting in VaultLister updates status across all connected
+                            platforms.
+                        </dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section class="glossary-section" aria-labelledby="letter-F">
+                <h2 class="glossary-letter" id="letter-F">F</h2>
+                <dl class="glossary-list">
+                    <div class="glossary-item" id="term-fba">
+                        <dt class="term">
+                            <abbr title="Fulfilled by Amazon">FBA</abbr>
+                            <span class="term-badge badge-acronym">Acronym</span>
+                            <span class="term-badge badge-platform">Amazon</span>
+                        </dt>
+                        <dd class="definition">
+                            Fulfilled by Amazon — a fulfilment programme where sellers ship inventory to Amazon
+                            warehouses and Amazon handles storage, packing, and shipping on the seller's behalf. FBA
+                            items qualify for Prime shipping, which can significantly increase conversion.
+                        </dd>
+                    </div>
+
+                    <div class="glossary-item" id="term-follow-back">
+                        <dt class="term">Follow-Back</dt>
+                        <dd class="definition">
+                            The practice of following Poshmark users who follow you, which grows your audience and
+                            increases the reach of future closet shares. VaultLister's Poshmark bot can automate
+                            follow-back within the platform's daily action limits.
+                        </dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section class="glossary-section" aria-labelledby="letter-L">
+                <h2 class="glossary-letter" id="letter-L">L</h2>
+                <dl class="glossary-list">
+                    <div class="glossary-item" id="term-listing">
+                        <dt class="term">Listing</dt>
+                        <dd class="definition">
+                            A published record of an InventoryItem on a specific marketplace, including title,
+                            description, photos, price, and condition. A single InventoryItem can have multiple active
+                            Listings across different platforms. In VaultLister, a Listing is a distinct entity linked
+                            to its parent InventoryItem.
+                        </dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section class="glossary-section" aria-labelledby="letter-N">
+                <h2 class="glossary-letter" id="letter-N">N</h2>
+                <dl class="glossary-list">
+                    <div class="glossary-item" id="term-nwot">
+                        <dt class="term">
+                            <abbr title="New Without Tags">NWOT</abbr>
+                            <span class="term-badge badge-acronym">Acronym</span>
+                        </dt>
+                        <dd class="definition">
+                            New Without Original Tags — an item that is unused and in new condition but no longer has
+                            its original retail tags attached. NWOT typically commands a higher price than used but less
+                            than NWT.
+                        </dd>
+                    </div>
+
+                    <div class="glossary-item" id="term-nwt">
+                        <dt class="term">
+                            <abbr title="New With Tags">NWT</abbr> <span class="term-badge badge-acronym">Acronym</span>
+                        </dt>
+                        <dd class="definition">
+                            New With Tags — an item that is unused and still has its original retail tags attached. NWT
+                            is the highest-condition designation in most resale categories and typically supports the
+                            highest price relative to comps.
+                        </dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section class="glossary-section" aria-labelledby="letter-O">
+                <h2 class="glossary-letter" id="letter-O">O</h2>
+                <dl class="glossary-list">
+                    <div class="glossary-item" id="term-offer">
+                        <dt class="term">Offer</dt>
+                        <dd class="definition">
+                            A buyer's proposed purchase price below the listed price, submitted through a marketplace's
+                            offer system. The seller can accept, decline, or counter. In VaultLister, Offers are tracked
+                            as a distinct entity with timestamps and status, separate from the Listing price.
+                        </dd>
+                    </div>
+
+                    <div class="glossary-item" id="term-offer-to-likers">
+                        <dt class="term">Offer to Likers <span class="term-badge badge-platform">Poshmark</span></dt>
+                        <dd class="definition">
+                            A Poshmark feature that lets sellers send a private discounted price to users who have liked
+                            a listing. Offer to Likers messages expire after 24 hours. VaultLister's automation rules
+                            can trigger these offers based on like age and item age.
+                        </dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section class="glossary-section" aria-labelledby="letter-R">
+                <h2 class="glossary-letter" id="letter-R">R</h2>
+                <dl class="glossary-list">
+                    <div class="glossary-item" id="term-relist">
+                        <dt class="term">Relist</dt>
+                        <dd class="definition">
+                            Creating a new Listing for an item that was previously listed and either expired, was
+                            deleted, or is being refreshed to appear as new on a marketplace. Relisting resets the
+                            listing date and can improve visibility on platforms that sort by recency.
+                        </dd>
+                    </div>
+
+                    <div class="glossary-item" id="term-roi">
+                        <dt class="term">
+                            <abbr title="Return on Investment">ROI</abbr>
+                            <span class="term-badge badge-acronym">Acronym</span>
+                            <span class="term-badge badge-metric">Metric</span>
+                        </dt>
+                        <dd class="definition">
+                            Return on Investment — calculated as
+                            <strong>(Sale Price &minus; COGS &minus; Fees) &divide; COGS &times; 100</strong>. A key
+                            profitability metric in VaultLister's analytics. Monitoring ROI by category or source helps
+                            identify which buying channels produce the best margins.
+                        </dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section class="glossary-section" aria-labelledby="letter-S">
+                <h2 class="glossary-letter" id="letter-S">S</h2>
+                <dl class="glossary-list">
+                    <div class="glossary-item" id="term-sale">
+                        <dt class="term">Sale</dt>
+                        <dd class="definition">
+                            A completed transaction where a Listing is purchased by a buyer. In VaultLister, recording a
+                            Sale marks the parent InventoryItem as sold, delists it from all other platforms, and
+                            records revenue, COGS, fees, and net profit for analytics.
+                        </dd>
+                    </div>
+
+                    <div class="glossary-item" id="term-str">
+                        <dt class="term">
+                            <abbr title="Sell-Through Rate">STR</abbr>
+                            <span class="term-badge badge-acronym">Acronym</span>
+                            <span class="term-badge badge-metric">Metric</span>
+                        </dt>
+                        <dd class="definition">
+                            Sell-Through Rate — the percentage of listed inventory that sold within a given period,
+                            calculated as <strong>(Units Sold &divide; Units Listed) &times; 100</strong>. A high STR
+                            indicates strong demand or competitive pricing; a low STR suggests repricing, better photos,
+                            or a different platform may be needed.
+                        </dd>
+                    </div>
+
+                    <div class="glossary-item" id="term-sourcing">
+                        <dt class="term">Sourcing</dt>
+                        <dd class="definition">
+                            The process of acquiring inventory to resell — through thrift stores, estate sales, retail
+                            arbitrage, wholesale, or online platforms. Sourcing strategy directly determines COGS and
+                            available margin.
+                        </dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section class="glossary-section" aria-labelledby="letter-T">
+                <h2 class="glossary-letter" id="letter-T">T</h2>
+                <dl class="glossary-list">
+                    <div class="glossary-item" id="term-tag">
+                        <dt class="term">Tag</dt>
+                        <dd class="definition">
+                            A user-defined label applied to an InventoryItem for filtering, grouping, and reporting.
+                            Examples: "thrifted", "bundle-ready", "electronics", "Q2-haul". VaultLister supports
+                            multi-tag filtering across Inventory and Analytics views.
+                        </dd>
+                    </div>
+
+                    <div class="glossary-item" id="term-turnaround-time">
+                        <dt class="term">Turnaround Time</dt>
+                        <dd class="definition">
+                            The number of days between acquiring an item and selling it. Shorter turnaround time means
+                            faster capital recycling. VaultLister calculates average turnaround time per category in the
+                            Analytics screen.
+                        </dd>
+                    </div>
+                </dl>
+            </section>
+        </main>
+
+        <footer class="footer" aria-label="Footer">
+            <div class="footer-social-bar">
+                <a href="/" class="footer-logo"
+                    ><img
+                        src="/assets/logo/lockups/horizontal-512.svg"
+                        alt="VaultLister"
+                        width="144"
+                        height="36"
+                        style="display: block"
+                /></a>
+                <div class="footer-social-links">
+                    <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"
+                        ><svg
+                            width="22"
+                            height="22"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <rect x="2" y="2" width="20" height="20" rx="5" />
+                            <circle cx="12" cy="12" r="5" />
+                            <circle cx="17.5" cy="6.5" r="1.5" /></svg
+                    ></a>
+                    <a href="https://www.facebook.com/profile.php?id=61570865723233" aria-label="Facebook"
+                        ><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></svg
+                    ></a>
+                    <a href="https://x.com/VaultListerCo" aria-label="X"
+                        ><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+                            /></svg
+                    ></a>
+                    <a href="https://www.tiktok.com/@vaultlister.co" aria-label="TikTok"
+                        ><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.92a8.24 8.24 0 0 0 4.83 1.56v-3.5a4.84 4.84 0 0 1-1.07-.29z"
+                            /></svg
+                    ></a>
+                    <a href="https://www.reddit.com/user/VaultLister/" aria-label="Reddit"
+                        ><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"
+                            /></svg
+                    ></a>
+                    <a href="https://www.youtube.com/@VaultLister" aria-label="YouTube"
+                        ><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"
+                            /></svg
+                    ></a>
+                </div>
+            </div>
+            <div class="footer-inner">
+                <div class="footer-cols">
+                    <div class="footer-col">
+                        <h3 class="footer-col-label">Resources</h3>
+                        <a href="/blog/index.html">Blog</a>
+                        <a href="/changelog.html">Changelog</a>
+                        <a href="/documentation.html">Documentation</a>
+                        <a href="/faq.html">FAQs</a>
+                        <a href="/help.html">Help Center</a>
+                    </div>
+                    <div class="footer-col">
+                        <h3 class="footer-col-label">Company</h3>
+                        <a href="/about.html">About Us</a>
+                        <a href="/careers.html">Careers</a>
+                        <a href="/documentation.html#media-kit">Media Kit</a>
+                        <a href="/affiliate.html">Affiliate Program</a>
+                    </div>
+                    <div class="footer-col">
+                        <h3 class="footer-col-label">Legal</h3>
+                        <a href="/privacy.html">Privacy Policy</a>
+                        <a href="/terms.html">Terms of Service</a>
+                        <a href="/cookies.html">Cookie Policy</a>
+                    </div>
+                    <div class="footer-col">
+                        <h3 class="footer-col-label">Compare</h3>
+                        <a href="/compare/crosslist.html">Crosslist</a>
+                        <a href="/compare/crosslist-magic.html">Crosslist Magic</a>
+                        <a href="/compare/flyp.html">Flyp</a>
+                        <a href="/compare/list-perfectly.html">List Perfectly</a>
+                        <a href="/compare/nifty.html">Nifty</a>
+                        <a href="/compare/oneshop.html">OneShop</a>
+                        <a href="/compare/primelister.html">Primelister</a>
+                        <a href="/compare/vendoo.html">Vendoo</a>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>© 2026 VaultLister, Inc. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+        <div
+            id="cookie-banner"
+            role="region"
+            aria-label="Cookie consent"
+            style="
+                display: none;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 9999;
+                background: #18181b;
+                color: #fef3c7;
+                padding: 1rem 1.5rem;
+                align-items: center;
+                justify-content: space-between;
+                gap: 1rem;
+                flex-wrap: wrap;
+                box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.18);
+                font-family: Inter, system-ui, sans-serif;
+                font-size: 0.9rem;
+            "
+        >
+            <p style="margin: 0; flex: 1; min-width: 200px">
+                We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are
+                used.
+            </p>
+            <div style="display: flex; gap: 0.625rem; flex-shrink: 0">
+                <button
+                    type="button"
+                    id="cookie-decline"
+                    style="
+                        min-height: 44px;
+                        padding: 0.5rem 1.125rem;
+                        border-radius: 0.5rem;
+                        border: 1.5px solid rgba(224, 231, 255, 0.4);
+                        background: transparent;
+                        color: #fef3c7;
+                        font-size: 0.875rem;
+                        font-weight: 600;
+                        cursor: pointer;
+                    "
+                >
+                    Decline
+                </button>
+                <button
+                    type="button"
+                    id="cookie-accept"
+                    style="
+                        min-height: 44px;
+                        padding: 0.5rem 1.25rem;
+                        border-radius: 0.5rem;
+                        border: none;
+                        background: linear-gradient(135deg, #b45309, #92400e);
+                        color: #fff;
+                        font-size: 0.875rem;
+                        font-weight: 600;
+                        cursor: pointer;
+                    "
+                >
+                    Accept
+                </button>
             </div>
         </div>
-        <div class="footer-bottom">
-            <p>© 2026 VaultLister, Inc. All rights reserved.</p>
-            </div>
-    </div>
-</footer>
-<div id="cookie-banner" role="region" aria-label="Cookie consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#18181B;color:#fef3c7;padding:1rem 1.5rem;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;">
-    <p style="margin:0;flex:1;min-width:200px;">We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are used.</p>
-    <div style="display:flex;gap:0.625rem;flex-shrink:0;">
-        <button type="button" id="cookie-decline" style="min-height:44px;padding:0.5rem 1.125rem;border-radius:0.5rem;border:1.5px solid rgba(224,231,255,0.4);background:transparent;color:#fef3c7;font-size:0.875rem;font-weight:600;cursor:pointer;">Decline</button>
-        <button type="button" id="cookie-accept" style="min-height:44px;padding:0.5rem 1.25rem;border-radius:0.5rem;border:none;background:linear-gradient(135deg,#b45309,#92400e);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;">Accept</button>
-    </div>
-</div>
-<script>
-(function() {
-    var banner = document.getElementById('cookie-banner');
-    if (!banner) return;
-    if (localStorage.getItem('cookie_consent')) { banner.style.display = 'none'; return; }
-    banner.style.display = 'flex';
-    document.getElementById('cookie-accept').addEventListener('click', function() {
-        localStorage.setItem('cookie_consent', 'accepted');
-        if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'granted' });
-        banner.style.display = 'none';
-    });
-    document.getElementById('cookie-decline').addEventListener('click', function() {
-        localStorage.setItem('cookie_consent', 'declined');
-        if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'denied' });
-        banner.style.display = 'none';
-    });
-})();
+        <script>
+            (function () {
+                var banner = document.getElementById('cookie-banner');
+                if (!banner) return;
+                if (localStorage.getItem('cookie_consent')) {
+                    banner.style.display = 'none';
+                    return;
+                }
+                banner.style.display = 'flex';
+                document.getElementById('cookie-accept').addEventListener('click', function () {
+                    localStorage.setItem('cookie_consent', 'accepted');
+                    if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'granted' });
+                    banner.style.display = 'none';
+                });
+                document.getElementById('cookie-decline').addEventListener('click', function () {
+                    localStorage.setItem('cookie_consent', 'declined');
+                    if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'denied' });
+                    banner.style.display = 'none';
+                });
+            })();
 
-// Desktop dropdown toggle
-document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        var menuId = btn.getAttribute('data-dropdown');
-        var menu = document.getElementById(menuId);
-        if (!menu) return;
-        var isOpen = menu.classList.contains('open');
-        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
-        document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
-        if (!isOpen) {
-            menu.classList.add('open');
-            menu.setAttribute('aria-hidden', 'false');
-            btn.setAttribute('aria-expanded', 'true');
-        }
-    });
-});
-
-// Close all dropdowns on outside click
-document.addEventListener('click', function() {
-    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
-    document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
-});
-
-// Prevent dropdown menu clicks from closing immediately
-document.querySelectorAll('.nav-dropdown-menu').forEach(function(menu) {
-    menu.addEventListener('click', function(e) { e.stopPropagation(); });
-});
-
-// Mobile hamburger toggle
-var hamburger = document.querySelector('.nav-hamburger');
-var mobileDrawer = document.getElementById('mobile-nav-drawer');
-if (hamburger && mobileDrawer) {
-    hamburger.addEventListener('click', function(e) {
-        e.stopPropagation();
-        var isOpen = mobileDrawer.classList.toggle('open');
-        hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-    });
-    document.addEventListener('click', function(e) {
-        if (!mobileDrawer.contains(e.target) && !hamburger.contains(e.target)) {
-            mobileDrawer.classList.remove('open');
-            hamburger.setAttribute('aria-expanded', 'false');
-        }
-    });
-}
-
-// Mobile expandable sections
-document.querySelectorAll('.mobile-nav-section-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-        var subId = btn.getAttribute('data-mobile-section');
-        var sub = document.getElementById(subId);
-        if (!sub) return;
-        var isOpen = sub.classList.toggle('open');
-        btn.classList.toggle('open', isOpen);
-        btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-    });
-});
-
-// Close mobile drawer when a link inside it is clicked
-if (mobileDrawer) {
-    mobileDrawer.querySelectorAll('a').forEach(function(a) {
-        a.addEventListener('click', function() {
-            mobileDrawer.classList.remove('open');
-            if (hamburger) { hamburger.setAttribute('aria-expanded', 'false'); }
-        });
-    });
-}
-
-// Desktop dropdown toggle
-document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        var menuId = btn.getAttribute('data-dropdown');
-        var menu = document.getElementById(menuId);
-        if (!menu) return;
-        var isOpen = menu.classList.contains('open');
-        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
-        document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
-        if (!isOpen) {
-            menu.classList.add('open');
-            menu.setAttribute('aria-hidden', 'false');
-            btn.setAttribute('aria-expanded', 'true');
-        }
-    });
-});
-
-// Close all dropdowns on outside click
-document.addEventListener('click', function() {
-    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
-    document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
-});
-
-// Prevent dropdown menu clicks from closing immediately
-document.querySelectorAll('.nav-dropdown-menu').forEach(function(menu) {
-    menu.addEventListener('click', function(e) { e.stopPropagation(); });
-});
-
-// Mobile hamburger toggle
-var hamburger = document.querySelector('.nav-hamburger');
-var mobileDrawer = document.getElementById('mobile-nav-drawer');
-if (hamburger && mobileDrawer) {
-    hamburger.addEventListener('click', function(e) {
-        e.stopPropagation();
-        var isOpen = mobileDrawer.classList.toggle('open');
-        hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-    });
-    document.addEventListener('click', function(e) {
-        if (!mobileDrawer.contains(e.target) && !hamburger.contains(e.target)) {
-            mobileDrawer.classList.remove('open');
-            hamburger.setAttribute('aria-expanded', 'false');
-        }
-    });
-}
-
-// Mobile expandable sections
-document.querySelectorAll('.mobile-nav-section-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-        var subId = btn.getAttribute('data-mobile-section');
-        var sub = document.getElementById(subId);
-        if (!sub) return;
-        var isOpen = sub.classList.toggle('open');
-        btn.classList.toggle('open', isOpen);
-        btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-    });
-});
-
-// Close mobile drawer when a link inside it is clicked
-if (mobileDrawer) {
-    mobileDrawer.querySelectorAll('a').forEach(function(a) {
-        a.addEventListener('click', function() {
-            mobileDrawer.classList.remove('open');
-            if (hamburger) { hamburger.setAttribute('aria-expanded', 'false'); }
-        });
-    });
-}
-
-// Lang selector
-(function() {
-    var LANGS = {
-        en: { code: "EN" },
-        'en-ca': { code: "EN" },
-        es: { code: "ES" },
-        fr: { code: "FR" },
-        de: { code: "DE" },
-        it: { code: "IT" },
-        pt: { code: "PT" },
-        ja: { code: "JA" },
-        zh: { code: "ZH" },
-        ko: { code: "KO" },
-        ar: { code: "AR" }
-    };
-    function setLang(lang) {
-        var info = LANGS[lang] || LANGS["en"];
-        var codeEl = document.getElementById("current-lang-code");
-        if (codeEl) codeEl.textContent = info.code;
-        document.querySelectorAll(".lang-option").forEach(function(btn) {
-            btn.classList.toggle("active", btn.getAttribute("data-lang") === lang);
-        });
-        try { localStorage.setItem("vaultlister_locale", lang); } catch(e) {}
-    }
-    function detectLang() {
-        try {
-            var stored = localStorage.getItem("vaultlister_locale");
-            if (stored && LANGS[stored]) return stored;
-        } catch(e) {}
-        var nav = (navigator.language || "").toLowerCase();
-        if (nav === "en-ca" || nav.startsWith("en-ca")) return "en-ca";
-        var base = nav.split("-")[0];
-        return LANGS[base] ? base : "en";
-    }
-    document.addEventListener("DOMContentLoaded", function() {
-        var btn = document.querySelector(".lang-btn");
-        var dropdown = document.getElementById("lang-dropdown");
-        if (!btn || !dropdown) return;
-        setLang(detectLang());
-        btn.addEventListener("click", function(e) {
-            e.stopPropagation();
-            var open = dropdown.classList.toggle("open");
-            btn.setAttribute("aria-expanded", open ? "true" : "false");
-        });
-        document.addEventListener("click", function(e) {
-            if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
-                dropdown.classList.remove("open");
-                btn.setAttribute("aria-expanded", "false");
-            }
-        });
-        dropdown.querySelectorAll(".lang-option").forEach(function(opt) {
-            opt.addEventListener("click", function() {
-                setLang(opt.getAttribute("data-lang"));
-                dropdown.classList.remove("open");
-                btn.setAttribute("aria-expanded", "false");
+            // Desktop dropdown toggle
+            document.querySelectorAll('.nav-dropdown-btn').forEach(function (btn) {
+                btn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    var menuId = btn.getAttribute('data-dropdown');
+                    var menu = document.getElementById(menuId);
+                    if (!menu) return;
+                    var isOpen = menu.classList.contains('open');
+                    document.querySelectorAll('.nav-dropdown-menu').forEach(function (m) {
+                        m.classList.remove('open');
+                        m.setAttribute('inert', '');
+                    });
+                    document.querySelectorAll('.nav-dropdown-btn').forEach(function (b) {
+                        b.setAttribute('aria-expanded', 'false');
+                    });
+                    if (!isOpen) {
+                        menu.classList.add('open');
+                        menu.removeAttribute('inert');
+                        btn.setAttribute('aria-expanded', 'true');
+                    }
+                });
             });
-        });
-    });
-})();
 
-// Currency selector
-(function() {
-    var saved = localStorage.getItem('vl_currency') || 'CAD';
-    var el = document.getElementById('current-currency-code');
-    if (el) el.textContent = saved;
-    document.querySelectorAll('.currency-option').forEach(function(btn) {
-        if (btn.dataset.currency === saved) btn.classList.add('active');
-        btn.addEventListener('click', function() {
-            var c = this.dataset.currency;
-            localStorage.setItem('vl_currency', c);
-            document.querySelectorAll('.currency-option').forEach(function(b){ b.classList.remove('active'); });
-            this.classList.add('active');
-            var codeEl = document.getElementById('current-currency-code');
-            if (codeEl) codeEl.textContent = c;
-            var dd = document.getElementById('currency-dropdown');
-            if (dd) dd.classList.remove('open');
-        });
-    });
-    var btn = document.querySelector('.currency-btn');
-    if (btn) {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            var dd = document.getElementById('currency-dropdown');
-            dd.classList.toggle('open');
-            btn.setAttribute('aria-expanded', dd.classList.contains('open'));
-        });
-    }
-    document.addEventListener('click', function() {
-        var dd = document.getElementById('currency-dropdown');
-        if (dd) { dd.classList.remove('open'); }
-        if (btn) btn.setAttribute('aria-expanded', 'false');
-    });
-})();
-</script>
-<script>
-(function() {
-    var hasCurrency = !!localStorage.getItem('vl_currency');
-    var hasLang = !!localStorage.getItem('vaultlister_locale');
-    if (hasCurrency && hasLang) return;
-    fetch('/api/geo')
-        .then(function(r) { return r.json(); })
-        .then(function(d) {
-            var cc = d.country_code || '';
-            if (!hasCurrency) {
-                var CURR = {CA:'CAD',US:'USD',GB:'GBP',AU:'AUD',NZ:'AUD',
-                    FR:'EUR',DE:'EUR',IT:'EUR',ES:'EUR',NL:'EUR',BE:'EUR',
-                    AT:'EUR',FI:'EUR',IE:'EUR',PT:'EUR',GR:'EUR',LU:'EUR',
-                    SK:'EUR',SI:'EUR',EE:'EUR',LV:'EUR',LT:'EUR',CY:'EUR',MT:'EUR'};
-                var curr = CURR[cc];
-                if (curr) {
-                    var btn = document.querySelector('.currency-option[data-currency="' + curr + '"]');
-                    if (btn) btn.click();
-                }
+            // Close all dropdowns on outside click
+            document.addEventListener('click', function () {
+                document.querySelectorAll('.nav-dropdown-menu').forEach(function (m) {
+                    m.classList.remove('open');
+                    m.setAttribute('inert', '');
+                });
+                document.querySelectorAll('.nav-dropdown-btn').forEach(function (b) {
+                    b.setAttribute('aria-expanded', 'false');
+                });
+            });
+
+            // Prevent dropdown menu clicks from closing immediately
+            document.querySelectorAll('.nav-dropdown-menu').forEach(function (menu) {
+                menu.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                });
+            });
+
+            // Mobile hamburger toggle
+            var hamburger = document.querySelector('.nav-hamburger');
+            var mobileDrawer = document.getElementById('mobile-nav-drawer');
+            if (hamburger && mobileDrawer) {
+                hamburger.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    var isOpen = mobileDrawer.classList.toggle('open');
+                    hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                    if (isOpen) {
+                        mobileDrawer.removeAttribute('inert');
+                    } else {
+                        mobileDrawer.setAttribute('inert', '');
+                    }
+                });
+                document.addEventListener('click', function (e) {
+                    if (!mobileDrawer.contains(e.target) && !hamburger.contains(e.target)) {
+                        mobileDrawer.classList.remove('open');
+                        mobileDrawer.setAttribute('inert', '');
+                        hamburger.setAttribute('aria-expanded', 'false');
+                    }
+                });
             }
-            if (!hasLang) {
-                var LANG = {
-                    CA:'en-ca', US:'en', GB:'en', AU:'en', NZ:'en', IE:'en',
-                    FR:'fr', BE:'fr', CH:'fr', LU:'fr',
-                    DE:'de', AT:'de',
-                    IT:'it', ES:'es', MX:'es', AR:'es', CO:'es', CL:'es',
-                    PT:'pt', BR:'pt',
-                    JP:'ja', CN:'zh', TW:'zh', HK:'zh',
-                    KR:'ko', SA:'ar', AE:'ar', EG:'ar', MA:'ar'
+
+            // Mobile expandable sections
+            document.querySelectorAll('.mobile-nav-section-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var subId = btn.getAttribute('data-mobile-section');
+                    var sub = document.getElementById(subId);
+                    if (!sub) return;
+                    var isOpen = sub.classList.toggle('open');
+                    btn.classList.toggle('open', isOpen);
+                    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                });
+            });
+
+            // Close mobile drawer when a link inside it is clicked
+            if (mobileDrawer) {
+                mobileDrawer.querySelectorAll('a').forEach(function (a) {
+                    a.addEventListener('click', function () {
+                        mobileDrawer.classList.remove('open');
+                        mobileDrawer.setAttribute('inert', '');
+                        if (hamburger) {
+                            hamburger.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+                });
+            }
+
+            // Desktop dropdown toggle
+            document.querySelectorAll('.nav-dropdown-btn').forEach(function (btn) {
+                btn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    var menuId = btn.getAttribute('data-dropdown');
+                    var menu = document.getElementById(menuId);
+                    if (!menu) return;
+                    var isOpen = menu.classList.contains('open');
+                    document.querySelectorAll('.nav-dropdown-menu').forEach(function (m) {
+                        m.classList.remove('open');
+                        m.setAttribute('inert', '');
+                    });
+                    document.querySelectorAll('.nav-dropdown-btn').forEach(function (b) {
+                        b.setAttribute('aria-expanded', 'false');
+                    });
+                    if (!isOpen) {
+                        menu.classList.add('open');
+                        menu.removeAttribute('inert');
+                        btn.setAttribute('aria-expanded', 'true');
+                    }
+                });
+            });
+
+            // Close all dropdowns on outside click
+            document.addEventListener('click', function () {
+                document.querySelectorAll('.nav-dropdown-menu').forEach(function (m) {
+                    m.classList.remove('open');
+                    m.setAttribute('inert', '');
+                });
+                document.querySelectorAll('.nav-dropdown-btn').forEach(function (b) {
+                    b.setAttribute('aria-expanded', 'false');
+                });
+            });
+
+            // Prevent dropdown menu clicks from closing immediately
+            document.querySelectorAll('.nav-dropdown-menu').forEach(function (menu) {
+                menu.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                });
+            });
+
+            // Mobile hamburger toggle
+            var hamburger = document.querySelector('.nav-hamburger');
+            var mobileDrawer = document.getElementById('mobile-nav-drawer');
+            if (hamburger && mobileDrawer) {
+                hamburger.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    var isOpen = mobileDrawer.classList.toggle('open');
+                    hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                    if (isOpen) {
+                        mobileDrawer.removeAttribute('inert');
+                    } else {
+                        mobileDrawer.setAttribute('inert', '');
+                    }
+                });
+                document.addEventListener('click', function (e) {
+                    if (!mobileDrawer.contains(e.target) && !hamburger.contains(e.target)) {
+                        mobileDrawer.classList.remove('open');
+                        mobileDrawer.setAttribute('inert', '');
+                        hamburger.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            }
+
+            // Mobile expandable sections
+            document.querySelectorAll('.mobile-nav-section-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var subId = btn.getAttribute('data-mobile-section');
+                    var sub = document.getElementById(subId);
+                    if (!sub) return;
+                    var isOpen = sub.classList.toggle('open');
+                    btn.classList.toggle('open', isOpen);
+                    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                });
+            });
+
+            // Close mobile drawer when a link inside it is clicked
+            if (mobileDrawer) {
+                mobileDrawer.querySelectorAll('a').forEach(function (a) {
+                    a.addEventListener('click', function () {
+                        mobileDrawer.classList.remove('open');
+                        mobileDrawer.setAttribute('inert', '');
+                        if (hamburger) {
+                            hamburger.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+                });
+            }
+
+            // Lang selector
+            (function () {
+                var LANGS = {
+                    en: { code: 'EN' },
+                    'en-ca': { code: 'EN' },
+                    es: { code: 'ES' },
+                    fr: { code: 'FR' },
+                    de: { code: 'DE' },
+                    it: { code: 'IT' },
+                    pt: { code: 'PT' },
+                    ja: { code: 'JA' },
+                    zh: { code: 'ZH' },
+                    ko: { code: 'KO' },
+                    ar: { code: 'AR' },
                 };
-                var nav = (navigator.language || '').toLowerCase();
-                var lang = (cc === 'CA' && nav.startsWith('fr')) ? 'fr' : LANG[cc];
-                if (lang) {
-                    var btn = document.querySelector('.lang-option[data-lang="' + lang + '"]');
-                    if (btn) btn.click();
+                function setLang(lang) {
+                    var info = LANGS[lang] || LANGS['en'];
+                    var codeEl = document.getElementById('current-lang-code');
+                    if (codeEl) codeEl.textContent = info.code;
+                    document.querySelectorAll('.lang-option').forEach(function (btn) {
+                        btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+                    });
+                    try {
+                        localStorage.setItem('vaultlister_locale', lang);
+                    } catch (e) {}
                 }
-            }
-        })
-        .catch(function() {});
-})();
-</script>
-<script src="/public-auth-nav.js" defer></script>
-</body>
+                function detectLang() {
+                    try {
+                        var stored = localStorage.getItem('vaultlister_locale');
+                        if (stored && LANGS[stored]) return stored;
+                    } catch (e) {}
+                    var nav = (navigator.language || '').toLowerCase();
+                    if (nav === 'en-ca' || nav.startsWith('en-ca')) return 'en-ca';
+                    var base = nav.split('-')[0];
+                    return LANGS[base] ? base : 'en';
+                }
+                document.addEventListener('DOMContentLoaded', function () {
+                    var btn = document.querySelector('.lang-btn');
+                    var dropdown = document.getElementById('lang-dropdown');
+                    if (!btn || !dropdown) return;
+                    setLang(detectLang());
+                    btn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        var open = dropdown.classList.toggle('open');
+                        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                    });
+                    document.addEventListener('click', function (e) {
+                        if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
+                            dropdown.classList.remove('open');
+                            btn.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+                    dropdown.querySelectorAll('.lang-option').forEach(function (opt) {
+                        opt.addEventListener('click', function () {
+                            setLang(opt.getAttribute('data-lang'));
+                            dropdown.classList.remove('open');
+                            btn.setAttribute('aria-expanded', 'false');
+                        });
+                    });
+                });
+            })();
+
+            // Currency selector
+            (function () {
+                var saved = localStorage.getItem('vl_currency') || 'CAD';
+                var el = document.getElementById('current-currency-code');
+                if (el) el.textContent = saved;
+                document.querySelectorAll('.currency-option').forEach(function (btn) {
+                    if (btn.dataset.currency === saved) btn.classList.add('active');
+                    btn.addEventListener('click', function () {
+                        var c = this.dataset.currency;
+                        localStorage.setItem('vl_currency', c);
+                        document.querySelectorAll('.currency-option').forEach(function (b) {
+                            b.classList.remove('active');
+                        });
+                        this.classList.add('active');
+                        var codeEl = document.getElementById('current-currency-code');
+                        if (codeEl) codeEl.textContent = c;
+                        var dd = document.getElementById('currency-dropdown');
+                        if (dd) dd.classList.remove('open');
+                    });
+                });
+                var btn = document.querySelector('.currency-btn');
+                if (btn) {
+                    btn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        var dd = document.getElementById('currency-dropdown');
+                        dd.classList.toggle('open');
+                        btn.setAttribute('aria-expanded', dd.classList.contains('open'));
+                    });
+                }
+                document.addEventListener('click', function () {
+                    var dd = document.getElementById('currency-dropdown');
+                    if (dd) {
+                        dd.classList.remove('open');
+                    }
+                    if (btn) btn.setAttribute('aria-expanded', 'false');
+                });
+            })();
+        </script>
+        <script>
+            (function () {
+                var hasCurrency = !!localStorage.getItem('vl_currency');
+                var hasLang = !!localStorage.getItem('vaultlister_locale');
+                if (hasCurrency && hasLang) return;
+                fetch('/api/geo')
+                    .then(function (r) {
+                        return r.json();
+                    })
+                    .then(function (d) {
+                        var cc = d.country_code || '';
+                        if (!hasCurrency) {
+                            var CURR = {
+                                CA: 'CAD',
+                                US: 'USD',
+                                GB: 'GBP',
+                                AU: 'AUD',
+                                NZ: 'AUD',
+                                FR: 'EUR',
+                                DE: 'EUR',
+                                IT: 'EUR',
+                                ES: 'EUR',
+                                NL: 'EUR',
+                                BE: 'EUR',
+                                AT: 'EUR',
+                                FI: 'EUR',
+                                IE: 'EUR',
+                                PT: 'EUR',
+                                GR: 'EUR',
+                                LU: 'EUR',
+                                SK: 'EUR',
+                                SI: 'EUR',
+                                EE: 'EUR',
+                                LV: 'EUR',
+                                LT: 'EUR',
+                                CY: 'EUR',
+                                MT: 'EUR',
+                            };
+                            var curr = CURR[cc];
+                            if (curr) {
+                                var btn = document.querySelector('.currency-option[data-currency="' + curr + '"]');
+                                if (btn) btn.click();
+                            }
+                        }
+                        if (!hasLang) {
+                            var LANG = {
+                                CA: 'en-ca',
+                                US: 'en',
+                                GB: 'en',
+                                AU: 'en',
+                                NZ: 'en',
+                                IE: 'en',
+                                FR: 'fr',
+                                BE: 'fr',
+                                CH: 'fr',
+                                LU: 'fr',
+                                DE: 'de',
+                                AT: 'de',
+                                IT: 'it',
+                                ES: 'es',
+                                MX: 'es',
+                                AR: 'es',
+                                CO: 'es',
+                                CL: 'es',
+                                PT: 'pt',
+                                BR: 'pt',
+                                JP: 'ja',
+                                CN: 'zh',
+                                TW: 'zh',
+                                HK: 'zh',
+                                KR: 'ko',
+                                SA: 'ar',
+                                AE: 'ar',
+                                EG: 'ar',
+                                MA: 'ar',
+                            };
+                            var nav = (navigator.language || '').toLowerCase();
+                            var lang = cc === 'CA' && nav.startsWith('fr') ? 'fr' : LANG[cc];
+                            if (lang) {
+                                var btn = document.querySelector('.lang-option[data-lang="' + lang + '"]');
+                                if (btn) btn.click();
+                            }
+                        }
+                    })
+                    .catch(function () {});
+            })();
+        </script>
+        <script src="/public-auth-nav.js" defer></script>
+    </body>
 </html>

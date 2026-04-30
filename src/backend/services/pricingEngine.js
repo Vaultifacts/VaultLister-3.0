@@ -17,23 +17,23 @@ function secureRandomInt(max) {
 
 // Seasonality factors by month (index 0 = January)
 const SEASONALITY_FACTORS = {
-    clothing: [0.85, 0.80, 0.90, 0.95, 1.00, 0.95, 0.85, 0.90, 1.05, 1.10, 1.20, 1.25],
-    shoes: [0.90, 0.85, 0.95, 1.00, 1.05, 1.00, 0.90, 1.05, 1.10, 1.05, 1.15, 1.20],
-    electronics: [0.95, 0.90, 0.95, 0.95, 1.00, 1.00, 0.95, 1.00, 1.05, 1.10, 1.25, 1.30],
-    home: [0.85, 0.85, 0.95, 1.00, 1.05, 1.00, 0.95, 0.95, 1.00, 1.05, 1.15, 1.10],
-    accessories: [0.90, 0.95, 0.95, 1.00, 1.05, 1.00, 0.95, 1.00, 1.05, 1.05, 1.15, 1.20],
-    default: [0.95, 0.90, 0.95, 1.00, 1.00, 1.00, 0.95, 1.00, 1.05, 1.05, 1.15, 1.15]
+    clothing: [0.85, 0.8, 0.9, 0.95, 1.0, 0.95, 0.85, 0.9, 1.05, 1.1, 1.2, 1.25],
+    shoes: [0.9, 0.85, 0.95, 1.0, 1.05, 1.0, 0.9, 1.05, 1.1, 1.05, 1.15, 1.2],
+    electronics: [0.95, 0.9, 0.95, 0.95, 1.0, 1.0, 0.95, 1.0, 1.05, 1.1, 1.25, 1.3],
+    home: [0.85, 0.85, 0.95, 1.0, 1.05, 1.0, 0.95, 0.95, 1.0, 1.05, 1.15, 1.1],
+    accessories: [0.9, 0.95, 0.95, 1.0, 1.05, 1.0, 0.95, 1.0, 1.05, 1.05, 1.15, 1.2],
+    default: [0.95, 0.9, 0.95, 1.0, 1.0, 1.0, 0.95, 1.0, 1.05, 1.05, 1.15, 1.15],
 };
 
 // Condition multipliers
 const CONDITION_MULTIPLIERS = {
-    'new': 1.0,
-    'new_with_tags': 1.0,
-    'like_new': 0.92,
-    'excellent': 0.85,
-    'good': 0.75,
-    'fair': 0.60,
-    'poor': 0.40
+    new: 1.0,
+    new_with_tags: 1.0,
+    like_new: 0.92,
+    excellent: 0.85,
+    good: 0.75,
+    fair: 0.6,
+    poor: 0.4,
 };
 
 /**
@@ -44,9 +44,12 @@ const CONDITION_MULTIPLIERS = {
  * @returns {Object} Price prediction
  */
 export async function generatePricePrediction(inventoryId, userId, options = {}) {
-    const item = await query.get(`
+    const item = await query.get(
+        `
         SELECT * FROM inventory WHERE id = ? AND user_id = ?
-    `, [inventoryId, userId]);
+    `,
+        [inventoryId, userId],
+    );
 
     if (!item) {
         throw new Error('Inventory item not found');
@@ -84,34 +87,46 @@ export async function generatePricePrediction(inventoryId, userId, options = {})
         platform: options.platform || null,
         expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
     };
 
     logger.info('[PricingEngine] Prediction generated', userId, {
         inventory_id: inventoryId,
         source: aiResult.source,
-        comparable_count: comparables.length
+        comparable_count: comparables.length,
     });
 
     // Store prediction
     try {
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO price_predictions (
                 id, user_id, inventory_id, predicted_price, confidence,
                 price_range_low, price_range_high, demand_score, recommendation,
                 recommendation_reason, comparable_count, avg_days_to_sell,
                 seasonality_factor, platform, expires_at, created_at, updated_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, [
-            prediction.id, prediction.user_id, prediction.inventory_id,
-            prediction.predicted_price, prediction.confidence,
-            prediction.price_range_low, prediction.price_range_high,
-            prediction.demand_score, prediction.recommendation,
-            prediction.recommendation_reason, prediction.comparable_count,
-            prediction.avg_days_to_sell, prediction.seasonality_factor,
-            prediction.platform, prediction.expires_at,
-            prediction.created_at, prediction.updated_at
-        ]);
+        `,
+            [
+                prediction.id,
+                prediction.user_id,
+                prediction.inventory_id,
+                prediction.predicted_price,
+                prediction.confidence,
+                prediction.price_range_low,
+                prediction.price_range_high,
+                prediction.demand_score,
+                prediction.recommendation,
+                prediction.recommendation_reason,
+                prediction.comparable_count,
+                prediction.avg_days_to_sell,
+                prediction.seasonality_factor,
+                prediction.platform,
+                prediction.expires_at,
+                prediction.created_at,
+                prediction.updated_at,
+            ],
+        );
     } catch (err) {
         // Table might not exist
         logger.info('[PricingEngine] Could not store prediction', null, { detail: err.message });
@@ -129,7 +144,8 @@ async function findComparableSales(item, options = {}) {
 
     try {
         // Try category-matched sales first
-        let sales = await query.all(`
+        let sales = await query.all(
+            `
             SELECT s.sale_price, s.platform, s.created_at,
                    i.category, i.condition,
                    CAST((EXTRACT(EPOCH FROM (s.created_at - s.created_at)) / 86400) AS INTEGER) AS daysToSell
@@ -141,10 +157,13 @@ async function findComparableSales(item, options = {}) {
               AND (i.category = ? OR i.category IS NULL)
             ORDER BY s.created_at DESC
             LIMIT 25
-        `, [item.user_id, ninetyDaysAgo, item.category || '']);
+        `,
+            [item.user_id, ninetyDaysAgo, item.category || ''],
+        );
 
         if (sales.length < 3) {
-            sales = await query.all(`
+            sales = await query.all(
+                `
                 SELECT s.sale_price, s.platform, s.created_at,
                        i.category, i.condition
                 FROM sales s
@@ -154,10 +173,12 @@ async function findComparableSales(item, options = {}) {
                   AND s.created_at >= ?
                 ORDER BY s.created_at DESC
                 LIMIT 25
-            `, [item.user_id, ninetyDaysAgo]);
+            `,
+                [item.user_id, ninetyDaysAgo],
+            );
         }
 
-        return sales.map(s => ({
+        return sales.map((s) => ({
             price: Number(s.sale_price) || 0,
             soldDate: new Date(s.created_at || Date.now()),
             daysToSell: 14,
@@ -165,7 +186,7 @@ async function findComparableSales(item, options = {}) {
             condition: s.condition || item.condition || 'good',
             sale_price: Number(s.sale_price) || 0,
             category: s.category || item.category,
-            created_at: s.created_at
+            created_at: s.created_at,
         }));
     } catch (err) {
         logger.warn('[PricingEngine] Could not fetch comparable sales', null, { detail: err.message });
@@ -193,7 +214,7 @@ function calculateBasePrice(comparables, item) {
         totalWeight += weight;
     }
 
-    return totalWeight > 0 ? weightedSum / totalWeight : (item.list_price || 50);
+    return totalWeight > 0 ? weightedSum / totalWeight : item.list_price || 50;
 }
 
 /**
@@ -213,19 +234,32 @@ function getSeasonalityFactor(category) {
     const normalizedCategory = (category || 'default').toLowerCase();
 
     let factors = SEASONALITY_FACTORS.default;
-    if (normalizedCategory.includes('cloth') || normalizedCategory.includes('shirt') ||
-        normalizedCategory.includes('dress') || normalizedCategory.includes('pant')) {
+    if (
+        normalizedCategory.includes('cloth') ||
+        normalizedCategory.includes('shirt') ||
+        normalizedCategory.includes('dress') ||
+        normalizedCategory.includes('pant')
+    ) {
         factors = SEASONALITY_FACTORS.clothing;
-    } else if (normalizedCategory.includes('shoe') || normalizedCategory.includes('sneaker') ||
-               normalizedCategory.includes('boot')) {
+    } else if (
+        normalizedCategory.includes('shoe') ||
+        normalizedCategory.includes('sneaker') ||
+        normalizedCategory.includes('boot')
+    ) {
         factors = SEASONALITY_FACTORS.shoes;
-    } else if (normalizedCategory.includes('electron') || normalizedCategory.includes('tech') ||
-               normalizedCategory.includes('phone')) {
+    } else if (
+        normalizedCategory.includes('electron') ||
+        normalizedCategory.includes('tech') ||
+        normalizedCategory.includes('phone')
+    ) {
         factors = SEASONALITY_FACTORS.electronics;
     } else if (normalizedCategory.includes('home') || normalizedCategory.includes('furniture')) {
         factors = SEASONALITY_FACTORS.home;
-    } else if (normalizedCategory.includes('accessor') || normalizedCategory.includes('bag') ||
-               normalizedCategory.includes('jewelry')) {
+    } else if (
+        normalizedCategory.includes('accessor') ||
+        normalizedCategory.includes('bag') ||
+        normalizedCategory.includes('jewelry')
+    ) {
         factors = SEASONALITY_FACTORS.accessories;
     }
 
@@ -259,7 +293,8 @@ export function calculateDemandScore(item, comparables = []) {
 
     // Factor 4: Price point attractiveness
     const price = item.list_price || 50;
-    if (price >= 25 && price <= 100) score += 10; // Sweet spot
+    if (price >= 25 && price <= 100)
+        score += 10; // Sweet spot
     else if (price > 200) score -= 5;
 
     return Math.max(0, Math.min(100, score));
@@ -279,7 +314,7 @@ export function getRecommendation(item, predictedPrice, demandScore) {
     if (demandScore >= 70 && priceDiff > 15) {
         return {
             action: 'price_up',
-            reason: `High demand (${demandScore}/100) suggests you could increase price by ${Math.round(priceDiff)}%`
+            reason: `High demand (${demandScore}/100) suggests you could increase price by ${Math.round(priceDiff)}%`,
         };
     }
 
@@ -287,7 +322,7 @@ export function getRecommendation(item, predictedPrice, demandScore) {
     if (demandScore < 40 && priceDiff < -15) {
         return {
             action: 'price_down',
-            reason: `Lower demand (${demandScore}/100) - consider reducing price by ${Math.abs(Math.round(priceDiff))}%`
+            reason: `Lower demand (${demandScore}/100) - consider reducing price by ${Math.abs(Math.round(priceDiff))}%`,
         };
     }
 
@@ -295,7 +330,7 @@ export function getRecommendation(item, predictedPrice, demandScore) {
     if (daysSinceListed > 30 && demandScore < 60) {
         return {
             action: 'relist',
-            reason: `Listed ${daysSinceListed} days ago with moderate demand - try relisting with fresh photos`
+            reason: `Listed ${daysSinceListed} days ago with moderate demand - try relisting with fresh photos`,
         };
     }
 
@@ -303,13 +338,13 @@ export function getRecommendation(item, predictedPrice, demandScore) {
     if (Math.abs(priceDiff) <= 10 && demandScore >= 50) {
         return {
             action: 'hold',
-            reason: `Price is well-optimized (within 10% of market). Demand score: ${demandScore}/100`
+            reason: `Price is well-optimized (within 10% of market). Demand score: ${demandScore}/100`,
         };
     }
 
     return {
         action: 'hold',
-        reason: `Current pricing appears reasonable. Monitor performance.`
+        reason: `Current pricing appears reasonable. Monitor performance.`,
     };
 }
 
@@ -344,9 +379,9 @@ function calculateConfidence(comparables, item) {
 function calculateVariance(comparables) {
     if (comparables.length < 2) return 10;
 
-    const prices = comparables.map(c => c.price);
+    const prices = comparables.map((c) => c.price);
     const mean = prices.reduce((a, b) => a + b, 0) / prices.length;
-    const squaredDiffs = prices.map(p => Math.pow(p - mean, 2));
+    const squaredDiffs = prices.map((p) => Math.pow(p - mean, 2));
     const variance = Math.sqrt(squaredDiffs.reduce((a, b) => a + b, 0) / prices.length);
 
     return Math.round(variance * 100) / 100;
@@ -375,7 +410,7 @@ export async function generateBatchPredictions(inventoryIds, userId, options = {
         } catch (error) {
             predictions.push({
                 inventory_id: inventoryId,
-                error: error.message
+                error: error.message,
             });
         }
     }
@@ -396,7 +431,8 @@ export async function getDemandForecast(category, platform = null, userId = null
     if (userId) {
         try {
             const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
-            const salesData = await query.all(`
+            const salesData = await query.all(
+                `
                 SELECT s.sale_price, s.platform, s.created_at, i.category
                 FROM sales s
                 LEFT JOIN inventory i ON s.inventory_id = i.id
@@ -405,13 +441,14 @@ export async function getDemandForecast(category, platform = null, userId = null
                   AND s.created_at >= ?
                 ORDER BY s.created_at DESC
                 LIMIT 200
-            `, [userId, ninetyDaysAgo]);
+            `,
+                [userId, ninetyDaysAgo],
+            );
 
             if (salesData.length > 0) {
                 const forecasts = await claudeDemandForecast(userId, salesData);
-                const match = forecasts.find(f =>
-                    f.category.toLowerCase() === (category || '').toLowerCase()
-                ) || forecasts[0];
+                const match =
+                    forecasts.find((f) => f.category.toLowerCase() === (category || '').toLowerCase()) || forecasts[0];
 
                 if (match) {
                     return {
@@ -422,13 +459,13 @@ export async function getDemandForecast(category, platform = null, userId = null
                         price_trend: match.price_trend,
                         seasonality_index: match.seasonality_index,
                         notes: match.notes,
-                        source: match.source
+                        source: match.source,
                     };
                 }
             }
         } catch (err) {
             logger.warn('[PricingEngine] getDemandForecast AI call failed, using seasonal fallback', null, {
-                detail: err.message
+                detail: err.message,
             });
         }
     }
@@ -437,9 +474,15 @@ export async function getDemandForecast(category, platform = null, userId = null
     let demandLevel = 'medium';
     let priceTrend = 'stable';
 
-    if (seasonFactor >= 1.15) { demandLevel = 'high'; priceTrend = 'rising'; }
-    else if (seasonFactor >= 1.05) { demandLevel = 'high'; }
-    else if (seasonFactor <= 0.85) { demandLevel = 'low'; priceTrend = 'falling'; }
+    if (seasonFactor >= 1.15) {
+        demandLevel = 'high';
+        priceTrend = 'rising';
+    } else if (seasonFactor >= 1.05) {
+        demandLevel = 'high';
+    } else if (seasonFactor <= 0.85) {
+        demandLevel = 'low';
+        priceTrend = 'falling';
+    }
 
     return {
         category,
@@ -449,13 +492,25 @@ export async function getDemandForecast(category, platform = null, userId = null
         price_trend: priceTrend,
         seasonality_index: seasonFactor,
         notes: generateForecastNotes(category, seasonFactor, month),
-        source: 'statistical'
+        source: 'statistical',
     };
 }
 
 function generateForecastNotes(category, seasonFactor, month) {
-    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-                        'July', 'August', 'September', 'October', 'November', 'December'];
+    const monthNames = [
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December',
+    ];
 
     if (seasonFactor >= 1.15) {
         return `${monthNames[month]} is a peak season for ${category}. Consider listing more inventory now.`;
@@ -470,5 +525,5 @@ export default {
     generateBatchPredictions,
     calculateDemandScore,
     getRecommendation,
-    getDemandForecast
+    getDemandForecast,
 };

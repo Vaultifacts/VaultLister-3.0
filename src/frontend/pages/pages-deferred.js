@@ -9,7 +9,7 @@ Object.assign(pages, {
         // Apply category filter if active
         const categoryFilter = store.state.categoryFilter;
         if (categoryFilter) {
-            items = items.filter(i => i.category === categoryFilter);
+            items = items.filter((i) => i.category === categoryFilter);
         }
 
         // Lazy-load categories on first render
@@ -22,29 +22,37 @@ Object.assign(pages, {
         const totalValue = items.reduce((sum, i) => sum + (parseFloat(i.list_price) || 0), 0);
         const totalCost = items.reduce((sum, i) => sum + (parseFloat(i.cost_price) || 0), 0);
         const potentialProfit = totalValue - totalCost;
-        const lowStockItems = items.filter(i => {
+        const lowStockItems = items.filter((i) => {
             const qty = i.quantity != null ? i.quantity : 1;
             const threshold = i.low_stock_threshold || 5;
             return qty <= threshold && qty > 0;
         }).length;
-        const outOfStock = items.filter(i => (i.quantity != null ? i.quantity : 1) === 0).length;
-        const activeItems = items.filter(i => i.status === 'active').length;
-        const draftItems = items.filter(i => i.status === 'draft').length;
+        const outOfStock = items.filter((i) => (i.quantity != null ? i.quantity : 1) === 0).length;
+        const activeItems = items.filter((i) => i.status === 'active').length;
+        const draftItems = items.filter((i) => i.status === 'draft').length;
 
         // Calculate stale stock (items 90+ days old)
         const today = new Date();
-        const staleItems = items.filter(i => {
+        const staleItems = items.filter((i) => {
             const createdDate = new Date(i.created_at);
             const diffDays = Math.floor((today - createdDate) / (1000 * 60 * 60 * 24));
             return diffDays >= 90;
         }).length;
 
         // Calculate average age of inventory
-        const avgAge = items.length > 0 ? Math.max(0, Math.round(items.reduce((sum, i) => {
-            const createdDate = new Date(i.created_at);
-            const days = Math.floor((today - createdDate) / (1000 * 60 * 60 * 24));
-            return sum + (Number.isFinite(days) && days >= 0 ? days : 0);
-        }, 0) / items.length)) : 0;
+        const avgAge =
+            items.length > 0
+                ? Math.max(
+                      0,
+                      Math.round(
+                          items.reduce((sum, i) => {
+                              const createdDate = new Date(i.created_at);
+                              const days = Math.floor((today - createdDate) / (1000 * 60 * 60 * 24));
+                              return sum + (Number.isFinite(days) && days >= 0 ? days : 0);
+                          }, 0) / items.length,
+                      ),
+                  )
+                : 0;
 
         return `
             <!-- Inventory Tab Bar -->
@@ -89,7 +97,7 @@ Object.assign(pages, {
                                 <button aria-haspopup="menu" class="btn btn-secondary" data-testid="hero-tools-dropdown">
                                     ${components.icon('tool', 16)} Tools
                                 </button>
-                                <div class="dropdown-menu" style="right: 0; min-width: 160px;">
+                                <div class="dropdown-menu" style="right: 0; min-width: 160px;" aria-hidden="true">
                                     <button class="dropdown-item" data-testid="tools-bulk-prices" onclick="handlers.showBulkPriceUpdate()">
                                         ${components.icon('dollar-sign', 16)} Bulk Prices
                                     </button>
@@ -189,7 +197,7 @@ Object.assign(pages, {
                         <input type="text" class="form-input" aria-label="Search inventory items" id="inventory-search" data-testid="inventory-search-input" style="width: 200px" placeholder="Search items..." value="${store.state.searchTerm || ''}" oninput="handlers.debouncedSearch(this.value)">
                         <select aria-label="Filter by category" class="form-select" style="width:140px;height:36px;font-size:13px;" onchange="handlers.filterByCategory(this.value)" data-testid="category-filter-select">
                             <option value="">All Categories</option>
-                            ${(store.state.inventoryCategories || []).map(c => '<option value="' + escapeHtml(c.name) + '"' + (store.state.categoryFilter === c.name ? ' selected' : '') + '>' + escapeHtml(c.name) + '</option>').join('')}
+                            ${(store.state.inventoryCategories || []).map((c) => '<option value="' + escapeHtml(c.name) + '"' + (store.state.categoryFilter === c.name ? ' selected' : '') + '>' + escapeHtml(c.name) + '</option>').join('')}
                         </select>
                         <button class="btn btn-secondary btn-sm" data-testid="inventory-filter-btn" onclick="handlers.showFilterMenu()">
                             ${components.icon('filter', 14)} Filters
@@ -247,7 +255,9 @@ Object.assign(pages, {
                     </div>
                 </div>
                 <div class="table-container inventory-catalog-table-container">
-                    ${items.length > 0 ? `
+                    ${
+                        items.length > 0
+                            ? `
                         <table class="table inventory-catalog-table">
                             <colgroup>
                                 <col style="width: 4%;">
@@ -267,68 +277,89 @@ Object.assign(pages, {
                             </colgroup>
                             <thead>
                                 <tr>
-                                    <th>
+                                    <th scope="col">
                                         <input type="checkbox" id="select-all-checkbox" data-testid="select-all-checkbox" onchange="handlers.selectAll(this.checked)" aria-label="Select All Checkbox">
                                         <label for="select-all-checkbox" style="margin-left: 4px; font-size: 12px; cursor: pointer;" title="Select all">All</label>
                                     </th>
-                                    <th>Image</th>
-                                    <th class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-title" onclick="handlers.toggleSort('title')">
-                                        Item <span id="sort-title">${handlers.currentSort?.field === "title" ? (handlers.currentSort?.direction === "asc" ? "↑" : "↓") : "⇅"}</span>
+                                    <th scope="col">Image</th>
+                                    <th scope="col" class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-title" onclick="handlers.toggleSort('title')">
+                                        Item <span id="sort-title">${handlers.currentSort?.field === 'title' ? (handlers.currentSort?.direction === 'asc' ? '↑' : '↓') : '⇅'}</span>
                                     </th>
-                                    <th class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-sku" onclick="handlers.toggleSort('sku')">
-                                        SKU <span id="sort-sku">${handlers.currentSort?.field === "sku" ? (handlers.currentSort?.direction === "asc" ? "↑" : "↓") : "⇅"}</span>
+                                    <th scope="col" class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-sku" onclick="handlers.toggleSort('sku')">
+                                        SKU <span id="sort-sku">${handlers.currentSort?.field === 'sku' ? (handlers.currentSort?.direction === 'asc' ? '↑' : '↓') : '⇅'}</span>
                                     </th>
-                                    <th class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-price" onclick="handlers.toggleSort('list_price')">
-                                        Price <span id="sort-list_price">${handlers.currentSort?.field === "list_price" ? (handlers.currentSort?.direction === "asc" ? "↑" : "↓") : "⇅"}</span>
+                                    <th scope="col" class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-price" onclick="handlers.toggleSort('list_price')">
+                                        Price <span id="sort-list_price">${handlers.currentSort?.field === 'list_price' ? (handlers.currentSort?.direction === 'asc' ? '↑' : '↓') : '⇅'}</span>
                                     </th>
-                                    <th data-testid="sort-header-marketplace">
+                                    <th scope="col" data-testid="sort-header-marketplace">
                                         Marketplace
                                     </th>
-                                    <th class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-quantity" onclick="handlers.toggleSort('quantity')">
-                                        Qty On Hand <span id="sort-quantity">${handlers.currentSort?.field === "quantity" ? (handlers.currentSort?.direction === "asc" ? "↑" : "↓") : "⇅"}</span>
+                                    <th scope="col" class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-quantity" onclick="handlers.toggleSort('quantity')">
+                                        Qty On Hand <span id="sort-quantity">${handlers.currentSort?.field === 'quantity' ? (handlers.currentSort?.direction === 'asc' ? '↑' : '↓') : '⇅'}</span>
                                     </th>
-                                    <th class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-stock-level" onclick="handlers.toggleSort('stock_level')">
-                                        Stock Level <span id="sort-stock_level">${handlers.currentSort?.field === "stock_level" ? (handlers.currentSort?.direction === "asc" ? "↑" : "↓") : "⇅"}</span>
+                                    <th scope="col" class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-stock-level" onclick="handlers.toggleSort('stock_level')">
+                                        Stock Level <span id="sort-stock_level">${handlers.currentSort?.field === 'stock_level' ? (handlers.currentSort?.direction === 'asc' ? '↑' : '↓') : '⇅'}</span>
                                     </th>
-                                    <th class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-location" onclick="handlers.toggleSort('location')">
-                                        Location <span id="sort-location">${handlers.currentSort?.field === "location" ? (handlers.currentSort?.direction === "asc" ? "↑" : "↓") : "⇅"}</span>
+                                    <th scope="col" class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-location" onclick="handlers.toggleSort('location')">
+                                        Location <span id="sort-location">${handlers.currentSort?.field === 'location' ? (handlers.currentSort?.direction === 'asc' ? '↑' : '↓') : '⇅'}</span>
                                     </th>
-                                    <th class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-tags" onclick="handlers.toggleSort('tags')">
-                                        Tags <span id="sort-tags">${handlers.currentSort?.field === "tags" ? (handlers.currentSort?.direction === "asc" ? "↑" : "↓") : "⇅"}</span>
+                                    <th scope="col" class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-tags" onclick="handlers.toggleSort('tags')">
+                                        Tags <span id="sort-tags">${handlers.currentSort?.field === 'tags' ? (handlers.currentSort?.direction === 'asc' ? '↑' : '↓') : '⇅'}</span>
                                     </th>
-                                    <th class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-status" onclick="handlers.toggleSort('status')">
-                                        Status <span id="sort-status">${handlers.currentSort?.field === "status" ? (handlers.currentSort?.direction === "asc" ? "↑" : "↓") : "⇅"}</span>
+                                    <th scope="col" class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-status" onclick="handlers.toggleSort('status')">
+                                        Status <span id="sort-status">${handlers.currentSort?.field === 'status' ? (handlers.currentSort?.direction === 'asc' ? '↑' : '↓') : '⇅'}</span>
                                     </th>
-                                    <th class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-created" onclick="handlers.toggleSort('created_at')">
-                                        Created <span id="sort-created_at">${handlers.currentSort?.field === "created_at" ? (handlers.currentSort?.direction === "asc" ? "↑" : "↓") : "⇅"}</span>
+                                    <th scope="col" class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-created" onclick="handlers.toggleSort('created_at')">
+                                        Created <span id="sort-created_at">${handlers.currentSort?.field === 'created_at' ? (handlers.currentSort?.direction === 'asc' ? '↑' : '↓') : '⇅'}</span>
                                     </th>
-                                    <th class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-age" onclick="handlers.toggleSort('age')">
-                                        Age <span id="sort-age">${handlers.currentSort?.field === "age" ? (handlers.currentSort?.direction === "asc" ? "↑" : "↓") : "⇅"}</span>
+                                    <th scope="col" class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-age" onclick="handlers.toggleSort('age')">
+                                        Age <span id="sort-age">${handlers.currentSort?.field === 'age' ? (handlers.currentSort?.direction === 'asc' ? '↑' : '↓') : '⇅'}</span>
                                     </th>
-                                    <th>Actions</th>
+                                    <th scope="col">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${items.map(item => {
-                                    // Use cached parsed values to avoid repeated JSON.parse
-                                    let imageUrl = null;
-                                    const images = item._parsedImages || (item._parsedImages = (() => { try { return JSON.parse(item.images || '[]'); } catch { return []; } })());
-                                    if (images.length > 0) imageUrl = images[0];
+                                ${items
+                                    .map((item) => {
+                                        // Use cached parsed values to avoid repeated JSON.parse
+                                        let imageUrl = null;
+                                        const images =
+                                            item._parsedImages ||
+                                            (item._parsedImages = (() => {
+                                                try {
+                                                    return JSON.parse(item.images || '[]');
+                                                } catch {
+                                                    return [];
+                                                }
+                                            })());
+                                        if (images.length > 0) imageUrl = images[0];
 
-                                    let tagsHtml = '-';
-                                    const tags = item._parsedTags || (item._parsedTags = (() => { try { return JSON.parse(item.tags || '[]'); } catch { return []; } })());
-                                    if (tags.length > 0) {
-                                        tagsHtml = tags.slice(0, 2).map(tag =>
-                                            `<span class="badge badge-gray text-xs">${escapeHtml(tag)}</span>`
-                                        ).join('');
-                                    }
+                                        let tagsHtml = '-';
+                                        const tags =
+                                            item._parsedTags ||
+                                            (item._parsedTags = (() => {
+                                                try {
+                                                    return JSON.parse(item.tags || '[]');
+                                                } catch {
+                                                    return [];
+                                                }
+                                            })());
+                                        if (tags.length > 0) {
+                                            tagsHtml = tags
+                                                .slice(0, 2)
+                                                .map(
+                                                    (tag) =>
+                                                        `<span class="badge badge-gray text-xs">${escapeHtml(tag)}</span>`,
+                                                )
+                                                .join('');
+                                        }
 
-                                    const firstLetter = item.title ? item.title.charAt(0).toUpperCase() : '?';
-                                    const imageHtml = imageUrl ?
-                                        `<img class="inventory-thumb" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(item.title)}">` :
-                                        `<div class="inventory-thumb inventory-thumb-placeholder">${firstLetter}</div>`;
+                                        const firstLetter = item.title ? item.title.charAt(0).toUpperCase() : '?';
+                                        const imageHtml = imageUrl
+                                            ? `<img class="inventory-thumb" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(item.title)}">`
+                                            : `<div class="inventory-thumb inventory-thumb-placeholder">${firstLetter}</div>`;
 
-                                    return `
+                                        return `
                                     <tr class="hover:bg-gray-50 cursor-pointer"
                                         data-context-menu="inventory-item"
                                         data-id="${item.id}"
@@ -346,32 +377,59 @@ Object.assign(pages, {
                                         <td class="text-sm">${escapeHtml(item.sku || '-')}</td>
                                         <td>
                                             <div class="font-medium">C$${parseFloat(item.list_price || 0).toFixed(2)}</div>
-                                            ${item.cost_price ? (() => {
-                                                const listP = parseFloat(item.list_price || 0);
-                                                const costP = parseFloat(item.cost_price || 0);
-                                                const profit = listP - costP;
-                                                const marginPct = listP > 0 ? (profit / listP * 100) : 0;
-                                                const marginColor = marginPct > 50 ? 'var(--success)' : marginPct > 20 ? 'var(--warning-600)' : 'var(--error)';
-                                                return `
+                                            ${
+                                                item.cost_price
+                                                    ? (() => {
+                                                          const listP = parseFloat(item.list_price || 0);
+                                                          const costP = parseFloat(item.cost_price || 0);
+                                                          const profit = listP - costP;
+                                                          const marginPct = listP > 0 ? (profit / listP) * 100 : 0;
+                                                          const marginColor =
+                                                              marginPct > 50
+                                                                  ? 'var(--success)'
+                                                                  : marginPct > 20
+                                                                    ? 'var(--warning-600)'
+                                                                    : 'var(--error)';
+                                                          return `
                                                 <div class="text-xs text-gray-500">Cost: C$${costP.toFixed(2)}</div>
                                                 <div class="text-xs" style="color: ${marginColor}; font-weight: 600;">
                                                     Profit: C$${profit.toFixed(2)} (${marginPct.toFixed(0)}%)
                                                 </div>`;
-                                            })() : ''}
+                                                      })()
+                                                    : ''
+                                            }
                                         </td>
                                         <td>
                                             <div class="flex gap-1">
                                                 ${(() => {
-                                                    const itemListings = (store.state.listings || []).filter(l => l.inventory_id === item.id);
+                                                    const itemListings = (store.state.listings || []).filter(
+                                                        (l) => l.inventory_id === item.id,
+                                                    );
                                                     if (itemListings.length === 0) {
                                                         return '<span class="text-xs text-gray-500">Not listed</span>';
                                                     }
-                                                    return itemListings.map(l => {
-                                                        const statusColors = { active: 'var(--success)', pending: 'var(--warning-600)', draft: 'var(--gray-400)', error: 'var(--error)', ended: 'var(--error)', sold: 'var(--primary-500)', archived: 'var(--gray-400)' };
-                                                        const sc = statusColors[l.status] || 'var(--gray-400)';
-                                                        const dot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + sc + ';margin-left:-2px;margin-right:4px;" title="' + ((l.status || 'unknown').charAt(0).toUpperCase() + (l.status || 'unknown').slice(1)) + '"></span>';
-                                                        return components.platformBadge(l.platform) + dot;
-                                                    }).join(' ');
+                                                    return itemListings
+                                                        .map((l) => {
+                                                            const statusColors = {
+                                                                active: 'var(--success)',
+                                                                pending: 'var(--warning-600)',
+                                                                draft: 'var(--gray-400)',
+                                                                error: 'var(--error)',
+                                                                ended: 'var(--error)',
+                                                                sold: 'var(--primary-500)',
+                                                                archived: 'var(--gray-400)',
+                                                            };
+                                                            const sc = statusColors[l.status] || 'var(--gray-400)';
+                                                            const dot =
+                                                                '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' +
+                                                                sc +
+                                                                ';margin-left:-2px;margin-right:4px;" title="' +
+                                                                ((l.status || 'unknown').charAt(0).toUpperCase() +
+                                                                    (l.status || 'unknown').slice(1)) +
+                                                                '"></span>';
+                                                            return components.platformBadge(l.platform) + dot;
+                                                        })
+                                                        .join(' ');
                                                 })()}
                                             </div>
                                         </td>
@@ -395,12 +453,16 @@ Object.assign(pages, {
                                             })()}
                                         </td>
                                         <td>
-                                            ${item.location || item.bin_location ? `
+                                            ${
+                                                item.location || item.bin_location
+                                                    ? `
                                                 <div class="flex flex-col gap-1">
                                                     ${item.location ? `<span class="text-sm font-medium">${escapeHtml(item.location)}</span>` : ''}
                                                     ${item.bin_location ? `<span class="text-xs text-gray-500">${components.icon('map-pin', 10)} ${escapeHtml(item.bin_location)}</span>` : ''}
                                                 </div>
-                                            ` : '<span class="text-xs text-gray-400">Not set</span>'}
+                                            `
+                                                    : '<span class="text-xs text-gray-400">Not set</span>'
+                                            }
                                         </td>
                                         <td>
                                             <div class="flex gap-1 flex-wrap">
@@ -455,22 +517,27 @@ Object.assign(pages, {
                                         </td>
                                     </tr>
                                     `;
-                                }).join('')}
+                                    })
+                                    .join('')}
                             </tbody>
                         </table>
-                    ` : (store.state.searchTerm ? `
+                    `
+                            : store.state.searchTerm
+                              ? `
                         <div class="empty-state" style="text-align: center; padding: 3rem 1rem;">
                             <div style="font-size: 48px; margin-bottom: 12px; opacity: 0.5;">${components.icon('search', 48)}</div>
                             <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">No results for "${escapeHtml(store.state.searchTerm)}"</h2>
                             <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;">Try adjusting your search or removing filters</p>
                             <button class="btn btn-secondary btn-sm" onclick="document.getElementById('inventory-search').value=''; handlers.debouncedSearch('')">Clear Search</button>
                         </div>
-                    ` : components.emptyState(
-                        'No inventory items yet',
-                        'Start by adding your first item to track and manage your stock',
-                        'Add Your First Item',
-                        "modals.addItem()"
-                    ))}
+                    `
+                              : components.emptyState(
+                                    'No inventory items yet',
+                                    'Start by adding your first item to track and manage your stock',
+                                    'Add Your First Item',
+                                    'modals.addItem()',
+                                )
+                    }
                 </div>
             </div>
 
@@ -538,7 +605,7 @@ Object.assign(pages, {
                                 ${components.icon('plus', 16)} Add New Listing(s)
                                 ${components.icon('chevron-down', 14)}
                             </button>
-                            <div class="dropdown-menu" style="min-width: 220px; right: 0;">
+                            <div class="dropdown-menu" style="min-width: 220px; right: 0;" aria-hidden="true">
                                 <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); handlers.showImportFromMarketplace()">
                                     ${components.icon('import', 16)} Import From Marketplace
                                 </button>
@@ -585,7 +652,7 @@ Object.assign(pages, {
                                 ${components.icon('plus', 16)} Add New Listing(s)
                                 ${components.icon('chevron-down', 14)}
                             </button>
-                            <div class="dropdown-menu" style="min-width: 220px; right: 0;">
+                            <div class="dropdown-menu" style="min-width: 220px; right: 0;" aria-hidden="true">
                                 <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); handlers.showImportFromMarketplace()">
                                     ${components.icon('import', 16)} Import From Marketplace
                                 </button>
@@ -614,9 +681,13 @@ Object.assign(pages, {
         // Archived listings tab
         if (currentListingsTab === 'archived') {
             const archivedSearch = (store.state.archivedListingsSearch || '').toLowerCase();
-            const allArchived = (store.state.listings || []).filter(l => l.status === 'archived');
+            const allArchived = (store.state.listings || []).filter((l) => l.status === 'archived');
             const archivedListings = archivedSearch
-                ? allArchived.filter(l => (l.title || '').toLowerCase().includes(archivedSearch) || (l.sku || '').toLowerCase().includes(archivedSearch))
+                ? allArchived.filter(
+                      (l) =>
+                          (l.title || '').toLowerCase().includes(archivedSearch) ||
+                          (l.sku || '').toLowerCase().includes(archivedSearch),
+                  )
                 : allArchived;
             return `
                 <div class="page-header flex justify-between items-start">
@@ -650,7 +721,9 @@ Object.assign(pages, {
                             <span class="text-sm text-gray-500">${archivedListings.length} of ${allArchived.length} archived</span>
                         </div>
                     </div>
-                    ${archivedListings.length > 0 ? `
+                    ${
+                        archivedListings.length > 0
+                            ? `
                         <div class="table-container">
                             <table class="table">
                                 <thead>
@@ -664,10 +737,15 @@ Object.assign(pages, {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${archivedListings.map(listing => {
-                                        const images = listing.images ? (typeof listing.images === 'string' ? JSON.parse(listing.images) : listing.images) : [];
-                                        const firstImage = images[0] || 'https://placehold.co/60x60?text=No+Image';
-                                        return `
+                                    ${archivedListings
+                                        .map((listing) => {
+                                            const images = listing.images
+                                                ? typeof listing.images === 'string'
+                                                    ? JSON.parse(listing.images)
+                                                    : listing.images
+                                                : [];
+                                            const firstImage = images[0] || 'https://placehold.co/60x60?text=No+Image';
+                                            return `
                                             <tr>
                                                 <td>
                                                     <img src="${escapeHtml(firstImage)}" alt="${escapeHtml(listing.title)}"
@@ -692,67 +770,83 @@ Object.assign(pages, {
                                                 </td>
                                             </tr>
                                         `;
-                                    }).join('')}
+                                        })
+                                        .join('')}
                                 </tbody>
                             </table>
                         </div>
-                    ` : components.emptyState(
-                        'No archived listings',
-                        'Listings you archive will appear here. Archive listings that are no longer active but you want to keep for reference.',
-                        null,
-                        null
-                    )}
+                    `
+                            : components.emptyState(
+                                  'No archived listings',
+                                  'Listings you archive will appear here. Archive listings that are no longer active but you want to keep for reference.',
+                                  null,
+                                  null,
+                              )
+                    }
                 </div>
             `;
         }
 
         let listings = store.state.listings || [];
         const allListings = store.state.listings || [];
-        const folders = (store.state.listingFolders || []).filter((f, i, arr) => arr.findIndex(x => x.id === f.id) === i);
+        const folders = (store.state.listingFolders || []).filter(
+            (f, i, arr) => arr.findIndex((x) => x.id === f.id) === i,
+        );
 
         // Calculate listings stats (before filtering)
         const totalListings = allListings.length;
-        const activeListings = allListings.filter(l => l.status === 'active').length;
-        const draftListings = allListings.filter(l => l.status === 'draft').length;
-        const archivedListings = allListings.filter(l => l.status === 'archived').length;
+        const activeListings = allListings.filter((l) => l.status === 'active').length;
+        const draftListings = allListings.filter((l) => l.status === 'draft').length;
+        const archivedListings = allListings.filter((l) => l.status === 'archived').length;
 
         // Apply filters
         const statusFilter = store.state.listingsStatusFilter || 'all';
         const platformFilter = store.state.listingsPlatformFilter || 'all';
         const folderFilter = store.state.listingsFolderFilter || 'all';
-        const listingPlatformOptions = (window.SUPPORTED_PLATFORMS || []).map(platform => ({
+        const listingPlatformOptions = (window.SUPPORTED_PLATFORMS || []).map((platform) => ({
             value: platform.id,
-            label: PLATFORM_DISPLAY_NAMES[platform.id] || platform.name || platform.id
+            label: PLATFORM_DISPLAY_NAMES[platform.id] || platform.name || platform.id,
         }));
-        const currentPlatformLabel = platformFilter === 'all'
-            ? 'All Platforms'
-            : (listingPlatformOptions.find(platform => platform.value === platformFilter)?.label || (platformFilter.charAt(0).toUpperCase() + platformFilter.slice(1)));
-        const renderListingPlatformIcon = (platform, label = '') => platform === 'all'
-            ? `<span style="width:24px;height:24px;border-radius:50%;background:var(--gray-200);color:var(--gray-600);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">${components.icon('grid', 14)}</span>`
-            : `<span style="width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">${components.platformLogo(platform, 20, label)}</span>`;
+        const currentPlatformLabel =
+            platformFilter === 'all'
+                ? 'All Platforms'
+                : listingPlatformOptions.find((platform) => platform.value === platformFilter)?.label ||
+                  platformFilter.charAt(0).toUpperCase() + platformFilter.slice(1);
+        const renderListingPlatformIcon = (platform, label = '') =>
+            platform === 'all'
+                ? `<span style="width:24px;height:24px;border-radius:50%;background:var(--gray-200);color:var(--gray-600);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">${components.icon('grid', 14)}</span>`
+                : `<span style="width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">${components.platformLogo(platform, 20, label)}</span>`;
 
         // Filter out archived listings from main view by default (they have their own tab)
         if (statusFilter === 'all') {
-            listings = listings.filter(l => l.status !== 'archived');
+            listings = listings.filter((l) => l.status !== 'archived');
         } else {
-            listings = listings.filter(l => l.status === statusFilter);
+            listings = listings.filter((l) => l.status === statusFilter);
         }
         if (platformFilter !== 'all') {
-            listings = listings.filter(l => l.platform === platformFilter);
+            listings = listings.filter((l) => l.platform === platformFilter);
         }
         if (folderFilter !== 'all') {
-            listings = listings.filter(l => l.folder_id === folderFilter);
+            listings = listings.filter((l) => l.folder_id === folderFilter);
         }
 
         // Get visible columns
-        const visibleColumns = store.state.listingsVisibleColumns || ['image', 'item', 'platform', 'price', 'status', 'stale', 'listed'];
+        const visibleColumns = store.state.listingsVisibleColumns || [
+            'image',
+            'item',
+            'platform',
+            'price',
+            'status',
+            'stale',
+            'listed',
+        ];
 
         // Calculate engagement scores for listings
         const getEngagementScore = (listing) => {
             const views = listing.views || 0;
             const likes = listing.likes || 0;
             const shares = listing.shares || 0;
-            return Math.min(100, Math.round((views * 0.3 + likes * 2 + shares * 5)));
+            return Math.min(100, Math.round(views * 0.3 + likes * 2 + shares * 5));
         };
 
         // Calculate SEO score for listings
@@ -761,12 +855,16 @@ Object.assign(pages, {
             if (listing.title && listing.title.length >= 20) score += 25;
             if (listing.description && listing.description.length >= 100) score += 25;
             if (listing.tags && listing.tags.length >= 3) score += 25;
-            if (listing.images && (typeof listing.images === 'string' ? JSON.parse(listing.images) : listing.images).length >= 4) score += 25;
+            if (
+                listing.images &&
+                (typeof listing.images === 'string' ? JSON.parse(listing.images) : listing.images).length >= 4
+            )
+                score += 25;
             return score;
         };
 
         // Calculate stale listings (older than 30 days without refresh)
-        const staleListings = allListings.filter(l => {
+        const staleListings = allListings.filter((l) => {
             if (l.status !== 'active') return false;
             const lastRefresh = l.last_relisted_at || l.listed_at || l.created_at;
             const daysSinceRefresh = Math.floor((Date.now() - new Date(lastRefresh).getTime()) / (1000 * 60 * 60 * 24));
@@ -775,23 +873,29 @@ Object.assign(pages, {
 
         // Calculate platform distribution
         const platformDistribution = {};
-        allListings.filter(l => l.status === 'active').forEach(l => {
-            const platform = l.platform || 'other';
-            platformDistribution[platform] = (platformDistribution[platform] || 0) + 1;
-        });
+        allListings
+            .filter((l) => l.status === 'active')
+            .forEach((l) => {
+                const platform = l.platform || 'other';
+                platformDistribution[platform] = (platformDistribution[platform] || 0) + 1;
+            });
 
         // Calculate average listing age
-        const avgAge = activeListings > 0
-            ? Math.round(allListings.filter(l => l.status === 'active').reduce((sum, l) => {
-                const created = new Date(l.listed_at || l.created_at);
-                return sum + Math.floor((Date.now() - created.getTime()) / (1000 * 60 * 60 * 24));
-            }, 0) / activeListings)
-            : 0;
+        const avgAge =
+            activeListings > 0
+                ? Math.round(
+                      allListings
+                          .filter((l) => l.status === 'active')
+                          .reduce((sum, l) => {
+                              const created = new Date(l.listed_at || l.created_at);
+                              return sum + Math.floor((Date.now() - created.getTime()) / (1000 * 60 * 60 * 24));
+                          }, 0) / activeListings,
+                  )
+                : 0;
 
         // Get listing health score
-        const healthScore = activeListings > 0
-            ? Math.round(((activeListings - staleListings) / activeListings) * 100)
-            : null;
+        const healthScore =
+            activeListings > 0 ? Math.round(((activeListings - staleListings) / activeListings) * 100) : null;
 
         return `
             <!-- Listings Hero Section -->
@@ -816,7 +920,7 @@ Object.assign(pages, {
                                 ${components.icon('plus', 16)} Add New Listing(s)
                                 ${components.icon('chevron-down', 14)}
                             </button>
-                            <div class="dropdown-menu" style="min-width: 220px; right: 0;">
+                            <div class="dropdown-menu" style="min-width: 220px; right: 0;" aria-hidden="true">
                                 <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); handlers.showImportFromMarketplace()">
                                     ${components.icon('import', 16)} Import From Marketplace
                                 </button>
@@ -834,11 +938,14 @@ Object.assign(pages, {
 
                 <div class="listings-health-bar">
                     <div class="listings-health-score">
-                        ${healthScore === null ? `
+                        ${
+                            healthScore === null
+                                ? `
                         <div class="health-score-ring empty" style="display:flex;align-items:center;justify-content:center;min-height:60px;min-width:140px;">
                             <span class="health-score-value" style="font-size:12px;color:var(--gray-500);text-align:center;line-height:1.4;">Add listings to see your Health Score</span>
                         </div>
-                        ` : `
+                        `
+                                : `
                         <div class="health-score-ring ${healthScore >= 80 ? 'good' : healthScore >= 50 ? 'warning' : 'poor'}">
                             <svg viewBox="0 0 36 36" class="health-ring-svg">
                                 <path class="health-ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
@@ -846,7 +953,8 @@ Object.assign(pages, {
                             </svg>
                             <span class="health-score-value">${healthScore}%</span>
                         </div>
-                        `}
+                        `
+                        }
                         <div class="health-score-label">Listing Health</div>
                     </div>
 
@@ -903,12 +1011,17 @@ Object.assign(pages, {
                     </div>
 
                     <div class="listings-platform-mini">
-                        ${Object.entries(platformDistribution).slice(0, 4).map(([platform, count]) => `
+                        ${Object.entries(platformDistribution)
+                            .slice(0, 4)
+                            .map(
+                                ([platform, count]) => `
                             <div class="platform-mini-badge" title="${platform}: ${count} listings">
                                 <span class="platform-mini-icon" style="background: var(--${platform}, var(--gray-500));">${platform.charAt(0).toUpperCase()}</span>
                                 <span class="platform-mini-count">${count}</span>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
             </div>
@@ -927,9 +1040,13 @@ Object.assign(pages, {
                             <label for="listings-filter-folder" style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Folder</label>
                             <select aria-label="Listings-filter-folder" id="listings-filter-folder" name="listings-filter-folder" class="form-select" style="width: 180px;" onchange="handlers.filterListings('folder', this.value)">
                                 <option value="all" ${folderFilter === 'all' ? 'selected' : ''}>All Folders</option>
-                                ${folders.map(folder => `
+                                ${folders
+                                    .map(
+                                        (folder) => `
                                     <option value="${folder.id}" ${folderFilter === folder.id ? 'selected' : ''}>${escapeHtml(folder.name)}</option>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </select>
                         </div>
                         <div>
@@ -943,22 +1060,26 @@ Object.assign(pages, {
                             </select>
                         </div>
                         <div>
-                            <label style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Platform</label>
+                            <p style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Platform</p>
                             <div role="button" tabindex="0" class="dropdown" id="listings-platform-dropdown" onclick="event.stopPropagation(); this.classList.toggle('open');" style="position:relative;">
-                                <button class="shop-switch-btn" style="width:220px;display:flex;align-items:center;gap:8px;justify-content:space-between;" aria-haspopup="listbox" aria-label="Filter by platform">
+                                <button class="shop-switch-btn" style="width:220px;display:flex;align-items:center;gap:8px;justify-content:space-between;" aria-haspopup="menu">
                                     <span style="display:flex;align-items:center;gap:6px;">
                                         ${renderListingPlatformIcon(platformFilter, currentPlatformLabel)}
                                         <span>${escapeHtml(currentPlatformLabel)}</span>
                                     </span>
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
                                 </button>
-                                <div class="dropdown-menu" style="min-width:220px;top:100%;left:0;right:auto;max-height:320px;overflow-y:auto;">
-                                    ${[{ value: 'all', label: 'All Platforms' }, ...listingPlatformOptions].map(p => `
+                                <div class="dropdown-menu" style="min-width:220px;top:100%;left:0;right:auto;max-height:320px;overflow-y:auto;" aria-hidden="true">
+                                    ${[{ value: 'all', label: 'All Platforms' }, ...listingPlatformOptions]
+                                        .map(
+                                            (p) => `
                                         <button class="dropdown-item ${platformFilter === p.value ? 'active' : ''}" style="display:flex;align-items:center;gap:10px;" onclick="event.stopPropagation(); document.getElementById('listings-platform-dropdown').classList.remove('open'); handlers.filterListings('platform', '${p.value}')">
                                             ${renderListingPlatformIcon(p.value, p.label)}
                                             ${escapeHtml(p.label)}
                                         </button>
-                                    `).join('')}
+                                    `,
+                                        )
+                                        .join('')}
                                 </div>
                             </div>
                         </div>
@@ -968,7 +1089,7 @@ Object.assign(pages, {
                                 <button aria-haspopup="menu" class="btn btn-secondary">
                                     ${components.icon('list', 14)} Customize
                                 </button>
-                                <div class="dropdown-menu" style="min-width: 200px; right: 0; padding: 12px;">
+                                <div class="dropdown-menu" style="min-width: 200px; right: 0; padding: 12px;" aria-hidden="true">
                                     <div style="font-weight: 600; margin-bottom: 8px; font-size: 13px;">Show Columns</div>
                                     ${[
                                         { id: 'image', label: 'Image' },
@@ -982,8 +1103,10 @@ Object.assign(pages, {
                                         { id: 'stale', label: 'Stale Listing' },
                                         { id: 'listed', label: 'Listed Date' },
                                         { id: 'views', label: 'Views' },
-                                        { id: 'likes', label: 'Likes' }
-                                    ].map(col => `
+                                        { id: 'likes', label: 'Likes' },
+                                    ]
+                                        .map(
+                                            (col) => `
                                         <label class="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer" style="font-size: 13px;">
                                             <input aria-label="Toggle ${col.label}" type="checkbox"
                                                    ${visibleColumns.includes(col.id) ? 'checked' : ''}
@@ -991,15 +1114,21 @@ Object.assign(pages, {
                                                    onclick="event.stopPropagation()">
                                             <span>${col.label}</span>
                                         </label>
-                                    `).join('')}
+                                    `,
+                                        )
+                                        .join('')}
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                ${store.state.listingsLoading ? `
+                ${
+                    store.state.listingsLoading
+                        ? `
                     <div class="listings-loading-skeleton">
-                        ${[1,2,3,4,5].map(() => `
+                        ${[1, 2, 3, 4, 5]
+                            .map(
+                                () => `
                             <div class="listing-skeleton-row">
                                 <div class="skeleton-cell skeleton-shimmer" style="width: 30px; height: 30px; border-radius: 4px;"></div>
                                 <div class="skeleton-cell skeleton-shimmer" style="width: 48px; height: 48px; border-radius: 8px;"></div>
@@ -1012,81 +1141,106 @@ Object.assign(pages, {
                                 <div class="skeleton-cell skeleton-shimmer" style="width: 60px; height: 22px; border-radius: 12px;"></div>
                                 <div class="skeleton-cell skeleton-shimmer" style="width: 80px; height: 14px;"></div>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
-                ` : `
-                    <div class="table-container table-sticky-header" style="max-height: 70vh; overflow-y: auto; overflow-x: auto;">
+                `
+                        : `
+                    <div class="table-container table-sticky-header" tabindex="0" style="max-height: 70vh; overflow-y: auto; overflow-x: auto;">
                         <table class="table" style="min-width: 800px;">
                             <thead>
                                 <tr>
-                                    <th style="width: 50px"></th>
-                                ${visibleColumns.includes('image') ? '<th style="width: 60px">Image</th>' : ''}
-                                ${visibleColumns.includes('item') ? '<th>Item</th>' : ''}
-                                ${visibleColumns.includes('sku') ? '<th>SKU</th>' : ''}
-                                ${visibleColumns.includes('platform') ? '<th>Platform</th>' : ''}
-                                ${visibleColumns.includes('price') ? '<th>Price</th>' : ''}
-                                ${visibleColumns.includes('condition') ? '<th>Condition</th>' : ''}
-                                ${visibleColumns.includes('labels') ? '<th>Labels</th>' : ''}
-                                ${visibleColumns.includes('status') ? '<th>Status</th>' : ''}
-                                ${visibleColumns.includes('stale') ? '<th>Stale Listing</th>' : ''}
-                                ${visibleColumns.includes('listed') ? '<th>Listed</th>' : ''}
-                                ${visibleColumns.includes('views') ? '<th>Views</th>' : ''}
-                                ${visibleColumns.includes('likes') ? '<th>Likes</th>' : ''}
-                                <th style="width: 60px">Actions</th>
+                                    <th scope="col" style="width: 50px"></th>
+                                ${visibleColumns.includes('image') ? '<th scope="col" style="width: 60px">Image</th>' : ''}
+                                ${visibleColumns.includes('item') ? '<th scope="col">Item</th>' : ''}
+                                ${visibleColumns.includes('sku') ? '<th scope="col">SKU</th>' : ''}
+                                ${visibleColumns.includes('platform') ? '<th scope="col">Platform</th>' : ''}
+                                ${visibleColumns.includes('price') ? '<th scope="col">Price</th>' : ''}
+                                ${visibleColumns.includes('condition') ? '<th scope="col">Condition</th>' : ''}
+                                ${visibleColumns.includes('labels') ? '<th scope="col">Labels</th>' : ''}
+                                ${visibleColumns.includes('status') ? '<th scope="col">Status</th>' : ''}
+                                ${visibleColumns.includes('stale') ? '<th scope="col">Stale Listing</th>' : ''}
+                                ${visibleColumns.includes('listed') ? '<th scope="col">Listed</th>' : ''}
+                                ${visibleColumns.includes('views') ? '<th scope="col">Views</th>' : ''}
+                                ${visibleColumns.includes('likes') ? '<th scope="col">Likes</th>' : ''}
+                                <th scope="col" style="width: 60px">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                ${listings.length > 0 ? `
-                                ${listings.map((listing, index) => {
-                                    let imageUrl = null;
-                                    let inventorySku = '';
-                                    let inventoryCondition = '';
-                                    let inventoryLabels = [];
-                                    try {
-                                        const inventory = store.state.inventory.find(i => i.id === listing.inventory_id);
-                                        if (inventory) {
-                                            const images = JSON.parse(inventory.images || '[]');
-                                            if (images && images.length > 0) imageUrl = images[0];
-                                            inventorySku = inventory.sku || '';
-                                            inventoryCondition = inventory.condition || '';
-                                            try {
-                                                inventoryLabels = JSON.parse(inventory.labels || '[]');
-                                            } catch (e) { inventoryLabels = []; }
+                ${
+                    listings.length > 0
+                        ? `
+                                ${listings
+                                    .map((listing, index) => {
+                                        let imageUrl = null;
+                                        let inventorySku = '';
+                                        let inventoryCondition = '';
+                                        let inventoryLabels = [];
+                                        try {
+                                            const inventory = store.state.inventory.find(
+                                                (i) => i.id === listing.inventory_id,
+                                            );
+                                            if (inventory) {
+                                                const images = JSON.parse(inventory.images || '[]');
+                                                if (images && images.length > 0) imageUrl = images[0];
+                                                inventorySku = inventory.sku || '';
+                                                inventoryCondition = inventory.condition || '';
+                                                try {
+                                                    inventoryLabels = JSON.parse(inventory.labels || '[]');
+                                                } catch (e) {
+                                                    inventoryLabels = [];
+                                                }
+                                            }
+                                        } catch (e) {}
+
+                                        const firstLetter = listing.title ? listing.title.charAt(0).toUpperCase() : '?';
+                                        const imageHtml = imageUrl
+                                            ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(listing.title)}" style="width:48px;height:48px;object-fit:cover;border-radius:var(--radius-md)">`
+                                            : `<div style="width:48px;height:48px;border-radius:var(--radius-md);background:var(--primary-100);color:var(--primary-600);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:20px;">${firstLetter}</div>`;
+
+                                        const expandedListings = store.state.expandedListings || [];
+                                        const isExpanded = expandedListings.includes(listing.id);
+
+                                        // Get all platform prices for this inventory item
+                                        const relatedListings =
+                                            store.state.listings.filter(
+                                                (l) => l.inventory_id === listing.inventory_id,
+                                            ) || [];
+
+                                        // Calculate stale listing status (stale if listed > 30 days ago with low activity)
+                                        const listedDate = listing.listed_at ? new Date(listing.listed_at) : null;
+                                        const daysSinceListed = listedDate
+                                            ? Math.floor((new Date() - listedDate) / (1000 * 60 * 60 * 24))
+                                            : 0;
+                                        const hasLowActivity = (listing.views || 0) < 10 && (listing.likes || 0) < 3;
+                                        const isStale = daysSinceListed > 30 && hasLowActivity;
+                                        const staleStatus = isStale
+                                            ? `Stale (${daysSinceListed}d)`
+                                            : daysSinceListed > 0
+                                              ? `Good (${daysSinceListed}d)`
+                                              : 'New';
+                                        const staleBadgeClass = isStale
+                                            ? 'badge-warning'
+                                            : daysSinceListed > 14
+                                              ? 'badge-info'
+                                              : 'badge-success';
+
+                                        // Calculate platform-specific expiration
+                                        const platformExpirations = { ebay: 30, mercari: 365, depop: 180, grailed: 90 };
+                                        const expirationDays = platformExpirations[listing.platform] || null;
+                                        let daysUntilExpiration = null;
+                                        let expirationLabel = '';
+                                        if (expirationDays && listedDate) {
+                                            const expiresAt = new Date(
+                                                listedDate.getTime() + expirationDays * 86400000,
+                                            );
+                                            daysUntilExpiration = Math.ceil((expiresAt - new Date()) / 86400000);
+                                            if (daysUntilExpiration <= 0) expirationLabel = 'Expired';
+                                            else expirationLabel = daysUntilExpiration + 'd left';
                                         }
-                                    } catch (e) {}
 
-                                    const firstLetter = listing.title ? listing.title.charAt(0).toUpperCase() : '?';
-                                    const imageHtml = imageUrl ?
-                                        `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(listing.title)}" style="width:48px;height:48px;object-fit:cover;border-radius:var(--radius-md)">` :
-                                        `<div style="width:48px;height:48px;border-radius:var(--radius-md);background:var(--primary-100);color:var(--primary-600);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:20px;">${firstLetter}</div>`;
-
-                                    const expandedListings = store.state.expandedListings || [];
-                                    const isExpanded = expandedListings.includes(listing.id);
-
-                                    // Get all platform prices for this inventory item
-                                    const relatedListings = store.state.listings.filter(l => l.inventory_id === listing.inventory_id) || [];
-
-                                    // Calculate stale listing status (stale if listed > 30 days ago with low activity)
-                                    const listedDate = listing.listed_at ? new Date(listing.listed_at) : null;
-                                    const daysSinceListed = listedDate ? Math.floor((new Date() - listedDate) / (1000 * 60 * 60 * 24)) : 0;
-                                    const hasLowActivity = (listing.views || 0) < 10 && (listing.likes || 0) < 3;
-                                    const isStale = daysSinceListed > 30 && hasLowActivity;
-                                    const staleStatus = isStale ? `Stale (${daysSinceListed}d)` : daysSinceListed > 0 ? `Good (${daysSinceListed}d)` : 'New';
-                                    const staleBadgeClass = isStale ? 'badge-warning' : daysSinceListed > 14 ? 'badge-info' : 'badge-success';
-
-                                    // Calculate platform-specific expiration
-                                    const platformExpirations = { ebay: 30, mercari: 365, depop: 180, grailed: 90 };
-                                    const expirationDays = platformExpirations[listing.platform] || null;
-                                    let daysUntilExpiration = null;
-                                    let expirationLabel = '';
-                                    if (expirationDays && listedDate) {
-                                        const expiresAt = new Date(listedDate.getTime() + expirationDays * 86400000);
-                                        daysUntilExpiration = Math.ceil((expiresAt - new Date()) / 86400000);
-                                        if (daysUntilExpiration <= 0) expirationLabel = 'Expired';
-                                        else expirationLabel = daysUntilExpiration + 'd left';
-                                    }
-
-                                    return `
+                                        return `
                                     <tr class="listing-row" data-listing-id="${listing.id}" data-context-menu="listing-item">
                                         <td>
                                             <button class="btn btn-icon btn-sm" onclick="handlers.toggleListingDetails('${listing.id}')" style="transform: rotate(${isExpanded ? '90deg' : '0deg'}); transition: transform 0.2s;" aria-label="${isExpanded ? 'Collapse' : 'Expand'} listing details" aria-expanded="${isExpanded}">
@@ -1094,7 +1248,9 @@ Object.assign(pages, {
                                             </button>
                                         </td>
                                         ${visibleColumns.includes('image') ? `<td>${imageHtml}</td>` : ''}
-                                        ${visibleColumns.includes('item') ? `
+                                        ${
+                                            visibleColumns.includes('item')
+                                                ? `
                                             <td>
                                                 <div class="font-medium">${escapeHtml(listing.title)}</div>
                                                 <div class="text-xs text-gray-500">
@@ -1104,44 +1260,82 @@ Object.assign(pages, {
                                                     </span>
                                                 </div>
                                             </td>
-                                        ` : ''}
+                                        `
+                                                : ''
+                                        }
                                         ${visibleColumns.includes('sku') ? `<td class="text-sm text-gray-600">${escapeHtml(inventorySku) || '-'}</td>` : ''}
                                         ${visibleColumns.includes('platform') ? `<td>${components.platformBadge(listing.platform)}</td>` : ''}
-                                        ${visibleColumns.includes('price') ? `
+                                        ${
+                                            visibleColumns.includes('price')
+                                                ? `
                                             <td>
                                                 <div class="font-medium">C$${listing.price}</div>
                                                 <span class="listing-fee text-sm text-muted">${listing.platform_fee ? 'Fee: C$' + parseFloat(listing.platform_fee).toFixed(2) : 'Fee: N/A'}</span>
                                                 ${(() => {
-                                                    const priceHistory = listing.price_history ? (typeof listing.price_history === 'string' ? JSON.parse(listing.price_history) : listing.price_history) : [listing.price * 1.1, listing.price * 1.05, listing.price];
+                                                    const priceHistory = listing.price_history
+                                                        ? typeof listing.price_history === 'string'
+                                                            ? JSON.parse(listing.price_history)
+                                                            : listing.price_history
+                                                        : [listing.price * 1.1, listing.price * 1.05, listing.price];
                                                     if (priceHistory.length >= 2) {
-                                                        const prices = priceHistory.map(p => p.price || p);
+                                                        const prices = priceHistory.map((p) => p.price || p);
                                                         const max = Math.max(...prices);
                                                         const min = Math.min(...prices);
                                                         const range = max - min || 1;
                                                         const w = 50;
                                                         const h = 16;
-                                                        const pts = prices.map((p, i) => ((i / (prices.length - 1)) * w).toFixed(1) + ',' + (h - ((p - min) / range) * (h - 2) - 1).toFixed(1)).join(' ');
-                                                        const trend = prices[prices.length - 1] >= prices[0] ? 'var(--success)' : 'var(--error)';
-                                                        return '<svg viewBox="0 0 ' + w + ' ' + h + '" style="width: 50px; height: 16px; display: block; margin-top: 4px;"><polyline points="' + pts + '" fill="none" stroke="' + trend + '" stroke-width="1.5" stroke-linecap="round"/></svg>';
+                                                        const pts = prices
+                                                            .map(
+                                                                (p, i) =>
+                                                                    ((i / (prices.length - 1)) * w).toFixed(1) +
+                                                                    ',' +
+                                                                    (h - ((p - min) / range) * (h - 2) - 1).toFixed(1),
+                                                            )
+                                                            .join(' ');
+                                                        const trend =
+                                                            prices[prices.length - 1] >= prices[0]
+                                                                ? 'var(--success)'
+                                                                : 'var(--error)';
+                                                        return (
+                                                            '<svg viewBox="0 0 ' +
+                                                            w +
+                                                            ' ' +
+                                                            h +
+                                                            '" style="width: 50px; height: 16px; display: block; margin-top: 4px;"><polyline points="' +
+                                                            pts +
+                                                            '" fill="none" stroke="' +
+                                                            trend +
+                                                            '" stroke-width="1.5" stroke-linecap="round"/></svg>'
+                                                        );
                                                     }
                                                     return '';
                                                 })()}
                                             </td>
-                                        ` : ''}
+                                        `
+                                                : ''
+                                        }
                                         ${visibleColumns.includes('condition') ? `<td><span class="badge badge-gray">${escapeHtml(inventoryCondition) || '-'}</span></td>` : ''}
-                                        ${visibleColumns.includes('labels') ? `<td>${inventoryLabels.length > 0 ? inventoryLabels.map(l => `<span class="badge badge-primary badge-sm" style="margin-right: 4px;">${escapeHtml(l)}</span>`).join('') : '-'}</td>` : ''}
+                                        ${visibleColumns.includes('labels') ? `<td>${inventoryLabels.length > 0 ? inventoryLabels.map((l) => `<span class="badge badge-primary badge-sm" style="margin-right: 4px;">${escapeHtml(l)}</span>`).join('') : '-'}</td>` : ''}
                                         ${visibleColumns.includes('status') ? `<td><span class="badge badge-${listing.status === 'active' ? 'success' : 'gray'}">${listing.status}</span></td>` : ''}
                                         ${visibleColumns.includes('stale') ? `<td><span class="badge ${staleBadgeClass}">${staleStatus}</span></td>` : ''}
-                                        ${visibleColumns.includes('listed') ? `
+                                        ${
+                                            visibleColumns.includes('listed')
+                                                ? `
                                             <td class="text-sm text-gray-500">
                                                 ${listing.listed_at ? new Date(listing.listed_at).toLocaleDateString() : '-'}
-                                                ${daysUntilExpiration !== null ? `
+                                                ${
+                                                    daysUntilExpiration !== null
+                                                        ? `
                                                     <div class="listing-expiration ${daysUntilExpiration <= 0 ? 'expired' : daysUntilExpiration <= 7 ? 'urgent' : 'normal'}">
                                                         ${components.icon('clock', 10)} ${expirationLabel}
                                                     </div>
-                                                ` : ''}
+                                                `
+                                                        : ''
+                                                }
                                             </td>
-                                        ` : ''}
+                                        `
+                                                : ''
+                                        }
                                         ${visibleColumns.includes('views') ? `<td class="text-sm text-gray-500">${listing.views || 0}</td>` : ''}
                                         ${visibleColumns.includes('likes') ? `<td class="text-sm text-gray-500">${listing.likes || 0}</td>` : ''}
                                         <td>
@@ -1149,7 +1343,7 @@ Object.assign(pages, {
                                                 <button aria-haspopup="menu" class="btn btn-icon btn-sm" aria-label="More options">
                                                     ${components.icon('more-vertical', 16)}
                                                 </button>
-                                                <div class="dropdown-menu" style="min-width: 150px; right: 0;">
+                                                <div class="dropdown-menu" style="min-width: 150px; right: 0;" aria-hidden="true">
                                                     <button class="dropdown-item" onclick="handlers.viewListing('${listing.id}')">
                                                         ${components.icon('eye', 14)} View Details
                                                     </button>
@@ -1159,11 +1353,15 @@ Object.assign(pages, {
                                                     <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); modals.advancedCrosslist(['${listing.id}'])">
                                                         ${components.icon('share', 14)} Advanced Crosslist
                                                     </button>
-                                                    ${isStale ? `
+                                                    ${
+                                                        isStale
+                                                            ? `
                                                     <button class="dropdown-item text-warning" onclick="handlers.refreshListing('${listing.id}')" style="color: var(--warning-600);">
                                                         ${components.icon('refresh-cw', 14)} Relist Now
                                                     </button>
-                                                    ` : ''}
+                                                    `
+                                                            : ''
+                                                    }
                                                     <button class="dropdown-item" onclick="handlers.showPriceDropScheduler('${listing.id}')" style="color: var(--primary-600);">
                                                         ${components.icon('trending-down', 14)} Schedule Price Drop
                                                     </button>
@@ -1178,20 +1376,26 @@ Object.assign(pages, {
                                             </div>
                                         </td>
                                     </tr>
-                                    ${isExpanded ? `
+                                    ${
+                                        isExpanded
+                                            ? `
                                         <tr class="listing-details-row">
                                             <td colspan="8" style="background: var(--gray-50); padding: 16px;">
                                                 <div class="grid grid-cols-2 gap-4">
                                                     <div>
                                                         <h2 class="font-semibold text-sm mb-2">Platform Prices</h2>
                                                         <div class="flex flex-col gap-2">
-                                                            ${relatedListings.map(rl => `
+                                                            ${relatedListings
+                                                                .map(
+                                                                    (rl) => `
                                                                 <div class="flex items-center justify-between p-2 bg-white rounded border" style="border-color: var(--gray-200)">
                                                                     ${components.platformBadge(rl.platform)}
                                                                     <span class="font-medium">C$${rl.price}</span>
                                                                     <span class="badge badge-${rl.status === 'active' ? 'success' : 'gray'} text-xs">${rl.status}</span>
                                                                 </div>
-                                                            `).join('')}
+                                                            `,
+                                                                )
+                                                                .join('')}
                                                         </div>
                                                     </div>
                                                     <div>
@@ -1236,10 +1440,14 @@ Object.assign(pages, {
                                                 </div>
                                             </td>
                                         </tr>
-                                    ` : ''}
+                                    `
+                                            : ''
+                                    }
                                     `;
-                                }).join('')}
-                ` : `
+                                    })
+                                    .join('')}
+                `
+                        : `
                             <tr>
                                 <td colspan="${2 + visibleColumns.length}" style="text-align: center; padding: 48px 24px;">
                                     <div style="color: var(--gray-400); margin-bottom: 8px;">
@@ -1255,11 +1463,13 @@ Object.assign(pages, {
                                     </button>
                                 </td>
                             </tr>
-                `}
+                `
+                }
                         </tbody>
                     </table>
                     </div>
-                `}
+                `
+                }
             </div>
         `;
     },
@@ -1282,13 +1492,17 @@ Object.assign(pages, {
 
             <div class="stats-grid mb-6">
                 ${components.statCard('Total Templates', templates.length, 'edit')}
-                ${components.statCard('Favorites', templates.filter(t => t.is_favorite).length, 'activity')}
-                ${components.statCard('Most Used', templates.length > 0 ? templates.reduce((max, t) => t.use_count > max.use_count ? t : max, templates[0]).use_count : 0, 'analytics')}
+                ${components.statCard('Favorites', templates.filter((t) => t.is_favorite).length, 'activity')}
+                ${components.statCard('Most Used', templates.length > 0 ? templates.reduce((max, t) => (t.use_count > max.use_count ? t : max), templates[0]).use_count : 0, 'analytics')}
             </div>
 
-            ${templates.length > 0 ? `
+            ${
+                templates.length > 0
+                    ? `
                 <div class="grid grid-cols-1 gap-4">
-                    ${templates.map(template => `
+                    ${templates
+                        .map(
+                            (template) => `
                         <div class="card">
                             <div class="card-body">
                                 <div class="flex items-start justify-between">
@@ -1301,27 +1515,45 @@ Object.assign(pages, {
                                         ${template.description ? `<p class="text-sm text-gray-600 mb-3">${escapeHtml(template.description)}</p>` : ''}
 
                                         <div class="grid grid-cols-2 gap-4 text-sm">
-                                            ${template.title_pattern ? `
+                                            ${
+                                                template.title_pattern
+                                                    ? `
                                                 <div>
                                                     <span class="text-gray-500">Title Pattern:</span>
                                                     <div class="font-medium">${escapeHtml(template.title_pattern)}</div>
                                                 </div>
-                                            ` : ''}
-                                            ${template.pricing_strategy ? `
+                                            `
+                                                    : ''
+                                            }
+                                            ${
+                                                template.pricing_strategy
+                                                    ? `
                                                 <div>
                                                     <span class="text-gray-500">Pricing:</span>
                                                     <div class="font-medium">${escapeHtml(template.pricing_strategy)}${template.markup_percentage ? ` (+${template.markup_percentage}%)` : ''}</div>
                                                 </div>
-                                            ` : ''}
-                                            ${template.tags && template.tags.length > 0 ? `
+                                            `
+                                                    : ''
+                                            }
+                                            ${
+                                                template.tags && template.tags.length > 0
+                                                    ? `
                                                 <div style="grid-column: span 2">
                                                     <span class="text-gray-500">Tags:</span>
                                                     <div class="flex gap-2 flex-wrap mt-1">
-                                                        ${template.tags.slice(0, 5).map(tag => `<span class="badge badge-gray">${escapeHtml(tag)}</span>`).join('')}
+                                                        ${template.tags
+                                                            .slice(0, 5)
+                                                            .map(
+                                                                (tag) =>
+                                                                    `<span class="badge badge-gray">${escapeHtml(tag)}</span>`,
+                                                            )
+                                                            .join('')}
                                                         ${template.tags.length > 5 ? `<span class="text-xs text-gray-500">+${template.tags.length - 5} more</span>` : ''}
                                                     </div>
                                                 </div>
-                                            ` : ''}
+                                            `
+                                                    : ''
+                                            }
                                         </div>
 
                                         <div class="flex items-center gap-4 mt-4 pt-4" style="border-top: 1px solid var(--gray-200)">
@@ -1344,14 +1576,18 @@ Object.assign(pages, {
                                 </div>
                             </div>
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
-            ` : components.emptyState(
-                'No templates yet',
-                'Create reusable listing templates to speed up your workflow',
-                'Create Template',
-                "modals.createTemplate()"
-            )}
+            `
+                    : components.emptyState(
+                          'No templates yet',
+                          'Create reusable listing templates to speed up your workflow',
+                          'Create Template',
+                          'modals.createTemplate()',
+                      )
+            }
         `;
     },
 
@@ -1359,29 +1595,88 @@ Object.assign(pages, {
 
     automations() {
         const BUILTIN_AUTOMATIONS = [
-            { id: 'poshmark_share_closet', platform: 'poshmark', name: 'Share Closet', description: 'Automatically share all your Poshmark listings at set intervals', icon: 'share-2', category: 'sharing' },
-            { id: 'poshmark_follow_back', platform: 'poshmark', name: 'Follow Back', description: 'Automatically follow users who follow you', icon: 'user-plus', category: 'engagement' },
-            { id: 'poshmark_offer_likers', platform: 'poshmark', name: 'Offer to Likers', description: 'Automatically send discounted offers to users who liked your listings', icon: 'tag', category: 'offers' },
-            { id: 'poshmark_community_share', platform: 'poshmark', name: 'Community Sharing', description: 'Share items from community feeds to increase visibility', icon: 'users', category: 'sharing' },
-            { id: 'depop_refresh', platform: 'depop', name: 'Refresh Listings', description: 'Automatically refresh Depop listings to boost visibility', icon: 'refresh-cw', category: 'listing' },
-            { id: 'grailed_bump', platform: 'grailed', name: 'Bump Listings', description: 'Automatically bump Grailed listings to the top', icon: 'trending-up', category: 'listing' },
-            { id: 'mercari_relist', platform: 'mercari', name: 'Relist Items', description: 'Automatically relist sold-out or expired Mercari items', icon: 'repeat', category: 'listing' },
-            { id: 'facebook_refresh', platform: 'facebook', name: 'Refresh Listings', description: 'Automatically refresh Facebook Marketplace listings', icon: 'refresh-cw', category: 'listing' },
+            {
+                id: 'poshmark_share_closet',
+                platform: 'poshmark',
+                name: 'Share Closet',
+                description: 'Automatically share all your Poshmark listings at set intervals',
+                icon: 'share-2',
+                category: 'sharing',
+            },
+            {
+                id: 'poshmark_follow_back',
+                platform: 'poshmark',
+                name: 'Follow Back',
+                description: 'Automatically follow users who follow you',
+                icon: 'user-plus',
+                category: 'engagement',
+            },
+            {
+                id: 'poshmark_offer_likers',
+                platform: 'poshmark',
+                name: 'Offer to Likers',
+                description: 'Automatically send discounted offers to users who liked your listings',
+                icon: 'tag',
+                category: 'offers',
+            },
+            {
+                id: 'poshmark_community_share',
+                platform: 'poshmark',
+                name: 'Community Sharing',
+                description: 'Share items from community feeds to increase visibility',
+                icon: 'users',
+                category: 'sharing',
+            },
+            {
+                id: 'depop_refresh',
+                platform: 'depop',
+                name: 'Refresh Listings',
+                description: 'Automatically refresh Depop listings to boost visibility',
+                icon: 'refresh-cw',
+                category: 'listing',
+            },
+            {
+                id: 'grailed_bump',
+                platform: 'grailed',
+                name: 'Bump Listings',
+                description: 'Automatically bump Grailed listings to the top',
+                icon: 'trending-up',
+                category: 'listing',
+            },
+            {
+                id: 'mercari_relist',
+                platform: 'mercari',
+                name: 'Relist Items',
+                description: 'Automatically relist sold-out or expired Mercari items',
+                icon: 'repeat',
+                category: 'listing',
+            },
+            {
+                id: 'facebook_refresh',
+                platform: 'facebook',
+                name: 'Refresh Listings',
+                description: 'Automatically refresh Facebook Marketplace listings',
+                icon: 'refresh-cw',
+                category: 'listing',
+            },
         ];
         // Use shared automation presets if available, otherwise fall back to built-in list
-        const allPresets = (window.AUTOMATION_PRESETS && window.AUTOMATION_PRESETS.length > 0)
-            ? window.AUTOMATION_PRESETS
-            : BUILTIN_AUTOMATIONS;
+        const allPresets =
+            window.AUTOMATION_PRESETS && window.AUTOMATION_PRESETS.length > 0
+                ? window.AUTOMATION_PRESETS
+                : BUILTIN_AUTOMATIONS;
 
         // Merge presets with existing rules to show enabled state
-        const automations = allPresets.map(preset => {
-            const existing = (store.state.automations || []).find(a => a.type === preset.id || a.name === preset.name);
+        const automations = allPresets.map((preset) => {
+            const existing = (store.state.automations || []).find(
+                (a) => a.type === preset.id || a.name === preset.name,
+            );
             return {
                 ...preset,
                 id: existing ? existing.id : preset.id,
                 is_enabled: existing ? existing.is_enabled : 0,
                 exists: !!existing,
-                schedule: existing?.schedule || null
+                schedule: existing?.schedule || null,
             };
         });
 
@@ -1391,7 +1686,7 @@ Object.assign(pages, {
             startTime: '09:00',
             endTime: '21:00',
             daysOfWeek: [1, 2, 3, 4, 5, 6, 0], // Mon-Sun
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         };
 
         const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -1399,16 +1694,46 @@ Object.assign(pages, {
         // Use real run history from state (loaded via API), with mock fallback
         const hasRealRunHistory = !!store.state.automationHistoryRuns;
         const runHistory = store.state.automationHistoryRuns || [
-            { timestamp: new Date(Date.now() - 3600000).toISOString(), action: 'Daily Closet Share', status: 'success', result: 'Shared 45 items' },
-            { timestamp: new Date(Date.now() - 7200000).toISOString(), action: 'Send Offers to Likers', status: 'success', result: 'Sent 12 offers' },
-            { timestamp: new Date(Date.now() - 10800000).toISOString(), action: 'Relist Stale Items', status: 'success', result: 'Relisted 3 items (60+ days stale)' },
-            { timestamp: new Date(Date.now() - 14400000).toISOString(), action: 'Delist Stale Items', status: 'success', result: 'Delisted 2 items (90+ days inactive)' },
-            { timestamp: new Date(Date.now() - 18000000).toISOString(), action: 'Follow Back', status: 'success', result: 'Followed 8 users' },
-            { timestamp: new Date(Date.now() - 86400000).toISOString(), action: 'Weekly Price Drop', status: 'failed', result: 'API rate limit exceeded' }
+            {
+                timestamp: new Date(Date.now() - 3600000).toISOString(),
+                action: 'Daily Closet Share',
+                status: 'success',
+                result: 'Shared 45 items',
+            },
+            {
+                timestamp: new Date(Date.now() - 7200000).toISOString(),
+                action: 'Send Offers to Likers',
+                status: 'success',
+                result: 'Sent 12 offers',
+            },
+            {
+                timestamp: new Date(Date.now() - 10800000).toISOString(),
+                action: 'Relist Stale Items',
+                status: 'success',
+                result: 'Relisted 3 items (60+ days stale)',
+            },
+            {
+                timestamp: new Date(Date.now() - 14400000).toISOString(),
+                action: 'Delist Stale Items',
+                status: 'success',
+                result: 'Delisted 2 items (90+ days inactive)',
+            },
+            {
+                timestamp: new Date(Date.now() - 18000000).toISOString(),
+                action: 'Follow Back',
+                status: 'success',
+                result: 'Followed 8 users',
+            },
+            {
+                timestamp: new Date(Date.now() - 86400000).toISOString(),
+                action: 'Weekly Price Drop',
+                status: 'failed',
+                result: 'API rate limit exceeded',
+            },
         ];
 
         // Count recent failures for alert banner
-        const recentFailures = runHistory.filter(r => r.status === 'failed');
+        const recentFailures = runHistory.filter((r) => r.status === 'failed');
         const failedCount = recentFailures.length;
 
         const isPaused = store.state.automationsPaused || false;
@@ -1418,7 +1743,7 @@ Object.assign(pages, {
             const counts = [0, 0, 0, 0, 0, 0, 0];
             const now = Date.now();
             const dayMs = 86400000;
-            runHistory.forEach(r => {
+            runHistory.forEach((r) => {
                 if (r.automation_name !== ruleName && r.automation_id !== ruleId && r.action !== ruleName) return;
                 const ts = new Date(r.started_at || r.timestamp || r.created_at).getTime();
                 const daysAgo = Math.floor((now - ts) / dayMs);
@@ -1463,34 +1788,49 @@ Object.assign(pages, {
                     }
                 }
                 return null;
-            } catch { return null; }
+            } catch {
+                return null;
+            }
         }
 
         // Calculate automation statistics — prefer API stats, fallback to local
         const apiStats = store.state.automationStats || {};
-        const activeRules = apiStats.activeRules ?? automations.filter(a => a.is_enabled).length;
+        const activeRules = apiStats.activeRules ?? automations.filter((a) => a.is_enabled).length;
         const totalRules = apiStats.totalRules ?? automations.length;
-        const successfulRuns = apiStats.successfulRuns ?? runHistory.filter(r => r.status === 'success').length;
+        const successfulRuns = apiStats.successfulRuns ?? runHistory.filter((r) => r.status === 'success').length;
         const totalRuns = apiStats.totalRuns ?? runHistory.length;
-        const failedRuns = apiStats.failedRuns ?? (hasRealRunHistory ? runHistory.filter(r => r.status === 'failed' || r.status === 'failure').length : 0);
+        const failedRuns =
+            apiStats.failedRuns ??
+            (hasRealRunHistory ? runHistory.filter((r) => r.status === 'failed' || r.status === 'failure').length : 0);
         const successRate = totalRuns > 0 ? Math.round((successfulRuns / totalRuns) * 100) : 100;
 
         // Calculate time saved (mock calculation based on active automations)
-        const timeSavedPerAutomation = { sharing: 45, engagement: 20, offers: 15, bundles: 10, pricing: 25, maintenance: 30 };
+        const timeSavedPerAutomation = {
+            sharing: 45,
+            engagement: 20,
+            offers: 15,
+            bundles: 10,
+            pricing: 25,
+            maintenance: 30,
+        };
         const timeSavedToday = automations
-            .filter(a => a.is_enabled)
+            .filter((a) => a.is_enabled)
             .reduce((sum, a) => sum + (timeSavedPerAutomation[a.category] || 15), 0);
 
-        const todayStart = new Date(); todayStart.setHours(0,0,0,0);
-        const runsToday = runHistory.filter(r => {
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const runsToday = runHistory.filter((r) => {
             const ts = new Date(r.started_at || r.timestamp || r.created_at).getTime();
             return ts >= todayStart.getTime();
         }).length;
-        const totalItemsProcessed = runHistory.reduce((sum, r) => sum + (r.items_processed || r.items_succeeded || 0), 0);
-        const dailyChart = Array.from({length: 7}, () => ({ success: 0, failed: 0 }));
+        const totalItemsProcessed = runHistory.reduce(
+            (sum, r) => sum + (r.items_processed || r.items_succeeded || 0),
+            0,
+        );
+        const dailyChart = Array.from({ length: 7 }, () => ({ success: 0, failed: 0 }));
         const nowMs = Date.now();
         const dayMs = 86400000;
-        runHistory.forEach(r => {
+        runHistory.forEach((r) => {
             const ts = new Date(r.started_at || r.timestamp || r.created_at).getTime();
             const daysAgo = Math.floor((nowMs - ts) / dayMs);
             if (daysAgo >= 0 && daysAgo < 7) {
@@ -1500,15 +1840,15 @@ Object.assign(pages, {
                 else dailyChart[idx].success++;
             }
         });
-        const maxDaily = Math.max(...dailyChart.map(d => d.success + d.failed), 1);
-        const dayLabels = Array.from({length: 7}, (_, i) => {
-            const d = new Date(nowMs - (6-i) * dayMs);
-            return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
+        const maxDaily = Math.max(...dailyChart.map((d) => d.success + d.failed), 1);
+        const dayLabels = Array.from({ length: 7 }, (_, i) => {
+            const d = new Date(nowMs - (6 - i) * dayMs);
+            return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()];
         });
         const categoryRunCounts = {};
-        runHistory.forEach(r => {
+        runHistory.forEach((r) => {
             const ruleName = r.automation_name || r.action || '';
-            const matchedRule = automations.find(a => a.name === ruleName || a.id === r.automation_id);
+            const matchedRule = automations.find((a) => a.name === ruleName || a.id === r.automation_id);
             if (matchedRule) {
                 categoryRunCounts[matchedRule.category] = (categoryRunCounts[matchedRule.category] || 0) + 1;
             }
@@ -1516,13 +1856,15 @@ Object.assign(pages, {
 
         // Load scheduler status if not cached (non-blocking)
         if (!store.state.schedulerStatus) {
-            api.get('/automations/scheduler-status').then(data => {
-                store.setState({ schedulerStatus: data });
-                const widget = document.getElementById('scheduler-health-widget');
-                if (widget) {
-                    widget.innerHTML = sanitizeHTML(renderSchedulerWidget(data));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-                }
-            }).catch(() => {});
+            api.get('/automations/scheduler-status')
+                .then((data) => {
+                    store.setState({ schedulerStatus: data });
+                    const widget = document.getElementById('scheduler-health-widget');
+                    if (widget) {
+                        widget.innerHTML = sanitizeHTML(renderSchedulerWidget(data)); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                    }
+                })
+                .catch(() => {});
         }
 
         function renderSchedulerWidget(status) {
@@ -1533,11 +1875,10 @@ Object.assign(pages, {
             const healthLabel = status.healthy ? 'Healthy' : 'Unhealthy';
 
             const successRate = status.runs24h?.successRate ?? 100;
-            const rateColor = successRate >= 90 ? 'text-success-600' : successRate >= 70 ? 'text-warning-600' : 'text-error-600';
+            const rateColor =
+                successRate >= 90 ? 'text-success-600' : successRate >= 70 ? 'text-warning-600' : 'text-error-600';
 
-            const lastRun = status.worker?.lastRun
-                ? new Date(status.worker.lastRun).toLocaleTimeString()
-                : 'Never';
+            const lastRun = status.worker?.lastRun ? new Date(status.worker.lastRun).toLocaleTimeString() : 'Never';
 
             return `
                 <div class="grid grid-cols-4 gap-4">
@@ -1558,11 +1899,15 @@ Object.assign(pages, {
                         <div class="text-xs text-gray-500 mt-1">Queued Tasks</div>
                     </div>
                 </div>
-                ${status.runs24h?.failed > 0 ? `
+                ${
+                    status.runs24h?.failed > 0
+                        ? `
                     <div class="mt-3 p-2 bg-error-50 border border-error-200 rounded text-sm text-error-700">
                         ${components.icon('alert-triangle', 14)} ${status.runs24h.failed} failed run(s) in the last 24 hours
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
                 <div class="mt-3 text-xs text-gray-400 flex justify-between">
                     <span>Last poll: ${lastRun}</span>
                     <span>${status.enabledRules || 0} active rules</span>
@@ -1572,7 +1917,7 @@ Object.assign(pages, {
 
         // Group automations by category for breakdown
         const categoryStats = {};
-        automations.forEach(a => {
+        automations.forEach((a) => {
             if (!categoryStats[a.category]) {
                 categoryStats[a.category] = { total: 0, active: 0 };
             }
@@ -1586,7 +1931,7 @@ Object.assign(pages, {
             offers: { label: 'Offers', icon: 'tag', color: '#10b981' },
             bundles: { label: 'Bundles', icon: 'package', color: '#f59e0b' },
             pricing: { label: 'Pricing', icon: 'dollar', color: '#ef4444' },
-            maintenance: { label: 'Maintenance', icon: 'settings', color: '#6b7280' }
+            maintenance: { label: 'Maintenance', icon: 'settings', color: '#6b7280' },
         };
 
         return `
@@ -1609,7 +1954,9 @@ Object.assign(pages, {
                 </div>
             </div>
 
-            ${failedRuns > 0 ? `
+            ${
+                failedRuns > 0
+                    ? `
             <!-- Failed Automations Alert Banner -->
             <div class="automation-failure-banner mb-4" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--error-50, var(--error-50)); border: 1px solid var(--error-200, var(--error-200)); border-radius: var(--radius-md); color: var(--error-700, var(--error-700));">
                 ${components.icon('alert-triangle', 20)}
@@ -1621,7 +1968,9 @@ Object.assign(pages, {
                     ${components.icon('eye', 14)} View Failures
                 </button>
             </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Scheduler Health Widget -->
             <div class="card mb-6" id="scheduler-health-widget-card">
@@ -1649,9 +1998,11 @@ Object.assign(pages, {
                     <div class="automations-status-info">
                         <h2 class="automations-status-title">${isPaused ? 'Automations Paused' : 'System Active'}</h2>
                         <p class="automations-status-subtitle">
-                            ${isPaused
-                                ? 'All automations are currently paused. Click to resume.'
-                                : `${activeRules} automation${activeRules !== 1 ? 's' : ''} running on schedule`}
+                            ${
+                                isPaused
+                                    ? 'All automations are currently paused. Click to resume.'
+                                    : `${activeRules} automation${activeRules !== 1 ? 's' : ''} running on schedule`
+                            }
                         </p>
                         <label class="automations-toggle-switch">
                             <input aria-label="Toggle all automations" type="checkbox" ${!isPaused ? 'checked' : ''} onchange="handlers.toggleAllAutomations(this.checked)">
@@ -1703,10 +2054,11 @@ Object.assign(pages, {
 
             <!-- Category Breakdown -->
             <div class="automations-categories mb-6" hidden style="display: none;">
-                ${Object.entries(categoryStats).map(([cat, stats]) => {
-                    const catInfo = categoryLabels[cat] || { label: cat, icon: 'settings', color: '#6b7280' };
-                    const percentage = stats.total > 0 ? Math.round((stats.active / stats.total) * 100) : 0;
-                    return `
+                ${Object.entries(categoryStats)
+                    .map(([cat, stats]) => {
+                        const catInfo = categoryLabels[cat] || { label: cat, icon: 'settings', color: '#6b7280' };
+                        const percentage = stats.total > 0 ? Math.round((stats.active / stats.total) * 100) : 0;
+                        return `
                         <div class="automation-category-card" style="--category-color: ${catInfo.color}">
                             <div class="category-header">
                                 <div class="category-icon" style="background: ${catInfo.color}20; color: ${catInfo.color}">
@@ -1720,7 +2072,8 @@ Object.assign(pages, {
                             <div class="category-stats">${stats.active}/${stats.total} active</div>
                         </div>
                     `;
-                }).join('')}
+                    })
+                    .join('')}
             </div>
 
             <!-- Performance Metrics Dashboard -->
@@ -1736,7 +2089,7 @@ Object.assign(pages, {
                                 ${components.icon('clock', 24)}
                             </div>
                             <div class="metric-content">
-                                <div class="metric-value">${Math.round(timeSavedToday * 7 / 60)}h ${timeSavedToday * 7 % 60}m</div>
+                                <div class="metric-value">${Math.round((timeSavedToday * 7) / 60)}h ${(timeSavedToday * 7) % 60}m</div>
                                 <div class="metric-label">Time Saved This Week</div>
                                 <div class="metric-comparison neutral">Est. at C$30/hr</div>
                             </div>
@@ -1776,12 +2129,14 @@ Object.assign(pages, {
                     <div class="performance-breakdown mt-4">
                         <h2 class="text-sm font-semibold text-gray-700 mb-3">Actions by Category This Week</h2>
                         <div class="breakdown-bars">
-                            ${Object.entries(categoryStats).map(([cat, stats]) => {
-                                const catInfo = categoryLabels[cat] || { label: cat, color: '#6b7280' };
-                                const actionsCount = categoryRunCounts[cat] || 0;
-                                const maxCatActions = Math.max(...Object.values(categoryRunCounts), 1);
-                                const barWidth = maxCatActions > 0 ? Math.min((actionsCount / maxCatActions) * 100, 100) : 0;
-                                return `
+                            ${Object.entries(categoryStats)
+                                .map(([cat, stats]) => {
+                                    const catInfo = categoryLabels[cat] || { label: cat, color: '#6b7280' };
+                                    const actionsCount = categoryRunCounts[cat] || 0;
+                                    const maxCatActions = Math.max(...Object.values(categoryRunCounts), 1);
+                                    const barWidth =
+                                        maxCatActions > 0 ? Math.min((actionsCount / maxCatActions) * 100, 100) : 0;
+                                    return `
                                     <div class="breakdown-row">
                                         <div class="breakdown-label">${catInfo.label}</div>
                                         <div class="breakdown-bar-container">
@@ -1790,7 +2145,8 @@ Object.assign(pages, {
                                         <div class="breakdown-value">${actionsCount}</div>
                                     </div>
                                 `;
-                            }).join('')}
+                                })
+                                .join('')}
                         </div>
                     </div>
                 </div>
@@ -1806,9 +2162,13 @@ Object.assign(pages, {
                         </button>
                     </div>
                     <div class="card-body">
-                        ${store.state.automationHistoryLoading ? `
+                        ${
+                            store.state.automationHistoryLoading
+                                ? `
                             <div class="run-history-loading">
-                                ${[1,2,3].map(() => `
+                                ${[1, 2, 3]
+                                    .map(
+                                        () => `
                                     <div class="history-skeleton-row">
                                         <div class="skeleton-shimmer" style="width: 12px; height: 12px; border-radius: 50%;"></div>
                                         <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
@@ -1817,9 +2177,13 @@ Object.assign(pages, {
                                         </div>
                                         <div class="skeleton-shimmer" style="width: 50px; height: 20px; border-radius: 10px;"></div>
                                     </div>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </div>
-                        ` : runHistoryTimeline.render(runHistory)}
+                        `
+                                : runHistoryTimeline.render(runHistory)
+                        }
                     </div>
                 </div>
                 <div class="card collapsible-card ${store.state.scheduledRunsCollapsed ? 'collapsed' : ''}">
@@ -1831,12 +2195,14 @@ Object.assign(pages, {
                     </div>
                     <div class="card-body">
                         <div class="schedule-preview">
-                            ${[...Array(7)].map((_, i) => {
-                                const date = new Date();
-                                date.setDate(date.getDate() + i);
-                                const hasRun = scheduleSettings.daysOfWeek.includes(date.getDay());
-                                return `<div class="schedule-preview-day ${hasRun ? 'has-run' : ''} ${i === 0 ? 'today' : ''}">${date.getDate()}</div>`;
-                            }).join('')}
+                            ${[...Array(7)]
+                                .map((_, i) => {
+                                    const date = new Date();
+                                    date.setDate(date.getDate() + i);
+                                    const hasRun = scheduleSettings.daysOfWeek.includes(date.getDay());
+                                    return `<div class="schedule-preview-day ${hasRun ? 'has-run' : ''} ${i === 0 ? 'today' : ''}">${date.getDate()}</div>`;
+                                })
+                                .join('')}
                         </div>
                         <div class="text-xs text-gray-500 mt-2 text-center">Next 7 days</div>
                     </div>
@@ -1853,8 +2219,8 @@ Object.assign(pages, {
                     <div class="grid grid-cols-4 gap-6">
                         <!-- Frequency -->
                         <div>
-                            <label class="form-label">Frequency</label>
-                            <select aria-label="Automation frequency" class="form-select" onchange="handlers.updateAutomationSchedule('frequency', this.value)">
+                            <label class="form-label" for="auto-frequency">Frequency</label>
+                            <select id="auto-frequency" aria-label="Automation frequency" class="form-select" onchange="handlers.updateAutomationSchedule('frequency', this.value)">
                                 <option value="hourly" ${scheduleSettings.frequency === 'hourly' ? 'selected' : ''}>Hourly</option>
                                 <option value="every_4h" ${scheduleSettings.frequency === 'every_4h' ? 'selected' : ''}>Every 4 Hours</option>
                                 <option value="daily" ${scheduleSettings.frequency === 'daily' ? 'selected' : ''}>Daily</option>
@@ -1865,50 +2231,64 @@ Object.assign(pages, {
                         <!-- Start Time -->
                         <div>
                             <label class="form-label" for="automation-start-time">Start Time</label>
-                            <input type="time" id="automation-start-time" class="form-input" value="${scheduleSettings.startTime}"
+                            <input type="time" id="automation-start-time" class="form-input" autocomplete="off" value="${scheduleSettings.startTime}"
                                 onchange="handlers.updateAutomationSchedule('startTime', this.value)" aria-label="Automation Start Time">
                         </div>
                         <!-- End Time -->
                         <div>
                             <label class="form-label" for="automation-end-time">End Time</label>
-                            <input type="time" id="automation-end-time" class="form-input" value="${scheduleSettings.endTime}"
+                            <input type="time" id="automation-end-time" class="form-input" autocomplete="off" value="${scheduleSettings.endTime}"
                                 onchange="handlers.updateAutomationSchedule('endTime', this.value)" aria-label="Automation End Time">
                         </div>
                         <!-- Timezone -->
                         <div>
-                            <label class="form-label">Timezone</label>
+                            <p class="form-label">Timezone</p>
                             <div class="text-sm text-gray-600 p-2 bg-gray-50 rounded">${scheduleSettings.timezone}</div>
                         </div>
                     </div>
                     <!-- Days of Week -->
                     <div class="mt-4">
-                        <label class="form-label mb-2">Active Days</label>
+                        <p class="form-label mb-2">Active Days</p>
                         <div class="flex gap-2">
-                            ${dayNames.map((day, idx) => {
-                                const isActive = scheduleSettings.daysOfWeek.includes(idx);
-                                return `
+                            ${dayNames
+                                .map((day, idx) => {
+                                    const isActive = scheduleSettings.daysOfWeek.includes(idx);
+                                    return `
                                 <label class="flex items-center justify-center px-4 py-3 rounded-lg border-2 cursor-pointer transition-all"
-                                       style="min-width: 60px; ${isActive
-                                           ? 'background: var(--success-100); border-color: var(--success-400); color: var(--success-700);'
-                                           : 'background: var(--gray-100); border-color: var(--gray-300); color: var(--gray-400);'}">
+                                       style="min-width: 60px; ${
+                                           isActive
+                                               ? 'background: var(--success-100); border-color: var(--success-400); color: var(--success-700);'
+                                               : 'background: var(--gray-100); border-color: var(--gray-300); color: var(--gray-400);'
+                                       }">
                                     <input aria-label="Toggle ${day}" type="checkbox" class="hidden" ${isActive ? 'checked' : ''}
                                         onchange="handlers.updateAutomationSchedule('toggleDay', ${idx})">
                                     <span class="text-sm font-semibold">${day}</span>
                                 </label>
-                            `}).join('')}
+                            `;
+                                })
+                                .join('')}
                         </div>
                     </div>
                     <div class="mt-4 p-3 callout-info rounded-lg">
                         <div class="text-sm">
                             <strong>Schedule Summary:</strong> Automations will run
-                            ${scheduleSettings.frequency === 'hourly' ? 'every hour' :
-                              scheduleSettings.frequency === 'every_4h' ? 'every 4 hours' :
-                              scheduleSettings.frequency === 'daily' ? 'once daily' :
-                              scheduleSettings.frequency === 'twice_daily' ? 'twice daily (morning & evening)' :
-                              'once per week'}
+                            ${
+                                scheduleSettings.frequency === 'hourly'
+                                    ? 'every hour'
+                                    : scheduleSettings.frequency === 'every_4h'
+                                      ? 'every 4 hours'
+                                      : scheduleSettings.frequency === 'daily'
+                                        ? 'once daily'
+                                        : scheduleSettings.frequency === 'twice_daily'
+                                          ? 'twice daily (morning & evening)'
+                                          : 'once per week'
+                            }
                             between ${scheduleSettings.startTime} and ${scheduleSettings.endTime} on
-                            ${scheduleSettings.daysOfWeek.length === 7 ? 'all days' :
-                              scheduleSettings.daysOfWeek.map(d => dayNames[d]).join(', ')}.
+                            ${
+                                scheduleSettings.daysOfWeek.length === 7
+                                    ? 'all days'
+                                    : scheduleSettings.daysOfWeek.map((d) => dayNames[d]).join(', ')
+                            }.
                         </div>
                     </div>
                 </div>
@@ -1928,12 +2308,12 @@ Object.assign(pages, {
                             on_partial: true,
                             daily_summary: false,
                             desktop_enabled: true,
-                            email_enabled: false
+                            email_enabled: false,
                         };
                         return `
                     <div class="grid grid-cols-3 gap-6">
                         <div>
-                            <label class="form-label mb-3">Event Types</label>
+                            <p class="form-label mb-3">Event Types</p>
                             <div class="flex flex-col gap-3">
                                 <label class="flex items-center gap-3 cursor-pointer">
                                     <input aria-label="Toggle Successful runs" type="checkbox" ${notifPrefs.on_success ? 'checked' : ''}
@@ -1962,7 +2342,7 @@ Object.assign(pages, {
                             </div>
                         </div>
                         <div>
-                            <label class="form-label mb-3">Channels</label>
+                            <p class="form-label mb-3">Channels</p>
                             <div class="flex flex-col gap-3">
                                 <label class="flex items-center gap-3 cursor-pointer">
                                     <input aria-label="Toggle Desktop notifications" type="checkbox" ${notifPrefs.desktop_enabled ? 'checked' : ''}
@@ -1980,7 +2360,7 @@ Object.assign(pages, {
                             </div>
                         </div>
                         <div>
-                            <label class="form-label mb-3">Quick Actions</label>
+                            <p class="form-label mb-3">Quick Actions</p>
                             <div class="flex flex-col gap-2">
                                 <button class="btn btn-sm btn-primary" onclick="handlers.updateAutomationNotifPref('_enable_all', true)">
                                     ${components.icon('bell', 14)} Enable All
@@ -2017,7 +2397,12 @@ Object.assign(pages, {
                         </select>
                         <select aria-label="Filter by category" class="form-select" onchange="handlers.filterAutomationCategory(this.value)" style="width: 140px; height: 36px;">
                             <option value="all" ${(store.state.automationCategoryFilter || 'all') === 'all' ? 'selected' : ''}>All Categories</option>
-                            ${Object.entries(categoryLabels).map(([key, val]) => `<option value="${key}" ${store.state.automationCategoryFilter === key ? 'selected' : ''}>${val.label}</option>`).join('')}
+                            ${Object.entries(categoryLabels)
+                                .map(
+                                    ([key, val]) =>
+                                        `<option value="${key}" ${store.state.automationCategoryFilter === key ? 'selected' : ''}>${val.label}</option>`,
+                                )
+                                .join('')}
                         </select>
                         <select aria-label="Sort automations" class="form-select" onchange="handlers.sortAutomations(this.value)" style="width: 140px; height: 36px;">
                             <option value="name_asc" ${(store.state.automationSortBy || 'name_asc') === 'name_asc' ? 'selected' : ''}>Name A-Z</option>
@@ -2029,37 +2414,69 @@ Object.assign(pages, {
                         ${(() => {
                             const platFilter = store.state.automationPlatformFilter || 'all';
                             if (platFilter === 'all') return '';
-                            const platRules = automations.filter(a => a.platform === platFilter || a.platform === 'all');
-                            const allEnabled = platRules.every(a => a.is_enabled);
-                            return '<button class="btn btn-sm ' + (allEnabled ? 'btn-secondary' : 'btn-primary') + '" onclick="handlers.bulkTogglePlatform(\'' + platFilter + '\', ' + !allEnabled + ')" style="height: 36px; white-space: nowrap;">' + components.icon(allEnabled ? 'toggle-right' : 'toggle-left', 14) + (allEnabled ? ' Disable All' : ' Enable All') + '</button>';
+                            const platRules = automations.filter(
+                                (a) => a.platform === platFilter || a.platform === 'all',
+                            );
+                            const allEnabled = platRules.every((a) => a.is_enabled);
+                            return (
+                                '<button class="btn btn-sm ' +
+                                (allEnabled ? 'btn-secondary' : 'btn-primary') +
+                                '" onclick="handlers.bulkTogglePlatform(\'' +
+                                platFilter +
+                                "', " +
+                                !allEnabled +
+                                ')" style="height: 36px; white-space: nowrap;">' +
+                                components.icon(allEnabled ? 'toggle-right' : 'toggle-left', 14) +
+                                (allEnabled ? ' Disable All' : ' Enable All') +
+                                '</button>'
+                            );
                         })()}
                     </div>
                 </div>
                 <div class="card-body">
                     <div class="flex flex-col gap-2">
-                        ${automations.filter(rule => {
-                            const searchQ = (store.state.automationSearchQuery || '').toLowerCase();
-                            const catFilter = store.state.automationCategoryFilter || 'all';
-                            const platFilter = store.state.automationPlatformFilter || 'all';
-                            const tagFilter = store.state.automationTagFilter || '';
-                            const matchesSearch = !searchQ || rule.name.toLowerCase().includes(searchQ) || rule.description.toLowerCase().includes(searchQ);
-                            const matchesCat = catFilter === 'all' || rule.category === catFilter;
-                            const matchesPlat = platFilter === 'all' || rule.platform === platFilter || rule.platform === 'all';
-                            const ruleTags = (() => { try { return JSON.parse(rule.tags || '[]'); } catch { return []; } })();
-                            const matchesTag = !tagFilter || ruleTags.includes(tagFilter);
-                            return matchesSearch && matchesCat && matchesPlat && matchesTag;
-                        }).sort((a, b) => {
-                            const sortBy = store.state.automationSortBy || 'name_asc';
-                            switch (sortBy) {
-                                case 'name_desc': return b.name.localeCompare(a.name);
-                                case 'last_run': return (b.last_run_at || '').localeCompare(a.last_run_at || '');
-                                case 'run_count': return (b.run_count || 0) - (a.run_count || 0);
-                                case 'enabled': return (b.is_enabled ? 1 : 0) - (a.is_enabled ? 1 : 0);
-                                default: return a.name.localeCompare(b.name);
-                            }
-                        }).map(rule => (() => {
-                            const isCollapsed = !!(store.state.collapsedAutomations || {})[rule.id];
-                            return `
+                        ${automations
+                            .filter((rule) => {
+                                const searchQ = (store.state.automationSearchQuery || '').toLowerCase();
+                                const catFilter = store.state.automationCategoryFilter || 'all';
+                                const platFilter = store.state.automationPlatformFilter || 'all';
+                                const tagFilter = store.state.automationTagFilter || '';
+                                const matchesSearch =
+                                    !searchQ ||
+                                    rule.name.toLowerCase().includes(searchQ) ||
+                                    rule.description.toLowerCase().includes(searchQ);
+                                const matchesCat = catFilter === 'all' || rule.category === catFilter;
+                                const matchesPlat =
+                                    platFilter === 'all' || rule.platform === platFilter || rule.platform === 'all';
+                                const ruleTags = (() => {
+                                    try {
+                                        return JSON.parse(rule.tags || '[]');
+                                    } catch {
+                                        return [];
+                                    }
+                                })();
+                                const matchesTag = !tagFilter || ruleTags.includes(tagFilter);
+                                return matchesSearch && matchesCat && matchesPlat && matchesTag;
+                            })
+                            .sort((a, b) => {
+                                const sortBy = store.state.automationSortBy || 'name_asc';
+                                switch (sortBy) {
+                                    case 'name_desc':
+                                        return b.name.localeCompare(a.name);
+                                    case 'last_run':
+                                        return (b.last_run_at || '').localeCompare(a.last_run_at || '');
+                                    case 'run_count':
+                                        return (b.run_count || 0) - (a.run_count || 0);
+                                    case 'enabled':
+                                        return (b.is_enabled ? 1 : 0) - (a.is_enabled ? 1 : 0);
+                                    default:
+                                        return a.name.localeCompare(b.name);
+                                }
+                            })
+                            .map((rule) =>
+                                (() => {
+                                    const isCollapsed = !!(store.state.collapsedAutomations || {})[rule.id];
+                                    return `
                             <div class="automation-card" draggable="true" style="${(store.state.selectedAutomationIds || []).includes(rule.id) ? 'outline: 2px solid var(--primary-500); outline-offset: -2px;' : ''}" ondragstart="handlers.onRuleDragStart(event, '${rule.id}')" ondragend="handlers.onRuleDragEnd(event)" ondragover="handlers.onRuleDragOver(event)" ondragleave="handlers.onRuleDragLeave(event)" ondrop="handlers.onRuleDrop(event, '${rule.id}')">
                                 <div class="automation-card-content">
                                     <div class="automation-card-header">
@@ -2080,19 +2497,53 @@ Object.assign(pages, {
                                     <div class="automation-card-body" style="${isCollapsed ? 'display:none;' : ''}">
                                     <div class="text-sm text-gray-500">${rule.description}</div>
                                     ${(() => {
-                                        const ruleTags = (() => { try { return JSON.parse(rule.tags || '[]'); } catch { return []; } })();
-                                        return ruleTags.length > 0 ? '<div class="flex flex-wrap gap-1 mt-1">' + ruleTags.slice(0, 5).map(t => '<span role="button" tabindex="0" class="badge badge-sm" style="font-size:10px;padding:1px 6px;background:var(--primary-100);color:var(--primary-700);cursor:pointer;" onclick="event.stopPropagation();handlers.filterByRuleTag(\'' + escapeHtml(t).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')">' + escapeHtml(t) + '</span>').join('') + (ruleTags.length > 5 ? '<span class="text-xs text-gray-400">+' + (ruleTags.length - 5) + '</span>' : '') + '</div>' : '';
+                                        const ruleTags = (() => {
+                                            try {
+                                                return JSON.parse(rule.tags || '[]');
+                                            } catch {
+                                                return [];
+                                            }
+                                        })();
+                                        return ruleTags.length > 0
+                                            ? '<div class="flex flex-wrap gap-1 mt-1">' +
+                                                  ruleTags
+                                                      .slice(0, 5)
+                                                      .map(
+                                                          (t) =>
+                                                              '<span role="button" tabindex="0" class="badge badge-sm" style="font-size:10px;padding:1px 6px;background:var(--primary-100);color:var(--primary-700);cursor:pointer;" onclick="event.stopPropagation();handlers.filterByRuleTag(\'' +
+                                                              escapeHtml(t)
+                                                                  .replace(/\\/g, '\\\\')
+                                                                  .replace(/'/g, "\\'") +
+                                                              '\')">' +
+                                                              escapeHtml(t) +
+                                                              '</span>',
+                                                      )
+                                                      .join('') +
+                                                  (ruleTags.length > 5
+                                                      ? '<span class="text-xs text-gray-400">+' +
+                                                        (ruleTags.length - 5) +
+                                                        '</span>'
+                                                      : '') +
+                                                  '</div>'
+                                            : '';
                                     })()}
                                     <div class="automation-card-stats">
                                         ${(() => {
-                                            const ruleRuns = runHistory.filter(r => r.automation_name === rule.name || r.automation_id === rule.id || r.action === rule.name);
+                                            const ruleRuns = runHistory.filter(
+                                                (r) =>
+                                                    r.automation_name === rule.name ||
+                                                    r.automation_id === rule.id ||
+                                                    r.action === rule.name,
+                                            );
                                             const runCount = ruleRuns.length;
-                                            const successCount = ruleRuns.filter(r => r.status === 'success').length;
-                                            const successRate = runCount > 0 ? Math.round((successCount / runCount) * 100) : 0;
+                                            const successCount = ruleRuns.filter((r) => r.status === 'success').length;
+                                            const successRate =
+                                                runCount > 0 ? Math.round((successCount / runCount) * 100) : 0;
                                             const lastRun = ruleRuns[0];
                                             const lastRunLabel = (() => {
                                                 if (!lastRun) return 'Never';
-                                                const ts = lastRun.started_at || lastRun.timestamp || lastRun.created_at;
+                                                const ts =
+                                                    lastRun.started_at || lastRun.timestamp || lastRun.created_at;
                                                 if (!ts) return 'Never';
                                                 const ago = Date.now() - new Date(ts).getTime();
                                                 if (ago < 3600000) return Math.round(ago / 60000) + 'm ago';
@@ -2111,7 +2562,13 @@ Object.assign(pages, {
                                         </span>
                                         ${(() => {
                                             const nextRun = getNextRunLabel(rule.schedule, rule.is_enabled);
-                                            return nextRun ? '<span class="automation-card-stat" style="color: var(--primary-500);">' + components.icon('arrow-right', 12) + ' Next: ' + nextRun + '</span>' : '';
+                                            return nextRun
+                                                ? '<span class="automation-card-stat" style="color: var(--primary-500);">' +
+                                                      components.icon('arrow-right', 12) +
+                                                      ' Next: ' +
+                                                      nextRun +
+                                                      '</span>'
+                                                : '';
                                         })()}`;
                                         })()}
                                     </div>
@@ -2147,7 +2604,10 @@ Object.assign(pages, {
                                     </label>
                                 </div>
                             </div>
-                        `; })()).join('')}
+                        `;
+                                })(),
+                            )
+                            .join('')}
                     </div>
                 </div>
             </div>
@@ -2206,7 +2666,10 @@ Object.assign(pages, {
         const purchaseStats = {
             total: purchases.length,
             totalSpend: purchases.reduce((sum, p) => sum + (p.total_amount || 0), 0),
-            avgAmount: purchases.length > 0 ? purchases.reduce((sum, p) => sum + (p.total_amount || 0), 0) / purchases.length : 0
+            avgAmount:
+                purchases.length > 0
+                    ? purchases.reduce((sum, p) => sum + (p.total_amount || 0), 0) / purchases.length
+                    : 0,
         };
 
         const tabContent = {
@@ -2225,14 +2688,17 @@ Object.assign(pages, {
                         </button>
                     </div>
                     <div class="card-body">
-                        ${purchases.length === 0 ? `
+                        ${
+                            purchases.length === 0
+                                ? `
                             <div class="empty-state">
                                 <div class="empty-state-icon">${components.icon('dollar', 48)}</div>
                                 <h2 class="empty-state-title">No purchases yet</h2>
                                 <p class="empty-state-description">Track your inventory purchases to calculate accurate COGS</p>
                                 <button class="btn btn-primary" onclick="handlers.showAddPurchase()">Add First Purchase</button>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <table class="data-table">
                                 <thead>
                                     <tr>
@@ -2246,7 +2712,9 @@ Object.assign(pages, {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${purchases.map(p => `
+                                    ${purchases
+                                        .map(
+                                            (p) => `
                                         <tr>
                                             <td class="font-medium">${escapeHtml(p.purchase_number || 'N/A')}</td>
                                             <td>${escapeHtml(p.vendor_name)}</td>
@@ -2259,10 +2727,13 @@ Object.assign(pages, {
                                                 <button class="btn btn-sm btn-ghost" onclick="handlers.deletePurchase(${p.id})">Delete</button>
                                             </td>
                                         </tr>
-                                    `).join('')}
+                                    `,
+                                        )
+                                        .join('')}
                                 </tbody>
                             </table>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
             `,
@@ -2279,13 +2750,16 @@ Object.assign(pages, {
                         </div>
                     </div>
                     <div class="card-body">
-                        ${(store.state.sales || []).length === 0 ? `
+                        ${
+                            (store.state.sales || []).length === 0
+                                ? `
                             <div class="empty-state">
                                 <div class="empty-state-icon">${components.icon('sales', 48)}</div>
                                 <h2 class="empty-state-title">No sales yet</h2>
                                 <p class="empty-state-description">Sales will appear here with detailed cost tracking</p>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <table class="data-table">
                                 <thead>
                                     <tr>
@@ -2300,7 +2774,9 @@ Object.assign(pages, {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${(store.state.sales || []).map(s => `
+                                    ${(store.state.sales || [])
+                                        .map(
+                                            (s) => `
                                         <tr>
                                             <td>${new Date(s.created_at).toLocaleDateString()}</td>
                                             <td class="font-medium">${escapeHtml(s.listing_title || s.inventory_title || 'N/A')}</td>
@@ -2311,10 +2787,13 @@ Object.assign(pages, {
                                             <td class="text-gray-600">C$${(s.platform_fee || 0).toFixed(2)}</td>
                                             <td class="font-medium ${(s.net_profit || 0) >= 0 ? 'text-success' : 'text-error'}">C$${(s.net_profit || 0).toFixed(2)}</td>
                                         </tr>
-                                    `).join('')}
+                                    `,
+                                        )
+                                        .join('')}
                                 </tbody>
                             </table>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
             `,
@@ -2335,7 +2814,8 @@ Object.assign(pages, {
                         </div>
                     </div>
                     <div class="card-body" style="display:flex;gap:0;padding:0;">
-                        <nav class="coa-left-nav" role="navigation" aria-label="Chart of Accounts sections" style="width:160px;min-width:140px;border-right:1px solid var(--gray-200);padding:12px 0;flex-shrink:0;">
+                        <nav class="coa-left-nav" aria-label="Chart of Accounts sections" style="width:160px;min-width:140px;border-right:1px solid var(--gray-200);padding:12px 0;flex-shrink:0;">
+                            <div role="tablist" aria-orientation="vertical">
                             <button class="coa-nav-item ${coaSubTab === 'accounts' ? 'active' : ''}" role="tab" aria-selected="${coaSubTab === 'accounts'}" onclick="store.setState({coaSubTab:'accounts'});renderApp(window.pages.financials())" style="display:block;width:100%;text-align:left;padding:8px 16px;background:${coaSubTab === 'accounts' ? 'var(--primary-50)' : 'none'};color:${coaSubTab === 'accounts' ? 'var(--primary-600)' : 'var(--gray-700)'};font-weight:${coaSubTab === 'accounts' ? '600' : '400'};border:none;cursor:pointer;font-size:13px;">
                                 ${components.icon('list', 14)} Accounts
                             </button>
@@ -2345,41 +2825,60 @@ Object.assign(pages, {
                             <button class="coa-nav-item ${coaSubTab === 'sales' ? 'active' : ''}" role="tab" aria-selected="${coaSubTab === 'sales'}" onclick="store.setState({coaSubTab:'sales'});renderApp(window.pages.financials())" style="display:block;width:100%;text-align:left;padding:8px 16px;background:${coaSubTab === 'sales' ? 'var(--primary-50)' : 'none'};color:${coaSubTab === 'sales' ? 'var(--primary-600)' : 'var(--gray-700)'};font-weight:${coaSubTab === 'sales' ? '600' : '400'};border:none;cursor:pointer;font-size:13px;">
                                 ${components.icon('dollar-sign', 14)} Sales
                             </button>
+                            </div>
                         </nav>
                         <div style="flex:1;padding:16px;">
-                            ${coaSubTab === 'purchases' ? `
+                            ${
+                                coaSubTab === 'purchases'
+                                    ? `
                                 <div class="empty-state" style="padding:40px 0;">
                                     <div class="empty-state-icon">${components.icon('shopping-cart', 48)}</div>
                                     <h2 class="empty-state-title">No purchases recorded yet</h2>
                                     <p class="empty-state-description">Purchase records will appear here once you add inventory costs or expenses.</p>
                                 </div>
-                            ` : coaSubTab === 'sales' ? `
+                            `
+                                    : coaSubTab === 'sales'
+                                      ? `
                                 <div class="empty-state" style="padding:40px 0;">
                                     <div class="empty-state-icon">${components.icon('dollar-sign', 48)}</div>
                                     <h2 class="empty-state-title">No sales recorded yet</h2>
                                     <p class="empty-state-description">Sales records will appear here once you have completed sales.</p>
                                 </div>
-                            ` : accounts.length === 0 ? `
+                            `
+                                      : accounts.length === 0
+                                        ? `
                                 <div class="empty-state">
                                     <div class="empty-state-icon">${components.icon('list', 48)}</div>
                                     <h2 class="empty-state-title">No accounts set up</h2>
                                     <p class="empty-state-description">Create accounts to organize your financial transactions</p>
                                     <button class="btn btn-primary" onclick="handlers.seedDefaultAccounts()">Create Default Accounts</button>
                                 </div>
-                            ` : (() => {
-                                const grouped = store.state.accountsGrouped || {};
-                                const categories = ['Assets', 'Liabilities', 'Equity', 'Income', 'Expenses'];
-                                return categories.map(cat => {
-                                    const types = grouped[cat] || {};
-                                    const typeNames = Object.keys(types);
-                                    if (typeNames.length === 0) return '';
-                                    return `
+                            `
+                                        : (() => {
+                                              const grouped = store.state.accountsGrouped || {};
+                                              const categories = [
+                                                  'Assets',
+                                                  'Liabilities',
+                                                  'Equity',
+                                                  'Income',
+                                                  'Expenses',
+                                              ];
+                                              return categories
+                                                  .map((cat) => {
+                                                      const types = grouped[cat] || {};
+                                                      const typeNames = Object.keys(types);
+                                                      if (typeNames.length === 0) return '';
+                                                      return `
                                         <div class="mb-6">
                                             <h3 class="text-lg font-semibold mb-3" style="color: var(--gray-700);">${cat}</h3>
-                                            ${typeNames.map(type => `
+                                            ${typeNames
+                                                .map(
+                                                    (type) => `
                                                 <div class="mb-3">
                                                     <div class="text-sm font-medium text-gray-500 mb-2">${type}</div>
-                                                    ${types[type].map(acct => `
+                                                    ${types[type]
+                                                        .map(
+                                                            (acct) => `
                                                         <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg mb-2 hover:bg-gray-100 cursor-pointer" role="button" tabindex="0" onclick="handlers.viewAccountTransactions(${acct.id})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.viewAccountTransactions(${acct.id})}">
                                                             <div>
                                                                 <span class="font-medium">${escapeHtml(acct.account_name)}</span>
@@ -2387,13 +2886,19 @@ Object.assign(pages, {
                                                             </div>
                                                             <span class="font-medium ${(acct.calculated_balance || 0) >= 0 ? 'text-success' : 'text-error'}">C$${Math.abs(acct.calculated_balance || 0).toFixed(2)}</span>
                                                         </div>
-                                                    `).join('')}
+                                                    `,
+                                                        )
+                                                        .join('')}
                                                 </div>
-                                            `).join('')}
+                                            `,
+                                                )
+                                                .join('')}
                                         </div>
                                     `;
-                                }).join('');
-                            })()}
+                                                  })
+                                                  .join('');
+                                          })()
+                            }
                         </div>
                     </div>
                 </div>
@@ -2409,13 +2914,18 @@ Object.assign(pages, {
 
                 // Helper to render a list of account line items
                 const renderLineItems = (accounts, indent = false) => {
-                    if (!accounts || accounts.length === 0) return '<div class="text-sm text-gray-400" style="padding-left:1.5rem;">No items</div>';
-                    return accounts.map(a => `
+                    if (!accounts || accounts.length === 0)
+                        return '<div class="text-sm text-gray-400" style="padding-left:1.5rem;">No items</div>';
+                    return accounts
+                        .map(
+                            (a) => `
                         <div class="flex justify-between py-2 ${indent ? '' : ''}" style="padding-left:${indent ? '2rem' : '1.5rem'}; border-bottom: 1px solid var(--gray-100);">
                             <span class="text-sm">${escapeHtml(a.account_name || a.name || 'Unnamed')}</span>
                             <span class="text-sm font-medium">C$${Math.abs(a.total || a.balance || 0).toFixed(2)}</span>
                         </div>
-                    `).join('');
+                    `,
+                        )
+                        .join('');
                 };
 
                 // Helper for section subtotals
@@ -2467,14 +2977,19 @@ Object.assign(pages, {
                     </div>
                     <div class="card-body">
 
-                        ${statementsSubTab === 'income' ? `
-                            ${!stmtData && !pnl.income ? `
+                        ${
+                            statementsSubTab === 'income'
+                                ? `
+                            ${
+                                !stmtData && !pnl.income
+                                    ? `
                                 <div class="empty-state">
                                     <div class="empty-state-icon">${components.icon('analytics', 48)}</div>
                                     <h2 class="empty-state-title">Generate Income Statement (P&L)</h2>
                                     <p class="empty-state-description">Select a period to see Revenue, COGS, Operating Expenses, and Net Profit or Loss</p>
                                 </div>
-                            ` : `
+                            `
+                                    : `
                                 ${(() => {
                                     const incomeAccts = pnl.income?.accounts || [];
                                     const otherIncomeAccts = pnl.income?.otherIncome || [];
@@ -2485,7 +3000,7 @@ Object.assign(pages, {
                                     const totalRevenue = pnl.income?.total || 0;
                                     const totalCOGS = pnl.costOfGoodsSold?.total || 0;
                                     const grossProfit = totalRevenue - totalCOGS;
-                                    const totalOpEx = (pnl.expenses?.total || 0);
+                                    const totalOpEx = pnl.expenses?.total || 0;
                                     const netIncome = grossProfit - totalOpEx;
 
                                     // If no account data from API, derive from sales/purchases
@@ -2493,14 +3008,17 @@ Object.assign(pages, {
                                     const salesRevenue = sales.reduce((sum, s) => sum + (s.sale_price || 0), 0);
                                     const salesCOGS = sales.reduce((sum, s) => sum + (s.item_cost || 0), 0);
                                     const salesPlatformFees = sales.reduce((sum, s) => sum + (s.platform_fee || 0), 0);
-                                    const salesShipping = sales.reduce((sum, s) => sum + (s.seller_shipping_cost || s.shipping_cost || 0), 0);
+                                    const salesShipping = sales.reduce(
+                                        (sum, s) => sum + (s.seller_shipping_cost || s.shipping_cost || 0),
+                                        0,
+                                    );
                                     const purchasesCOGS = purchases.reduce((sum, p) => sum + (p.total_amount || 0), 0);
 
                                     const useAcctData = hasPnlData;
                                     const displayRevenue = useAcctData ? totalRevenue : salesRevenue;
-                                    const displayCOGS = useAcctData ? totalCOGS : (salesCOGS || purchasesCOGS);
+                                    const displayCOGS = useAcctData ? totalCOGS : salesCOGS || purchasesCOGS;
                                     const displayGross = displayRevenue - displayCOGS;
-                                    const displayOpEx = useAcctData ? totalOpEx : (salesPlatformFees + salesShipping);
+                                    const displayOpEx = useAcctData ? totalOpEx : salesPlatformFees + salesShipping;
                                     const displayNet = displayGross - displayOpEx;
 
                                     return `
@@ -2514,43 +3032,81 @@ Object.assign(pages, {
                                             <!-- Revenue Section -->
                                             <div class="mb-4">
                                                 <h3 class="font-semibold text-sm text-gray-500 uppercase tracking-wider mb-1" style="color: var(--green-600);">Revenue</h3>
-                                                ${useAcctData ? `
+                                                ${
+                                                    useAcctData
+                                                        ? `
                                                     ${renderLineItems(incomeAccts, true)}
-                                                    ${otherIncomeAccts.length > 0 ? `
+                                                    ${
+                                                        otherIncomeAccts.length > 0
+                                                            ? `
                                                         <div class="text-xs text-gray-400 mt-2 mb-1" style="padding-left:1rem;">Other Income</div>
                                                         ${renderLineItems(otherIncomeAccts, true)}
-                                                    ` : ''}
-                                                ` : `
-                                                    ${sales.length > 0 ? sales.slice(0, 20).map(s => `
+                                                    `
+                                                            : ''
+                                                    }
+                                                `
+                                                        : `
+                                                    ${
+                                                        sales.length > 0
+                                                            ? sales
+                                                                  .slice(0, 20)
+                                                                  .map(
+                                                                      (s) => `
                                                         <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                             <span class="text-sm">${escapeHtml(s.listing_title || s.inventory_title || 'Sale')} <span class="text-xs text-gray-400">(${new Date(s.created_at).toLocaleDateString()})</span></span>
                                                             <span class="text-sm font-medium">C$${(s.sale_price || 0).toFixed(2)}</span>
                                                         </div>
-                                                    `).join('') + (sales.length > 20 ? '<div class="text-xs text-gray-400" style="padding-left:1.5rem;">... and ' + (sales.length - 20) + ' more</div>' : '') : '<div class="text-sm text-gray-400" style="padding-left:1.5rem;">No revenue recorded</div>'}
-                                                `}
+                                                    `,
+                                                                  )
+                                                                  .join('') +
+                                                              (sales.length > 20
+                                                                  ? '<div class="text-xs text-gray-400" style="padding-left:1.5rem;">... and ' +
+                                                                    (sales.length - 20) +
+                                                                    ' more</div>'
+                                                                  : '')
+                                                            : '<div class="text-sm text-gray-400" style="padding-left:1.5rem;">No revenue recorded</div>'
+                                                    }
+                                                `
+                                                }
                                                 ${renderSubtotal('Total Revenue', displayRevenue, '#16a34a')}
                                             </div>
 
                                             <!-- COGS Section -->
                                             <div class="mb-4">
                                                 <h3 class="font-semibold text-sm text-gray-500 uppercase tracking-wider mb-1" style="color: #ea580c;">Cost of Goods Sold (COGS)</h3>
-                                                ${useAcctData ? `
+                                                ${
+                                                    useAcctData
+                                                        ? `
                                                     ${renderLineItems(cogsAccts, true)}
-                                                ` : `
-                                                    ${purchases.length > 0 ? purchases.map(p => `
+                                                `
+                                                        : `
+                                                    ${
+                                                        purchases.length > 0
+                                                            ? purchases
+                                                                  .map(
+                                                                      (p) => `
                                                         <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                             <span class="text-sm">${escapeHtml(p.vendor_name || 'Purchase')} <span class="text-xs text-gray-400">(${new Date(p.purchase_date || p.created_at).toLocaleDateString()})</span></span>
                                                             <span class="text-sm font-medium">C$${(p.total_amount || 0).toFixed(2)}</span>
                                                         </div>
-                                                    `).join('') : `
-                                                        ${salesCOGS > 0 ? `
+                                                    `,
+                                                                  )
+                                                                  .join('')
+                                                            : `
+                                                        ${
+                                                            salesCOGS > 0
+                                                                ? `
                                                             <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                                 <span class="text-sm">Item Costs from Sales</span>
                                                                 <span class="text-sm font-medium">C$${salesCOGS.toFixed(2)}</span>
                                                             </div>
-                                                        ` : '<div class="text-sm text-gray-400" style="padding-left:1.5rem;">No COGS recorded</div>'}
-                                                    `}
-                                                `}
+                                                        `
+                                                                : '<div class="text-sm text-gray-400" style="padding-left:1.5rem;">No COGS recorded</div>'
+                                                        }
+                                                    `
+                                                    }
+                                                `
+                                                }
                                                 ${renderSubtotal('Total COGS', displayCOGS, '#ea580c')}
                                             </div>
 
@@ -2560,7 +3116,7 @@ Object.assign(pages, {
                                                     <span class="font-semibold" style="color: var(--blue-600);">Gross Profit</span>
                                                     <div>
                                                         <span class="font-bold text-lg" style="color: ${displayGross >= 0 ? 'var(--blue-600)' : 'var(--error-600)'};">C$${displayGross.toFixed(2)}</span>
-                                                        <span class="text-xs text-gray-400 ml-2">(${displayRevenue > 0 ? (displayGross / displayRevenue * 100).toFixed(1) : '0'}% margin)</span>
+                                                        <span class="text-xs text-gray-400 ml-2">(${displayRevenue > 0 ? ((displayGross / displayRevenue) * 100).toFixed(1) : '0'}% margin)</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -2568,47 +3124,69 @@ Object.assign(pages, {
                                             <!-- Operating Expenses Section -->
                                             <div class="mb-4">
                                                 <h3 class="font-semibold text-sm text-gray-500 uppercase tracking-wider mb-1" style="color: var(--error-600);">Operating Expenses</h3>
-                                                ${useAcctData ? `
+                                                ${
+                                                    useAcctData
+                                                        ? `
                                                     ${renderLineItems(expenseAccts, true)}
-                                                    ${otherExpenseAccts.length > 0 ? `
+                                                    ${
+                                                        otherExpenseAccts.length > 0
+                                                            ? `
                                                         <div class="text-xs text-gray-400 mt-2 mb-1" style="padding-left:1rem;">Other Expenses</div>
                                                         ${renderLineItems(otherExpenseAccts, true)}
-                                                    ` : ''}
-                                                ` : `
-                                                    ${salesPlatformFees > 0 ? `
+                                                    `
+                                                            : ''
+                                                    }
+                                                `
+                                                        : `
+                                                    ${
+                                                        salesPlatformFees > 0
+                                                            ? `
                                                         <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                             <span class="text-sm">Platform Fees</span>
                                                             <span class="text-sm font-medium">C$${salesPlatformFees.toFixed(2)}</span>
                                                         </div>
-                                                    ` : ''}
-                                                    ${salesShipping > 0 ? `
+                                                    `
+                                                            : ''
+                                                    }
+                                                    ${
+                                                        salesShipping > 0
+                                                            ? `
                                                         <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                             <span class="text-sm">Shipping Costs</span>
                                                             <span class="text-sm font-medium">C$${salesShipping.toFixed(2)}</span>
                                                         </div>
-                                                    ` : ''}
+                                                    `
+                                                            : ''
+                                                    }
                                                     ${salesPlatformFees === 0 && salesShipping === 0 ? '<div class="text-sm text-gray-400" style="padding-left:1.5rem;">No operating expenses recorded</div>' : ''}
-                                                `}
+                                                `
+                                                }
                                                 ${renderSubtotal('Total Operating Expenses', displayOpEx, '#dc2626')}
                                             </div>
 
                                             <!-- Net Profit / Loss -->
                                             ${renderGrandTotal(displayNet >= 0 ? 'Net Profit' : 'Net Loss', displayNet)}
                                             <div class="text-xs text-gray-400 text-center mt-2">
-                                                Net margin: ${displayRevenue > 0 ? (displayNet / displayRevenue * 100).toFixed(1) : '0'}%
+                                                Net margin: ${displayRevenue > 0 ? ((displayNet / displayRevenue) * 100).toFixed(1) : '0'}%
                                             </div>
                                         </div>
                                     `;
                                 })()}
-                            `}
-                        ` : statementsSubTab === 'balance-sheet' ? `
-                            ${!stmtData ? `
+                            `
+                            }
+                        `
+                                : statementsSubTab === 'balance-sheet'
+                                  ? `
+                            ${
+                                !stmtData
+                                    ? `
                                 <div class="empty-state">
                                     <div class="empty-state-icon">${components.icon('analytics', 48)}</div>
                                     <h2 class="empty-state-title">Generate Balance Sheet</h2>
                                     <p class="empty-state-description">Shows Assets (what you own) = Liabilities (what you owe) + Equity (owner's stake) at a specific date</p>
                                 </div>
-                            ` : `
+                            `
+                                    : `
                                 ${(() => {
                                     const stmt = stmtData;
                                     const totals = stmt.totals || {};
@@ -2617,13 +3195,18 @@ Object.assign(pages, {
                                     const equityAccts = stmt.equity || [];
 
                                     const renderBalanceItems = (accounts) => {
-                                        if (!accounts || accounts.length === 0) return '<div class="text-sm text-gray-400" style="padding-left:2rem;">--</div>';
-                                        return accounts.map(a => `
+                                        if (!accounts || accounts.length === 0)
+                                            return '<div class="text-sm text-gray-400" style="padding-left:2rem;">--</div>';
+                                        return accounts
+                                            .map(
+                                                (a) => `
                                             <div class="flex justify-between py-1" style="padding-left:2rem; border-bottom: 1px solid var(--gray-50);">
                                                 <span class="text-sm">${escapeHtml(a.account_name || 'Unnamed')}</span>
                                                 <span class="text-sm font-medium">C$${Math.abs(a.balance || 0).toFixed(2)}</span>
                                             </div>
-                                        `).join('');
+                                        `,
+                                            )
+                                            .join('');
                                     };
 
                                     return `
@@ -2647,7 +3230,9 @@ Object.assign(pages, {
                                                     </div>
                                                 </div>
 
-                                                ${(assets.fixedAssets || []).length > 0 ? `
+                                                ${
+                                                    (assets.fixedAssets || []).length > 0
+                                                        ? `
                                                     <div class="mb-3">
                                                         <div class="text-xs font-semibold text-gray-500 uppercase mb-1" style="padding-left:0.5rem;">Fixed Assets</div>
                                                         ${renderBalanceItems(assets.fixedAssets)}
@@ -2656,9 +3241,13 @@ Object.assign(pages, {
                                                             <span>C$${(totals.fixedAssets || 0).toFixed(2)}</span>
                                                         </div>
                                                     </div>
-                                                ` : ''}
+                                                `
+                                                        : ''
+                                                }
 
-                                                ${(assets.otherAssets || []).length > 0 ? `
+                                                ${
+                                                    (assets.otherAssets || []).length > 0
+                                                        ? `
                                                     <div class="mb-3">
                                                         <div class="text-xs font-semibold text-gray-500 uppercase mb-1" style="padding-left:0.5rem;">Other Assets</div>
                                                         ${renderBalanceItems(assets.otherAssets)}
@@ -2667,7 +3256,9 @@ Object.assign(pages, {
                                                             <span>C$${(totals.otherAssets || 0).toFixed(2)}</span>
                                                         </div>
                                                     </div>
-                                                ` : ''}
+                                                `
+                                                        : ''
+                                                }
 
                                                 <div class="flex justify-between py-3 font-bold" style="border-top: 2px solid var(--blue-600); color: var(--blue-600);">
                                                     <span>TOTAL ASSETS</span>
@@ -2690,7 +3281,9 @@ Object.assign(pages, {
                                                     </div>
                                                 </div>
 
-                                                ${(liabilities.longTermLiabilities || []).length > 0 ? `
+                                                ${
+                                                    (liabilities.longTermLiabilities || []).length > 0
+                                                        ? `
                                                     <div class="mb-3">
                                                         <div class="text-xs font-semibold text-gray-500 uppercase mb-1" style="padding-left:0.5rem;">Long-Term Liabilities</div>
                                                         ${renderBalanceItems(liabilities.longTermLiabilities)}
@@ -2699,7 +3292,9 @@ Object.assign(pages, {
                                                             <span>C$${(totals.longTermLiabilities || 0).toFixed(2)}</span>
                                                         </div>
                                                     </div>
-                                                ` : ''}
+                                                `
+                                                        : ''
+                                                }
 
                                                 <div class="flex justify-between py-3 font-bold" style="border-top: 2px solid var(--error-600); color: var(--error-600);">
                                                     <span>TOTAL LIABILITIES</span>
@@ -2731,26 +3326,49 @@ Object.assign(pages, {
                                         </div>
                                     `;
                                 })()}
-                            `}
-                        ` : statementsSubTab === 'cash-flow' ? `
-                            ${!stmtData ? `
+                            `
+                            }
+                        `
+                                  : statementsSubTab === 'cash-flow'
+                                    ? `
+                            ${
+                                !stmtData
+                                    ? `
                                 <div class="empty-state">
                                     <div class="empty-state-icon">${components.icon('activity', 48)}</div>
                                     <h2 class="empty-state-title">Generate Cash Flow Statement</h2>
                                     <p class="empty-state-description">Shows cash generated and used in operating, investing, and financing activities</p>
                                 </div>
-                            ` : `
+                            `
+                                    : `
                                 ${(() => {
                                     // Operating Activities: cash from sales, less COGS purchases, fees, shipping
                                     const totalSalesInflow = sales.reduce((sum, s) => sum + (s.sale_price || 0), 0);
-                                    const totalPurchaseOutflow = purchases.reduce((sum, p) => sum + (p.total_amount || p.amount || 0), 0);
+                                    const totalPurchaseOutflow = purchases.reduce(
+                                        (sum, p) => sum + (p.total_amount || p.amount || 0),
+                                        0,
+                                    );
                                     const platformFees = sales.reduce((sum, s) => sum + (s.platform_fee || 0), 0);
-                                    const shippingCosts = sales.reduce((sum, s) => sum + (s.seller_shipping_cost || s.shipping_cost || 0), 0);
-                                    const customerShipping = sales.reduce((sum, s) => sum + (s.customer_shipping_cost || 0), 0);
-                                    const netOperating = totalSalesInflow + customerShipping - totalPurchaseOutflow - platformFees - shippingCosts;
+                                    const shippingCosts = sales.reduce(
+                                        (sum, s) => sum + (s.seller_shipping_cost || s.shipping_cost || 0),
+                                        0,
+                                    );
+                                    const customerShipping = sales.reduce(
+                                        (sum, s) => sum + (s.customer_shipping_cost || 0),
+                                        0,
+                                    );
+                                    const netOperating =
+                                        totalSalesInflow +
+                                        customerShipping -
+                                        totalPurchaseOutflow -
+                                        platformFees -
+                                        shippingCosts;
 
                                     // Investing: use inventory value as proxy for investing in assets
-                                    const inventoryValue = (store.state.inventory || []).reduce((sum, i) => sum + ((i.cost_price || i.list_price || 0) * (i.quantity || 1)), 0);
+                                    const inventoryValue = (store.state.inventory || []).reduce(
+                                        (sum, i) => sum + (i.cost_price || i.list_price || 0) * (i.quantity || 1),
+                                        0,
+                                    );
                                     const netInvesting = 0; // No investing activities tracked yet
 
                                     // Financing: no financing activities tracked for resellers typically
@@ -2834,31 +3452,49 @@ Object.assign(pages, {
                                         </div>
                                     `;
                                 })()}
-                            `}
-                        ` : statementsSubTab === 'owners-equity' ? `
-                            ${!stmtData ? `
+                            `
+                            }
+                        `
+                                    : statementsSubTab === 'owners-equity'
+                                      ? `
+                            ${
+                                !stmtData
+                                    ? `
                                 <div class="empty-state">
                                     <div class="empty-state-icon">${components.icon('user', 48)}</div>
                                     <h2 class="empty-state-title">Generate Statement of Owners Equity</h2>
                                     <p class="empty-state-description">Shows how the owner's investment and retained earnings change over time</p>
                                 </div>
-                            ` : `
+                            `
+                                    : `
                                 ${(() => {
                                     const totals = stmtData.totals || {};
                                     const equityAccts = stmtData.equity || [];
                                     const pnlData = pnl;
 
                                     // Calculate net income for the period
-                                    const totalRevenue = pnlData.income?.total || sales.reduce((sum, s) => sum + (s.sale_price || 0), 0);
-                                    const totalCOGS = pnlData.costOfGoodsSold?.total || purchases.reduce((sum, p) => sum + (p.total_amount || 0), 0);
-                                    const totalExpenses = pnlData.expenses?.total || sales.reduce((sum, s) => sum + (s.platform_fee || 0) + (s.seller_shipping_cost || s.shipping_cost || 0), 0);
+                                    const totalRevenue =
+                                        pnlData.income?.total || sales.reduce((sum, s) => sum + (s.sale_price || 0), 0);
+                                    const totalCOGS =
+                                        pnlData.costOfGoodsSold?.total ||
+                                        purchases.reduce((sum, p) => sum + (p.total_amount || 0), 0);
+                                    const totalExpenses =
+                                        pnlData.expenses?.total ||
+                                        sales.reduce(
+                                            (sum, s) =>
+                                                sum +
+                                                (s.platform_fee || 0) +
+                                                (s.seller_shipping_cost || s.shipping_cost || 0),
+                                            0,
+                                        );
                                     const netIncome = totalRevenue - totalCOGS - totalExpenses;
 
                                     // Owner's equity components
                                     const beginningEquity = totals.equity || 0;
                                     const ownerContributions = 0; // tracked separately if available
                                     const ownerWithdrawals = 0;
-                                    const endingEquity = beginningEquity + netIncome + ownerContributions - ownerWithdrawals;
+                                    const endingEquity =
+                                        beginningEquity + netIncome + ownerContributions - ownerWithdrawals;
 
                                     return `
                                         <div class="financial-statement">
@@ -2875,17 +3511,25 @@ Object.assign(pages, {
                                             </div>
 
                                             <!-- Equity Accounts Detail -->
-                                            ${equityAccts.length > 0 ? `
+                                            ${
+                                                equityAccts.length > 0
+                                                    ? `
                                                 <div class="my-3">
                                                     <div class="text-xs font-semibold text-gray-500 uppercase mb-1" style="padding-left:0.5rem;">Equity Accounts</div>
-                                                    ${equityAccts.map(a => `
+                                                    ${equityAccts
+                                                        .map(
+                                                            (a) => `
                                                         <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                             <span class="text-sm">${escapeHtml(a.account_name || 'Unnamed')}</span>
                                                             <span class="text-sm font-medium">C$${Math.abs(a.balance || 0).toFixed(2)}</span>
                                                         </div>
-                                                    `).join('')}
+                                                    `,
+                                                        )
+                                                        .join('')}
                                                 </div>
-                                            ` : ''}
+                                            `
+                                                    : ''
+                                            }
 
                                             <!-- Changes During Period -->
                                             <div class="my-4">
@@ -2928,8 +3572,11 @@ Object.assign(pages, {
                                         </div>
                                     `;
                                 })()}
-                            `}
-                        ` : ''}
+                            `
+                            }
+                        `
+                                      : ''
+                        }
 
                     </div>
                 </div>
@@ -2947,13 +3594,16 @@ Object.assign(pages, {
                         </div>
                     </div>
                     <div class="card-body">
-                        ${!store.state.profitLossReport ? `
+                        ${
+                            !store.state.profitLossReport
+                                ? `
                             <div class="empty-state">
                                 <div class="empty-state-icon">${components.icon('dollar', 48)}</div>
                                 <h2 class="empty-state-title">Generate P&L Report</h2>
                                 <p class="empty-state-description">Select a date range to see your income, expenses, and net profit</p>
                             </div>
-                        ` : `
+                        `
+                                : `
                             ${(() => {
                                 const pnl = store.state.profitLossReport;
                                 return `
@@ -2997,17 +3647,18 @@ Object.assign(pages, {
                                     </div>
                                 `;
                             })()}
-                        `}
+                        `
+                        }
                     </div>
                 </div>
-            `
+            `,
         };
 
         // Calculate financial metrics
         const totalRevenue = (store.state.sales || []).reduce((sum, s) => sum + (s.sale_price || 0), 0);
         const totalExpenses = purchases.reduce((sum, p) => sum + (p.total_amount || 0), 0);
         const netProfit = totalRevenue - totalExpenses;
-        const profitMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100) : 0;
+        const profitMargin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
 
         // Financial dashboard metrics
         const cashFlow = totalRevenue - totalExpenses;
@@ -3017,7 +3668,7 @@ Object.assign(pages, {
             profit: netProfit,
             margin: profitMargin,
             cashFlow: cashFlow,
-            cashFlowChange: 0
+            cashFlowChange: 0,
         };
 
         // Cash flow waterfall data — derived from same totalExpenses as overview cards
@@ -3029,7 +3680,7 @@ Object.assign(pages, {
             { label: 'COGS', value: -waterfallCOGS, type: 'negative' },
             { label: 'Shipping', value: -waterfallShipping, type: 'negative' },
             { label: 'Fees', value: -waterfallFees, type: 'negative' },
-            { label: 'Net', value: netProfit, type: 'total' }
+            { label: 'Net', value: netProfit, type: 'total' },
         ];
 
         // Financial ratios
@@ -3041,16 +3692,19 @@ Object.assign(pages, {
             totalEquity: netProfit * 0.5,
             revenue: totalRevenue,
             cogs: totalExpenses * 0.6,
-            netIncome: netProfit
+            netIncome: netProfit,
         };
 
         // Budget data
-        const budgetData = store.state.budgets && store.state.budgets.length > 0 ? store.state.budgets : [
-            { name: 'Marketing', budget: 200, actual: 0 },
-            { name: 'Shipping', budget: 500, actual: 0 },
-            { name: 'Supplies', budget: 300, actual: 0 },
-            { name: 'Fees', budget: 400, actual: 0 }
-        ];
+        const budgetData =
+            store.state.budgets && store.state.budgets.length > 0
+                ? store.state.budgets
+                : [
+                      { name: 'Marketing', budget: 200, actual: 0 },
+                      { name: 'Shipping', budget: 500, actual: 0 },
+                      { name: 'Supplies', budget: 300, actual: 0 },
+                      { name: 'Fees', budget: 400, actual: 0 },
+                  ];
 
         // Calculate financial health score
         const healthFactors = [];
@@ -3070,9 +3724,14 @@ Object.assign(pages, {
 
         const financialHealthScore = healthFactors.reduce((a, b) => a + b, 0);
 
-        const healthLevel = financialHealthScore >= 80 ? 'excellent' :
-                           financialHealthScore >= 60 ? 'good' :
-                           financialHealthScore >= 40 ? 'fair' : 'needs-attention';
+        const healthLevel =
+            financialHealthScore >= 80
+                ? 'excellent'
+                : financialHealthScore >= 60
+                  ? 'good'
+                  : financialHealthScore >= 40
+                    ? 'fair'
+                    : 'needs-attention';
 
         return `
             <div class="page-header">
@@ -3088,7 +3747,7 @@ Object.assign(pages, {
                         <button aria-haspopup="menu" class="btn btn-secondary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                             ${components.icon('download', 16)} Export
                         </button>
-                        <div class="dropdown-menu">
+                        <div class="dropdown-menu" aria-hidden="true">
                             <button class="dropdown-item" onclick="handlers.exportFinancials('csv')">CSV</button>
                             <button class="dropdown-item" onclick="handlers.exportFinancials('pdf')">PDF Report</button>
                             <button class="dropdown-item" onclick="handlers.exportFinancials('xlsx')">Excel</button>
@@ -3105,9 +3764,15 @@ Object.assign(pages, {
                             <svg viewBox="0 0 100 100">
                                 <circle cx="50" cy="50" r="45" fill="none" stroke="var(--gray-200)" stroke-width="10"/>
                                 <circle cx="50" cy="50" r="45" fill="none"
-                                    stroke="${healthLevel === 'excellent' ? 'var(--success-500)' :
-                                             healthLevel === 'good' ? 'var(--primary-500)' :
-                                             healthLevel === 'fair' ? 'var(--warning-500)' : 'var(--error-500)'}"
+                                    stroke="${
+                                        healthLevel === 'excellent'
+                                            ? 'var(--success-500)'
+                                            : healthLevel === 'good'
+                                              ? 'var(--primary-500)'
+                                              : healthLevel === 'fair'
+                                                ? 'var(--warning-500)'
+                                                : 'var(--error-500)'
+                                    }"
                                     stroke-width="10"
                                     stroke-dasharray="${financialHealthScore * 2.83} 283"
                                     stroke-linecap="round" transform="rotate(-90 50 50)"/>
@@ -3119,10 +3784,15 @@ Object.assign(pages, {
                             </div>
                         </div>
                         <div class="health-status-badge ${healthLevel}">
-                            ${healthLevel === 'excellent' ? components.icon('check-circle', 14) + ' Excellent' :
-                              healthLevel === 'good' ? components.icon('check', 14) + ' Good' :
-                              healthLevel === 'fair' ? components.icon('alert-circle', 14) + ' Fair' :
-                              components.icon('alert-triangle', 14) + ' Needs Attention'}
+                            ${
+                                healthLevel === 'excellent'
+                                    ? components.icon('check-circle', 14) + ' Excellent'
+                                    : healthLevel === 'good'
+                                      ? components.icon('check', 14) + ' Good'
+                                      : healthLevel === 'fair'
+                                        ? components.icon('alert-circle', 14) + ' Fair'
+                                        : components.icon('alert-triangle', 14) + ' Needs Attention'
+                            }
                         </div>
                     </div>
 
@@ -3162,16 +3832,24 @@ Object.assign(pages, {
                 </div>
 
                 <div class="financials-insights">
-                    ${(totalRevenue > 0 || purchases.length > 0) ? `
+                    ${
+                        totalRevenue > 0 || purchases.length > 0
+                            ? `
                     <div class="insight-card ${profitMargin >= 15 ? 'positive' : profitMargin >= 0 ? 'neutral' : 'negative'}">
                         <div class="insight-icon">${profitMargin >= 15 ? components.icon('thumbs-up', 16) : components.icon('info', 16)}</div>
                         <div class="insight-text">
-                            ${profitMargin >= 15 ? 'Your profit margin is healthy!' :
-                              profitMargin >= 0 ? 'Consider optimizing costs to improve margins' :
-                              'Expenses exceed revenue - review pricing strategy'}
+                            ${
+                                profitMargin >= 15
+                                    ? 'Your profit margin is healthy!'
+                                    : profitMargin >= 0
+                                      ? 'Consider optimizing costs to improve margins'
+                                      : 'Expenses exceed revenue - review pricing strategy'
+                            }
                         </div>
                     </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                     <div class="insight-card neutral">
                         <div class="insight-icon">${components.icon('clock', 16)}</div>
                         <div class="insight-text">
@@ -3238,9 +3916,11 @@ Object.assign(pages, {
                 <button class="tab ${currentTab === 'pnl' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'pnl' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('pnl')">Profit &amp; Loss (P&amp;L)</button>
             </div>
 
-            ${currentTab === 'cash-flow-projection' ? '' : (tabContent[currentTab] || tabContent.accounts)}
+            ${currentTab === 'cash-flow-projection' ? '' : tabContent[currentTab] || tabContent.accounts}
 
-            ${currentTab === 'cash-flow-projection' ? `
+            ${
+                currentTab === 'cash-flow-projection'
+                    ? `
             <!-- Cash Flow Projection -->
             <div class="card mb-6">
                 <div class="card-header">
@@ -3250,40 +3930,90 @@ Object.assign(pages, {
                 <div class="card-body">
                     ${(() => {
                         const sales = store.state.sales || [];
-                        if (sales.length === 0) return '<div style="text-align: center; padding: 24px; color: var(--gray-400);"><p>No sales data yet. Cash flow projections will appear after your first sale.</p></div>';
+                        if (sales.length === 0)
+                            return '<div style="text-align: center; padding: 24px; color: var(--gray-400);"><p>No sales data yet. Cash flow projections will appear after your first sale.</p></div>';
                         const currentMonth = new Date().getMonth();
-                        const projMonths = Array.from({length: 6}, (_, i) => {
+                        const projMonths = Array.from({ length: 6 }, (_, i) => {
                             const m = (currentMonth + i + 1) % 12;
-                            return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m];
+                            return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][
+                                m
+                            ];
                         });
-                        const avgMonthlyRevenue = sales.reduce((s, sale) => s + (sale.sale_price || 0), 0) / Math.max(1, Math.ceil((Date.now() - new Date(sales[sales.length-1]?.created_at || Date.now()).getTime()) / (30*86400000)));
+                        const avgMonthlyRevenue =
+                            sales.reduce((s, sale) => s + (sale.sale_price || 0), 0) /
+                            Math.max(
+                                1,
+                                Math.ceil(
+                                    (Date.now() -
+                                        new Date(sales[sales.length - 1]?.created_at || Date.now()).getTime()) /
+                                        (30 * 86400000),
+                                ),
+                            );
                         const income = Array(6).fill(Math.round(avgMonthlyRevenue));
                         const expenses = Array(6).fill(Math.round(avgMonthlyRevenue * 0.65));
                         const net = income.map((v, i) => v - expenses[i]);
-                        const cumulative = net.reduce((acc, v) => { acc.push((acc.length > 0 ? acc[acc.length - 1] : 0) + v); return acc; }, []);
+                        const cumulative = net.reduce((acc, v) => {
+                            acc.push((acc.length > 0 ? acc[acc.length - 1] : 0) + v);
+                            return acc;
+                        }, []);
                         const maxVal = Math.max(...income, ...expenses);
-                        return '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px;">' +
-                            '<div style="text-align: center; padding: 12px; background: var(--gray-50); border-radius: 8px;"><div style="font-size: 20px; font-weight: 700; color: var(--success);">$' + income.reduce((a,b) => a+b, 0).toLocaleString() + '</div><div style="font-size: 11px; color: var(--gray-500);">Projected Income</div></div>' +
-                            '<div style="text-align: center; padding: 12px; background: var(--gray-50); border-radius: 8px;"><div style="font-size: 20px; font-weight: 700; color: var(--danger);">$' + expenses.reduce((a,b) => a+b, 0).toLocaleString() + '</div><div style="font-size: 11px; color: var(--gray-500);">Projected Expenses</div></div>' +
-                            '<div style="text-align: center; padding: 12px; background: var(--gray-50); border-radius: 8px;"><div style="font-size: 20px; font-weight: 700; color: var(--primary-600);">$' + net.reduce((a,b) => a+b, 0).toLocaleString() + '</div><div style="font-size: 11px; color: var(--gray-500);">Net Cash Flow</div></div>' +
-                            '<div style="text-align: center; padding: 12px; background: var(--gray-50); border-radius: 8px;"><div style="font-size: 20px; font-weight: 700; color: var(--gray-700);">$' + cumulative[cumulative.length - 1].toLocaleString() + '</div><div style="font-size: 11px; color: var(--gray-500);">End Balance</div></div>' +
-                        '</div>' +
-                        '<div style="overflow-x: auto;"><table class="table"><thead><tr><th>Month</th><th>Income</th><th>Expenses</th><th>Net</th><th>Cumulative</th><th>Bar</th></tr></thead><tbody>' +
-                        projMonths.map((m, i) => '<tr>' +
-                            '<td class="font-medium">' + m + '</td>' +
-                            '<td style="color: var(--success);">$' + income[i].toLocaleString() + '</td>' +
-                            '<td style="color: var(--danger);">$' + expenses[i].toLocaleString() + '</td>' +
-                            '<td class="font-medium" style="color: ' + (net[i] >= 0 ? 'var(--success)' : 'var(--danger)') + ';">' + (net[i] >= 0 ? '+' : '') + 'C$' + net[i].toLocaleString() + '</td>' +
-                            '<td class="font-medium">$' + cumulative[i].toLocaleString() + '</td>' +
-                            '<td style="width: 120px;"><div style="height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden;"><div style="height: 100%; width: ' + Math.round(income[i] / maxVal * 100) + '%; background: var(--success); border-radius: 4px;"></div></div></td>' +
-                        '</tr>').join('') +
-                        '</tbody></table></div>';
+                        return (
+                            '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px;">' +
+                            '<div style="text-align: center; padding: 12px; background: var(--gray-50); border-radius: 8px;"><div style="font-size: 20px; font-weight: 700; color: var(--success);">$' +
+                            income.reduce((a, b) => a + b, 0).toLocaleString() +
+                            '</div><div style="font-size: 11px; color: var(--gray-500);">Projected Income</div></div>' +
+                            '<div style="text-align: center; padding: 12px; background: var(--gray-50); border-radius: 8px;"><div style="font-size: 20px; font-weight: 700; color: var(--danger);">$' +
+                            expenses.reduce((a, b) => a + b, 0).toLocaleString() +
+                            '</div><div style="font-size: 11px; color: var(--gray-500);">Projected Expenses</div></div>' +
+                            '<div style="text-align: center; padding: 12px; background: var(--gray-50); border-radius: 8px;"><div style="font-size: 20px; font-weight: 700; color: var(--primary-600);">$' +
+                            net.reduce((a, b) => a + b, 0).toLocaleString() +
+                            '</div><div style="font-size: 11px; color: var(--gray-500);">Net Cash Flow</div></div>' +
+                            '<div style="text-align: center; padding: 12px; background: var(--gray-50); border-radius: 8px;"><div style="font-size: 20px; font-weight: 700; color: var(--gray-700);">$' +
+                            cumulative[cumulative.length - 1].toLocaleString() +
+                            '</div><div style="font-size: 11px; color: var(--gray-500);">End Balance</div></div>' +
+                            '</div>' +
+                            '<div style="overflow-x: auto;"><table class="table"><thead><tr><th>Month</th><th>Income</th><th>Expenses</th><th>Net</th><th>Cumulative</th><th>Bar</th></tr></thead><tbody>' +
+                            projMonths
+                                .map(
+                                    (m, i) =>
+                                        '<tr>' +
+                                        '<td class="font-medium">' +
+                                        m +
+                                        '</td>' +
+                                        '<td style="color: var(--success);">$' +
+                                        income[i].toLocaleString() +
+                                        '</td>' +
+                                        '<td style="color: var(--danger);">$' +
+                                        expenses[i].toLocaleString() +
+                                        '</td>' +
+                                        '<td class="font-medium" style="color: ' +
+                                        (net[i] >= 0 ? 'var(--success)' : 'var(--danger)') +
+                                        ';">' +
+                                        (net[i] >= 0 ? '+' : '') +
+                                        'C$' +
+                                        net[i].toLocaleString() +
+                                        '</td>' +
+                                        '<td class="font-medium">$' +
+                                        cumulative[i].toLocaleString() +
+                                        '</td>' +
+                                        '<td style="width: 120px;"><div style="height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden;"><div style="height: 100%; width: ' +
+                                        Math.round((income[i] / maxVal) * 100) +
+                                        '%; background: var(--success); border-radius: 4px;"></div></div></td>' +
+                                        '</tr>',
+                                )
+                                .join('') +
+                            '</tbody></table></div>'
+                        );
                     })()}
                 </div>
             </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
-            ${currentTab !== 'cash-flow-projection' ? `
+            ${
+                currentTab !== 'cash-flow-projection'
+                    ? `
             <!-- Multi-Currency Support -->
             <div class="card mb-6">
                 <div class="card-header">
@@ -3292,11 +4022,11 @@ Object.assign(pages, {
                 <div class="card-body">
                     <div style="display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 16px; align-items: end; margin-bottom: 20px;">
                         <div class="form-group" style="margin: 0;">
-                            <label class="form-label">Amount</label>
-                            <input aria-label="Currency Amount" type="number" id="currency-amount" class="form-input" value="100" min="0" step="0.01" onchange="handlers.convertCurrency()">
+                            <label class="form-label" for="currency-amount">Amount</label>
+                            <input aria-label="Currency Amount" type="number" id="currency-amount" class="form-input" autocomplete="off" value="100" min="0" step="0.01" onchange="handlers.convertCurrency()">
                         </div>
                         <div class="form-group" style="margin: 0;">
-                            <label class="form-label">From</label>
+                            <label class="form-label" for="currency-from">From</label>
                             <select id="currency-from" class="form-select" aria-label="From currency" onchange="handlers.convertCurrency()">
                                 <option value="CAD" selected>CAD (Canadian Dollar)</option>
                                 <option value="USD">USD (US Dollar)</option>
@@ -3308,8 +4038,8 @@ Object.assign(pages, {
                         </div>
                         <div style="padding-bottom: 8px; font-size: 20px; color: var(--gray-400);">&rarr;</div>
                         <div class="form-group" style="margin: 0;">
-                            <label class="form-label">Convert To</label>
-                            <select id="currency-target" class="form-select" aria-label="To currency" onchange="handlers.convertCurrency()">
+                            <label class="form-label" for="currency-target">Convert To</label>
+                            <select id="currency-target" class="form-select" onchange="handlers.convertCurrency()">
                                 <option value="CAD">CAD (Canadian Dollar)</option>
                                 <option value="USD" selected>USD (US Dollar)</option>
                                 <option value="EUR">EUR (Euro)</option>
@@ -3331,11 +4061,21 @@ Object.assign(pages, {
                                 { code: 'EUR', rate: 0.6779, symbol: '€' },
                                 { code: 'GBP', rate: 0.5826, symbol: '£' },
                                 { code: 'AUD', rate: 1.1243, symbol: 'A$' },
-                                { code: 'JPY', rate: 109.74, symbol: '¥' }
-                            ].map(c => '<div style="text-align: center; padding: 8px; background: var(--gray-50); border-radius: 6px;">' +
-                                '<div style="font-size: 12px; font-weight: 600;">' + c.code + '</div>' +
-                                '<div style="font-size: 11px; color: var(--gray-500);">' + c.symbol + c.rate + '</div>' +
-                            '</div>').join('')}
+                                { code: 'JPY', rate: 109.74, symbol: '¥' },
+                            ]
+                                .map(
+                                    (c) =>
+                                        '<div style="text-align: center; padding: 8px; background: var(--gray-50); border-radius: 6px;">' +
+                                        '<div style="font-size: 12px; font-weight: 600;">' +
+                                        c.code +
+                                        '</div>' +
+                                        '<div style="font-size: 11px; color: var(--gray-500);">' +
+                                        c.symbol +
+                                        c.rate +
+                                        '</div>' +
+                                        '</div>',
+                                )
+                                .join('')}
                         </div>
                     </div>
                 </div>
@@ -3348,32 +4088,65 @@ Object.assign(pages, {
                     <button class="btn btn-sm btn-primary" onclick="handlers.addFinancialGoal()">+ Add Goal</button>
                 </div>
                 <div class="card-body">
-                    ${(store.state.financialGoals || []).length > 0 ? `
+                    ${
+                        (store.state.financialGoals || []).length > 0
+                            ? `
                         <div style="display: grid; gap: 16px;">
-                            ${(store.state.financialGoals || []).map(goal => {
-                                const progress = Math.min(100, Math.round((goal.current / goal.target) * 100));
-                                const color = progress >= 100 ? 'success' : progress >= 60 ? 'primary' : progress >= 30 ? 'warning' : 'danger';
-                                return '<div style="padding: 16px; background: var(--gray-50); border-radius: 8px;">' +
-                                    '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">' +
-                                        '<div><span style="font-weight: 600;">' + escapeHtml(goal.name) + '</span><span style="font-size: 12px; color: var(--gray-500); margin-left: 8px;">' + escapeHtml(goal.category || '') + '</span></div>' +
-                                        '<span style="font-size: 13px; font-weight: 600; color: var(--' + color + ');">' + progress + '%</span>' +
-                                    '</div>' +
-                                    '<div style="height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden; margin-bottom: 8px;">' +
-                                        '<div style="height: 100%; width: ' + progress + '%; background: var(--' + color + '); border-radius: 4px; transition: width 0.3s;"></div>' +
-                                    '</div>' +
-                                    '<div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--gray-500);">' +
-                                        '<span>$' + (goal.current || 0).toLocaleString() + ' of $' + (goal.target || 0).toLocaleString() + '</span>' +
-                                        '<span>Deadline: ' + (goal.deadline || 'None') + '</span>' +
-                                    '</div>' +
-                                '</div>';
-                            }).join('')}
+                            ${(store.state.financialGoals || [])
+                                .map((goal) => {
+                                    const progress = Math.min(100, Math.round((goal.current / goal.target) * 100));
+                                    const color =
+                                        progress >= 100
+                                            ? 'success'
+                                            : progress >= 60
+                                              ? 'primary'
+                                              : progress >= 30
+                                                ? 'warning'
+                                                : 'danger';
+                                    return (
+                                        '<div style="padding: 16px; background: var(--gray-50); border-radius: 8px;">' +
+                                        '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">' +
+                                        '<div><span style="font-weight: 600;">' +
+                                        escapeHtml(goal.name) +
+                                        '</span><span style="font-size: 12px; color: var(--gray-500); margin-left: 8px;">' +
+                                        escapeHtml(goal.category || '') +
+                                        '</span></div>' +
+                                        '<span style="font-size: 13px; font-weight: 600; color: var(--' +
+                                        color +
+                                        ');">' +
+                                        progress +
+                                        '%</span>' +
+                                        '</div>' +
+                                        '<div style="height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden; margin-bottom: 8px;">' +
+                                        '<div style="height: 100%; width: ' +
+                                        progress +
+                                        '%; background: var(--' +
+                                        color +
+                                        '); border-radius: 4px; transition: width 0.3s;"></div>' +
+                                        '</div>' +
+                                        '<div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--gray-500);">' +
+                                        '<span>$' +
+                                        (goal.current || 0).toLocaleString() +
+                                        ' of $' +
+                                        (goal.target || 0).toLocaleString() +
+                                        '</span>' +
+                                        '<span>Deadline: ' +
+                                        (goal.deadline || 'None') +
+                                        '</span>' +
+                                        '</div>' +
+                                        '</div>'
+                                    );
+                                })
+                                .join('')}
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div class="text-center py-8">
                             <p style="color: var(--gray-500); margin-bottom: 12px;">Set financial goals to track your progress. Examples: Revenue target, savings, debt payoff.</p>
                             <button class="btn btn-primary btn-sm" onclick="handlers.addFinancialGoal()">+ Create First Goal</button>
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
@@ -3385,25 +4158,41 @@ Object.assign(pages, {
                 <div class="card-body">
                     ${(() => {
                         const sales = store.state.sales || [];
-                        if (sales.length === 0) return '<div style="text-align: center; padding: 24px; color: var(--gray-400);"><p>No expense data yet. Start selling to see expense breakdowns.</p></div>';
+                        if (sales.length === 0)
+                            return '<div style="text-align: center; padding: 24px; color: var(--gray-400);"><p>No expense data yet. Start selling to see expense breakdowns.</p></div>';
                         const categories = [
                             { name: 'Inventory/COGS', amount: 0, pct: 0, color: 'primary' },
                             { name: 'Shipping', amount: 0, pct: 0, color: 'success' },
                             { name: 'Platform Fees', amount: 0, pct: 0, color: 'warning' },
                             { name: 'Supplies/Packaging', amount: 0, pct: 0, color: 'info' },
-                            { name: 'Other', amount: 0, pct: 0, color: 'gray' }
+                            { name: 'Other', amount: 0, pct: 0, color: 'gray' },
                         ];
-                        return '<div style="display: grid; gap: 12px;">' +
-                            categories.map(c =>
-                                '<div style="display: flex; align-items: center; gap: 12px;">' +
-                                    '<div style="width: 120px; font-size: 13px; font-weight: 500;">' + c.name + '</div>' +
-                                    '<div style="flex: 1; height: 24px; background: var(--gray-100); border-radius: 4px; overflow: hidden;">' +
-                                        '<div style="height: 100%; width: ' + c.pct + '%; background: var(--' + c.color + '); border-radius: 4px; display: flex; align-items: center; padding-left: 8px;"><span style="font-size: 11px; color: white; font-weight: 600;">' + (c.pct >= 10 ? c.pct + '%' : '') + '</span></div>' +
-                                    '</div>' +
-                                    '<div style="width: 80px; text-align: right; font-size: 13px; font-weight: 600;">$' + c.amount.toLocaleString() + '</div>' +
-                                '</div>'
-                            ).join('') +
-                        '</div>';
+                        return (
+                            '<div style="display: grid; gap: 12px;">' +
+                            categories
+                                .map(
+                                    (c) =>
+                                        '<div style="display: flex; align-items: center; gap: 12px;">' +
+                                        '<div style="width: 120px; font-size: 13px; font-weight: 500;">' +
+                                        c.name +
+                                        '</div>' +
+                                        '<div style="flex: 1; height: 24px; background: var(--gray-100); border-radius: 4px; overflow: hidden;">' +
+                                        '<div style="height: 100%; width: ' +
+                                        c.pct +
+                                        '%; background: var(--' +
+                                        c.color +
+                                        '); border-radius: 4px; display: flex; align-items: center; padding-left: 8px;"><span style="font-size: 11px; color: white; font-weight: 600;">' +
+                                        (c.pct >= 10 ? c.pct + '%' : '') +
+                                        '</span></div>' +
+                                        '</div>' +
+                                        '<div style="width: 80px; text-align: right; font-size: 13px; font-weight: 600;">$' +
+                                        c.amount.toLocaleString() +
+                                        '</div>' +
+                                        '</div>',
+                                )
+                                .join('') +
+                            '</div>'
+                        );
                     })()}
                 </div>
             </div>
@@ -3431,23 +4220,44 @@ Object.assign(pages, {
                     </div>
                     <div style="padding: 16px; background: var(--gray-50); border-radius: 8px;">
                         <div style="font-size: 13px; font-weight: 600; margin-bottom: 12px;">Unmatched Transactions</div>
-                        ${(store.state.unmatchedTransactions || []).length === 0 ?
-                            '<div style="text-align: center; padding: 16px; color: var(--gray-400);"><p style="font-size: 13px;">No unmatched transactions</p></div>' :
-                        (store.state.unmatchedTransactions || []).map(t => '<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--gray-200);">' +
-                            '<div style="display: flex; gap: 12px; align-items: center;">' +
-                                '<span style="font-size: 12px; color: var(--gray-500); width: 80px;">' + t.date + '</span>' +
-                                '<span style="font-size: 13px;">' + t.desc + '</span>' +
-                            '</div>' +
-                            '<div style="display: flex; gap: 8px; align-items: center;">' +
-                                '<span style="font-weight: 600; color: ' + (t.amount >= 0 ? 'var(--success)' : 'var(--danger)') + ';">' + (t.amount >= 0 ? '+' : '') + 'C$' + Math.abs(t.amount).toFixed(2) + '</span>' +
-                                '<button class="btn btn-sm btn-ghost" onclick="handlers.matchTransaction()" title="Match">' + components.icon('check', 14) + '</button>' +
-                            '</div>' +
-                        '</div>').join('')}
+                        ${
+                            (store.state.unmatchedTransactions || []).length === 0
+                                ? '<div style="text-align: center; padding: 16px; color: var(--gray-400);"><p style="font-size: 13px;">No unmatched transactions</p></div>'
+                                : (store.state.unmatchedTransactions || [])
+                                      .map(
+                                          (t) =>
+                                              '<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--gray-200);">' +
+                                              '<div style="display: flex; gap: 12px; align-items: center;">' +
+                                              '<span style="font-size: 12px; color: var(--gray-500); width: 80px;">' +
+                                              t.date +
+                                              '</span>' +
+                                              '<span style="font-size: 13px;">' +
+                                              t.desc +
+                                              '</span>' +
+                                              '</div>' +
+                                              '<div style="display: flex; gap: 8px; align-items: center;">' +
+                                              '<span style="font-weight: 600; color: ' +
+                                              (t.amount >= 0 ? 'var(--success)' : 'var(--danger)') +
+                                              ';">' +
+                                              (t.amount >= 0 ? '+' : '') +
+                                              'C$' +
+                                              Math.abs(t.amount).toFixed(2) +
+                                              '</span>' +
+                                              '<button class="btn btn-sm btn-ghost" onclick="handlers.matchTransaction()" title="Match">' +
+                                              components.icon('check', 14) +
+                                              '</button>' +
+                                              '</div>' +
+                                              '</div>',
+                                      )
+                                      .join('')
+                        }
                     </div>
                 </div>
             </div>
 
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Business FAB -->
             ${businessFAB.render()}
@@ -3469,46 +4279,46 @@ const PLATFORM_DISPLAY_NAMES = {
     vinted: 'Vinted (U.S)',
     mercari: 'Mercari (U.S)',
     facebook: 'Facebook Marketplace',
-    whatnot: 'Whatnot'
+    whatnot: 'Whatnot',
 };
 
 Object.assign(pages, {
     shops() {
         const shops = store.state.shops || [];
-        const connectedShops = shops.filter(s => s.is_connected);
+        const connectedShops = shops.filter((s) => s.is_connected);
         const lastSync = store.state.lastShopSync;
 
         // Calculate sync status for connected shops
         const syncStatus = {
             syncing: false,
             lastSync: lastSync || null,
-            pending: 0
+            pending: 0,
         };
 
         // Calculate actual platform stats from sales data
         const sales = store.state.sales || [];
         const platformFeeRates = {
-            poshmark: 0.20,  // 20% flat fee
-            ebay: 0.13,      // ~13% average
-            mercari: 0.10,   // 10%
-            depop: 0.10,     // 10%
-            whatnot: 0.08,   // 8%
-            grailed: 0.09,   // 9%
-            facebook: 0.05,  // 5%
-            shopify: 0.029,  // 2.9% + transaction fees
-            etsy: 0.15       // ~15% with listing fees
+            poshmark: 0.2, // 20% flat fee
+            ebay: 0.13, // ~13% average
+            mercari: 0.1, // 10%
+            depop: 0.1, // 10%
+            whatnot: 0.08, // 8%
+            grailed: 0.09, // 9%
+            facebook: 0.05, // 5%
+            shopify: 0.029, // 2.9% + transaction fees
+            etsy: 0.15, // ~15% with listing fees
         };
 
         // Calculate fees per platform from actual sales
         const platformFees = {};
-        connectedShops.forEach(shop => {
-            const platformSales = sales.filter(s => s.platform === shop.platform);
+        connectedShops.forEach((shop) => {
+            const platformSales = sales.filter((s) => s.platform === shop.platform);
             const totalRevenue = platformSales.reduce((sum, s) => sum + (s.sale_price || 0), 0);
             const totalFees = platformSales.reduce((sum, s) => sum + (s.platform_fee || 0), 0);
             const salesCount = platformSales.length;
 
             // If no recorded fees, estimate based on fee rate
-            const estimatedFees = totalFees || (totalRevenue * (platformFeeRates[shop.platform] || 0.10));
+            const estimatedFees = totalFees || totalRevenue * (platformFeeRates[shop.platform] || 0.1);
             const netRevenue = totalRevenue - estimatedFees;
             const feePercentage = totalRevenue > 0 ? ((estimatedFees / totalRevenue) * 100).toFixed(1) : 0;
 
@@ -3518,26 +4328,24 @@ Object.assign(pages, {
                 netRevenue,
                 salesCount,
                 feePercentage,
-                feeRate: platformFeeRates[shop.platform] || 0.10
+                feeRate: platformFeeRates[shop.platform] || 0.1,
             };
         });
 
         // Platform comparison data
-        const platformData = connectedShops.map(shop => ({
+        const platformData = connectedShops.map((shop) => ({
             platform: shop.platform,
             sales: platformFees[shop.platform]?.salesCount || 0,
             revenue: platformFees[shop.platform]?.totalRevenue || 0,
             listings: 0,
-            fees: platformFees[shop.platform]?.totalFees || 0
+            fees: platformFees[shop.platform]?.totalFees || 0,
         }));
 
         // Calculate total stats across all connected shops
         const totalListings = platformData.reduce((sum, p) => sum + p.listings, 0);
         const totalRevenue = platformData.reduce((sum, p) => sum + p.revenue, 0);
         const totalSales = platformData.reduce((sum, p) => sum + p.sales, 0);
-        const avgHealthScore = connectedShops.length > 0
-            ? null
-            : 0;
+        const avgHealthScore = connectedShops.length > 0 ? null : 0;
 
         // Platform colors for visual display
         const platformColors = {
@@ -3546,7 +4354,7 @@ Object.assign(pages, {
             whatnot: '#ff4757',
             depop: '#ff2300',
             shopify: '#96bf48',
-            facebook: '#1877f2'
+            facebook: '#1877f2',
         };
 
         return `
@@ -3555,13 +4363,17 @@ Object.assign(pages, {
                     <h1 class="page-title">${components.icon('store', 24)} My Shops</h1>
                     <p class="page-description">Connect and manage your selling platforms</p>
                 </div>
-                ${connectedShops.length > 0 ? `
+                ${
+                    connectedShops.length > 0
+                        ? `
                     <div class="flex gap-2">
                         <button class="btn btn-secondary" onclick="handlers.syncAllShops()">
                             ${components.icon('refresh-cw', 16)} Sync All
                         </button>
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
             </div>
 
             <!-- My Shops Hero Section -->
@@ -3570,14 +4382,18 @@ Object.assign(pages, {
                     <div class="shops-connection-status">
                         <div class="connection-ring">
                             <svg viewBox="0 0 120 120">
-                                ${connectedShops.length > 0 ? `
+                                ${
+                                    connectedShops.length > 0
+                                        ? `
                                     <circle cx="60" cy="60" r="54" fill="none" stroke="var(--gray-200)" stroke-width="8"/>
                                     <circle cx="60" cy="60" r="54" fill="none" stroke="var(--success-500)" stroke-width="8"
                                         stroke-dasharray="${(connectedShops.length / (window.SUPPORTED_PLATFORMS || []).length) * 339} 339"
                                         stroke-linecap="round" transform="rotate(-90 60 60)"/>
-                                ` : `
+                                `
+                                        : `
                                     <circle cx="60" cy="60" r="54" fill="none" stroke="var(--gray-200)" stroke-width="8"/>
-                                `}
+                                `
+                                }
                             </svg>
                             <div class="connection-count">
                                 <span class="count-value">${connectedShops.length}</span>
@@ -3586,27 +4402,46 @@ Object.assign(pages, {
                         </div>
                         <div class="connection-info">
                             <h2 class="connection-title">
-                                ${connectedShops.length === 0 ? 'No Platforms Connected' :
-                                  connectedShops.length === 1 ? '1 Platform Connected' :
-                                  `${connectedShops.length} Platforms Connected`}
+                                ${
+                                    connectedShops.length === 0
+                                        ? 'No Platforms Connected'
+                                        : connectedShops.length === 1
+                                          ? '1 Platform Connected'
+                                          : `${connectedShops.length} Platforms Connected`
+                                }
                             </h2>
                             <p class="connection-subtitle">
-                                ${connectedShops.length === 0 ? 'Connect your first selling platform to start syncing' :
-                                  syncStatus.lastSync ? `Last sync: ${new Date(syncStatus.lastSync).toLocaleTimeString()}` : 'All synced'}
+                                ${
+                                    connectedShops.length === 0
+                                        ? 'Connect your first selling platform to start syncing'
+                                        : syncStatus.lastSync
+                                          ? `Last sync: ${new Date(syncStatus.lastSync).toLocaleTimeString()}`
+                                          : 'All synced'
+                                }
                             </p>
-                            ${connectedShops.length > 0 ? `
+                            ${
+                                connectedShops.length > 0
+                                    ? `
                                 <div class="connected-platforms-pills">
-                                    ${connectedShops.map(shop => `
+                                    ${connectedShops
+                                        .map(
+                                            (shop) => `
                                         <span class="platform-pill" style="--platform-color: ${platformColors[shop.platform] || 'var(--gray-500)'}">
                                             ${shop.platform.charAt(0).toUpperCase() + shop.platform.slice(1)}
                                         </span>
-                                    `).join('')}
+                                    `,
+                                        )
+                                        .join('')}
                                 </div>
-                            ` : ''}
+                            `
+                                    : ''
+                            }
                         </div>
                     </div>
 
-                    ${connectedShops.length > 0 ? `
+                    ${
+                        connectedShops.length > 0
+                            ? `
                         <div class="shops-hero-stats">
                             <div class="shop-hero-stat">
                                 <div class="shop-stat-icon listings">
@@ -3645,14 +4480,20 @@ Object.assign(pages, {
                                 </div>
                             </div>
                         </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                 </div>
 
-                ${connectedShops.length > 0 ? (() => {
-                    const isVacationMode = store.state.vacationMode || false;
-                    return `
+                ${
+                    connectedShops.length > 0
+                        ? (() => {
+                              const isVacationMode = store.state.vacationMode || false;
+                              return `
                     <!-- Vacation Mode Banner -->
-                    ${isVacationMode ? `
+                    ${
+                        isVacationMode
+                            ? `
                         <div class="vacation-mode-banner" style="background: linear-gradient(135deg, var(--warning) 0%, var(--warning-600) 100%); color: white; padding: 16px 20px; border-radius: 12px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;">
                             <div style="display: flex; align-items: center; gap: 12px;">
                                 ${components.icon('sun', 24)}
@@ -3665,7 +4506,9 @@ Object.assign(pages, {
                                 ${components.icon('x', 16)} End Vacation
                             </button>
                         </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
 
                     <div class="shops-quick-actions">
                         <button class="shop-quick-action" onclick="handlers.syncAllShops()">
@@ -3690,20 +4533,33 @@ Object.assign(pages, {
                         </button>
                     </div>
                 `;
-                })() : ''}
+                          })()
+                        : ''
+                }
             </div>
 
             <!-- Sync Status Bar -->
             ${connectedShops.length > 0 ? syncStatusBar.render(syncStatus) : ''}
 
             <!-- Platform Fee Summary Card -->
-            ${connectedShops.length > 0 ? (() => {
-                const totalPlatformRevenue = Object.values(platformFees).reduce((sum, p) => sum + p.totalRevenue, 0);
-                const totalPlatformFees = Object.values(platformFees).reduce((sum, p) => sum + p.totalFees, 0);
-                const totalNetRevenue = totalPlatformRevenue - totalPlatformFees;
-                const avgFeeRate = totalPlatformRevenue > 0 ? (totalPlatformFees / totalPlatformRevenue * 100).toFixed(1) : 0;
+            ${
+                connectedShops.length > 0
+                    ? (() => {
+                          const totalPlatformRevenue = Object.values(platformFees).reduce(
+                              (sum, p) => sum + p.totalRevenue,
+                              0,
+                          );
+                          const totalPlatformFees = Object.values(platformFees).reduce(
+                              (sum, p) => sum + p.totalFees,
+                              0,
+                          );
+                          const totalNetRevenue = totalPlatformRevenue - totalPlatformFees;
+                          const avgFeeRate =
+                              totalPlatformRevenue > 0
+                                  ? ((totalPlatformFees / totalPlatformRevenue) * 100).toFixed(1)
+                                  : 0;
 
-                return `
+                          return `
                 <div class="card mb-6">
                     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                         <h2 class="card-title">${components.icon('dollar', 18)} Platform Fee Summary</h2>
@@ -3733,10 +4589,16 @@ Object.assign(pages, {
                         <div style="margin-top: 20px;">
                             <div style="font-size: 13px; font-weight: 600; color: var(--gray-700); margin-bottom: 12px;">Fees by Platform</div>
                             <div style="display: flex; flex-direction: column; gap: 8px;">
-                                ${connectedShops.map(shop => {
-                                    const fees = platformFees[shop.platform] || { totalFees: 0, feeRate: 0.10, feePercentage: 0 };
-                                    const barWidth = totalPlatformFees > 0 ? (fees.totalFees / totalPlatformFees * 100) : 0;
-                                    return `
+                                ${connectedShops
+                                    .map((shop) => {
+                                        const fees = platformFees[shop.platform] || {
+                                            totalFees: 0,
+                                            feeRate: 0.1,
+                                            feePercentage: 0,
+                                        };
+                                        const barWidth =
+                                            totalPlatformFees > 0 ? (fees.totalFees / totalPlatformFees) * 100 : 0;
+                                        return `
                                         <div style="display: flex; align-items: center; gap: 12px;">
                                             <div style="width: 80px; font-size: 12px; font-weight: 500;">${shop.platform.charAt(0).toUpperCase() + shop.platform.slice(1)}</div>
                                             <div style="flex: 1; height: 20px; background: var(--gray-100); border-radius: 4px; overflow: hidden; position: relative;">
@@ -3746,16 +4608,21 @@ Object.assign(pages, {
                                             <div style="width: 50px; font-size: 11px; color: var(--gray-500); text-align: right;">${(fees.feeRate * 100).toFixed(0)}%</div>
                                         </div>
                                     `;
-                                }).join('')}
+                                    })
+                                    .join('')}
                             </div>
                         </div>
                     </div>
                 </div>
                 `;
-            })() : ''}
+                      })()
+                    : ''
+            }
 
             <!-- Shop Health Dashboard -->
-            ${connectedShops.length > 0 ? `
+            ${
+                connectedShops.length > 0
+                    ? `
                 <div class="card mb-6">
                     <div class="card-header">
                         <h2 class="card-title">${components.icon('activity', 18)} Shop Health Overview</h2>
@@ -3764,10 +4631,14 @@ Object.assign(pages, {
                         ${shopHealthDashboard.render(connectedShops)}
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Platform Comparison -->
-            ${connectedShops.length > 1 ? `
+            ${
+                connectedShops.length > 1
+                    ? `
                 <div class="card mb-6">
                     <div class="card-header">
                         <h2 class="card-title">${components.icon('bar-chart-2', 18)} Platform Comparison</h2>
@@ -3776,39 +4647,59 @@ Object.assign(pages, {
                         ${platformComparison.render(platformData)}
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Shop Cards Grid -->
             <div class="grid grid-cols-3 gap-6">
-                ${(window.SUPPORTED_PLATFORMS || []).map(p => p.id).map(platform => {
-                    const shop = shops.find(s => s.platform === platform);
-                    const isConnected = shop?.is_connected || false;
-                    const connectionType = shop?.connection_type || 'manual';
-                    const isOAuth = connectionType === 'oauth';
+                ${(window.SUPPORTED_PLATFORMS || [])
+                    .map((p) => p.id)
+                    .map((platform) => {
+                        const shop = shops.find((s) => s.platform === platform);
+                        const isConnected = shop?.is_connected || false;
+                        const connectionType = shop?.connection_type || 'manual';
+                        const isOAuth = connectionType === 'oauth';
 
-                    const launchPlatforms = window.LAUNCH_PLATFORMS || new Set(['poshmark', 'ebay', 'depop', 'shopify', 'facebook', 'whatnot']);
-                    const isPostLaunch = !launchPlatforms.has(platform);
+                        const launchPlatforms =
+                            window.LAUNCH_PLATFORMS ||
+                            new Set(['poshmark', 'ebay', 'depop', 'shopify', 'facebook', 'whatnot']);
+                        const isPostLaunch = !launchPlatforms.has(platform);
 
-                    // Calculate status HTML before template literal
-                    let statusHtml;
-                    if (isPostLaunch && !isConnected) {
-                        statusHtml = '<span class="badge-coming-soon">Coming Soon</span>';
-                    } else if (!isConnected) {
-                        statusHtml = '<div class="text-sm text-gray-500">Not connected</div>';
-                    } else if (isOAuth) {
-                        statusHtml = '<div class="text-xs text-success flex items-center gap-1" style="margin-top: 4px;">' + components.icon('check-circle', 14) + ' OAuth Connected</div>';
-                    } else {
-                        statusHtml = '<div class="text-xs text-gray-500" style="margin-top: 4px;">Manual Connection</div>';
-                    }
+                        // Calculate status HTML before template literal
+                        let statusHtml;
+                        if (isPostLaunch && !isConnected) {
+                            statusHtml = '<span class="badge-coming-soon">Coming Soon</span>';
+                        } else if (!isConnected) {
+                            statusHtml = '<div class="text-sm text-gray-500">Not connected</div>';
+                        } else if (isOAuth) {
+                            statusHtml =
+                                '<div class="text-xs text-success flex items-center gap-1" style="margin-top: 4px;">' +
+                                components.icon('check-circle', 14) +
+                                ' OAuth Connected</div>';
+                        } else {
+                            statusHtml =
+                                '<div class="text-xs text-gray-500" style="margin-top: 4px;">Manual Connection</div>';
+                        }
 
-                    const usernameHtml = shop?.platform_username ? '<div class="text-xs text-gray-400" style="margin-top: 2px;">@' + escapeHtml(shop.platform_username) + '</div>' : '';
+                        const usernameHtml = shop?.platform_username
+                            ? '<div class="text-xs text-gray-400" style="margin-top: 2px;">@' +
+                              escapeHtml(shop.platform_username) +
+                              '</div>'
+                            : '';
 
-                    // Health score for connected shops
-                    const healthScore = null;
-                    const healthColor = healthScore >= 80 ? 'var(--success)' : healthScore >= 60 ? 'var(--warning)' : 'var(--error)';
-                    const platformDisplayName = PLATFORM_DISPLAY_NAMES[platform] || platform.charAt(0).toUpperCase() + platform.slice(1);
+                        // Health score for connected shops
+                        const healthScore = null;
+                        const healthColor =
+                            healthScore >= 80
+                                ? 'var(--success)'
+                                : healthScore >= 60
+                                  ? 'var(--warning)'
+                                  : 'var(--error)';
+                        const platformDisplayName =
+                            PLATFORM_DISPLAY_NAMES[platform] || platform.charAt(0).toUpperCase() + platform.slice(1);
 
-                    return `
+                        return `
                         <div class="card shop-card ${isConnected ? 'connected' : ''}">
                             <div class="card-body">
                                 <div class="flex items-center gap-4 mb-4">
@@ -3818,15 +4709,28 @@ Object.assign(pages, {
                                         ${statusHtml}
                                         ${usernameHtml}
                                     </div>
-                                    ${isConnected && healthScore ? `
+                                    ${
+                                        isConnected && healthScore
+                                            ? `
                                         <div class="shop-health-badge" style="background: ${healthColor}20; color: ${healthColor}; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600;">
                                             ${healthScore}%
                                         </div>
-                                    ` : ''}
+                                    `
+                                            : ''
+                                    }
                                 </div>
-                                ${isConnected ? (() => {
-                                    const fees = platformFees[platform] || { totalRevenue: 0, totalFees: 0, netRevenue: 0, salesCount: 0, feePercentage: 0, feeRate: 0.10 };
-                                    return `
+                                ${
+                                    isConnected
+                                        ? (() => {
+                                              const fees = platformFees[platform] || {
+                                                  totalRevenue: 0,
+                                                  totalFees: 0,
+                                                  netRevenue: 0,
+                                                  salesCount: 0,
+                                                  feePercentage: 0,
+                                                  feeRate: 0.1,
+                                              };
+                                              return `
                                     <div class="shop-quick-stats mb-3" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center;">
                                         <div style="padding: 8px; background: var(--gray-50); border-radius: 6px;">
                                             <div style="font-size: 16px; font-weight: 600;">—</div>
@@ -3857,37 +4761,50 @@ Object.assign(pages, {
                                             </div>
                                         </div>
                                         <div style="margin-top: 6px; height: 4px; background: var(--gray-200); border-radius: 2px; overflow: hidden;">
-                                            <div style="width: ${fees.feePercentage || (fees.feeRate * 100)}%; height: 100%; background: var(--error); border-radius: 2px;"></div>
+                                            <div style="width: ${fees.feePercentage || fees.feeRate * 100}%; height: 100%; background: var(--error); border-radius: 2px;"></div>
                                         </div>
                                         <div style="font-size: 9px; color: var(--gray-500); margin-top: 4px; text-align: center;">
                                             ${fees.feePercentage || (fees.feeRate * 100).toFixed(1)}% of revenue goes to ${platformDisplayName}
                                         </div>
                                     </div>
                                 `;
-                                })() : ''}
+                                          })()
+                                        : ''
+                                }
                                 <div class="flex gap-2">
-                                    ${isPostLaunch && !isConnected ? `
+                                    ${
+                                        isPostLaunch && !isConnected
+                                            ? `
                                         <button class="btn btn-secondary flex-1" disabled style="opacity:0.5;cursor:not-allowed;">Coming Soon</button>
-                                    ` : `
+                                    `
+                                            : `
                                         <button class="btn ${isConnected ? 'btn-success' : 'btn-secondary'} flex-1"
                                                 onclick="handlers.${isConnected ? 'disconnect' : 'connect'}Shop('${platform}')">
                                             ${isConnected ? components.icon('check', 16) + ' Connected' : 'Connect'}
                                         </button>
-                                        ${isConnected ? `
+                                        ${
+                                            isConnected
+                                                ? `
                                             <button class="btn btn-icon btn-secondary" onclick="handlers.showShopSettings('${platform}')" title="Settings">
                                                 ${components.icon('settings', 16)}
                                             </button>
-                                        ` : ''}
-                                    `}
+                                        `
+                                                : ''
+                                        }
+                                    `
+                                    }
                                 </div>
                             </div>
                         </div>
                     `;
-                }).join('')}
+                    })
+                    .join('')}
             </div>
 
             <!-- Shop Branding Section -->
-            ${connectedShops.length > 0 ? `
+            ${
+                connectedShops.length > 0
+                    ? `
                 <div class="card mb-6">
                     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                         <h2 class="card-title">${components.icon('palette', 18)} Shop Branding</h2>
@@ -3895,27 +4812,34 @@ Object.assign(pages, {
                     </div>
                     <div class="card-body">
                         <div class="grid grid-cols-3 gap-4">
-                            ${connectedShops.map(shop => {
-                                const branding = (store.state.shopBranding || {})[shop.platform] || {};
-                                const brandColor = branding.primaryColor || platformColors[shop.platform] || '#6b7280';
-                                return `
+                            ${connectedShops
+                                .map((shop) => {
+                                    const branding = (store.state.shopBranding || {})[shop.platform] || {};
+                                    const brandColor =
+                                        branding.primaryColor || platformColors[shop.platform] || '#6b7280';
+                                    return `
                                     <div class="shop-branding-card" style="border: 2px solid ${brandColor}20; border-radius: 12px; padding: 16px; position: relative; overflow: hidden;">
                                         <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: ${brandColor};"></div>
                                         <div class="flex items-center gap-3 mb-3">
-                                            ${branding.logoUrl
-                                                ? `<img src="${branding.logoUrl}" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover;" alt="Shop logo">`
-                                                : `<div style="width: 40px; height: 40px; border-radius: 8px; background: ${brandColor}20; display: flex; align-items: center; justify-content: center; color: ${brandColor}; font-weight: 700; font-size: 16px;">${shop.platform.charAt(0).toUpperCase()}</div>`
+                                            ${
+                                                branding.logoUrl
+                                                    ? `<img src="${branding.logoUrl}" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover;" alt="Shop logo">`
+                                                    : `<div style="width: 40px; height: 40px; border-radius: 8px; background: ${brandColor}20; display: flex; align-items: center; justify-content: center; color: ${brandColor}; font-weight: 700; font-size: 16px;">${shop.platform.charAt(0).toUpperCase()}</div>`
                                             }
                                             <div>
                                                 <div class="font-medium">${PLATFORM_DISPLAY_NAMES[shop.platform] || shop.platform.charAt(0).toUpperCase() + shop.platform.slice(1)}</div>
                                                 <div class="text-xs text-gray-500">${branding.tagline || 'No tagline set'}</div>
                                             </div>
                                         </div>
-                                        ${branding.bannerText ? `
+                                        ${
+                                            branding.bannerText
+                                                ? `
                                             <div style="background: ${brandColor}10; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px; font-size: 12px; color: ${brandColor}; font-style: italic;">
                                                 "${escapeHtml(branding.bannerText)}"
                                             </div>
-                                        ` : ''}
+                                        `
+                                                : ''
+                                        }
                                         <div class="flex items-center gap-2 mb-2">
                                             <span class="text-xs text-gray-500">Color:</span>
                                             <div style="width: 16px; height: 16px; border-radius: 4px; background: ${brandColor}; border: 1px solid var(--gray-200);"></div>
@@ -3926,25 +4850,46 @@ Object.assign(pages, {
                                         </button>
                                     </div>
                                 `;
-                            }).join('')}
+                                })
+                                .join('')}
                         </div>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Performance Dashboard -->
-            ${connectedShops.length > 1 ? (() => {
-                const perfMetrics = connectedShops.map(shop => {
-                    const fees = platformFees[shop.platform] || { totalRevenue: 0, salesCount: 0, netRevenue: 0, totalFees: 0 };
-                    const avgSalePrice = fees.salesCount > 0 ? fees.totalRevenue / fees.salesCount : 0;
-                    const conversionRate = '—';
-                    const salesVelocity = (fees.salesCount / 30).toFixed(1);
-                    const avgDaysToSell = '—';
-                    const returnRate = '—';
-                    return { platform: shop.platform, ...fees, avgSalePrice, conversionRate, salesVelocity, avgDaysToSell, returnRate };
-                });
-                const bestPlatform = perfMetrics.reduce((best, m) => m.totalRevenue > (best?.totalRevenue || 0) ? m : best, null);
-                return `
+            ${
+                connectedShops.length > 1
+                    ? (() => {
+                          const perfMetrics = connectedShops.map((shop) => {
+                              const fees = platformFees[shop.platform] || {
+                                  totalRevenue: 0,
+                                  salesCount: 0,
+                                  netRevenue: 0,
+                                  totalFees: 0,
+                              };
+                              const avgSalePrice = fees.salesCount > 0 ? fees.totalRevenue / fees.salesCount : 0;
+                              const conversionRate = '—';
+                              const salesVelocity = (fees.salesCount / 30).toFixed(1);
+                              const avgDaysToSell = '—';
+                              const returnRate = '—';
+                              return {
+                                  platform: shop.platform,
+                                  ...fees,
+                                  avgSalePrice,
+                                  conversionRate,
+                                  salesVelocity,
+                                  avgDaysToSell,
+                                  returnRate,
+                              };
+                          });
+                          const bestPlatform = perfMetrics.reduce(
+                              (best, m) => (m.totalRevenue > (best?.totalRevenue || 0) ? m : best),
+                              null,
+                          );
+                          return `
                 <div class="card mb-6">
                     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                         <h2 class="card-title">${components.icon('trending-up', 18)} Performance Dashboard</h2>
@@ -3967,7 +4912,9 @@ Object.assign(pages, {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${perfMetrics.map(m => `
+                                    ${perfMetrics
+                                        .map(
+                                            (m) => `
                                         <tr>
                                             <td>
                                                 <div class="flex items-center gap-2">
@@ -3984,17 +4931,23 @@ Object.assign(pages, {
                                             <td>${m.returnRate}%</td>
                                             <td class="font-medium">C$${m.netRevenue.toFixed(2)}</td>
                                         </tr>
-                                    `).join('')}
+                                    `,
+                                        )
+                                        .join('')}
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
                 `;
-            })() : ''}
+                      })()
+                    : ''
+            }
 
             <!-- Multi-Shop Inventory Sync -->
-            ${connectedShops.length > 1 ? `
+            ${
+                connectedShops.length > 1
+                    ? `
                 <div class="card mb-6">
                     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                         <h2 class="card-title">${components.icon('refresh-cw', 18)} Multi-Shop Inventory Sync</h2>
@@ -4004,11 +4957,14 @@ Object.assign(pages, {
                     </div>
                     <div class="card-body">
                         <div style="display: grid; grid-template-columns: repeat(${Math.min(connectedShops.length, 4)}, 1fr); gap: 12px; margin-bottom: 16px;">
-                            ${connectedShops.map(shop => {
-                                const syncConfig = (store.state.shopSyncConfig || {})[shop.platform] || {};
-                                const isSyncEnabled = syncConfig.enabled !== false;
-                                const lastSync = syncConfig.lastSync ? new Date(syncConfig.lastSync).toLocaleString() : 'Never';
-                                return `
+                            ${connectedShops
+                                .map((shop) => {
+                                    const syncConfig = (store.state.shopSyncConfig || {})[shop.platform] || {};
+                                    const isSyncEnabled = syncConfig.enabled !== false;
+                                    const lastSync = syncConfig.lastSync
+                                        ? new Date(syncConfig.lastSync).toLocaleString()
+                                        : 'Never';
+                                    return `
                                     <div style="padding: 14px; border: 1px solid ${isSyncEnabled ? 'var(--success-200)' : 'var(--gray-200)'}; border-radius: 10px; background: ${isSyncEnabled ? 'var(--success-50)' : 'var(--gray-50)'};">
                                         <div class="flex items-center justify-between mb-2">
                                             <span class="font-medium text-sm">${shop.platform.charAt(0).toUpperCase() + shop.platform.slice(1)}</span>
@@ -4018,7 +4974,8 @@ Object.assign(pages, {
                                         <div class="text-xs text-gray-400 mt-1">Mode: ${syncConfig.mode || 'Two-way'}</div>
                                     </div>
                                 `;
-                            }).join('')}
+                                })
+                                .join('')}
                         </div>
                         <div style="display: flex; gap: 8px;">
                             <button class="btn btn-secondary btn-sm" onclick="handlers.syncAllShops()">
@@ -4030,10 +4987,14 @@ Object.assign(pages, {
                         </div>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Marketplace-Specific Listing Requirements -->
-            ${connectedShops.length > 0 ? `
+            ${
+                connectedShops.length > 0
+                    ? `
                 <div class="card mb-6">
                     <div class="card-header">
                         <h2 class="card-title">${components.icon('clipboard', 18)} Marketplace Listing Requirements</h2>
@@ -4041,17 +5002,60 @@ Object.assign(pages, {
                     <div class="card-body">
                         <p class="text-sm text-gray-500 mb-4">Each platform has specific requirements for listings. Review them to optimize your reach.</p>
                         <div class="grid grid-cols-2 gap-4">
-                            ${connectedShops.map(shop => {
-                                const reqs = {
-                                    poshmark: { photos: '1-16', titleMax: 80, descMax: 1500, categories: 'Required', shipping: 'Flat rate via Canada Post' },
-                                    ebay: { photos: '1-24', titleMax: 80, descMax: 'Unlimited', categories: 'Required (Item Specifics)', shipping: 'Multiple options' },
-                                    whatnot: { photos: '1-10', titleMax: 100, descMax: 500, categories: 'Required', shipping: 'Calculated' },
-                                    depop: { photos: '1-4', titleMax: 280, descMax: 1000, categories: 'Optional', shipping: 'Flat or free' },
-                                    shopify: { photos: 'Unlimited', titleMax: 255, descMax: 'Unlimited', categories: 'Collections', shipping: 'Custom profiles' },
-                                    facebook: { photos: '1-10', titleMax: 100, descMax: 1000, categories: 'Required', shipping: 'Flat or free' }
-                                };
-                                const r = reqs[shop.platform] || { photos: 'N/A', titleMax: 'N/A', descMax: 'N/A', categories: 'N/A', shipping: 'N/A' };
-                                return `
+                            ${connectedShops
+                                .map((shop) => {
+                                    const reqs = {
+                                        poshmark: {
+                                            photos: '1-16',
+                                            titleMax: 80,
+                                            descMax: 1500,
+                                            categories: 'Required',
+                                            shipping: 'Flat rate via Canada Post',
+                                        },
+                                        ebay: {
+                                            photos: '1-24',
+                                            titleMax: 80,
+                                            descMax: 'Unlimited',
+                                            categories: 'Required (Item Specifics)',
+                                            shipping: 'Multiple options',
+                                        },
+                                        whatnot: {
+                                            photos: '1-10',
+                                            titleMax: 100,
+                                            descMax: 500,
+                                            categories: 'Required',
+                                            shipping: 'Calculated',
+                                        },
+                                        depop: {
+                                            photos: '1-4',
+                                            titleMax: 280,
+                                            descMax: 1000,
+                                            categories: 'Optional',
+                                            shipping: 'Flat or free',
+                                        },
+                                        shopify: {
+                                            photos: 'Unlimited',
+                                            titleMax: 255,
+                                            descMax: 'Unlimited',
+                                            categories: 'Collections',
+                                            shipping: 'Custom profiles',
+                                        },
+                                        facebook: {
+                                            photos: '1-10',
+                                            titleMax: 100,
+                                            descMax: 1000,
+                                            categories: 'Required',
+                                            shipping: 'Flat or free',
+                                        },
+                                    };
+                                    const r = reqs[shop.platform] || {
+                                        photos: 'N/A',
+                                        titleMax: 'N/A',
+                                        descMax: 'N/A',
+                                        categories: 'N/A',
+                                        shipping: 'N/A',
+                                    };
+                                    return `
                                     <div style="padding: 14px; border: 1px solid var(--gray-200); border-radius: 10px; border-left: 3px solid ${platformColors[shop.platform] || 'var(--gray-500)'};">
                                         <div class="flex items-center gap-2 mb-3">
                                             <span class="font-medium">${shop.platform.charAt(0).toUpperCase() + shop.platform.slice(1)}</span>
@@ -4068,11 +5072,14 @@ Object.assign(pages, {
                                         </button>
                                     </div>
                                 `;
-                            }).join('')}
+                                })
+                                .join('')}
                         </div>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Business FAB -->
             ${businessFAB.render()}
@@ -4086,11 +5093,11 @@ Object.assign(pages, {
         const carriers = ['Canada Post', 'Purolator', 'UPS', 'FedEx', 'DHL', 'Other'];
         const serviceTypes = {
             'Canada Post': ['Regular Parcel', 'Expedited Parcel', 'Xpresspost', 'Priority'],
-            'Purolator': ['Ground', 'Express', 'Express 9AM', 'Evening'],
-            'UPS': ['Ground', 'Next Day Air', '2nd Day Air', '3 Day Select'],
-            'FedEx': ['Ground', 'Express Saver', '2Day', 'Standard Overnight', 'Priority Overnight'],
-            'DHL': ['Express Worldwide', 'Express', 'Economy Select'],
-            'Other': ['Standard', 'Expedited', 'Economy']
+            Purolator: ['Ground', 'Express', 'Express 9AM', 'Evening'],
+            UPS: ['Ground', 'Next Day Air', '2nd Day Air', '3 Day Select'],
+            FedEx: ['Ground', 'Express Saver', '2Day', 'Standard Overnight', 'Priority Overnight'],
+            DHL: ['Express Worldwide', 'Express', 'Economy Select'],
+            Other: ['Standard', 'Expedited', 'Economy'],
         };
         const packageTypes = ['Box', 'Poly Mailer', 'Envelope', 'Tube', 'Padded Envelope', 'Custom'];
 
@@ -4105,7 +5112,9 @@ Object.assign(pages, {
                 </button>
             </div>
 
-            ${profiles.length === 0 ? `
+            ${
+                profiles.length === 0
+                    ? `
                 <div class="card">
                     <div class="card-body">
                         <div class="empty-state" style="text-align: center; padding: 3rem;">
@@ -4120,9 +5129,12 @@ Object.assign(pages, {
                         </div>
                     </div>
                 </div>
-            ` : `
+            `
+                    : `
                 <div class="grid grid-cols-2 gap-4">
-                    ${profiles.map(profile => `
+                    ${profiles
+                        .map(
+                            (profile) => `
                         <div class="card ${profile.is_default ? 'border-primary' : ''}">
                             <div class="card-body">
                                 <div class="flex items-center justify-between mb-3">
@@ -4134,11 +5146,15 @@ Object.assign(pages, {
                                         <button class="btn btn-icon btn-sm" onclick="handlers.editShippingProfile('${profile.id}')" title="Edit">
                                             ${components.icon('edit', 14)}
                                         </button>
-                                        ${!profile.is_default ? `
+                                        ${
+                                            !profile.is_default
+                                                ? `
                                             <button class="btn btn-icon btn-sm" onclick="handlers.setDefaultShippingProfile('${profile.id}')" title="Set as Default">
                                                 ☆
                                             </button>
-                                        ` : ''}
+                                        `
+                                                : ''
+                                        }
                                         <button class="btn btn-icon btn-sm btn-error" onclick="handlers.deleteShippingProfile('${profile.id}')" title="Delete">
                                             ${components.icon('trash', 14)}
                                         </button>
@@ -4155,30 +5171,49 @@ Object.assign(pages, {
                                     ${profile.domestic_cost ? ` • C$${parseFloat(profile.domestic_cost).toFixed(2)}` : ' • Free'}
                                 </div>
 
-                                ${profile.free_shipping_threshold ? `
+                                ${
+                                    profile.free_shipping_threshold
+                                        ? `
                                     <div class="text-xs text-success mb-2">
                                         Free shipping on orders over C$${parseFloat(profile.free_shipping_threshold).toFixed(2)}
                                     </div>
-                                ` : ''}
+                                `
+                                        : ''
+                                }
 
-                                ${profile.platforms && profile.platforms.length > 0 ? `
+                                ${
+                                    profile.platforms && profile.platforms.length > 0
+                                        ? `
                                     <div class="flex flex-wrap gap-1 mt-3">
-                                        ${profile.platforms.map(p => `
+                                        ${profile.platforms
+                                            .map(
+                                                (p) => `
                                             <span class="badge badge-sm">${p.charAt(0).toUpperCase() + p.slice(1)}</span>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </div>
-                                ` : ''}
+                                `
+                                        : ''
+                                }
 
-                                ${profile.notes ? `
+                                ${
+                                    profile.notes
+                                        ? `
                                     <div class="text-xs text-gray-400 mt-2" style="font-style: italic;">
                                         ${escapeHtml(profile.notes)}
                                     </div>
-                                ` : ''}
+                                `
+                                        : ''
+                                }
                             </div>
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
-            `}
+            `
+            }
         `;
     },
 
@@ -4187,7 +5222,9 @@ Object.assign(pages, {
     account() {
         const user = store.state.user || {};
         const connectedShops = store.state.shops || [];
-        const memberSince = user.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
+        const memberSince = user.created_at
+            ? new Date(user.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+            : 'N/A';
 
         return `
             <div class="page-header">
@@ -4213,19 +5250,19 @@ Object.assign(pages, {
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div class="form-group">
-                                <label class="form-label">Full Name</label>
-                                <input aria-label="Text input" type="text" class="form-input" value="${user.full_name || ''}" readonly>
+                                <label class="form-label" for="profile-full-name">Full Name</label>
+                                <input id="profile-full-name" aria-label="Full name" type="text" class="form-input" value="${user.full_name || ''}" readonly>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Email</label>
-                                <input aria-label="Email" type="email" class="form-input" value="${user.email || ''}" readonly>
+                                <label class="form-label" for="profile-email">Email</label>
+                                <input id="profile-email" aria-label="Email" type="email" class="form-input" value="${user.email || ''}" readonly>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Username</label>
-                                <input aria-label="Text input" type="text" class="form-input" value="${user.username || ''}" readonly>
+                                <label class="form-label" for="profile-username">Username</label>
+                                <input id="profile-username" aria-label="Username" type="text" class="form-input" value="${user.username || ''}" readonly>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Member Since</label>
+                                <p class="form-label">Member Since</p>
                                 <div class="form-input" style="word-break:break-word;white-space:normal;height:auto;cursor:default;">${escapeHtml(memberSince)}</div>
                             </div>
                         </div>
@@ -4266,11 +5303,11 @@ Object.assign(pages, {
                         <h2 class="font-semibold mb-4">Change Password</h2>
                         <div class="flex flex-col gap-4" style="max-width: 400px;">
                             <div class="form-group">
-                                <label class="form-label">Current Password</label>
+                                <label class="form-label" for="account-current-password">Current Password</label>
                                 <input aria-label="Enter current password" type="password" class="form-input" id="account-current-password" placeholder="Enter current password" autocomplete="current-password">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">New Password</label>
+                                <label class="form-label" for="account-new-password">New Password</label>
                                 <input aria-label="Enter new password" type="password" class="form-input" id="account-new-password" placeholder="Enter new password" autocomplete="new-password" oninput="handlers.checkPasswordStrength(this.value)">
                                 <div id="password-strength-meter" style="display:none; margin-top:6px;">
                                     <div style="height:4px; border-radius:2px; background:var(--gray-200); overflow:hidden;">
@@ -4280,7 +5317,7 @@ Object.assign(pages, {
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Confirm New Password</label>
+                                <label class="form-label" for="account-confirm-password">Confirm New Password</label>
                                 <input aria-label="Confirm new password" type="password" class="form-input" id="account-confirm-password" placeholder="Confirm new password" autocomplete="new-password">
                             </div>
                             <div>
@@ -4339,7 +5376,7 @@ Object.assign(pages, {
         const leaderboard = store.state.leaderboard || [];
 
         // Filter posts by tab
-        const filteredPosts = posts.filter(p => {
+        const filteredPosts = posts.filter((p) => {
             if (activeTab === 'discussion') return p.type === 'discussion';
             if (activeTab === 'success') return p.type === 'success';
             if (activeTab === 'tips') return p.type === 'tip';
@@ -4377,16 +5414,22 @@ Object.assign(pages, {
                 </button>
             </div>
 
-            ${activeTab === 'leaderboard' ? `
+            ${
+                activeTab === 'leaderboard'
+                    ? `
                 <!-- Leaderboard Tab -->
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Top Contributors</h2>
                     </div>
                     <div class="card-body">
-                        ${leaderboard.length > 0 ? `
+                        ${
+                            leaderboard.length > 0
+                                ? `
                             <div class="leaderboard-list">
-                                ${leaderboard.map((user, index) => `
+                                ${leaderboard
+                                    .map(
+                                        (user, index) => `
                                     <div class="leaderboard-item">
                                         <div class="leaderboard-rank ${index < 3 ? 'top-3' : ''}">
                                             ${index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
@@ -4402,20 +5445,29 @@ Object.assign(pages, {
                                             <div class="text-xs text-gray-500">points</div>
                                         </div>
                                     </div>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="empty-state">
                                 <div class="text-4xl mb-2">📊</div>
                                 <p>No leaderboard data yet. Be the first to contribute!</p>
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
-            ` : `
+            `
+                    : `
                 <!-- Posts Tab -->
                 <div class="community-posts">
-                    ${filteredPosts.length > 0 ? filteredPosts.map(post => `
+                    ${
+                        filteredPosts.length > 0
+                            ? filteredPosts
+                                  .map(
+                                      (post) => `
                         <div class="community-post-card" role="button" tabindex="0" onclick="handlers.viewPost('${post.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.viewPost('${post.id}')}">
                             <div class="post-header">
                                 <div>
@@ -4425,8 +5477,13 @@ Object.assign(pages, {
                                         ${new Date(post.created_at).toLocaleDateString()}
                                     </div>
                                 </div>
-                                ${post.type === 'success' ? '<div class="badge badge-success">Success Story</div>' :
-                                  post.type === 'tip' ? '<div class="badge badge-primary">Tip</div>' : ''}
+                                ${
+                                    post.type === 'success'
+                                        ? '<div class="badge badge-success">Success Story</div>'
+                                        : post.type === 'tip'
+                                          ? '<div class="badge badge-primary">Tip</div>'
+                                          : ''
+                                }
                             </div>
                             <div class="post-content-preview">
                                 ${escapeHtml(post.content || '').substring(0, 200)}${(post.content || '').length > 200 ? '...' : ''}
@@ -4436,21 +5493,32 @@ Object.assign(pages, {
                                     <span>👍 ${post.upvote_count || 0}</span>
                                     <span>💬 ${post.reply_count || 0}</span>
                                 </div>
-                                ${post.tags && post.tags.length > 0 ? `
+                                ${
+                                    post.tags && post.tags.length > 0
+                                        ? `
                                     <div class="post-tags">
-                                        ${post.tags.slice(0, 3).map(tag => `
+                                        ${post.tags
+                                            .slice(0, 3)
+                                            .map(
+                                                (tag) => `
                                             <span class="tag">${escapeHtml(tag)}</span>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </div>
-                                ` : ''}
+                                `
+                                        : ''
+                                }
                             </div>
                         </div>
-                    `).join('') : `
+                    `,
+                                  )
+                                  .join('')
+                            : `
                         <div class="card">
                             <div class="card-body text-center py-12">
                                 <div class="text-6xl mb-4">
-                                    ${activeTab === 'discussion' ? '💬' :
-                                      activeTab === 'success' ? '🏆' : '💡'}
+                                    ${activeTab === 'discussion' ? '💬' : activeTab === 'success' ? '🏆' : '💡'}
                                 </div>
                                 <h2 class="text-xl font-bold mb-2">No posts yet</h2>
                                 <p class="text-gray-600 mb-4">Be the first to share!</p>
@@ -4459,12 +5527,13 @@ Object.assign(pages, {
                                 </button>
                             </div>
                         </div>
-                    `}
+                    `
+                    }
                 </div>
-            `}
+            `
+            }
         `;
     },
-
 
     // Help page,
 
@@ -4515,21 +5584,18 @@ Object.assign(pages, {
         `;
     },
 
-
     // Checklist page,
 
     checklist() {
         const items = store.state.checklistItems || [];
-        const activeItems = items.filter(i => !i.completed);
-        const completedItems = items.filter(i => i.completed);
+        const activeItems = items.filter((i) => !i.completed);
+        const completedItems = items.filter((i) => i.completed);
         const currentTab = store.state.checklistTab || 'active';
 
         // To-Do Lists (personal lists stored in state)
-        const todoLists = store.state.todoLists || [
-            { id: 'default', name: 'My To-Do List', items: [] }
-        ];
+        const todoLists = store.state.todoLists || [{ id: 'default', name: 'My To-Do List', items: [] }];
         const activeListId = store.state.activeTodoListId || 'default';
-        const activeList = todoLists.find(l => l.id === activeListId) || todoLists[0];
+        const activeList = todoLists.find((l) => l.id === activeListId) || todoLists[0];
 
         // Determine which items to show based on tab
         let displayItems = [];
@@ -4546,52 +5612,91 @@ Object.assign(pages, {
         const renderChecklistItem = (item, isSubtask = false) => {
             const isCompleted = item.completed;
             const subtasks = item.subtasks || [];
-            const completedSubtasks = subtasks.filter(st => st.completed).length;
+            const completedSubtasks = subtasks.filter((st) => st.completed).length;
             const hasSubtasks = subtasks.length > 0;
             const subtaskProgress = hasSubtasks ? Math.round((completedSubtasks / subtasks.length) * 100) : 0;
             const isExpanded = store.state.expandedTasks?.[item.id] || false;
-            const isOverdue = !isCompleted && item.due_date && new Date(item.due_date) < new Date() && new Date(item.due_date).toDateString() !== new Date().toDateString();
-            const justCreated = item.created_at && (Date.now() - new Date(item.created_at).getTime()) < 2000;
+            const isOverdue =
+                !isCompleted &&
+                item.due_date &&
+                new Date(item.due_date) < new Date() &&
+                new Date(item.due_date).toDateString() !== new Date().toDateString();
+            const justCreated = item.created_at && Date.now() - new Date(item.created_at).getTime() < 2000;
 
             return `
                 <div class="checklist-item-wrapper ${isSubtask ? 'subtask' : ''} ${isOverdue ? 'checklist-overdue' : ''} ${justCreated ? 'checklist-item-new' : ''}" data-item-id="${item.id}">
                     <label class="checklist-item ${isCompleted ? 'completed' : ''} ${hasSubtasks ? 'has-subtasks' : ''}">
-                        ${!isSubtask && hasSubtasks ? `
+                        ${
+                            !isSubtask && hasSubtasks
+                                ? `
                             <button class="subtask-expand-btn" onclick="event.preventDefault(); event.stopPropagation(); handlers.toggleTaskExpand('${item.id}')">
                                 ${components.icon(isExpanded ? 'chevron-down' : 'chevron-right', 14)}
                             </button>
-                        ` : ''}
+                        `
+                                : ''
+                        }
                         <input aria-label="Toggle ${escapeHtml(item.title)}" type="checkbox"
                                ${isCompleted ? 'checked' : ''}
                                onchange="handlers.toggleChecklistItem('${item.id}', this.checked${isSubtask ? `, '${item.parentId}'` : ''})">
                         <div class="flex-1">
                             <div class="font-medium ${isCompleted ? 'text-gray-400' : ''}">${escapeHtml(item.title)}</div>
                             ${item.notes && !isCompleted ? `<div class="checklist-item-notes">${escapeHtml(item.notes.length > 80 ? item.notes.substring(0, 80) + '...' : item.notes)}</div>` : ''}
-                            ${(() => { let att = []; try { att = typeof item.attachments === 'string' ? JSON.parse(item.attachments) : (item.attachments || []); } catch(e) {} return att.length > 0 && !isCompleted ? `<div class="checklist-item-attachments">${att.map(a => `<span class="checklist-attachment-badge">${components.icon('paperclip', 10)} ${escapeHtml(a)}</span>`).join('')}</div>` : ''; })()}
+                            ${(() => {
+                                let att = [];
+                                try {
+                                    att =
+                                        typeof item.attachments === 'string'
+                                            ? JSON.parse(item.attachments)
+                                            : item.attachments || [];
+                                } catch (e) {}
+                                return att.length > 0 && !isCompleted
+                                    ? `<div class="checklist-item-attachments">${att.map((a) => `<span class="checklist-attachment-badge">${components.icon('paperclip', 10)} ${escapeHtml(a)}</span>`).join('')}</div>`
+                                    : '';
+                            })()}
                             <div class="text-xs ${isCompleted ? 'text-gray-400' : 'text-gray-500'}">
-                                ${isCompleted ? `Completed ${item.last_completed_at ? new Date(item.last_completed_at).toLocaleString() : 'recently'}` : `
-                                    ${hasSubtasks ? `
+                                ${
+                                    isCompleted
+                                        ? `Completed ${item.last_completed_at ? new Date(item.last_completed_at).toLocaleString() : 'recently'}`
+                                        : `
+                                    ${
+                                        hasSubtasks
+                                            ? `
                                         <span class="subtask-progress">
                                             <span class="subtask-progress-bar" style="width: ${subtaskProgress}%"></span>
                                         </span>
                                         <span class="subtask-count">${completedSubtasks}/${subtasks.length} subtasks</span>
-                                    ` : ''}
-                                    ${item.recurring_interval && item.recurring_interval !== 'once' ? `
+                                    `
+                                            : ''
+                                    }
+                                    ${
+                                        item.recurring_interval && item.recurring_interval !== 'once'
+                                            ? `
                                         <span class="badge badge-sm badge-${item.priority === 'high' ? 'error' : item.priority === 'normal' ? 'primary' : 'gray'}">${item.recurring_interval}</span>
-                                    ` : ''}
+                                    `
+                                            : ''
+                                    }
                                     ${item.due_date ? `<span ${isOverdue ? 'style="color: var(--error); font-weight: 600;"' : ''}>Due: ${new Date(item.due_date).toLocaleDateString()}</span>${isOverdue ? ' <span class="badge badge-sm badge-danger">Overdue</span>' : ''}` : ''}
-                                    ${item.priority && item.priority !== 'normal' ? `
+                                    ${
+                                        item.priority && item.priority !== 'normal'
+                                            ? `
                                         <span class="badge badge-sm badge-${item.priority === 'high' ? 'error' : 'gray'}">${item.priority}</span>
-                                    ` : ''}
-                                `}
+                                    `
+                                            : ''
+                                    }
+                                `
+                                }
                             </div>
                         </div>
                         <div class="checklist-actions">
-                            ${!isSubtask ? `
+                            ${
+                                !isSubtask
+                                    ? `
                                 <button class="btn btn-icon btn-sm" onclick="event.stopPropagation(); event.preventDefault(); handlers.showAddSubtask('${item.id}')" aria-label="Add subtask" title="Add subtask">
                                     ${components.icon('plus', 14)}
                                 </button>
-                            ` : ''}
+                            `
+                                    : ''
+                            }
                             <button class="btn btn-icon btn-sm" onclick="event.stopPropagation(); event.preventDefault(); handlers.duplicateChecklistItem('${item.id}'${isSubtask ? `, '${item.parentId}'` : ''})" aria-label="Duplicate task" title="Duplicate">
                                 ${components.icon('copy', 14)}
                             </button>
@@ -4603,32 +5708,43 @@ Object.assign(pages, {
                             </button>
                         </div>
                     </label>
-                    ${hasSubtasks && isExpanded ? `
+                    ${
+                        hasSubtasks && isExpanded
+                            ? `
                         <div class="subtasks-list">
-                            ${subtasks.map(st => renderChecklistItem({ ...st, parentId: item.id }, true)).join('')}
+                            ${subtasks.map((st) => renderChecklistItem({ ...st, parentId: item.id }, true)).join('')}
                         </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                 </div>
             `;
         };
 
         // Calculate streak
-        const completedDates = completedItems.map(i => i.last_completed_at).filter(Boolean);
+        const completedDates = completedItems.map((i) => i.last_completed_at).filter(Boolean);
         const streakDays = streakCounter.calculate(completedDates);
 
         // Get current view mode
         const viewMode = store.state.checklistView || 'list';
 
         // Get tasks for kanban board
-        const kanbanTasks = (store.state.checklistTasks || items).map(t => ({
+        const kanbanTasks = (store.state.checklistTasks || items).map((t) => ({
             ...t,
-            status: t.completed ? 'done' : (t.status || 'todo')
+            status: t.completed ? 'done' : t.status || 'todo',
         }));
 
         // Calculate productivity metrics
-        const highPriorityActive = activeItems.filter(i => i.priority === 'high').length;
-        const dueToday = activeItems.filter(i => i.due_date && new Date(i.due_date).toDateString() === new Date().toDateString()).length;
-        const overdue = activeItems.filter(i => i.due_date && new Date(i.due_date) < new Date() && new Date(i.due_date).toDateString() !== new Date().toDateString()).length;
+        const highPriorityActive = activeItems.filter((i) => i.priority === 'high').length;
+        const dueToday = activeItems.filter(
+            (i) => i.due_date && new Date(i.due_date).toDateString() === new Date().toDateString(),
+        ).length;
+        const overdue = activeItems.filter(
+            (i) =>
+                i.due_date &&
+                new Date(i.due_date) < new Date() &&
+                new Date(i.due_date).toDateString() !== new Date().toDateString(),
+        ).length;
         const completionRate = items.length > 0 ? Math.round((completedItems.length / items.length) * 100) : 0;
 
         // Time-based greeting
@@ -4636,7 +5752,8 @@ Object.assign(pages, {
             const hour = new Date().getHours();
             if (completionRate === 0) {
                 if (hour < 12) return { greeting: 'Good morning', message: 'Complete your first task to get started!' };
-                if (hour < 17) return { greeting: 'Good afternoon', message: 'Complete your first task to get started!' };
+                if (hour < 17)
+                    return { greeting: 'Good afternoon', message: 'Complete your first task to get started!' };
                 if (hour < 21) return { greeting: 'Good evening', message: 'Complete your first task to get started!' };
                 return { greeting: 'Night owl mode', message: 'Complete your first task to get started!' };
             }
@@ -4668,7 +5785,7 @@ Object.assign(pages, {
                         <button aria-haspopup="menu" class="btn btn-secondary">
                             ${components.icon('download', 16)} Export
                         </button>
-                        <div class="dropdown-menu" style="min-width: 160px; right: 0;">
+                        <div class="dropdown-menu" style="min-width: 160px; right: 0;" aria-hidden="true">
                             <button class="dropdown-item" onclick="handlers.exportChecklist('markdown')">
                                 ${components.icon('file-text', 14)} Markdown (.md)
                             </button>
@@ -4686,14 +5803,20 @@ Object.assign(pages, {
                     <div class="greeting-content">
                         <h2 class="greeting-title">${productivity.greeting}!</h2>
                         <p class="greeting-subtitle">${productivity.message}</p>
-                        ${activeItems.length === 0 && completedItems.length > 0 ? `
+                        ${
+                            activeItems.length === 0 && completedItems.length > 0
+                                ? `
                             <div class="all-done-badge">
                                 ${components.icon('check-circle', 20)}
                                 <span>All tasks complete!</span>
                             </div>
-                        ` : activeItems.length > 0 ? `
+                        `
+                                : activeItems.length > 0
+                                  ? `
                             <p class="tasks-remaining">You have <strong>${activeItems.length}</strong> task${activeItems.length !== 1 ? 's' : ''} remaining today</p>
-                        ` : ''}
+                        `
+                                  : ''
+                        }
                     </div>
                     <div class="greeting-illustration">
                         <div class="progress-circle-large">
@@ -4777,15 +5900,15 @@ Object.assign(pages, {
                         <div class="space-y-2">
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-600">High Priority</span>
-                                <span class="font-medium text-error-600">${activeItems.filter(i => i.priority === 'high').length}</span>
+                                <span class="font-medium text-error-600">${activeItems.filter((i) => i.priority === 'high').length}</span>
                             </div>
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-600">Due Today</span>
-                                <span class="font-medium">${activeItems.filter(i => i.due_date && new Date(i.due_date).toDateString() === new Date().toDateString()).length}</span>
+                                <span class="font-medium">${activeItems.filter((i) => i.due_date && new Date(i.due_date).toDateString() === new Date().toDateString()).length}</span>
                             </div>
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-600">Recurring</span>
-                                <span class="font-medium">${items.filter(i => i.recurring_interval !== 'once').length}</span>
+                                <span class="font-medium">${items.filter((i) => i.recurring_interval !== 'once').length}</span>
                             </div>
                         </div>
                         <button class="btn btn-secondary btn-sm w-full mt-3" onclick="handlers.showDailyReview()">
@@ -4795,10 +5918,13 @@ Object.assign(pages, {
                 </div>
             </div>
 
-            ${viewMode === 'kanban' ? `
+            ${
+                viewMode === 'kanban'
+                    ? `
                 <!-- Kanban Board View -->
                 ${kanbanBoard.render(kanbanTasks)}
-            ` : `
+            `
+                    : `
                 <!-- Add Task + Bulk Actions -->
                 <div class="flex items-center gap-2 mb-4">
                     <button class="btn btn-primary" onclick="handlers.showAddChecklistItem()">
@@ -4814,7 +5940,7 @@ Object.assign(pages, {
                         <button class="btn btn-sm btn-secondary" aria-haspopup="menu">
                             ${components.icon(viewMode === 'kanban' ? 'columns' : 'list', 14)} ${viewMode === 'kanban' ? 'Kanban View' : 'List View'} ${components.icon('chevron-down', 12)}
                         </button>
-                        <div class="dropdown-menu" style="min-width: 160px;">
+                        <div class="dropdown-menu" style="min-width: 160px;" aria-hidden="true">
                             <button class="dropdown-item ${viewMode === 'list' ? 'active' : ''}" onclick="handlers.setChecklistView('list')">
                                 ${components.icon('list', 14)} List View
                             </button>
@@ -4841,7 +5967,9 @@ Object.assign(pages, {
                 </button>
             </div>
 
-            ${currentTab === 'todos' ? `
+            ${
+                currentTab === 'todos'
+                    ? `
                 <!-- To-Do Lists Section -->
                 <div class="grid grid-cols-3 gap-6">
                     <!-- Lists Sidebar -->
@@ -4854,20 +5982,28 @@ Object.assign(pages, {
                         </div>
                         <div class="card-body" style="padding: 0;">
                             <div class="divide-y">
-                                ${todoLists.map(list => `
+                                ${todoLists
+                                    .map(
+                                        (list) => `
                                     <div role="button" tabindex="0" class="flex items-center gap-3 p-3 cursor-pointer hover:bg-gray-50 ${list.id === activeListId ? 'bg-primary-50' : ''}"
                                          onclick="handlers.selectTodoList('${list.id}')">
                                         <div class="flex-1">
                                             <div class="font-medium ${list.id === activeListId ? 'text-primary-600' : ''}">${escapeHtml(list.name)}</div>
                                             <div class="text-xs text-gray-500">${list.items?.length || 0} items</div>
                                         </div>
-                                        ${list.id !== 'default' ? `
+                                        ${
+                                            list.id !== 'default'
+                                                ? `
                                             <button class="btn btn-icon btn-sm btn-ghost" onclick="event.stopPropagation(); handlers.deleteTodoList('${list.id}')" aria-label="Delete list">
                                                 ${components.icon('trash', 14)}
                                             </button>
-                                        ` : ''}
+                                        `
+                                                : ''
+                                        }
                                     </div>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </div>
                         </div>
                     </div>
@@ -4892,9 +6028,13 @@ Object.assign(pages, {
                                     </button>
                                 </div>
 
-                                ${(activeList?.items || []).length > 0 ? `
+                                ${
+                                    (activeList?.items || []).length > 0
+                                        ? `
                                     <div class="space-y-2">
-                                        ${(activeList?.items || []).map((item, idx) => `
+                                        ${(activeList?.items || [])
+                                            .map(
+                                                (item, idx) => `
                                             <label class="checklist-item ${item.done ? 'completed' : ''}">
                                                 <input aria-label="Toggle ${escapeHtml(item.text)}" type="checkbox"
                                                        ${item.done ? 'checked' : ''}
@@ -4906,49 +6046,69 @@ Object.assign(pages, {
                                                     ${components.icon('trash', 14)}
                                                 </button>
                                             </label>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </div>
-                                ` : `
+                                `
+                                        : `
                                     <div class="empty-state" style="text-align: center; padding: 2rem; color: var(--gray-500);">
                                         <p>No items in this list yet. Add your first to-do above!</p>
                                     </div>
-                                `}
+                                `
+                                }
                             </div>
                         </div>
                     </div>
                 </div>
-            ` : `
+            `
+                    : `
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">${currentTab === 'active' ? "Today's Tasks" : currentTab === 'completed' ? 'Completed Tasks' : 'All Tasks'} (${displayItems.length})</h2>
                     </div>
-                    ${items.length > 0 ? `
+                    ${
+                        items.length > 0
+                            ? `
                         <div class="checklist-progress-bar-container">
                             <div class="checklist-progress-bar">
                                 <div class="checklist-progress-fill ${completionRate >= 100 ? 'complete' : completionRate >= 75 ? 'high' : completionRate >= 50 ? 'mid' : 'low'}" style="width: ${completionRate}%"></div>
-                                ${[25, 50, 75].map(m => `<div class="progress-milestone" style="left: ${m}%;" title="${m}%"></div>`).join('')}
+                                ${[25, 50, 75].map((m) => `<div class="progress-milestone" style="left: ${m}%;" title="${m}%"></div>`).join('')}
                             </div>
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <span class="checklist-progress-label">${completionRate}% complete (${completedItems.length}/${items.length})</span>
-                                ${completionRate === 100 ? '<span style="color: var(--success); font-size: 12px; font-weight: 600;">All tasks done!</span>' :
-                                  completionRate >= 75 ? '<span style="color: var(--primary); font-size: 12px;">Almost there!</span>' : ''}
+                                ${
+                                    completionRate === 100
+                                        ? '<span style="color: var(--success); font-size: 12px; font-weight: 600;">All tasks done!</span>'
+                                        : completionRate >= 75
+                                          ? '<span style="color: var(--primary); font-size: 12px;">Almost there!</span>'
+                                          : ''
+                                }
                             </div>
                         </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                     <div class="card-body">
-                        ${displayItems.length > 0 ? `
+                        ${
+                            displayItems.length > 0
+                                ? `
                             <div class="checklist-items">
-                                ${displayItems.map(item => renderChecklistItem(item)).join('')}
+                                ${displayItems.map((item) => renderChecklistItem(item)).join('')}
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="empty-state" style="text-align: center; padding: 3rem; color: var(--gray-500);">
                                 <p>${currentTab === 'active' ? 'No tasks for today! Add a task to get started.' : currentTab === 'completed' ? 'No completed tasks yet.' : 'No tasks yet. Add a task to get started.'}</p>
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
-            `}
-            `}
+            `
+            }
+            `
+            }
         `;
     },
 
@@ -4971,7 +6131,20 @@ Object.assign(pages, {
         const startingDayOfWeek = firstDay.getDay(); // 0 = Sunday
 
         // Month names
-        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        const monthNames = [
+            'January',
+            'February',
+            'March',
+            'April',
+            'May',
+            'June',
+            'July',
+            'August',
+            'September',
+            'October',
+            'November',
+            'December',
+        ];
         const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
         // Expand recurring events into individual display events
@@ -5001,7 +6174,7 @@ Object.assign(pages, {
                         date: toLocalDate(currentDate),
                         isRecurring: true,
                         parentEventId: event.id,
-                        recurrenceLabel: event.recurrence
+                        recurrenceLabel: event.recurrence,
                     });
 
                     // Increment date based on recurrence type
@@ -5035,34 +6208,42 @@ Object.assign(pages, {
 
         // Auto-generate listing expiration events
         const listings = store.state.listings || [];
-        const listingExpirationEvents = listings.filter(l => l.status === 'active' && l.listed_at).map(l => {
-            const listedDate = new Date(l.listed_at);
-            const platformDays = { poshmark: 180, ebay: 30, depop: 180, whatnot: 90, shopify: 365, facebook: 7 };
-            const expirationDays = platformDays[l.platform] || 60;
-            const expirationDate = new Date(listedDate.getTime() + expirationDays * 24 * 60 * 60 * 1000);
-            return {
-                id: `exp-${l.id}`,
-                title: `${l.title} expires`,
-                date: toLocalDate(expirationDate),
-                type: 'expiration',
-                platform: l.platform,
-                autoGenerated: true
-            };
-        });
+        const listingExpirationEvents = listings
+            .filter((l) => l.status === 'active' && l.listed_at)
+            .map((l) => {
+                const listedDate = new Date(l.listed_at);
+                const platformDays = { poshmark: 180, ebay: 30, depop: 180, whatnot: 90, shopify: 365, facebook: 7 };
+                const expirationDays = platformDays[l.platform] || 60;
+                const expirationDate = new Date(listedDate.getTime() + expirationDays * 24 * 60 * 60 * 1000);
+                return {
+                    id: `exp-${l.id}`,
+                    title: `${l.title} expires`,
+                    date: toLocalDate(expirationDate),
+                    type: 'expiration',
+                    platform: l.platform,
+                    autoGenerated: true,
+                };
+            });
 
         // Auto-generate shipping deadline events from orders
         const orders = store.state.orders || [];
-        const shippingDeadlineEvents = orders.filter(o => (o.status === 'pending' || o.status === 'confirmed' || o.status === 'processing') && (o.created_at || o.sold_at)).map(o => {
-            const orderDate = new Date(o.created_at || o.sold_at);
-            const shipByDate = new Date(orderDate.getTime() + 3 * 24 * 60 * 60 * 1000);
-            return {
-                id: `ship-${o.id}`,
-                title: `Ship: ${o.item_title || o.title || 'Order #' + (o.id || '').slice(0, 6)}`,
-                date: toLocalDate(shipByDate),
-                type: 'shipment',
-                autoGenerated: true
-            };
-        });
+        const shippingDeadlineEvents = orders
+            .filter(
+                (o) =>
+                    (o.status === 'pending' || o.status === 'confirmed' || o.status === 'processing') &&
+                    (o.created_at || o.sold_at),
+            )
+            .map((o) => {
+                const orderDate = new Date(o.created_at || o.sold_at);
+                const shipByDate = new Date(orderDate.getTime() + 3 * 24 * 60 * 60 * 1000);
+                return {
+                    id: `ship-${o.id}`,
+                    title: `Ship: ${o.item_title || o.title || 'Order #' + (o.id || '').slice(0, 6)}`,
+                    date: toLocalDate(shipByDate),
+                    type: 'shipment',
+                    autoGenerated: true,
+                };
+            });
 
         const allEvents = [...baseEvents, ...listingExpirationEvents, ...shippingDeadlineEvents];
         const events = expandRecurringEvents(allEvents);
@@ -5070,31 +6251,35 @@ Object.assign(pages, {
         // Helper to get events for a specific day
         const getEventsForDay = (day) => {
             const dateStr = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            return events.filter(e => e.date === dateStr);
+            return events.filter((e) => e.date === dateStr);
         };
 
         // Helper to get event color based on type
         const getEventColor = (event) => {
             const colorMap = {
-                'sale': { bg: 'var(--success-100)', border: 'var(--success-500)', text: 'var(--success-700)' },
-                'shipment': { bg: 'var(--primary-100)', border: 'var(--primary-500)', text: 'var(--primary-700)' },
-                'restock': { bg: 'var(--warning-100)', border: 'var(--warning-500)', text: 'var(--warning-700)' },
-                'live': { bg: 'var(--error-100)', border: 'var(--error-500)', text: 'var(--error-700)' },
-                'expiration': { bg: '#fef3c7', border: '#f59e0b', text: '#92400e' },
-                'custom': { bg: 'var(--gray-100)', border: 'var(--gray-500)', text: 'var(--gray-700)' }
+                sale: { bg: 'var(--success-100)', border: 'var(--success-500)', text: 'var(--success-700)' },
+                shipment: { bg: 'var(--primary-100)', border: 'var(--primary-500)', text: 'var(--primary-700)' },
+                restock: { bg: 'var(--warning-100)', border: 'var(--warning-500)', text: 'var(--warning-700)' },
+                live: { bg: 'var(--error-100)', border: 'var(--error-500)', text: 'var(--error-700)' },
+                expiration: { bg: '#fef3c7', border: '#f59e0b', text: '#92400e' },
+                custom: { bg: 'var(--gray-100)', border: 'var(--gray-500)', text: 'var(--gray-700)' },
             };
             return colorMap[event.type] || colorMap['custom'];
         };
 
         // Helper to check if a day is today
         const isToday = (day) => {
-            return day === currentDate.getDate() && viewMonth === currentDate.getMonth() && viewYear === currentDate.getFullYear();
+            return (
+                day === currentDate.getDate() &&
+                viewMonth === currentDate.getMonth() &&
+                viewYear === currentDate.getFullYear()
+            );
         };
 
         // Build revenue-by-date map for heatmap (before calendar grid that uses it)
         const salesData = store.state.sales || [];
         const revenueByDate = {};
-        salesData.forEach(s => {
+        salesData.forEach((s) => {
             const raw = s.sold_at || s.created_at;
             if (!raw) return;
             const dateStr = raw.slice(0, 10);
@@ -5136,15 +6321,19 @@ Object.assign(pages, {
                             <div class="calendar-day-number ${today ? 'today' : ''}">
                                 ${dayCounter}
                             </div>
-                            ${dayEvents.slice(0, 3).map(e => {
-                                const colors = getEventColor(e);
-                                return `
+                            ${dayEvents
+                                .slice(0, 3)
+                                .map((e) => {
+                                    const colors = getEventColor(e);
+                                    return `
                                 <div class="calendar-event calendar-event-${e.type || 'custom'}"
                                      style="background: ${colors.bg}; border-left: 3px solid ${colors.border}; color: ${colors.text};"
                                      title="${e.isRecurring ? 'Repeats ' + e.recurrenceLabel : ''}">
                                     ${e.isRecurring ? '<span style="opacity: 0.7; margin-right: 2px;">&#x21bb;</span>' : ''}${escapeHtml(e.title)}
                                 </div>
-                            `}).join('')}
+                            `;
+                                })
+                                .join('')}
                             ${dayEvents.length > 3 ? `<div class="calendar-more">+${dayEvents.length - 3} more</div>` : ''}
                         </div>
                     `;
@@ -5161,23 +6350,27 @@ Object.assign(pages, {
         const today = new Date();
         const nextWeek = new Date(today);
         nextWeek.setDate(nextWeek.getDate() + 7);
-        const upcomingEvents = events.filter(e => {
-            const eventDate = new Date(e.date);
-            return eventDate >= today && eventDate <= nextWeek;
-        }).sort((a, b) => new Date(a.date) - new Date(b.date));
+        const upcomingEvents = events
+            .filter((e) => {
+                const eventDate = new Date(e.date);
+                return eventDate >= today && eventDate <= nextWeek;
+            })
+            .sort((a, b) => new Date(a.date) - new Date(b.date));
 
         // Get selected date for timeline
-        const selectedDate = store.state.selectedCalendarDate ? parseLocalDate(store.state.selectedCalendarDate) : new Date();
+        const selectedDate = store.state.selectedCalendarDate
+            ? parseLocalDate(store.state.selectedCalendarDate)
+            : new Date();
         const calendarView = store.state.calendarView || 'month';
 
         // Calculate month statistics
-        const monthEvents = events.filter(e => {
+        const monthEvents = events.filter((e) => {
             const eventDate = new Date(e.date);
             return eventDate.getMonth() === viewMonth && eventDate.getFullYear() === viewYear;
         });
-        const salesEvents = monthEvents.filter(e => e.type === 'sale');
-        const listingEvents = monthEvents.filter(e => e.type === 'listing');
-        const scheduledLives = monthEvents.filter(e => e.type === 'live');
+        const salesEvents = monthEvents.filter((e) => e.type === 'sale');
+        const listingEvents = monthEvents.filter((e) => e.type === 'listing');
+        const scheduledLives = monthEvents.filter((e) => e.type === 'live');
         const monthRevenue = salesEvents.reduce((sum, e) => sum + (e.revenue || 0), 0);
 
         // Get this week's events
@@ -5189,11 +6382,11 @@ Object.assign(pages, {
                 const day = new Date(start);
                 day.setDate(start.getDate() + i);
                 const dateStr = toLocalDate(day);
-                const dayEvents = events.filter(e => e.date === dateStr);
+                const dayEvents = events.filter((e) => e.date === dateStr);
                 days.push({
                     date: day,
                     events: dayEvents,
-                    isToday: day.toDateString() === new Date().toDateString()
+                    isToday: day.toDateString() === new Date().toDateString(),
                 });
             }
             return days;
@@ -5254,20 +6447,33 @@ Object.assign(pages, {
                 <div class="calendar-week-preview">
                     <div class="week-preview-label">This Week (${weekDays[0].date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} \u2013 ${weekDays[6].date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})</div>
                     <div class="week-preview-days">
-                        ${weekDays.map(day => `
+                        ${weekDays
+                            .map(
+                                (day) => `
                             <div class="week-preview-day ${day.isToday ? 'today' : ''} ${day.events.length > 0 ? 'has-events' : ''}"
                                  onclick="handlers.selectCalendarDate('${toLocalDate(day.date)}')">
                                 <div class="week-day-name">${dayNames[day.date.getDay()]}</div>
                                 <div class="week-day-number">${day.date.getDate()}</div>
-                                ${day.events.length > 0 ? `
+                                ${
+                                    day.events.length > 0
+                                        ? `
                                     <div class="week-day-indicator">
-                                        ${day.events.slice(0, 3).map(e => `
+                                        ${day.events
+                                            .slice(0, 3)
+                                            .map(
+                                                (e) => `
                                             <span class="event-dot" style="background: ${e.type === 'expiration' ? 'var(--primary-500)' : `var(--${e.type === 'sale' ? 'success' : e.type === 'live' ? 'error' : 'primary'}-500)`}"></span>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </div>
-                                ` : ''}
+                                `
+                                        : ''
+                                }
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
             </div>
@@ -5284,72 +6490,103 @@ Object.assign(pages, {
                                 ${components.icon('chevron-left', 16)} Previous
                             </button>
                             <h2 style="margin: 0; font-size: 20px; font-weight: 600;">
-                                ${calendarView === 'month' ? `${monthNames[viewMonth]} ${viewYear}` :
-                                  calendarView === 'week' ? (() => {
-                    const ws = new Date(selectedDate);
-                    ws.setDate(selectedDate.getDate() - selectedDate.getDay());
-                    const we = new Date(ws);
-                    we.setDate(ws.getDate() + 6);
-                    return `${ws.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} \u2013 ${we.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
-                  })() :
-                                  selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                                ${
+                                    calendarView === 'month'
+                                        ? `${monthNames[viewMonth]} ${viewYear}`
+                                        : calendarView === 'week'
+                                          ? (() => {
+                                                const ws = new Date(selectedDate);
+                                                ws.setDate(selectedDate.getDate() - selectedDate.getDay());
+                                                const we = new Date(ws);
+                                                we.setDate(ws.getDate() + 6);
+                                                return `${ws.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} \u2013 ${we.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+                                            })()
+                                          : selectedDate.toLocaleDateString('en-US', {
+                                                weekday: 'long',
+                                                month: 'long',
+                                                day: 'numeric',
+                                                year: 'numeric',
+                                            })
+                                }
                             </h2>
                             <button class="btn btn-outline" onclick="handlers.navigateCalendar(1)">
                                 Next ${components.icon('chevron-right', 16)}
                             </button>
                         </div>
                         <div class="card-body" style="padding: 0;">
-                            ${calendarView === 'month' ? `
+                            ${
+                                calendarView === 'month'
+                                    ? `
                                 <!-- Month View -->
                                 <div class="calendar-header">
-                                    ${dayNames.map(name => `
+                                    ${dayNames
+                                        .map(
+                                            (name) => `
                                         <div class="calendar-header-day">${name}</div>
-                                    `).join('')}
+                                    `,
+                                        )
+                                        .join('')}
                                 </div>
                                 <div class="calendar-grid">
                                     ${calendarHtml}
                                 </div>
-                            ` : calendarView === 'week' ? `
+                            `
+                                    : calendarView === 'week'
+                                      ? `
                                 <!-- Week View -->
                                 <div class="calendar-week-view">
                                     <div class="calendar-week-header">
                                         <div class="calendar-week-time-col"></div>
-                                        ${viewWeekDays.map(day => `
+                                        ${viewWeekDays
+                                            .map(
+                                                (day) => `
                                             <div class="calendar-week-day-header ${day.isToday ? 'today' : ''}">
                                                 <div class="week-header-name">${dayNames[day.date.getDay()]}</div>
                                                 <div class="week-header-date">${day.date.getDate()}</div>
                                             </div>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </div>
                                     <div class="calendar-week-body">
-                                        ${[...Array(24)].map((_, hour) => `
+                                        ${[...Array(24)]
+                                            .map(
+                                                (_, hour) => `
                                             <div class="calendar-week-row">
-                                                <div class="calendar-week-time">${hour === 0 ? '12 AM' : hour < 12 ? hour + ' AM' : hour === 12 ? '12 PM' : (hour - 12) + ' PM'}</div>
-                                                ${viewWeekDays.map(day => {
-                                                    const hourEvents = day.events.filter(e => {
-                                                        if (!e.time) return hour === 9; // Default to 9 AM for all-day
-                                                        const eventHour = parseInt(e.time.split(':')[0]);
-                                                        return eventHour === hour;
-                                                    });
-                                                    return `
+                                                <div class="calendar-week-time">${hour === 0 ? '12 AM' : hour < 12 ? hour + ' AM' : hour === 12 ? '12 PM' : hour - 12 + ' PM'}</div>
+                                                ${viewWeekDays
+                                                    .map((day) => {
+                                                        const hourEvents = day.events.filter((e) => {
+                                                            if (!e.time) return hour === 9; // Default to 9 AM for all-day
+                                                            const eventHour = parseInt(e.time.split(':')[0]);
+                                                            return eventHour === hour;
+                                                        });
+                                                        return `
                                                         <div role="button" tabindex="0" class="calendar-week-cell ${day.isToday ? 'today' : ''}"
                                                              onclick="handlers.addCalendarEvent('${toLocalDate(day.date)}')">
-                                                            ${hourEvents.map(e => {
-                                                                const colors = getEventColor(e);
-                                                                return `
+                                                            ${hourEvents
+                                                                .map((e) => {
+                                                                    const colors = getEventColor(e);
+                                                                    return `
                                                                 <div class="calendar-week-event" style="background: ${colors.bg}; border-left: 3px solid ${colors.border}; color: ${colors.text};" title="${e.isRecurring ? 'Repeats ' + e.recurrenceLabel : ''}">
                                                                     <div class="calendar-week-event-title">${e.isRecurring ? '<span style="opacity: 0.7;">&#x21bb;</span> ' : ''}${escapeHtml(e.title)}</div>
                                                                     <div class="calendar-week-event-time">${e.time || 'All day'}</div>
                                                                 </div>
-                                                            `}).join('')}
+                                                            `;
+                                                                })
+                                                                .join('')}
                                                         </div>
                                                     `;
-                                                }).join('')}
+                                                    })
+                                                    .join('')}
                                             </div>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </div>
                                 </div>
-                            ` : `
+                            `
+                                      : `
                                 <!-- Day View -->
                                 <div class="calendar-day-view">
                                     <div class="calendar-day-header">
@@ -5357,35 +6594,42 @@ Object.assign(pages, {
                                             <div class="day-header-name">${selectedDate.toLocaleDateString('en-US', { weekday: 'long' })}</div>
                                             <div class="day-header-date">${selectedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</div>
                                         </div>
-                                        <div class="day-header-events">${events.filter(e => e.date === toLocalDate(selectedDate)).length} events</div>
+                                        <div class="day-header-events">${events.filter((e) => e.date === toLocalDate(selectedDate)).length} events</div>
                                     </div>
                                     <div class="calendar-day-body">
-                                        ${[...Array(24)].map((_, hour) => {
-                                            const dateStr = toLocalDate(selectedDate);
-                                            const hourEvents = events.filter(e => {
-                                                if (e.date !== dateStr) return false;
-                                                if (!e.time) return hour === 9;
-                                                const eventHour = parseInt(e.time.split(':')[0]);
-                                                return eventHour === hour;
-                                            });
-                                            return `
+                                        ${[...Array(24)]
+                                            .map((_, hour) => {
+                                                const dateStr = toLocalDate(selectedDate);
+                                                const hourEvents = events.filter((e) => {
+                                                    if (e.date !== dateStr) return false;
+                                                    if (!e.time) return hour === 9;
+                                                    const eventHour = parseInt(e.time.split(':')[0]);
+                                                    return eventHour === hour;
+                                                });
+                                                return `
                                                 <div class="calendar-day-row">
-                                                    <div class="calendar-day-time">${hour === 0 ? '12 AM' : hour < 12 ? hour + ' AM' : hour === 12 ? '12 PM' : (hour - 12) + ' PM'}</div>
+                                                    <div class="calendar-day-time">${hour === 0 ? '12 AM' : hour < 12 ? hour + ' AM' : hour === 12 ? '12 PM' : hour - 12 + ' PM'}</div>
                                                     <div class="calendar-day-cell" role="button" tabindex="0" aria-label="Add event on ${dateStr}" onclick="handlers.addCalendarEvent('${dateStr}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.addCalendarEvent('${dateStr}')}">
-                                                        ${hourEvents.map(e => `
+                                                        ${hourEvents
+                                                            .map(
+                                                                (e) => `
                                                             <div class="calendar-day-event" style="background: var(--${e.type === 'sale' ? 'success' : e.type === 'live' ? 'error' : 'primary'}-100); border-left: 3px solid var(--${e.type === 'sale' ? 'success' : e.type === 'live' ? 'error' : 'primary'}-500);" title="${e.isRecurring ? 'Repeats ' + e.recurrenceLabel : ''}">
                                                                 <div class="calendar-day-event-title">${e.isRecurring ? '<span style="opacity: 0.7;">&#x21bb;</span> ' : ''}${escapeHtml(e.title)}</div>
                                                                 <div class="calendar-day-event-time">${e.time || 'All day'}${e.isRecurring ? ' (recurring)' : ''}</div>
                                                                 ${e.notes ? `<div class="calendar-day-event-notes">${escapeHtml(e.notes)}</div>` : ''}
                                                             </div>
-                                                        `).join('')}
+                                                        `,
+                                                            )
+                                                            .join('')}
                                                     </div>
                                                 </div>
                                             `;
-                                        }).join('')}
+                                            })
+                                            .join('')}
                                     </div>
                                 </div>
-                            `}
+                            `
+                            }
                         </div>
                     </div>
                 </div>
@@ -5402,19 +6646,22 @@ Object.assign(pages, {
                             <button aria-label="Next month" onclick="handlers.navigateCalendarMonth(1)">${components.icon('chevron-right', 12)}</button>
                         </div>
                         <div class="mini-calendar-grid">
-                            ${dayNames.map(d => `<div style="font-size: 9px; color: var(--gray-400); text-align: center;">${d.slice(0, 1)}</div>`).join('')}
+                            ${dayNames.map((d) => `<div style="font-size: 9px; color: var(--gray-400); text-align: center;">${d.slice(0, 1)}</div>`).join('')}
                             ${[...Array(startingDayOfWeek)].map(() => '<div></div>').join('')}
-                            ${[...Array(daysInMonth)].map((_, i) => {
-                                const day = i + 1;
-                                const dayEvents = getEventsForDay(day);
-                                const isCurrentDay = isToday(day);
-                                const isSelected = selectedDate.getDate() === day && selectedDate.getMonth() === viewMonth;
-                                return `<div class="mini-calendar-day ${isCurrentDay ? 'today' : ''} ${isSelected ? 'selected' : ''} ${dayEvents.length > 0 ? 'has-events' : ''}"
+                            ${[...Array(daysInMonth)]
+                                .map((_, i) => {
+                                    const day = i + 1;
+                                    const dayEvents = getEventsForDay(day);
+                                    const isCurrentDay = isToday(day);
+                                    const isSelected =
+                                        selectedDate.getDate() === day && selectedDate.getMonth() === viewMonth;
+                                    return `<div class="mini-calendar-day ${isCurrentDay ? 'today' : ''} ${isSelected ? 'selected' : ''} ${dayEvents.length > 0 ? 'has-events' : ''}"
                                             role="button" tabindex="0"
                                             aria-label="${monthNames[viewMonth]} ${day}${isCurrentDay ? ', today' : ''}${isSelected ? ', selected' : ''}"
                                             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.selectCalendarDate('${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}')}"
                                             onclick="handlers.selectCalendarDate('${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}')">${day}</div>`;
-                            }).join('')}
+                                })
+                                .join('')}
                         </div>
                     </div>
 
@@ -5424,9 +6671,15 @@ Object.assign(pages, {
                             <h2 class="card-title text-sm">Upcoming</h2>
                         </div>
                         <div class="card-body" style="padding: 8px;">
-                            ${upcomingEvents.length === 0 ? `
+                            ${
+                                upcomingEvents.length === 0
+                                    ? `
                                 <div class="text-center text-gray-500 text-sm py-4">No upcoming events</div>
-                            ` : upcomingEvents.slice(0, 5).map(event => `
+                            `
+                                    : upcomingEvents
+                                          .slice(0, 5)
+                                          .map(
+                                              (event) => `
                                 <div class="flex items-center gap-2 p-2 rounded hover:bg-gray-50 cursor-pointer" role="button" tabindex="0" onclick="handlers.selectCalendarDate('${event.date}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.selectCalendarDate('${event.date}')}">
                                     <div class="timeline-event-dot" style="background: var(--${event.type === 'sale' ? 'success' : 'primary'}-500);"></div>
                                     <div class="flex-1 min-w-0">
@@ -5434,7 +6687,10 @@ Object.assign(pages, {
                                         <div class="text-xs text-gray-500">${event.date}</div>
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                                          )
+                                          .join('')
+                            }
                         </div>
                     </div>
                 </div>
@@ -5446,23 +6702,32 @@ Object.assign(pages, {
 
     sizeCharts() {
         const activeTab = store.state.sizeChartsTab || 'women-clothing';
-        const sizeUnit = store.state.sizeChartUnit || (() => { try { return localStorage.getItem('vaultlister_size_unit'); } catch { return null; } })() || 'in';
+        const sizeUnit =
+            store.state.sizeChartUnit ||
+            (() => {
+                try {
+                    return localStorage.getItem('vaultlister_size_unit');
+                } catch {
+                    return null;
+                }
+            })() ||
+            'in';
         const convertCell = (val) => {
             if (sizeUnit === 'in') return val;
             return val.replace(/(\d+\.?\d*)/g, (m) => (parseFloat(m) * 2.54).toFixed(1));
         };
-        const convertHeader = (h) => sizeUnit === 'cm' ? h.replace('(in)', '(cm)') : h;
+        const convertHeader = (h) => (sizeUnit === 'cm' ? h.replace('(in)', '(cm)') : h);
 
         // Brand-specific size adjustments
         const brandSizeData = {
-            'nike': { name: 'Nike', note: 'Runs true to size. Athletic fit may run slim.' },
-            'adidas': { name: 'Adidas', note: 'Runs slightly large. Consider sizing down 0.5 for shoes.' },
-            'levis': { name: "Levi's", note: 'Shrink-to-fit (STF): buy 1-2 sizes up in waist, 3" up in inseam.' },
-            'zara': { name: 'Zara', note: 'Runs small. Size up 1 for US sizing.' },
-            'hm': { name: 'H&M', note: 'True to size. Slim fit options may require sizing up.' },
-            'gap': { name: 'Gap', note: 'Tends to run slightly large, especially relaxed fits.' },
-            'uniqlo': { name: 'Uniqlo', note: 'Japanese sizing. Size up 1-2 for US equivalent.' },
-            'ralph-lauren': { name: 'Ralph Lauren', note: 'True to size. Classic fit is roomier than slim fit.' }
+            nike: { name: 'Nike', note: 'Runs true to size. Athletic fit may run slim.' },
+            adidas: { name: 'Adidas', note: 'Runs slightly large. Consider sizing down 0.5 for shoes.' },
+            levis: { name: "Levi's", note: 'Shrink-to-fit (STF): buy 1-2 sizes up in waist, 3" up in inseam.' },
+            zara: { name: 'Zara', note: 'Runs small. Size up 1 for US sizing.' },
+            hm: { name: 'H&M', note: 'True to size. Slim fit options may require sizing up.' },
+            gap: { name: 'Gap', note: 'Tends to run slightly large, especially relaxed fits.' },
+            uniqlo: { name: 'Uniqlo', note: 'Japanese sizing. Size up 1-2 for US equivalent.' },
+            'ralph-lauren': { name: 'Ralph Lauren', note: 'True to size. Classic fit is roomier than slim fit.' },
         };
 
         const sizeData = {
@@ -5472,11 +6737,59 @@ Object.assign(pages, {
                 rows: [
                     ['XS (0-2)', '4-6', '32-34', '36-38', '32-34', '4-6', '5', '155/80A', '34-35', '24-25', '34-35'],
                     ['S (4-6)', '8-10', '36-38', '40-42', '36-38', '8-10', '7', '160/84A', '36-37', '26-27', '36-37'],
-                    ['M (8-10)', '12-14', '40-42', '44-46', '40-42', '12-14', '9', '165/88A', '38-39', '28-29', '38-39'],
-                    ['L (12-14)', '16-18', '44-46', '48-50', '44-46', '16-18', '11', '170/92A', '40-42', '30-32', '40-42'],
-                    ['XL (16-18)', '20-22', '48-50', '52-54', '48-50', '20-22', '13', '175/96A', '43-45', '33-35', '43-45'],
-                    ['XXL (20-22)', '24-26', '52-54', '56-58', '52-54', '24-26', '15', '180/100A', '46-48', '36-38', '46-48']
-                ]
+                    [
+                        'M (8-10)',
+                        '12-14',
+                        '40-42',
+                        '44-46',
+                        '40-42',
+                        '12-14',
+                        '9',
+                        '165/88A',
+                        '38-39',
+                        '28-29',
+                        '38-39',
+                    ],
+                    [
+                        'L (12-14)',
+                        '16-18',
+                        '44-46',
+                        '48-50',
+                        '44-46',
+                        '16-18',
+                        '11',
+                        '170/92A',
+                        '40-42',
+                        '30-32',
+                        '40-42',
+                    ],
+                    [
+                        'XL (16-18)',
+                        '20-22',
+                        '48-50',
+                        '52-54',
+                        '48-50',
+                        '20-22',
+                        '13',
+                        '175/96A',
+                        '43-45',
+                        '33-35',
+                        '43-45',
+                    ],
+                    [
+                        'XXL (20-22)',
+                        '24-26',
+                        '52-54',
+                        '56-58',
+                        '52-54',
+                        '24-26',
+                        '15',
+                        '180/100A',
+                        '46-48',
+                        '36-38',
+                        '46-48',
+                    ],
+                ],
             },
             'women-dresses': {
                 title: "Women's Dress Sizes",
@@ -5490,8 +6803,8 @@ Object.assign(pages, {
                     ['M/L', '14', '40', '10', '39-40', '31-32', '41-42'],
                     ['L', '16', '42', '12', '41-42', '33-34', '43-44'],
                     ['XL', '18', '44', '14', '43-44', '35-36', '45-46'],
-                    ['XXL', '20', '46', '16', '45-46', '37-38', '47-48']
-                ]
+                    ['XXL', '20', '46', '16', '45-46', '37-38', '47-48'],
+                ],
             },
             'men-clothing': {
                 title: "Men's Clothing Sizes",
@@ -5503,8 +6816,8 @@ Object.assign(pages, {
                     ['L', 'L', '50-52', '50-52', '40-42', '34-36', '15.5-16'],
                     ['XL', 'XL', '52-54', '52-54', '42-44', '36-38', '16-16.5'],
                     ['XXL', 'XXL', '54-56', '54-56', '44-46', '38-40', '16.5-17'],
-                    ['3XL', '3XL', '56-58', '56-58', '46-48', '40-42', '17-17.5']
-                ]
+                    ['3XL', '3XL', '56-58', '56-58', '46-48', '40-42', '17-17.5'],
+                ],
             },
             'women-shoes': {
                 title: "Women's Shoe Sizes",
@@ -5522,8 +6835,8 @@ Object.assign(pages, {
                     ['9.5', '7', '39-40', '25.4', '10'],
                     ['10', '7.5', '40', '25.9', '10.1875'],
                     ['10.5', '8', '40-41', '26.2', '10.3125'],
-                    ['11', '8.5', '41', '26.7', '10.5']
-                ]
+                    ['11', '8.5', '41', '26.7', '10.5'],
+                ],
             },
             'men-shoes': {
                 title: "Men's Shoe Sizes",
@@ -5542,8 +6855,8 @@ Object.assign(pages, {
                     ['11', '10.5', '44', '29.0', '11.42'],
                     ['11.5', '11', '44-45', '29.5', '11.61'],
                     ['12', '11.5', '45', '30.0', '11.81'],
-                    ['13', '12.5', '46', '31.0', '12.20']
-                ]
+                    ['13', '12.5', '46', '31.0', '12.20'],
+                ],
             },
             'kids-clothing': {
                 title: "Kids' Clothing Sizes",
@@ -5556,11 +6869,11 @@ Object.assign(pages, {
                     ['S (6-7)', '6-7 years', '45-50', '43-52', '116-122'],
                     ['M (8-10)', '8-10 years', '50-55', '53-70', '128-140'],
                     ['L (12-14)', '12-14 years', '55-61', '71-90', '146-164'],
-                    ['XL (16)', '16 years', '61-64', '91-110', '170']
-                ]
+                    ['XL (16)', '16 years', '61-64', '91-110', '170'],
+                ],
             },
             'ring-sizes': {
-                title: "Ring Sizes",
+                title: 'Ring Sizes',
                 headers: ['US', 'UK', 'EU', 'Diameter (mm)', 'Circumference (mm)'],
                 rows: [
                     ['4', 'H', '46.5', '14.9', '46.8'],
@@ -5575,11 +6888,11 @@ Object.assign(pages, {
                     ['8.5', 'Q', '57.8', '18.5', '58.3'],
                     ['9', 'R', '59.1', '18.9', '59.5'],
                     ['9.5', 'S', '60.3', '19.4', '60.8'],
-                    ['10', 'T', '61.6', '19.8', '62.1']
-                ]
+                    ['10', 'T', '61.6', '19.8', '62.1'],
+                ],
             },
-            'jeans': {
-                title: "Jeans & Pants Sizes",
+            jeans: {
+                title: 'Jeans & Pants Sizes',
                 headers: ['US/UK Size', 'Waist (in)', 'EU Size', 'Inseam Short', 'Inseam Regular', 'Inseam Long'],
                 rows: [
                     ['24', '24', '32', '28"', '30"', '32"'],
@@ -5594,9 +6907,9 @@ Object.assign(pages, {
                     ['33', '33', '42', '30"', '32"', '34"'],
                     ['34', '34', '44', '30"', '32"', '34"'],
                     ['36', '36', '46', '30"', '32"', '34"'],
-                    ['38', '38', '48', '30"', '32"', '34"']
-                ]
-            }
+                    ['38', '38', '48', '30"', '32"', '34"'],
+                ],
+            },
         };
 
         const tabs = [
@@ -5607,7 +6920,7 @@ Object.assign(pages, {
             { id: 'men-shoes', label: "Men's Shoes", icon: '👞' },
             { id: 'kids-clothing', label: "Kids' Clothing", icon: '👶' },
             { id: 'ring-sizes', label: 'Ring Sizes', icon: '💍' },
-            { id: 'jeans', label: 'Jeans & Pants', icon: '👖' }
+            { id: 'jeans', label: 'Jeans & Pants', icon: '👖' },
         ];
 
         const currentData = sizeData[activeTab];
@@ -5617,7 +6930,7 @@ Object.assign(pages, {
             { from: 'US M', to: 'EU 38-40', category: 'clothing' },
             { from: 'US 8', to: 'EU 41', category: 'shoes' },
             { from: 'US L', to: 'UK 14', category: 'clothing' },
-            { from: 'US 7', to: 'EU 37', category: 'shoes' }
+            { from: 'US 7', to: 'EU 37', category: 'shoes' },
         ];
 
         return `
@@ -5671,13 +6984,17 @@ Object.assign(pages, {
                 <div class="size-hero-conversions">
                     <div class="conversions-label">Popular Conversions</div>
                     <div class="conversions-list">
-                        ${popularConversions.map(conv => `
+                        ${popularConversions
+                            .map(
+                                (conv) => `
                             <div class="conversion-chip" role="button" tabindex="0" onclick="handlers.showConversion('${conv.from}', '${conv.to}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.showConversion('${conv.from}', '${conv.to}')}">
                                 <span class="from-size">${conv.from}</span>
                                 <span class="conversion-arrow">${components.icon('arrow-right', 12)}</span>
                                 <span class="to-size">${conv.to}</span>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
 
@@ -5722,13 +7039,17 @@ Object.assign(pages, {
 
             <!-- Category Tabs -->
             <div class="size-charts-tabs">
-                ${tabs.map(tab => `
+                ${tabs
+                    .map(
+                        (tab) => `
                     <button class="size-chart-tab ${activeTab === tab.id ? 'active' : ''}"
                             onclick="store.setState({ sizeChartsTab: '${tab.id}' }); renderApp(pages.sizeCharts());">
                         <span class="tab-icon">${tab.icon}</span>
                         <span class="tab-label">${tab.label}</span>
                     </button>
-                `).join('')}
+                `,
+                    )
+                    .join('')}
             </div>
 
             <!-- Size Chart Table -->
@@ -5748,39 +7069,52 @@ Object.assign(pages, {
                     </div>
                 </div>
                 <div class="card-body" style="padding: 0; overflow-x: auto;">
-                    ${store.state.sizeChartSwapped ? `
+                    ${
+                        store.state.sizeChartSwapped
+                            ? `
                         <table class="size-chart-table">
                             <thead>
                                 <tr>
                                     <th>${currentData.headers[0]}</th>
-                                    ${currentData.rows.map(row => `<th>${row[0]}</th>`).join('')}
+                                    ${currentData.rows.map((row) => `<th>${row[0]}</th>`).join('')}
                                 </tr>
                             </thead>
                             <tbody>
-                                ${currentData.headers.slice(1).map((header, i) => `
+                                ${currentData.headers
+                                    .slice(1)
+                                    .map(
+                                        (header, i) => `
                                     <tr class="${i % 2 === 0 ? 'even' : 'odd'}">
                                         <td class="primary-cell">${convertHeader(header)}</td>
-                                        ${currentData.rows.map(row => `<td>${header.includes('(in)') ? convertCell(row[i + 1] || '-') : (row[i + 1] || '-')}</td>`).join('')}
+                                        ${currentData.rows.map((row) => `<td>${header.includes('(in)') ? convertCell(row[i + 1] || '-') : row[i + 1] || '-'}</td>`).join('')}
                                     </tr>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </tbody>
                         </table>
-                    ` : `
+                    `
+                            : `
                         <table class="size-chart-table">
                             <thead>
                                 <tr>
-                                    ${currentData.headers.map(h => `<th>${convertHeader(h)}</th>`).join('')}
+                                    ${currentData.headers.map((h) => `<th>${convertHeader(h)}</th>`).join('')}
                                 </tr>
                             </thead>
                             <tbody>
-                                ${currentData.rows.map((row, i) => `
+                                ${currentData.rows
+                                    .map(
+                                        (row, i) => `
                                     <tr class="${i % 2 === 0 ? 'even' : 'odd'}">
                                         ${row.map((cell, j) => `<td class="${j === 0 ? 'primary-cell' : ''}">${currentData.headers[j]?.includes('(in)') ? convertCell(cell) : cell}</td>`).join('')}
                                     </tr>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </tbody>
                         </table>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
@@ -5823,12 +7157,16 @@ Object.assign(pages, {
                 <div class="card-body">
                     <p class="text-gray-500 mb-4">Select a brand to see sizing notes and adjustments.</p>
                     <div class="grid grid-cols-4 gap-3">
-                        ${Object.entries(brandSizeData).map(([key, brand]) => `
+                        ${Object.entries(brandSizeData)
+                            .map(
+                                ([key, brand]) => `
                             <div class="p-3 border rounded-lg cursor-pointer hover:bg-gray-50" role="button" tabindex="0" onclick="handlers.showBrandSizeGuide('${key}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.showBrandSizeGuide('${key}')}">
                                 <div class="font-semibold text-sm">${brand.name}</div>
                                 <div class="text-xs text-gray-500 mt-1">${brand.note.substring(0, 40)}...</div>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
             </div>
@@ -5844,12 +7182,34 @@ Object.assign(pages, {
                             <h2 class="font-semibold mb-3">How to Measure</h2>
                             <div class="space-y-3">
                                 ${[
-                                    { area: 'Bust/Chest', desc: 'Measure around the fullest part of the bust/chest, keeping tape level.', icon: '1' },
-                                    { area: 'Waist', desc: 'Measure around the natural waistline, at the narrowest point.', icon: '2' },
-                                    { area: 'Hips', desc: 'Stand with feet together. Measure around the fullest part of hips.', icon: '3' },
-                                    { area: 'Inseam', desc: 'Measure from the crotch seam down to the ankle bone.', icon: '4' },
-                                    { area: 'Shoulder Width', desc: 'Measure from one shoulder point to the other across the back.', icon: '5' }
-                                ].map(m => `
+                                    {
+                                        area: 'Bust/Chest',
+                                        desc: 'Measure around the fullest part of the bust/chest, keeping tape level.',
+                                        icon: '1',
+                                    },
+                                    {
+                                        area: 'Waist',
+                                        desc: 'Measure around the natural waistline, at the narrowest point.',
+                                        icon: '2',
+                                    },
+                                    {
+                                        area: 'Hips',
+                                        desc: 'Stand with feet together. Measure around the fullest part of hips.',
+                                        icon: '3',
+                                    },
+                                    {
+                                        area: 'Inseam',
+                                        desc: 'Measure from the crotch seam down to the ankle bone.',
+                                        icon: '4',
+                                    },
+                                    {
+                                        area: 'Shoulder Width',
+                                        desc: 'Measure from one shoulder point to the other across the back.',
+                                        icon: '5',
+                                    },
+                                ]
+                                    .map(
+                                        (m) => `
                                     <div class="flex items-start gap-3">
                                         <div style="width: 24px; height: 24px; border-radius: 50%; background: var(--primary-100); color: var(--primary-600); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0;">${m.icon}</div>
                                         <div>
@@ -5857,7 +7217,9 @@ Object.assign(pages, {
                                             <div class="text-xs text-gray-500">${m.desc}</div>
                                         </div>
                                     </div>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </div>
                         </div>
                         <div style="display: flex; align-items: center; justify-content: center; background: var(--gray-50); border-radius: var(--radius-lg); padding: 24px;">
@@ -5922,7 +7284,9 @@ Object.assign(pages, {
                 <div class="card-body">
                     <p class="text-gray-500 mb-3">Automatically attach size charts to your listings based on category.</p>
                     <div class="grid grid-cols-3 gap-3">
-                        ${['Clothing', 'Shoes', 'Dresses', 'Jeans', 'Kids', 'Accessories'].map(cat => `
+                        ${['Clothing', 'Shoes', 'Dresses', 'Jeans', 'Kids', 'Accessories']
+                            .map(
+                                (cat) => `
                             <div class="flex items-center justify-between p-3 border rounded-lg">
                                 <span class="font-medium text-sm">${cat}</span>
                                 <label class="toggle-switch" style="transform: scale(0.8);">
@@ -5930,7 +7294,9 @@ Object.assign(pages, {
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
             </div>
@@ -5943,19 +7309,24 @@ Object.assign(pages, {
                 <div class="card-body">
                     <p class="text-gray-500 mb-3">See which sizes are most stocked in your inventory.</p>
                     <div style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px;">
-                        ${['XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL'].map(size => {
-                            const inv = (store.state.inventory || []).filter(i => (i.size || '').toUpperCase().includes(size));
-                            const count = inv.length;
-                            const maxItems = Math.max(1, ...(store.state.inventory || []).length ? [10] : [1]);
-                            const intensity = Math.min(1, count / maxItems);
-                            const bg = count > 0 ? `rgba(16, 185, 129, ${0.1 + intensity * 0.8})` : 'var(--gray-100)';
-                            return `
+                        ${['XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL']
+                            .map((size) => {
+                                const inv = (store.state.inventory || []).filter((i) =>
+                                    (i.size || '').toUpperCase().includes(size),
+                                );
+                                const count = inv.length;
+                                const maxItems = Math.max(1, ...((store.state.inventory || []).length ? [10] : [1]));
+                                const intensity = Math.min(1, count / maxItems);
+                                const bg =
+                                    count > 0 ? `rgba(16, 185, 129, ${0.1 + intensity * 0.8})` : 'var(--gray-100)';
+                                return `
                                 <div style="text-align: center; padding: 12px 8px; background: ${bg}; border-radius: var(--radius-md); border: 1px solid var(--gray-200);">
                                     <div class="font-bold text-sm">${size}</div>
                                     <div class="text-xs text-gray-600 mt-1">${count} items</div>
                                 </div>
                             `;
-                        }).join('')}
+                            })
+                            .join('')}
                     </div>
                 </div>
             </div>
@@ -5971,11 +7342,15 @@ Object.assign(pages, {
                 <div class="card-body">
                     <p class="text-gray-500 mb-3">Define custom measurement fields beyond standard dimensions.</p>
                     <div id="custom-measurement-fields" class="space-y-2">
-                        ${(store.state.customMeasurementFields || [
-                            { name: 'Sleeve Length', unit: 'in' },
-                            { name: 'Rise', unit: 'in' },
-                            { name: 'Neck', unit: 'in' }
-                        ]).map((f, i) => `
+                        ${(
+                            store.state.customMeasurementFields || [
+                                { name: 'Sleeve Length', unit: 'in' },
+                                { name: 'Rise', unit: 'in' },
+                                { name: 'Neck', unit: 'in' },
+                            ]
+                        )
+                            .map(
+                                (f, i) => `
                             <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                                 <input type="text" class="form-input" value="${escapeHtml(f.name)}" style="flex: 1;" aria-label="Custom measurement field name" placeholder="Field name">
                                 <select class="form-select" style="width: 100px;" aria-label="Measurement unit">
@@ -5988,7 +7363,9 @@ Object.assign(pages, {
                                     ${components.icon('x', 14)}
                                 </button>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                     <button class="btn btn-sm btn-primary mt-3" onclick="handlers.saveCustomMeasurementFields()">
                         Save Fields
@@ -6007,22 +7384,20 @@ Object.assign(pages, {
         const selectedImages = store.state.selectedImages || [];
         const viewMode = store.state.imageBankViewMode || 'grid';
         const batchJobs = store.state.batchPhotoJobs || [];
-        const recentBatchJobs = batchJobs.slice(-5).reverse();  // Show 5 most recent
+        const recentBatchJobs = batchJobs.slice(-5).reverse(); // Show 5 most recent
 
         // Filter images by selected folder
-        const filteredImages = selectedFolder
-            ? images.filter(img => img.folder_id === selectedFolder)
-            : images;
+        const filteredImages = selectedFolder ? images.filter((img) => img.folder_id === selectedFolder) : images;
 
         // Stats
         const totalImages = images.length;
-        const usedImages = images.filter(img => img.used_count > 0).length;
+        const usedImages = images.filter((img) => img.used_count > 0).length;
         const unusedImages = totalImages - usedImages;
 
         // Use real storage stats from backend if available, fallback to estimate
         const storageStats = store.state.imageStorageStats;
-        const storageUsed = storageStats ? storageStats.total_bytes : (totalImages * 2.5 * 1024 * 1024);
-        const storageTotal = storageStats ? storageStats.quota_bytes : (5 * 1024 * 1024 * 1024);
+        const storageUsed = storageStats ? storageStats.total_bytes : totalImages * 2.5 * 1024 * 1024;
+        const storageTotal = storageStats ? storageStats.quota_bytes : 5 * 1024 * 1024 * 1024;
 
         // Get current view mode for masonry
         const displayMode = store.state.imageBankView || viewMode;
@@ -6037,7 +7412,7 @@ Object.assign(pages, {
 
         // Calculate folder stats
         const folderCount = folders.length;
-        const imagesWithTags = images.filter(img => img.tags && img.tags.length > 0).length;
+        const imagesWithTags = images.filter((img) => img.tags && img.tags.length > 0).length;
         const tagPercentage = totalImages > 0 ? Math.round((imagesWithTags / totalImages) * 100) : 0;
 
         return `
@@ -6096,23 +7471,35 @@ Object.assign(pages, {
                     </div>
                 </div>
 
-                ${recentUploads.length > 0 ? `
+                ${
+                    recentUploads.length > 0
+                        ? `
                     <div class="recent-uploads-strip">
                         <div class="recent-uploads-label">Recent Uploads</div>
                         <div class="recent-uploads-preview">
-                            ${recentUploads.map(img => `
+                            ${recentUploads
+                                .map(
+                                    (img) => `
                                 <div class="recent-upload-thumb" role="button" tabindex="0" aria-label="View image" onclick="handlers.viewImage('${img.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.viewImage('${img.id}')}" style="${img.dominant_color ? `background: ${escapeHtml(img.dominant_color)};` : ''}">
                                     <img src="${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_fill,w_400,h_400/${img.cloudinary_public_id}` : `/api/image-bank/${escapeHtml(img.id)}/file`}" alt="${escapeHtml(img.title || img.original_filename)}" loading="lazy" onerror="this.style.display='none'">
                                 </div>
-                            `).join('')}
-                            ${totalImages > 5 ? `
+                            `,
+                                )
+                                .join('')}
+                            ${
+                                totalImages > 5
+                                    ? `
                                 <div class="recent-upload-more" role="button" tabindex="0" onclick="handlers.selectFolder(null)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.selectFolder(null)}">
                                     +${totalImages - 5} more
                                 </div>
-                            ` : ''}
+                            `
+                                    : ''
+                            }
                         </div>
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
 
                 <div class="image-bank-quick-actions">
                     <button class="quick-action-btn" onclick="handlers.showAITagging()">
@@ -6162,7 +7549,9 @@ Object.assign(pages, {
             </div>
 
             <!-- AI Tag Suggestions Panel (when images selected) -->
-            ${selectedImages.length > 0 ? `
+            ${
+                selectedImages.length > 0
+                    ? `
                 <div class="ai-tag-panel mb-4">
                     <div class="ai-tag-header">
                         <div class="ai-tag-icon">${components.icon('zap', 16)}</div>
@@ -6175,7 +7564,9 @@ Object.assign(pages, {
                         <span class="ai-tag-suggestion" role="button" tabindex="0" onclick="toast.info('Optimizing...')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toast.info('Optimizing...')}">Optimize for web</span>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <div class="image-bank-container">
                 <!-- Left Sidebar: Folder Tree -->
@@ -6188,16 +7579,20 @@ Object.assign(pages, {
                             <span class="folder-item-label">${components.icon('folder')} All Images</span>
                             <span class="badge">${images.length}</span>
                         </div>
-                        ${folders.map(folder => `
+                        ${folders
+                            .map(
+                                (folder) => `
                             <div role="button" tabindex="0" class="folder-item ${selectedFolder === folder.id ? 'active' : ''}"
                                  onclick="handlers.selectFolder('${folder.id}')">
                                 <span class="folder-item-label">${components.icon('folder', 16, folder.color)} ${escapeHtml(folder.name)}</span>
-                                <span class="badge">${images.filter(img => img.folder_id === folder.id).length}</span>
+                                <span class="badge">${images.filter((img) => img.folder_id === folder.id).length}</span>
                                 <button class="btn btn-ghost btn-xs" style="padding: 2px 4px; min-width: auto;" onclick="event.stopPropagation(); handlers.deleteFolder('${folder.id}', '${escapeHtml(folder.name)}');" title="Delete folder">
                                     ${components.icon('trash', 12)}
                                 </button>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                     <button class="btn btn-secondary btn-sm" onclick="handlers.createFolder()" style="width: 100%; margin-top: 12px;">
                         ${components.icon('plus', 14)} New Folder
@@ -6219,13 +7614,19 @@ Object.assign(pages, {
                             <button class="btn btn-sm btn-secondary" onclick="handlers.selectAllBatchImages()">
                                 ${components.icon('check', 14)} Select All
                             </button>
-                            ${selectedImages.length > 0 ? `
+                            ${
+                                selectedImages.length > 0
+                                    ? `
                                 <button class="btn btn-sm btn-ghost" onclick="handlers.clearBatchSelection()">
                                     Clear (${selectedImages.length})
                                 </button>
-                            ` : ''}
+                            `
+                                    : ''
+                            }
 
-                            ${selectedImages.length > 0 ? `
+                            ${
+                                selectedImages.length > 0
+                                    ? `
                                 <div class="bulk-actions">
                                     <span class="text-sm text-gray-600">${selectedImages.length} selected</span>
                                     <button class="btn btn-sm btn-secondary" onclick="handlers.moveSelectedImages()">
@@ -6241,7 +7642,9 @@ Object.assign(pages, {
                                         ${components.icon('wand', 14)} Batch Process
                                     </button>
                                 </div>
-                            ` : ''}
+                            `
+                                    : ''
+                            }
                         </div>
 
                         <div class="flex gap-2">
@@ -6259,7 +7662,9 @@ Object.assign(pages, {
                     </div>
 
                     <!-- Images -->
-                    ${filteredImages.length === 0 ? `
+                    ${
+                        filteredImages.length === 0
+                            ? `
                         <div class="empty-state">
                             <div class="text-6xl mb-4">🖼️</div>
                             <h2 class="text-xl font-bold mb-2">No images yet</h2>
@@ -6268,9 +7673,12 @@ Object.assign(pages, {
                                 ${components.icon('upload')} Upload Images
                             </button>
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div class="image-bank-${viewMode}">
-                            ${filteredImages.map(image => `
+                            ${filteredImages
+                                .map(
+                                    (image) => `
                                 <div class="image-card ${selectedImages.includes(image.id) ? 'selected' : ''}"
                                      data-image-id="${image.id}">
                                     <div class="image-card-checkbox">
@@ -6288,19 +7696,32 @@ Object.assign(pages, {
                                     <div class="image-card-info">
                                         <div class="image-card-title">${escapeHtml(image.title || image.original_filename)}</div>
                                         <div class="image-card-meta">
-                                            ${image.used_count > 0 ? `
+                                            ${
+                                                image.used_count > 0
+                                                    ? `
                                                 <span class="badge badge-success">Used ${image.used_count}x</span>
-                                            ` : '<span class="badge">Unused</span>'}
+                                            `
+                                                    : '<span class="badge">Unused</span>'
+                                            }
                                             <span class="text-xs text-gray-500">${new Date(image.created_at).toLocaleDateString()}</span>
                                         </div>
-                                        ${image.tags && image.tags.length > 0 ? `
+                                        ${
+                                            image.tags && image.tags.length > 0
+                                                ? `
                                             <div class="image-card-tags">
-                                                ${image.tags.slice(0, 3).map(tag => `
+                                                ${image.tags
+                                                    .slice(0, 3)
+                                                    .map(
+                                                        (tag) => `
                                                     <span class="tag">${escapeHtml(tag)}</span>
-                                                `).join('')}
+                                                `,
+                                                    )
+                                                    .join('')}
                                                 ${image.tags.length > 3 ? `<span class="text-xs text-gray-500">+${image.tags.length - 3}</span>` : ''}
                                             </div>
-                                        ` : ''}
+                                        `
+                                                : ''
+                                        }
                                     </div>
                                     <div class="image-card-actions">
                                         <button class="btn btn-icon btn-sm btn-ai-edit"
@@ -6325,18 +7746,25 @@ Object.assign(pages, {
                                         </button>
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
             <!-- Batch Photo Jobs History -->
-            ${recentBatchJobs.length > 0 ? `
+            ${
+                recentBatchJobs.length > 0
+                    ? `
                 <div style="margin-top: 32px;">
                     <h2 class="text-lg font-semibold mb-4">Recent Batch Jobs</h2>
                     <div style="display: grid; gap: 12px;">
-                        ${recentBatchJobs.map(job => `
+                        ${recentBatchJobs
+                            .map(
+                                (job) => `
                             <div class="card" style="padding: 16px;">
                                 <div class="flex justify-between items-center mb-3">
                                     <div>
@@ -6347,7 +7775,9 @@ Object.assign(pages, {
                                         ${job.status}
                                     </span>
                                 </div>
-                                ${job.status === 'processing' ? `
+                                ${
+                                    job.status === 'processing'
+                                        ? `
                                     <div style="margin-bottom: 8px;">
                                         <div style="font-size: 12px; color: var(--gray-600); margin-bottom: 4px;">
                                             ${job.processed || 0} / ${job.total || 0} processed
@@ -6356,29 +7786,47 @@ Object.assign(pages, {
                                             <div style="height: 100%; width: ${(job.processed / job.total) * 100 || 0}%; background: var(--primary-600); transition: width 0.3s ease;"></div>
                                         </div>
                                     </div>
-                                ` : ''}
-                                ${job.status === 'completed' ? `
+                                `
+                                        : ''
+                                }
+                                ${
+                                    job.status === 'completed'
+                                        ? `
                                     <p class="text-xs text-green-600">Processed: ${job.processed}/${job.total} | Failed: ${job.failed || 0}</p>
-                                ` : ''}
+                                `
+                                        : ''
+                                }
                                 <div style="display: flex; gap: 8px; margin-top: 12px;">
-                                    ${(job.status === 'completed' || job.status === 'failed') ? `
+                                    ${
+                                        job.status === 'completed' || job.status === 'failed'
+                                            ? `
                                         <button class="btn btn-sm btn-danger"
                                                 onclick="handlers.deleteBatchPhotoJob('${job.id}')">
                                             ${components.icon('trash', 12)} Delete
                                         </button>
-                                    ` : ''}
-                                    ${job.status === 'processing' ? `
+                                    `
+                                            : ''
+                                    }
+                                    ${
+                                        job.status === 'processing'
+                                            ? `
                                         <button class="btn btn-sm btn-secondary"
                                                 onclick="handlers.cancelBatchPhotoJob('${job.id}')">
                                             ${components.icon('stop', 12)} Cancel
                                         </button>
-                                    ` : ''}
+                                    `
+                                            : ''
+                                    }
                                 </div>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Hidden file input for uploads -->
             <input type="file"
@@ -6397,7 +7845,7 @@ Object.assign(pages, {
         const presets = store.state.batchPhotoPresets || [];
         const transforms = store.state.batchPhotoTransformations || {};
         const images = store.state.imageBankImages || [];
-        const selectedImageData = selectedImages.map(id => images.find(img => img.id === id)).filter(Boolean);
+        const selectedImageData = selectedImages.map((id) => images.find((img) => img.id === id)).filter(Boolean);
 
         return `
             <div class="modal-header">
@@ -6413,14 +7861,18 @@ Object.assign(pages, {
                 <div class="mb-6">
                     <h2 class="text-sm font-semibold mb-3">Preview Selected Images</h2>
                     <div style="display: flex; gap: 8px; overflow-x: auto; padding: 8px 0; border: 1px solid var(--gray-200); border-radius: 8px; padding: 12px; background: var(--gray-50);">
-                        ${selectedImageData.map(img => `
+                        ${selectedImageData
+                            .map(
+                                (img) => `
                             <img src="${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_fill,w_400,h_400/${img.cloudinary_public_id}` : `/api/image-bank/${escapeHtml(img.id)}/file`}"
                                  alt="${escapeHtml(img.title || img.original_filename)}"
                                  style="width: 80px; height: 80px; object-fit: cover; border-radius: 6px; flex-shrink: 0; border: 2px solid transparent; cursor: pointer;"
                                  onmouseover="this.style.borderColor='var(--primary-600)'"
                                  onmouseout="this.style.borderColor='transparent'"
                                  title="${escapeHtml(img.title || img.original_filename)}">
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
 
@@ -6467,8 +7919,8 @@ Object.assign(pages, {
                 <div class="mb-6">
                     <h2 class="text-sm font-semibold mb-3">Smart Crop</h2>
                     <div class="form-group mb-3">
-                        <label class="form-label">Preset</label>
-                        <select class="form-select" aria-label="Crop preset" onchange="handlers.setBatchPhotoCropPreset(this.value)">
+                        <label class="form-label" for="pd-crop-preset">Preset</label>
+                        <select id="pd-crop-preset" class="form-select" aria-label="Crop preset" onchange="handlers.setBatchPhotoCropPreset(this.value)">
                             <option value="">None</option>
                             <option value="square" ${transforms.cropPreset === 'square' ? 'selected' : ''}>Square (1:1)</option>
                             <option value="portrait" ${transforms.cropPreset === 'portrait' ? 'selected' : ''}>Portrait (3:4)</option>
@@ -6477,7 +7929,9 @@ Object.assign(pages, {
                         </select>
                     </div>
 
-                    ${transforms.cropPreset === 'custom' ? `
+                    ${
+                        transforms.cropPreset === 'custom'
+                            ? `
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                             <div class="form-group">
                                 <label class="form-label" for="crop-width-input">Width (px)</label>
@@ -6500,20 +7954,30 @@ Object.assign(pages, {
                                        data-crop-height aria-label="Crop Height Input">
                             </div>
                         </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                 </div>
 
                 <!-- Presets Section -->
                 <div class="mb-6">
                     <h2 class="text-sm font-semibold mb-3">Load Preset</h2>
-                    ${presets.length > 0 ? `
+                    ${
+                        presets.length > 0
+                            ? `
                         <select class="form-select mb-3" aria-label="Photo preset" onchange="handlers.loadBatchPhotoPreset(this.value)">
                             <option value="">-- Select a preset --</option>
-                            ${presets.map(p => `
+                            ${presets
+                                .map(
+                                    (p) => `
                                 <option value="${p.id}">${escapeHtml(p.name)}</option>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </select>
-                    ` : '<p class="text-sm text-gray-500">No saved presets yet</p>'}
+                    `
+                            : '<p class="text-sm text-gray-500">No saved presets yet</p>'
+                    }
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px;">
                         <input type="text"
@@ -6563,11 +8027,15 @@ Object.assign(pages, {
                     </div>
                 </div>
 
-                ${!activeTeam ? `
+                ${
+                    !activeTeam
+                        ? `
                     <!-- Team Selection Grid -->
                     <div style="margin-bottom: 24px;">
                         <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">Your Teams</h2>
-                        ${teams.length === 0 ? `
+                        ${
+                            teams.length === 0
+                                ? `
                             <div class="card" style="text-align: center; padding: 48px 24px;">
                                 <div style="font-size: 48px; margin-bottom: 16px;">${components.icon('community', 48)}</div>
                                 <h2 style="margin-bottom: 8px; color: var(--gray-700);">No Teams Yet</h2>
@@ -6576,9 +8044,12 @@ Object.assign(pages, {
                                     ${components.icon('plus', 16)} Create Your First Team
                                 </button>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
-                                ${teams.map(team => `
+                                ${teams
+                                    .map(
+                                        (team) => `
                                     <div class="card" style="padding: 20px; cursor: pointer; transition: all 0.2s; border: 2px solid transparent;" role="button" tabindex="0" onclick="handlers.selectTeam('${team.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.selectTeam('${team.id}')}" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='transparent'">
                                         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                                             <div style="width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, var(--primary), var(--primary-600)); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px;">
@@ -6594,9 +8065,12 @@ Object.assign(pages, {
                                             <span style="font-size: 11px; color: var(--gray-400);">Created ${new Date(team.created_at).toLocaleDateString()}</span>
                                         </div>
                                     </div>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </div>
-                        `}
+                        `
+                        }
                     </div>
 
                     <!-- Role Permissions Reference -->
@@ -6621,18 +8095,23 @@ Object.assign(pages, {
                                         ['View Sales', false, false, true, true, true],
                                         ['View Financials', false, false, false, true, true],
                                         ['Manage Team', false, false, false, true, true],
-                                        ['Delete Team', false, false, false, false, true]
-                                    ].map(([perm, ...roles]) => `
+                                        ['Delete Team', false, false, false, false, true],
+                                    ]
+                                        .map(
+                                            ([perm, ...roles]) => `
                                         <tr>
                                             <td>${perm}</td>
-                                            ${roles.map(r => `<td style="text-align: center; color: ${r ? 'var(--success)' : 'var(--gray-300)'};">${r ? '&#10003;' : '&#10005;'}</td>`).join('')}
+                                            ${roles.map((r) => `<td style="text-align: center; color: ${r ? 'var(--success)' : 'var(--gray-300)'};">${r ? '&#10003;' : '&#10005;'}</td>`).join('')}
                                         </tr>
-                                    `).join('')}
+                                    `,
+                                        )
+                                        .join('')}
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                ` : `
+                `
+                        : `
                     <!-- Active Team View -->
                     <div style="margin-bottom: 16px;">
                         <button class="btn btn-ghost btn-sm" onclick="handlers.deselectTeam()">
@@ -6653,20 +8132,28 @@ Object.assign(pages, {
                                 </div>
                             </div>
                             <div style="display: flex; gap: 8px;">
-                                ${teamPermissions.manage_team ? `
+                                ${
+                                    teamPermissions.manage_team
+                                        ? `
                                     <button class="btn btn-secondary btn-sm" onclick="modals.inviteTeamMember('${activeTeam.id}', '${escapeHtml(activeTeam.name)}')">
                                         ${components.icon('mail', 14)} Invite Member
                                     </button>
-                                ` : ''}
-                                ${teamPermissions.delete_team ? `
+                                `
+                                        : ''
+                                }
+                                ${
+                                    teamPermissions.delete_team
+                                        ? `
                                     <button class="btn btn-ghost btn-sm" style="color: var(--danger-600);" onclick="handlers.deleteTeam('${activeTeam.id}')">
                                         ${components.icon('trash', 14)} Delete Team
                                     </button>
-                                ` : `
+                                `
+                                        : `
                                     <button class="btn btn-ghost btn-sm" style="color: var(--warning-600);" onclick="handlers.leaveTeam('${activeTeam.id}')">
                                         ${components.icon('logout', 14)} Leave Team
                                     </button>
-                                `}
+                                `
+                                }
                             </div>
                         </div>
                     </div>
@@ -6695,7 +8182,9 @@ Object.assign(pages, {
                     <div class="card" style="padding: 20px; margin-bottom: 20px;">
                         <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">${components.icon('community', 18)} Team Members</h2>
                         <div style="display: grid; gap: 12px;">
-                            ${teamMembers.map(member => `
+                            ${teamMembers
+                                .map(
+                                    (member) => `
                                 <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--gray-50); border-radius: 8px;">
                                     <div style="display: flex; align-items: center; gap: 12px;">
                                         <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-100); color: var(--primary-600); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px;">
@@ -6708,26 +8197,36 @@ Object.assign(pages, {
                                     </div>
                                     <div style="display: flex; align-items: center; gap: 10px;">
                                         <span class="badge badge-sm" style="text-transform: capitalize;">${member.role}</span>
-                                        ${teamPermissions.manage_team && member.role !== 'owner' ? `
+                                        ${
+                                            teamPermissions.manage_team && member.role !== 'owner'
+                                                ? `
                                             <select class="form-select" style="font-size: 12px; padding: 4px 8px; width: auto;" aria-label="Member role" onchange="handlers.updateMemberRole('${activeTeam.id}', '${member.id}', this.value)">
-                                                ${['viewer', 'member', 'manager', 'admin'].map(r => `<option value="${r}" ${member.role === r ? 'selected' : ''}>${r}</option>`).join('')}
+                                                ${['viewer', 'member', 'manager', 'admin'].map((r) => `<option value="${r}" ${member.role === r ? 'selected' : ''}>${r}</option>`).join('')}
                                             </select>
                                             <button class="btn btn-ghost btn-sm" style="color: var(--danger-600);" onclick="handlers.removeTeamMember('${activeTeam.id}', '${member.id}')" title="Remove member">
                                                 ${components.icon('close', 14)}
                                             </button>
-                                        ` : ''}
+                                        `
+                                                : ''
+                                        }
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
                     </div>
 
                     <!-- Pending Invitations -->
-                    ${teamInvitations.length > 0 ? `
+                    ${
+                        teamInvitations.length > 0
+                            ? `
                         <div class="card" style="padding: 20px; margin-bottom: 20px;">
                             <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">${components.icon('mail', 18)} Pending Invitations</h2>
                             <div style="display: grid; gap: 8px;">
-                                ${teamInvitations.map(inv => `
+                                ${teamInvitations
+                                    .map(
+                                        (inv) => `
                                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--warning-50); border-radius: 8px; border: 1px solid var(--warning-100);">
                                         <div>
                                             <span style="font-weight: 500;">${escapeHtml(inv.email)}</span>
@@ -6737,32 +8236,52 @@ Object.assign(pages, {
                                             Expires ${new Date(inv.expires_at).toLocaleDateString()}
                                         </div>
                                     </div>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </div>
                         </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
 
                     <!-- Activity Log -->
                     <div class="card" style="padding: 20px;">
                         <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">${components.icon('clock', 18)} Activity Log</h2>
-                        ${teamActivity.length === 0 ? `
+                        ${
+                            teamActivity.length === 0
+                                ? `
                             <p style="color: var(--gray-500); text-align: center; padding: 20px;">No activity recorded yet.</p>
-                        ` : `
+                        `
+                                : `
                             <div style="display: grid; gap: 8px;">
-                                ${teamActivity.slice(0, 20).map(act => {
-                                    const icons = { team_created: 'plus', member_invited: 'mail', member_joined: 'community', member_role_updated: 'settings', member_removed: 'close', member_left: 'logout', team_updated: 'edit' };
-                                    return `
+                                ${teamActivity
+                                    .slice(0, 20)
+                                    .map((act) => {
+                                        const icons = {
+                                            team_created: 'plus',
+                                            member_invited: 'mail',
+                                            member_joined: 'community',
+                                            member_role_updated: 'settings',
+                                            member_removed: 'close',
+                                            member_left: 'logout',
+                                            team_updated: 'edit',
+                                        };
+                                        return `
                                         <div style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-left: 3px solid var(--primary-200); background: var(--gray-50); border-radius: 0 6px 6px 0; font-size: 13px;">
                                             <span style="color: var(--primary);">${components.icon(icons[act.action] || 'activity', 14)}</span>
                                             <span style="flex: 1;"><strong>${escapeHtml(act.user_name || 'System')}</strong> ${escapeHtml((act.action || '').replace(/_/g, ' '))}</span>
                                             <span style="color: var(--gray-400); font-size: 11px;">${new Date(act.created_at).toLocaleString()}</span>
                                         </div>
                                     `;
-                                }).join('')}
+                                    })
+                                    .join('')}
                             </div>
-                        `}
+                        `
+                        }
                     </div>
-                `}
+                `
+                }
             </div>
         `;
     },
@@ -6778,22 +8297,24 @@ Object.assign(pages, {
             const base = { free: 0, starter: 9, pro: 19, business: 49 };
             const monthly = base[tier] || 0;
             if (monthly === 0) return { amount: 0, label: 'Forever free' };
-            if (billingPeriod === 'quarterly') return { amount: Math.round(monthly * 3 * 0.9), label: 'per quarter (Save 10%)' };
-            if (billingPeriod === 'yearly') return { amount: Math.round(monthly * 12 * 0.8), label: 'per year (Save 20%)' };
+            if (billingPeriod === 'quarterly')
+                return { amount: Math.round(monthly * 3 * 0.9), label: 'per quarter (Save 10%)' };
+            if (billingPeriod === 'yearly')
+                return { amount: Math.round(monthly * 12 * 0.8), label: 'per year (Save 20%)' };
             return { amount: monthly, label: 'per month' };
         }
 
         const inventoryCount = store.state.inventory?.length || 0;
         const inventoryMax = currentPlan === 'free' ? 100 : 0;
-        const inventoryPct = inventoryMax > 0 ? Math.min(100, inventoryCount / inventoryMax * 100) : 0;
+        const inventoryPct = inventoryMax > 0 ? Math.min(100, (inventoryCount / inventoryMax) * 100) : 0;
 
         const listingsUsed = store.state.usage?.listings_this_month || 0;
-        const listingsMax = currentPlan === 'free' ? 50 : (currentPlan === 'pro' ? 500 : 0);
-        const listingsPct = listingsMax > 0 ? Math.min(100, listingsUsed / listingsMax * 100) : 0;
+        const listingsMax = currentPlan === 'free' ? 50 : currentPlan === 'pro' ? 500 : 0;
+        const listingsPct = listingsMax > 0 ? Math.min(100, (listingsUsed / listingsMax) * 100) : 0;
 
         const aiUsed = store.state.usage?.ai_generations_this_month || 0;
-        const aiMax = currentPlan === 'free' ? 0 : (currentPlan === 'pro' ? 50 : 0);
-        const aiPct = aiMax > 0 ? Math.min(100, aiUsed / aiMax * 100) : 0;
+        const aiMax = currentPlan === 'free' ? 0 : currentPlan === 'pro' ? 50 : 0;
+        const aiPct = aiMax > 0 ? Math.min(100, (aiUsed / aiMax) * 100) : 0;
 
         const proPrice = getPrice('pro');
         const starterPrice = getPrice('starter');
@@ -6819,15 +8340,19 @@ Object.assign(pages, {
                             </div>
                             <p class="text-sm text-gray-600 mt-2">You're currently on the ${currentPlan === 'free' ? 'Free plan with limited features' : currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1) + ' plan with all features unlocked'}.</p>
                         </div>
-                        ${currentPlan === 'free' ? `
+                        ${
+                            currentPlan === 'free'
+                                ? `
                             <button type="button" class="btn btn-primary" onclick="handlers.showPlanComparison()">
                                 Upgrade to Pro
                             </button>
-                        ` : `
+                        `
+                                : `
                             <button type="button" class="btn btn-secondary" onclick="handlers.showProrationCalculator()">
                                 Manage Subscription
                             </button>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
             </div>
@@ -6915,11 +8440,15 @@ Object.assign(pages, {
                                 Automation features
                             </li>
                         </ul>
-                        ${currentPlan === 'free' ? `
+                        ${
+                            currentPlan === 'free'
+                                ? `
                             <button type="button" class="btn btn-outline w-full" disabled>Current Plan</button>
-                        ` : `
+                        `
+                                : `
                             <button type="button" class="btn btn-outline w-full" onclick="handlers.confirmPlanChange('free')">Downgrade to Free</button>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
 
@@ -6959,13 +8488,17 @@ Object.assign(pages, {
                                 Priority support
                             </li>
                         </ul>
-                        ${currentPlan === 'pro' ? `
+                        ${
+                            currentPlan === 'pro'
+                                ? `
                             <button type="button" class="btn btn-primary w-full" disabled>Current Plan</button>
-                        ` : `
+                        `
+                                : `
                             <button type="button" class="btn btn-primary w-full" onclick="handlers.selectPlan('pro')">
                                 ${currentPlan === 'business' ? 'Switch to Pro' : 'Upgrade to Pro'}
                             </button>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
 
@@ -7002,11 +8535,15 @@ Object.assign(pages, {
                                 API access
                             </li>
                         </ul>
-                        ${currentPlan === 'business' ? `
+                        ${
+                            currentPlan === 'business'
+                                ? `
                             <button type="button" class="btn btn-secondary w-full" disabled>Current Plan</button>
-                        ` : `
+                        `
+                                : `
                             <button type="button" class="btn btn-secondary w-full" onclick="handlers.selectPlan('business')">Upgrade to Business</button>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
             </div>
@@ -7102,7 +8639,9 @@ Object.assign(pages, {
                 <p class="page-description">Earn commissions by promoting VaultLister</p>
             </div>
 
-            ${!isAffiliate ? `
+            ${
+                !isAffiliate
+                    ? `
                 <!-- Join Program CTA -->
                 <div class="card mb-6" style="background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-700) 100%); color: white;">
                     <div class="card-body text-center py-8">
@@ -7113,7 +8652,8 @@ Object.assign(pages, {
                         </button>
                     </div>
                 </div>
-            ` : `
+            `
+                    : `
                 <!-- Affiliate Dashboard Button -->
                 <div class="card mb-6" style="background: linear-gradient(135deg, var(--success-500) 0%, var(--success-700) 100%); color: white;">
                     <div class="card-body text-center py-8">
@@ -7124,7 +8664,8 @@ Object.assign(pages, {
                         </button>
                     </div>
                 </div>
-            `}
+            `
+            }
 
             <!-- Commission Structure -->
             <div class="card mb-6">
@@ -7286,19 +8827,20 @@ Object.assign(pages, {
 
         // Apply search filter
         if (notificationSearch) {
-            filteredNotifications = filteredNotifications.filter(n =>
-                n.title?.toLowerCase().includes(notificationSearch.toLowerCase()) ||
-                n.message?.toLowerCase().includes(notificationSearch.toLowerCase())
+            filteredNotifications = filteredNotifications.filter(
+                (n) =>
+                    n.title?.toLowerCase().includes(notificationSearch.toLowerCase()) ||
+                    n.message?.toLowerCase().includes(notificationSearch.toLowerCase()),
             );
         }
 
         // Apply status filter
         if (notificationFilter === 'unread') {
-            filteredNotifications = filteredNotifications.filter(n => !n.read);
+            filteredNotifications = filteredNotifications.filter((n) => !n.read);
         } else if (notificationFilter === 'read') {
-            filteredNotifications = filteredNotifications.filter(n => n.read);
+            filteredNotifications = filteredNotifications.filter((n) => n.read);
         } else if (notificationFilter === 'important') {
-            filteredNotifications = filteredNotifications.filter(n => n.important);
+            filteredNotifications = filteredNotifications.filter((n) => n.important);
         }
 
         return `
@@ -7327,15 +8869,15 @@ Object.assign(pages, {
                         </button>
                         <button class="btn btn-sm ${notificationFilter === 'unread' ? 'btn-primary' : 'btn-outline'}"
                                 onclick="handlers.filterNotifications('unread')">
-                            Unread ${notificationFilter === 'unread' ? `(${store.state.notifications.filter(n => !n.read).length})` : ''}
+                            Unread ${notificationFilter === 'unread' ? `(${store.state.notifications.filter((n) => !n.read).length})` : ''}
                         </button>
                         <button class="btn btn-sm ${notificationFilter === 'read' ? 'btn-primary' : 'btn-outline'}"
                                 onclick="handlers.filterNotifications('read')">
-                            Read ${notificationFilter === 'read' ? `(${store.state.notifications.filter(n => n.read).length})` : ''}
+                            Read ${notificationFilter === 'read' ? `(${store.state.notifications.filter((n) => n.read).length})` : ''}
                         </button>
                         <button class="btn btn-sm ${notificationFilter === 'important' ? 'btn-primary' : 'btn-outline'}"
                                 onclick="handlers.filterNotifications('important')">
-                            Important ${notificationFilter === 'important' ? `(${store.state.notifications.filter(n => n.important).length})` : ''}
+                            Important ${notificationFilter === 'important' ? `(${store.state.notifications.filter((n) => n.important).length})` : ''}
                         </button>
                         <div style="margin-left: auto;">
                             <button class="btn btn-sm btn-secondary" onclick="handlers.markAllNotificationsRead()">
@@ -7346,7 +8888,9 @@ Object.assign(pages, {
                 </div>
 
                 <div class="card-body" style="padding: 0;">
-                    ${filteredNotifications.length === 0 ? `
+                    ${
+                        filteredNotifications.length === 0
+                            ? `
                         <div class="notification-empty-state">
                             <svg class="notification-empty-svg" width="120" height="120" viewBox="0 0 120 120" fill="none">
                                 <circle cx="60" cy="60" r="50" fill="var(--primary-50)" stroke="var(--primary-200)" stroke-width="2"/>
@@ -7359,18 +8903,29 @@ Object.assign(pages, {
                             <p class="notification-empty-text">${notificationFilter === 'all' ? "You're all caught up! New notifications will appear here." : 'Try a different filter to see more notifications.'}</p>
                             ${notificationFilter !== 'all' ? '<button class="btn btn-sm btn-secondary mt-3" onclick="handlers.filterNotifications(\'all\')">Show All</button>' : ''}
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div class="notification-list">
-                            ${filteredNotifications.map(notif => `
+                            ${filteredNotifications
+                                .map(
+                                    (notif) => `
                                 <div class="notification-item ${notif.read ? 'read' : 'unread'}" style="padding: 16px 24px; border-bottom: 1px solid var(--gray-100); display: flex; align-items: start; gap: 12px; cursor: pointer; ${!notif.read ? 'background: var(--primary-50);' : ''}" role="button" tabindex="0" onclick="handlers.navigateFromNotification('${notif.id}', '${escapeHtml(notif.link || notif.type || '')}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.navigateFromNotification('${notif.id}', '${escapeHtml(notif.link || notif.type || '')}')}">
                                     <div class="notification-type-icon notification-type-${notif.type || 'info'}">
-                                        ${notif.type === 'order' ? components.icon('package', 18) :
-                                          notif.type === 'sale' ? components.icon('dollar-sign', 18) :
-                                          notif.type === 'offer' ? components.icon('tag', 18) :
-                                          notif.type === 'shipping' ? components.icon('truck', 18) :
-                                          notif.type === 'warning' ? components.icon('alert-triangle', 18) :
-                                          notif.type === 'success' ? components.icon('check-circle', 18) :
-                                          components.icon('bell', 18)}
+                                        ${
+                                            notif.type === 'order'
+                                                ? components.icon('package', 18)
+                                                : notif.type === 'sale'
+                                                  ? components.icon('dollar-sign', 18)
+                                                  : notif.type === 'offer'
+                                                    ? components.icon('tag', 18)
+                                                    : notif.type === 'shipping'
+                                                      ? components.icon('truck', 18)
+                                                      : notif.type === 'warning'
+                                                        ? components.icon('alert-triangle', 18)
+                                                        : notif.type === 'success'
+                                                          ? components.icon('check-circle', 18)
+                                                          : components.icon('bell', 18)
+                                        }
                                     </div>
                                     <div style="flex: 1;">
                                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
@@ -7399,9 +8954,12 @@ Object.assign(pages, {
                                         </button>
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
         `;
@@ -7413,33 +8971,44 @@ Object.assign(pages, {
         const shops = store.state.shops || [];
         const emailAccounts = store.state.emailAccounts || [];
         const emailProviders = store.state.emailProviders || [];
-        const connectedShops = shops.filter(shop => shop.is_connected);
-        const shopByPlatform = new Map(connectedShops.map(shop => [shop.platform, shop]));
-        const providerById = new Map(emailProviders.map(provider => [provider.id, provider]));
-        const gmailAccount = emailAccounts.find(account => account.provider === 'gmail' && account.is_enabled);
-        const outlookAccount = emailAccounts.find(account => account.provider === 'outlook' && account.is_enabled);
+        const connectedShops = shops.filter((shop) => shop.is_connected);
+        const shopByPlatform = new Map(connectedShops.map((shop) => [shop.platform, shop]));
+        const providerById = new Map(emailProviders.map((provider) => [provider.id, provider]));
+        const gmailAccount = emailAccounts.find((account) => account.provider === 'gmail' && account.is_enabled);
+        const outlookAccount = emailAccounts.find((account) => account.provider === 'outlook' && account.is_enabled);
         const gmailConfigured = providerById.get('gmail')?.configured !== false;
         const outlookConfigured = Boolean(providerById.get('outlook')?.configured);
-        const launchPlatforms = window.LAUNCH_PLATFORMS || new Set(['poshmark', 'ebay', 'depop', 'shopify', 'facebook', 'whatnot']);
-        const marketplacePlatforms = (window.SUPPORTED_PLATFORMS || []).map(platform => ({
+        const launchPlatforms =
+            window.LAUNCH_PLATFORMS || new Set(['poshmark', 'ebay', 'depop', 'shopify', 'facebook', 'whatnot']);
+        const marketplacePlatforms = (window.SUPPORTED_PLATFORMS || []).map((platform) => ({
             id: platform.id,
             label: PLATFORM_DISPLAY_NAMES[platform.id] || platform.name,
-            isLaunch: launchPlatforms.has(platform.id)
+            isLaunch: launchPlatforms.has(platform.id),
         }));
-        const livePlatforms = marketplacePlatforms.filter(platform => platform.isLaunch || shopByPlatform.has(platform.id));
-        const comingSoonPlatforms = marketplacePlatforms.filter(platform => !platform.isLaunch && !shopByPlatform.has(platform.id));
+        const livePlatforms = marketplacePlatforms.filter(
+            (platform) => platform.isLaunch || shopByPlatform.has(platform.id),
+        );
+        const comingSoonPlatforms = marketplacePlatforms.filter(
+            (platform) => !platform.isLaunch && !shopByPlatform.has(platform.id),
+        );
         const renderMarketplaceCard = (platform) => {
             const shop = shopByPlatform.get(platform.id);
             const canConnect = platform.isLaunch || Boolean(shop);
-            const statusClass = shop ? 'text-success' : (canConnect ? 'text-gray-500' : 'text-warning');
+            const statusClass = shop ? 'text-success' : canConnect ? 'text-gray-500' : 'text-warning';
             const statusText = shop
-                ? (shop.platform_username ? `Connected as @${escapeHtml(shop.platform_username)}` : 'Connected')
-                : (canConnect ? 'Ready to connect' : 'Coming soon');
-            const actionLabel = shop ? 'Manage' : (canConnect ? 'Connect' : 'Coming Soon');
-            const actionClass = shop ? 'btn-outline' : (canConnect ? 'btn-primary' : 'btn-outline');
+                ? shop.platform_username
+                    ? `Connected as @${escapeHtml(shop.platform_username)}`
+                    : 'Connected'
+                : canConnect
+                  ? 'Ready to connect'
+                  : 'Coming soon';
+            const actionLabel = shop ? 'Manage' : canConnect ? 'Connect' : 'Coming Soon';
+            const actionClass = shop ? 'btn-outline' : canConnect ? 'btn-primary' : 'btn-outline';
             const actionHandler = shop
                 ? "router.navigate('shops')"
-                : (canConnect ? `handlers.connectShop('${platform.id}')` : '');
+                : canConnect
+                  ? `handlers.connectShop('${platform.id}')`
+                  : '';
 
             return `
                 <div class="flex items-center justify-between gap-3 p-3 rounded-lg border" style="background: var(--gray-50);">
@@ -7476,14 +9045,18 @@ Object.assign(pages, {
                     <div class="grid grid-cols-2 gap-4">
                         ${livePlatforms.map(renderMarketplaceCard).join('')}
                     </div>
-                    ${comingSoonPlatforms.length ? `
+                    ${
+                        comingSoonPlatforms.length
+                            ? `
                         <div style="margin-top: 20px;">
                             <div class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-3">Coming Soon</div>
                             <div class="grid grid-cols-2 gap-4">
                                 ${comingSoonPlatforms.map(renderMarketplaceCard).join('')}
                             </div>
                         </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                 </div>
             </div>
 
@@ -7501,14 +9074,14 @@ Object.assign(pages, {
                                 <div>
                                     <div class="font-medium">Gmail</div>
                                     <div class="text-xs ${gmailAccount ? 'text-success' : 'text-gray-500'}">
-                                        ${gmailAccount ? `Connected${gmailAccount.email_address ? ` as ${escapeHtml(gmailAccount.email_address)}` : ''}` : (gmailConfigured ? 'Not connected' : 'OAuth not configured')}
+                                        ${gmailAccount ? `Connected${gmailAccount.email_address ? ` as ${escapeHtml(gmailAccount.email_address)}` : ''}` : gmailConfigured ? 'Not connected' : 'OAuth not configured'}
                                     </div>
                                 </div>
                             </div>
-                            <button class="btn btn-sm ${(gmailAccount || !gmailConfigured) ? 'btn-outline' : 'btn-primary'}"
-                                    onclick="${gmailAccount ? "router.navigate('receipt-parser')" : "handlers.connectGmail()"}"
+                            <button class="btn btn-sm ${gmailAccount || !gmailConfigured ? 'btn-outline' : 'btn-primary'}"
+                                    onclick="${gmailAccount ? "router.navigate('receipt-parser')" : 'handlers.connectGmail()'}"
                                     ${!gmailConfigured && !gmailAccount ? 'disabled' : ''}>
-                                ${gmailAccount ? 'Manage' : (gmailConfigured ? 'Connect' : 'Unavailable')}
+                                ${gmailAccount ? 'Manage' : gmailConfigured ? 'Connect' : 'Unavailable'}
                             </button>
                         </div>
                         <div class="flex items-center justify-between p-4 rounded-lg border">
@@ -7517,15 +9090,15 @@ Object.assign(pages, {
                                 <div>
                                     <div class="font-medium">Outlook</div>
                                     <div class="text-xs ${outlookAccount ? 'text-success' : 'text-gray-500'}">
-                                        ${outlookAccount ? `Connected${outlookAccount.email_address ? ` as ${escapeHtml(outlookAccount.email_address)}` : ''}` : (outlookConfigured ? 'Not connected' : 'OAuth not configured')}
+                                        ${outlookAccount ? `Connected${outlookAccount.email_address ? ` as ${escapeHtml(outlookAccount.email_address)}` : ''}` : outlookConfigured ? 'Not connected' : 'OAuth not configured'}
                                     </div>
                                 </div>
                             </div>
-                            <button class="btn btn-sm ${(outlookAccount || !outlookConfigured) ? 'btn-outline' : 'btn-primary'}"
+                            <button class="btn btn-sm ${outlookAccount || !outlookConfigured ? 'btn-outline' : 'btn-primary'}"
                                     aria-label="Connect Outlook"
-                                    onclick="${outlookAccount ? "router.navigate('receipt-parser')" : "handlers.connectOutlook()"}"
+                                    onclick="${outlookAccount ? "router.navigate('receipt-parser')" : 'handlers.connectOutlook()'}"
                                     ${!outlookConfigured && !outlookAccount ? 'disabled' : ''}>
-                                ${outlookAccount ? 'Manage' : (outlookConfigured ? 'Connect' : 'Unavailable')}
+                                ${outlookAccount ? 'Manage' : outlookConfigured ? 'Connect' : 'Unavailable'}
                             </button>
                         </div>
                     </div>
@@ -7774,24 +9347,99 @@ Object.assign(pages, {
 
     about() {
         const features = [
-            { icon: 'globe', title: 'Multi-Platform Support', description: 'Cross-list to Poshmark, eBay, Mercari, Depop, Grailed, and Facebook', color: 'primary' },
-            { icon: 'zap', title: 'AI-Powered Tools', description: 'Smart listing generation, receipt parsing, and photo editing', color: 'warning' },
-            { icon: 'wifi-off', title: 'Offline Capable', description: 'Your data stays on your device - work anywhere, anytime', color: 'success' },
-            { icon: 'bar-chart', title: 'Comprehensive Analytics', description: 'Track sales, profits, and performance across all platforms', color: 'info' },
-            { icon: 'package', title: 'Inventory Management', description: 'Track stock levels, costs, SKUs, and get low-stock alerts', color: 'primary' },
-            { icon: 'dollar-sign', title: 'Financial Tracking', description: 'Chart of accounts, profit/loss statements, and financial reports', color: 'success' },
-            { icon: 'image', title: 'Image Bank', description: 'Organize photos in folders, batch edit, and reuse across listings', color: 'purple' },
-            { icon: 'truck', title: 'Order Management', description: 'Track orders, print labels, and manage shipping across platforms', color: 'info' },
-            { icon: 'settings', title: 'Smart Automations', description: 'Auto-relist, scheduled shares, and workflow automations', color: 'warning' },
-            { icon: 'users', title: 'Team Collaboration', description: 'Invite team members with role-based permissions', color: 'primary' },
-            { icon: 'ruler', title: 'Size Charts & Guides', description: 'Built-in sizing references for clothing, shoes, and accessories', color: 'gray' },
-            { icon: 'message-circle', title: 'Vault Buddy Assistant', description: 'AI chatbot to answer questions and guide you through features', color: 'success' }
+            {
+                icon: 'globe',
+                title: 'Multi-Platform Support',
+                description: 'Cross-list to Poshmark, eBay, Mercari, Depop, Grailed, and Facebook',
+                color: 'primary',
+            },
+            {
+                icon: 'zap',
+                title: 'AI-Powered Tools',
+                description: 'Smart listing generation, receipt parsing, and photo editing',
+                color: 'warning',
+            },
+            {
+                icon: 'wifi-off',
+                title: 'Offline Capable',
+                description: 'Your data stays on your device - work anywhere, anytime',
+                color: 'success',
+            },
+            {
+                icon: 'bar-chart',
+                title: 'Comprehensive Analytics',
+                description: 'Track sales, profits, and performance across all platforms',
+                color: 'info',
+            },
+            {
+                icon: 'package',
+                title: 'Inventory Management',
+                description: 'Track stock levels, costs, SKUs, and get low-stock alerts',
+                color: 'primary',
+            },
+            {
+                icon: 'dollar-sign',
+                title: 'Financial Tracking',
+                description: 'Chart of accounts, profit/loss statements, and financial reports',
+                color: 'success',
+            },
+            {
+                icon: 'image',
+                title: 'Image Bank',
+                description: 'Organize photos in folders, batch edit, and reuse across listings',
+                color: 'purple',
+            },
+            {
+                icon: 'truck',
+                title: 'Order Management',
+                description: 'Track orders, print labels, and manage shipping across platforms',
+                color: 'info',
+            },
+            {
+                icon: 'settings',
+                title: 'Smart Automations',
+                description: 'Auto-relist, scheduled shares, and workflow automations',
+                color: 'warning',
+            },
+            {
+                icon: 'users',
+                title: 'Team Collaboration',
+                description: 'Invite team members with role-based permissions',
+                color: 'primary',
+            },
+            {
+                icon: 'ruler',
+                title: 'Size Charts & Guides',
+                description: 'Built-in sizing references for clothing, shoes, and accessories',
+                color: 'gray',
+            },
+            {
+                icon: 'message-circle',
+                title: 'Vault Buddy Assistant',
+                description: 'AI chatbot to answer questions and guide you through features',
+                color: 'success',
+            },
         ];
 
         const testimonials = [
-            { name: 'Sarah M.', role: 'Full-time Reseller', quote: 'VaultLister has completely transformed how I manage my reselling business. The cross-listing feature alone saves me hours every week!', rating: 5 },
-            { name: 'Mike T.', role: 'Part-time Seller', quote: 'Finally, a tool that works offline! I can update my inventory at estate sales without worrying about internet connection.', rating: 5 },
-            { name: 'Jessica L.', role: 'Boutique Owner', quote: 'The AI listing generation is incredible. It writes better descriptions than I could and helps my items sell faster.', rating: 5 }
+            {
+                name: 'Sarah M.',
+                role: 'Full-time Reseller',
+                quote: 'VaultLister has completely transformed how I manage my reselling business. The cross-listing feature alone saves me hours every week!',
+                rating: 5,
+            },
+            {
+                name: 'Mike T.',
+                role: 'Part-time Seller',
+                quote: 'Finally, a tool that works offline! I can update my inventory at estate sales without worrying about internet connection.',
+                rating: 5,
+            },
+            {
+                name: 'Jessica L.',
+                role: 'Boutique Owner',
+                quote: 'The AI listing generation is incredible. It writes better descriptions than I could and helps my items sell faster.',
+                rating: 5,
+            },
         ];
 
         return `
@@ -7896,7 +9544,9 @@ Object.assign(pages, {
                     <p class="section-description">Comprehensive tools designed specifically for resellers</p>
                 </div>
                 <div class="features-grid">
-                    ${features.map(f => `
+                    ${features
+                        .map(
+                            (f) => `
                         <div class="about-feature-card">
                             <div class="feature-icon-wrapper ${f.color}">
                                 ${components.icon(f.icon, 24)}
@@ -7904,7 +9554,9 @@ Object.assign(pages, {
                             <h3 class="feature-title">${f.title}</h3>
                             <p class="feature-description">${f.description}</p>
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
             </div>
 
@@ -7915,7 +9567,9 @@ Object.assign(pages, {
                     <h2 class="section-title">Loved by Resellers</h2>
                 </div>
                 <div class="testimonials-grid">
-                    ${testimonials.map(t => `
+                    ${testimonials
+                        .map(
+                            (t) => `
                         <div class="testimonial-card">
                             <div class="testimonial-stars">
                                 ${'★'.repeat(t.rating)}
@@ -7929,7 +9583,9 @@ Object.assign(pages, {
                                 </div>
                             </div>
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
             </div>
 
@@ -7939,11 +9595,37 @@ Object.assign(pages, {
                 <p class="about-section-subtitle">The people behind VaultLister</p>
                 <div class="about-team-grid">
                     ${[
-                        { name: 'Matt', role: 'Founder & Lead Developer', avatar: 'M', color: 'primary', bio: 'Full-stack developer and reseller who built VaultLister to solve his own pain points.' },
-                        { name: 'Alex R.', role: 'UX Designer', avatar: 'A', color: 'success', bio: 'Designs intuitive interfaces that help resellers work faster and smarter.' },
-                        { name: 'Jordan K.', role: 'Backend Engineer', avatar: 'J', color: 'warning', bio: 'Keeps the platform fast, secure, and reliable for thousands of users.' },
-                        { name: 'Sam P.', role: 'Community Manager', avatar: 'S', color: 'info', bio: 'Connects with resellers to bring their feedback into the product roadmap.' }
-                    ].map(member => `
+                        {
+                            name: 'Matt',
+                            role: 'Founder & Lead Developer',
+                            avatar: 'M',
+                            color: 'primary',
+                            bio: 'Full-stack developer and reseller who built VaultLister to solve his own pain points.',
+                        },
+                        {
+                            name: 'Alex R.',
+                            role: 'UX Designer',
+                            avatar: 'A',
+                            color: 'success',
+                            bio: 'Designs intuitive interfaces that help resellers work faster and smarter.',
+                        },
+                        {
+                            name: 'Jordan K.',
+                            role: 'Backend Engineer',
+                            avatar: 'J',
+                            color: 'warning',
+                            bio: 'Keeps the platform fast, secure, and reliable for thousands of users.',
+                        },
+                        {
+                            name: 'Sam P.',
+                            role: 'Community Manager',
+                            avatar: 'S',
+                            color: 'info',
+                            bio: 'Connects with resellers to bring their feedback into the product roadmap.',
+                        },
+                    ]
+                        .map(
+                            (member) => `
                         <div class="team-member-card team-card-hover">
                             <div class="team-avatar ${member.color}">${member.avatar}</div>
                             <h3 class="team-name">${member.name}</h3>
@@ -7954,7 +9636,9 @@ Object.assign(pages, {
                                 <span class="team-social-icon" title="GitHub">${components.icon('code', 14)}</span>
                             </div>
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
             </div>
 
@@ -7964,13 +9648,40 @@ Object.assign(pages, {
                 <p class="about-section-subtitle">Key milestones in VaultLister's growth</p>
                 <div class="about-timeline">
                     ${[
-                        { date: 'Mar 2026', title: 'Alpha Launch', description: 'v0.1.0 released with inventory management and 6-platform cross-listing.' },
-                        { date: 'Mar 2026', title: 'AI Tools Added', description: 'Introduced AI listing generation, receipt parser, and smart pricing.' },
-                        { date: 'Apr 2026', title: 'Community & Support', description: 'Added Help Center, tutorials, support tickets, and community features.' },
-                        { date: 'Apr 2026', title: 'Advanced Analytics', description: 'Launched analytics dashboard, predictions, and financial tracking.' },
-                        { date: 'Apr 2026', title: '170+ Features Milestone', description: 'Reached 171+ features including calendar, automations, and image bank.' },
-                        { date: 'Apr 2026', title: 'Release Candidate', description: 'v0.9.0 RC — continuing to add features based on community feedback and votes.' }
-                    ].map((milestone, idx) => `
+                        {
+                            date: 'Mar 2026',
+                            title: 'Alpha Launch',
+                            description: 'v0.1.0 released with inventory management and 6-platform cross-listing.',
+                        },
+                        {
+                            date: 'Mar 2026',
+                            title: 'AI Tools Added',
+                            description: 'Introduced AI listing generation, receipt parser, and smart pricing.',
+                        },
+                        {
+                            date: 'Apr 2026',
+                            title: 'Community & Support',
+                            description: 'Added Help Center, tutorials, support tickets, and community features.',
+                        },
+                        {
+                            date: 'Apr 2026',
+                            title: 'Advanced Analytics',
+                            description: 'Launched analytics dashboard, predictions, and financial tracking.',
+                        },
+                        {
+                            date: 'Apr 2026',
+                            title: '170+ Features Milestone',
+                            description: 'Reached 171+ features including calendar, automations, and image bank.',
+                        },
+                        {
+                            date: 'Apr 2026',
+                            title: 'Release Candidate',
+                            description:
+                                'v0.9.0 RC — continuing to add features based on community feedback and votes.',
+                        },
+                    ]
+                        .map(
+                            (milestone, idx) => `
                         <div class="timeline-milestone ${idx === 5 ? 'current' : ''}">
                             <div class="milestone-dot"></div>
                             <div class="milestone-content">
@@ -7979,7 +9690,9 @@ Object.assign(pages, {
                                 <p class="milestone-description">${milestone.description}</p>
                             </div>
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
             </div>
 
@@ -7997,8 +9710,10 @@ Object.assign(pages, {
                         { name: 'Vanilla JS', desc: 'Frontend (Zero Dependencies)', icon: '⚡', color: '#fff3cd' },
                         { name: 'REST API', desc: 'Backend Services', icon: '🔌', color: '#d4edda' },
                         { name: 'Claude AI', desc: 'AI-Powered Features', icon: '🧠', color: '#f0e6ff' },
-                        { name: 'PWA', desc: 'Offline Support', icon: '📱', color: '#e8f0fe' }
-                    ].map(tech => `
+                        { name: 'PWA', desc: 'Offline Support', icon: '📱', color: '#e8f0fe' },
+                    ]
+                        .map(
+                            (tech) => `
                         <div class="tech-stack-card">
                             <div class="tech-stack-icon" style="background: ${tech.color};">${tech.icon}</div>
                             <div class="tech-stack-info">
@@ -8006,7 +9721,9 @@ Object.assign(pages, {
                                 <p class="tech-stack-desc">${tech.desc}</p>
                             </div>
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
             </div>
 
@@ -8021,13 +9738,17 @@ Object.assign(pages, {
                         { name: 'Mercari', icon: 'M', color: '#4dc3fc' },
                         { name: 'Depop', icon: 'D', color: '#ff2300' },
                         { name: 'Grailed', icon: 'G', color: '#000000' },
-                        { name: 'Facebook', icon: 'f', color: '#1877f2' }
-                    ].map(partner => `
+                        { name: 'Facebook', icon: 'f', color: '#1877f2' },
+                    ]
+                        .map(
+                            (partner) => `
                         <div class="partner-logo-card">
                             <div class="partner-icon" style="background: ${partner.color}; color: white;">${partner.icon}</div>
                             <span class="partner-name">${partner.name}</span>
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
             </div>
 
@@ -8176,7 +9897,7 @@ Object.assign(pages, {
                         <p class="text-gray-600 mb-4">Share this unique link with friends. When they sign up, you both get rewards!</p>
 
                         <div class="mb-4">
-                            <label class="form-label">Your Referral Code</label>
+                            <label class="form-label" for="referral-code">Your Referral Code</label>
                             <div class="flex gap-2">
                                 <input aria-label="Referral Code" type="text" class="form-input" value="${escapeHtml(referralCode)}" readonly id="referral-code">
                                 <button class="btn btn-secondary" onclick="navigator.clipboard.writeText('${escapeHtml(referralCode)}'); toast.success('Code copied!')">
@@ -8186,7 +9907,7 @@ Object.assign(pages, {
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label">Referral Link</label>
+                            <label class="form-label" for="referral-link">Referral Link</label>
                             <div class="flex gap-2">
                                 <input aria-label="Referral Link" type="text" class="form-input" value="${escapeHtml(referralLink)}" readonly id="referral-link" style="font-size: 12px;">
                                 <button class="btn btn-primary" onclick="navigator.clipboard.writeText('${escapeHtml(referralLink)}'); toast.success('Link copied!')">
@@ -8333,11 +10054,17 @@ Object.assign(pages, {
                     <h2 class="card-title">Frequently Asked Questions</h2>
                 </div>
                 <div class="card-body">
-                    ${faqs.length === 0 ? `
+                    ${
+                        faqs.length === 0
+                            ? `
                         <p class="text-gray-600 text-center py-8">No FAQs found.</p>
-                    ` : `
+                    `
+                            : `
                         <div style="display: flex; flex-direction: column; gap: 1rem;">
-                            ${faqs.slice(0, 10).map(faq => `
+                            ${faqs
+                                .slice(0, 10)
+                                .map(
+                                    (faq) => `
                                 <div class="faq-item" style="border-bottom: 1px solid var(--gray-200); padding-bottom: 1rem;">
                                     <details>
                                         <summary style="cursor: pointer; font-weight: 600; padding: 0.5rem 0;">
@@ -8357,9 +10084,12 @@ Object.assign(pages, {
                                         </div>
                                     </details>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
@@ -8369,11 +10099,16 @@ Object.assign(pages, {
                     <h2 class="card-title">Help Articles</h2>
                 </div>
                 <div class="card-body">
-                    ${articles.length === 0 ? `
+                    ${
+                        articles.length === 0
+                            ? `
                         <p class="text-gray-600 text-center py-8">No articles found.</p>
-                    ` : `
+                    `
+                            : `
                         <div style="display: grid; gap: 1rem;">
-                            ${articles.map(article => `
+                            ${articles
+                                .map(
+                                    (article) => `
                                 <div role="button" tabindex="0" class="article-card" style="border: 1px solid var(--gray-200); border-radius: 8px; padding: 1.5rem; cursor: pointer; transition: all 0.2s;"
                                      onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.borderColor='var(--primary-500)'"
                                      onmouseout="this.style.boxShadow='none'; this.style.borderColor='var(--gray-200)'"
@@ -8381,29 +10116,53 @@ Object.assign(pages, {
                                     <h2 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">
                                         ${searchQuery ? highlightText(article.title, searchQuery) : escapeHtml(article.title)}
                                     </h2>
-                                    ${article.excerpt ? `
+                                    ${
+                                        article.excerpt
+                                            ? `
                                         <p style="color: var(--gray-500); margin-bottom: 0.75rem;">${searchQuery ? highlightText(article.excerpt, searchQuery) : escapeHtml(article.excerpt)}</p>
-                                    ` : ''}
+                                    `
+                                            : ''
+                                    }
                                     <div style="display: flex; gap: 1rem; align-items: center; font-size: 0.875rem; color: var(--gray-400);">
-                                        ${article.category ? `
+                                        ${
+                                            article.category
+                                                ? `
                                             <span class="badge">${article.category}</span>
-                                        ` : ''}
+                                        `
+                                                : ''
+                                        }
                                         <span>${article.view_count || 0} views</span>
-                                        ${article.helpful_count > 0 ? `
+                                        ${
+                                            article.helpful_count > 0
+                                                ? `
                                             <span>👍 ${article.helpful_count}</span>
-                                        ` : ''}
-                                        ${article.tags && article.tags.length > 0 ? `
+                                        `
+                                                : ''
+                                        }
+                                        ${
+                                            article.tags && article.tags.length > 0
+                                                ? `
                                             <div style="display: flex; gap: 0.25rem;">
-                                                ${article.tags.slice(0, 3).map(tag => `
+                                                ${article.tags
+                                                    .slice(0, 3)
+                                                    .map(
+                                                        (tag) => `
                                                     <span class="tag">${escapeHtml(tag)}</span>
-                                                `).join('')}
+                                                `,
+                                                    )
+                                                    .join('')}
                                             </div>
-                                        ` : ''}
+                                        `
+                                                : ''
+                                        }
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
         `;
@@ -8433,7 +10192,9 @@ Object.assign(pages, {
                     <h2 class="card-title">Your Tickets</h2>
                 </div>
                 <div class="card-body">
-                    ${tickets.length === 0 ? `
+                    ${
+                        tickets.length === 0
+                            ? `
                         <div class="text-center py-12">
                             <div class="text-6xl mb-4">🎫</div>
                             <h2 class="text-xl font-bold mb-2">No Tickets Yet</h2>
@@ -8442,22 +10203,24 @@ Object.assign(pages, {
                                 Submit Your First Ticket
                             </button>
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div style="display: flex; flex-direction: column; gap: 1rem;">
-                            ${tickets.map(ticket => {
-                                const statusColors = {
-                                    open: 'primary',
-                                    in_progress: 'warning',
-                                    resolved: 'success',
-                                    closed: 'secondary'
-                                };
-                                const typeIcons = {
-                                    contact: '💬',
-                                    bug: '🐛',
-                                    feature_request: '💡'
-                                };
+                            ${tickets
+                                .map((ticket) => {
+                                    const statusColors = {
+                                        open: 'primary',
+                                        in_progress: 'warning',
+                                        resolved: 'success',
+                                        closed: 'secondary',
+                                    };
+                                    const typeIcons = {
+                                        contact: '💬',
+                                        bug: '🐛',
+                                        feature_request: '💡',
+                                    };
 
-                                return `
+                                    return `
                                     <div role="button" tabindex="0" class="ticket-card"
                                          style="border: 1px solid var(--gray-200); border-radius: 8px; padding: 1.5rem; cursor: pointer; transition: all 0.2s;"
                                          onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'"
@@ -8484,9 +10247,11 @@ Object.assign(pages, {
                                         </div>
                                     </div>
                                 `;
-                            }).join('')}
+                                })
+                                .join('')}
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
         `;
@@ -8507,7 +10272,7 @@ Object.assign(pages, {
 1. **Create Your Account** - Sign up with your email and create a secure password.
 2. **Connect Your Shops** - Go to My Shops and link your marketplace accounts (eBay, Poshmark, etc.).
 3. **Add Your First Item** - Click "Add Item" in Inventory to create your first listing.
-4. **Cross-List** - Select items and use "Cross-List" to publish to multiple platforms at once.`
+4. **Cross-List** - Select items and use "Cross-List" to publish to multiple platforms at once.`,
                 },
                 {
                     title: 'Understanding the Dashboard',
@@ -8518,7 +10283,7 @@ Object.assign(pages, {
 - **Recent Sales** - Your latest completed sales
 - **Revenue** - Track your earnings over time
 
-Use the dashboard to monitor performance and identify which items need attention.`
+Use the dashboard to monitor performance and identify which items need attention.`,
                 },
                 {
                     title: 'Navigating VaultLister',
@@ -8530,8 +10295,8 @@ Use the dashboard to monitor performance and identify which items need attention
 - **Sales** - Track completed sales
 - **Analytics** - Detailed performance reports
 - **Automations** - Set up time-saving rules
-- **Settings** - Customize your experience`
-                }
+- **Settings** - Customize your experience`,
+                },
             ],
             inventory: [
                 {
@@ -8545,7 +10310,7 @@ Use the dashboard to monitor performance and identify which items need attention
 5. Add labels/tags for easy organization.
 6. Click **Save** to add to your inventory.
 
-**Pro Tip:** Use the AI Generate feature to automatically create descriptions from your photos!`
+**Pro Tip:** Use the AI Generate feature to automatically create descriptions from your photos!`,
                 },
                 {
                     title: 'Bulk Operations',
@@ -8555,7 +10320,7 @@ Use the dashboard to monitor performance and identify which items need attention
 - **Bulk Export** - Export inventory to CSV for spreadsheets
 - **Bulk Delete** - Remove multiple items simultaneously
 
-Select items using the checkboxes, then choose your action from the toolbar.`
+Select items using the checkboxes, then choose your action from the toolbar.`,
                 },
                 {
                     title: 'Organizing with Labels',
@@ -8566,8 +10331,8 @@ Select items using the checkboxes, then choose your action from the toolbar.`
 3. Filter inventory by label to find items fast
 4. Use colors to visually distinguish categories
 
-Labels are especially useful for seasonal inventory and sourcing trips.`
-                }
+Labels are especially useful for seasonal inventory and sourcing trips.`,
+                },
             ],
             cross_listing: [
                 {
@@ -8580,7 +10345,7 @@ Labels are especially useful for seasonal inventory and sourcing trips.`
 4. Review and customize per-platform settings
 5. Click **Publish** to go live
 
-VaultLister automatically adjusts your listing format for each platform's requirements.`
+VaultLister automatically adjusts your listing format for each platform's requirements.`,
                 },
                 {
                     title: 'Platform-Specific Tips',
@@ -8591,7 +10356,7 @@ VaultLister automatically adjusts your listing format for each platform's requir
 **Whatnot** - Great for live selling and auctions
 **Shopify** - Perfect for building your own brand
 
-Customize pricing per platform to account for different fees and audiences.`
+Customize pricing per platform to account for different fees and audiences.`,
                 },
                 {
                     title: 'Managing Listings',
@@ -8602,8 +10367,8 @@ Customize pricing per platform to account for different fees and audiences.`
 - **End** - Remove listings that have sold elsewhere
 - **Promote** - Use platform-specific promotion tools
 
-The Listings page shows all your active items across platforms in one view.`
-                }
+The Listings page shows all your active items across platforms in one view.`,
+                },
             ],
             automations: [
                 {
@@ -8616,7 +10381,7 @@ The Listings page shows all your active items across platforms in one view.`
 4. Configure the schedule (time of day, frequency)
 5. Let VaultLister work while you sleep!
 
-Popular automations include daily sharing, auto-offers, and price drops.`
+Popular automations include daily sharing, auto-offers, and price drops.`,
                 },
                 {
                     title: 'Sharing Automations',
@@ -8626,7 +10391,7 @@ Popular automations include daily sharing, auto-offers, and price drops.`
 - **Party Share** - Auto-shares during Poshmark parties
 - **Community Share** - Shares from other closets for visibility
 
-Set your preferred time window and VaultLister handles the rest.`
+Set your preferred time window and VaultLister handles the rest.`,
                 },
                 {
                     title: 'Offer & Pricing Automations',
@@ -8637,8 +10402,8 @@ Set your preferred time window and VaultLister handles the rest.`
 - **Weekly Price Drop** - Gradually reduce prices on stale items
 - **Bundle Discounts** - Offer deals on multiple items
 
-Configure your minimum prices to protect your margins.`
-                }
+Configure your minimum prices to protect your margins.`,
+                },
             ],
             advanced: [
                 {
@@ -8650,7 +10415,7 @@ Configure your minimum prices to protect your margins.`
 - **Sell-Through Rate** - Understand how fast items sell
 - **Profitability Analysis** - Know your actual margins
 
-Export reports to CSV for further analysis in spreadsheets.`
+Export reports to CSV for further analysis in spreadsheets.`,
                 },
                 {
                     title: 'Image Bank & Photo Editor',
@@ -8661,9 +10426,9 @@ Export reports to CSV for further analysis in spreadsheets.`
 - **Batch Processing** - Edit multiple photos at once
 - **Smart Crop** - Auto-crop for platform requirements
 
-Upload photos once, use them across all your listings.`
+Upload photos once, use them across all your listings.`,
                 },
-            ]
+            ],
         };
 
         const categories = [
@@ -8671,7 +10436,7 @@ Upload photos once, use them across all your listings.`
             { id: 'inventory', label: 'Inventory', icon: 'box' },
             { id: 'cross_listing', label: 'Cross-Listing', icon: 'share' },
             { id: 'automations', label: 'Automations', icon: 'automation' },
-            { id: 'advanced', label: 'Advanced', icon: 'settings' }
+            { id: 'advanced', label: 'Advanced', icon: 'settings' },
         ];
 
         const currentTutorials = tutorials[selectedCategory] || [];
@@ -8684,17 +10449,23 @@ Upload photos once, use them across all your listings.`
 
             <!-- Category Filter -->
             <div class="mb-6" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                ${categories.map(cat => `
+                ${categories
+                    .map(
+                        (cat) => `
                     <button class="btn ${selectedCategory === cat.id ? 'btn-primary' : 'btn-secondary'}"
                             onclick="handlers.switchTutorialCategory('${cat.id}')">
                         ${components.icon(cat.icon, 16)} ${cat.label}
                     </button>
-                `).join('')}
+                `,
+                    )
+                    .join('')}
             </div>
 
             <!-- Tutorial Cards -->
             <div style="display: grid; gap: 1.5rem;">
-                ${currentTutorials.map((tutorial, index) => `
+                ${currentTutorials
+                    .map(
+                        (tutorial, index) => `
                     <div class="card">
                         <div class="card-header" style="cursor: pointer;" role="button" tabindex="0" aria-expanded="false" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('.expand-icon').classList.toggle('rotated'); this.setAttribute('aria-expanded', this.getAttribute('aria-expanded')==='true'?'false':'true');" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.nextElementSibling.classList.toggle('hidden'); this.querySelector('.expand-icon').classList.toggle('rotated'); this.setAttribute('aria-expanded', this.getAttribute('aria-expanded')==='true'?'false':'true');">
                             <div style="display: flex; align-items: center; gap: 12px; pointer-events: none;">
@@ -8709,7 +10480,9 @@ Upload photos once, use them across all your listings.`
                             <div style="white-space: pre-wrap; line-height: 1.8; color: var(--gray-700);">${escapeHtml(tutorial.content).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')}</div>
                         </div>
                     </div>
-                `).join('')}
+                `,
+                    )
+                    .join('')}
             </div>
 
             <style>
@@ -8726,41 +10499,52 @@ Upload photos once, use them across all your listings.`
         const roadmapSearch = store.state.roadmapSearch || '';
         // Deduplicate features by title (DB may have duplicates)
         const seen = new Set();
-        const features = (store.state.roadmapFeatures || []).filter(f => {
+        const features = (store.state.roadmapFeatures || []).filter((f) => {
             if (seen.has(f.title)) return false;
             seen.add(f.title);
             return true;
         });
-        const categories = [...new Set(features.map(f => f.category).filter(Boolean))];
-        const categoryLabels = { automations: 'Automations', mobile: 'Mobile', ai: 'AI', chrome: 'Chrome Extension', account: 'Account', shipping: 'Shipping', analytics: 'Analytics', billing: 'Billing', orders: 'Orders', listings: 'Listings' };
-        const formatCategoryLabel = cat => categoryLabels[cat] || (cat.charAt(0).toUpperCase() + cat.slice(1));
+        const categories = [...new Set(features.map((f) => f.category).filter(Boolean))];
+        const categoryLabels = {
+            automations: 'Automations',
+            mobile: 'Mobile',
+            ai: 'AI',
+            chrome: 'Chrome Extension',
+            account: 'Account',
+            shipping: 'Shipping',
+            analytics: 'Analytics',
+            billing: 'Billing',
+            orders: 'Orders',
+            listings: 'Listings',
+        };
+        const formatCategoryLabel = (cat) => categoryLabels[cat] || cat.charAt(0).toUpperCase() + cat.slice(1);
 
         // Filter features based on status, category, and search
-        let filteredFeatures = roadmapFilter === 'all'
-            ? features
-            : features.filter(f => f.status === roadmapFilter);
+        let filteredFeatures = roadmapFilter === 'all' ? features : features.filter((f) => f.status === roadmapFilter);
 
         if (categoryFilter !== 'all') {
-            filteredFeatures = filteredFeatures.filter(f => f.category === categoryFilter);
+            filteredFeatures = filteredFeatures.filter((f) => f.category === categoryFilter);
         }
 
         if (roadmapSearch) {
             const q = roadmapSearch.toLowerCase();
-            filteredFeatures = filteredFeatures.filter(f =>
-                f.title?.toLowerCase().includes(q) ||
-                f.description?.toLowerCase().includes(q) ||
-                f.category?.toLowerCase().includes(q)
+            filteredFeatures = filteredFeatures.filter(
+                (f) =>
+                    f.title?.toLowerCase().includes(q) ||
+                    f.description?.toLowerCase().includes(q) ||
+                    f.category?.toLowerCase().includes(q),
             );
         }
 
         // Group by status for display and counts (category-aware for stat cards)
-        const allPlanned = features.filter(f => f.status === 'planned');
-        const allInProgress = features.filter(f => f.status === 'in_progress');
-        const allCompleted = features.filter(f => f.status === 'completed');
-        const categoryFiltered = categoryFilter === 'all' ? features : features.filter(f => f.category === categoryFilter);
-        const filteredPlannedCount = categoryFiltered.filter(f => f.status === 'planned').length;
-        const filteredInProgressCount = categoryFiltered.filter(f => f.status === 'in_progress').length;
-        const filteredCompletedCount = categoryFiltered.filter(f => f.status === 'completed').length;
+        const allPlanned = features.filter((f) => f.status === 'planned');
+        const allInProgress = features.filter((f) => f.status === 'in_progress');
+        const allCompleted = features.filter((f) => f.status === 'completed');
+        const categoryFiltered =
+            categoryFilter === 'all' ? features : features.filter((f) => f.category === categoryFilter);
+        const filteredPlannedCount = categoryFiltered.filter((f) => f.status === 'planned').length;
+        const filteredInProgressCount = categoryFiltered.filter((f) => f.status === 'in_progress').length;
+        const filteredCompletedCount = categoryFiltered.filter((f) => f.status === 'completed').length;
 
         // Recent releases for "What's New" banner
         const recentReleases = allCompleted.slice(0, 3);
@@ -8798,24 +10582,32 @@ Upload photos once, use them across all your listings.`
             </div>
 
             <!-- What's New Banner -->
-            ${recentReleases.length > 0 ? `
+            ${
+                recentReleases.length > 0
+                    ? `
                 <div class="whats-new-banner">
                     <div class="whats-new-header">
                         <span class="whats-new-badge">✨ What's New</span>
                         <button class="btn btn-sm btn-secondary" onclick="router.navigate('changelog')">View Changelog</button>
                     </div>
                     <div class="whats-new-items">
-                        ${recentReleases.map(feature => `
+                        ${recentReleases
+                            .map(
+                                (feature) => `
                             <div class="whats-new-item">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2">
                                     <polyline points="20 6 9 17 4 12"></polyline>
                                 </svg>
                                 <span>${escapeHtml(feature.title)}</span>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Progress Overview -->
             <div class="roadmap-progress-cards">
@@ -8872,19 +10664,29 @@ Upload photos once, use them across all your listings.`
                         Completed <span class="filter-count">${allCompleted.length}</span>
                     </button>
                 </div>
-                ${categories.length > 0 ? `
+                ${
+                    categories.length > 0
+                        ? `
                     <div class="category-filter">
                         <select class="form-select" aria-label="Filter by category" onchange="handlers.filterRoadmapCategory(this.value)" style="min-width: 150px;">
                             <option value="all" ${categoryFilter === 'all' ? 'selected' : ''}>All Categories</option>
-                            ${categories.map(cat => `
+                            ${categories
+                                .map(
+                                    (cat) => `
                                 <option value="${escapeHtml(cat)}" ${categoryFilter === cat ? 'selected' : ''}>${escapeHtml(formatCategoryLabel(cat))}</option>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </select>
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
             </div>
 
-            ${filteredFeatures.length === 0 ? `
+            ${
+                filteredFeatures.length === 0
+                    ? `
                 <div class="card">
                     <div class="card-body text-center py-12">
                         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--gray-300)" stroke-width="1.5" style="margin: 0 auto 16px;">
@@ -8895,13 +10697,15 @@ Upload photos once, use them across all your listings.`
                         <p style="color: var(--gray-500);">Check back soon for upcoming features!</p>
                     </div>
                 </div>
-            ` : `
+            `
+                    : `
                 <div class="roadmap-features-list">
-                    ${filteredFeatures.map(feature => {
-                        const pct = feature.progress ?? featureProgress[feature.name] ?? 50;
-                        const progressPercent = feature.status === 'completed' ? 100 :
-                                                feature.status === 'in_progress' ? pct : 0;
-                        return `
+                    ${filteredFeatures
+                        .map((feature) => {
+                            const pct = feature.progress ?? featureProgress[feature.name] ?? 50;
+                            const progressPercent =
+                                feature.status === 'completed' ? 100 : feature.status === 'in_progress' ? pct : 0;
+                            return `
                             <div class="roadmap-feature-card ${feature.status}">
                                 <!-- Vote Section -->
                                 <div class="feature-vote-section">
@@ -8923,43 +10727,65 @@ Upload photos once, use them across all your listings.`
                                         </span>
                                     </div>
 
-                                    ${feature.description ? `
+                                    ${
+                                        feature.description
+                                            ? `
                                         <p class="feature-description">${escapeHtml(feature.description)}</p>
-                                    ` : ''}
+                                    `
+                                            : ''
+                                    }
 
-                                    ${feature.status === 'in_progress' ? `
+                                    ${
+                                        feature.status === 'in_progress'
+                                            ? `
                                         <div class="feature-progress">
                                             <div class="progress-bar-mini">
                                                 <div class="progress-fill" style="width: ${progressPercent}%;"></div>
                                             </div>
                                             <span class="progress-text">${progressPercent}% complete</span>
                                         </div>
-                                    ` : ''}
+                                    `
+                                            : ''
+                                    }
 
-                                    ${feature.dependencies && feature.dependencies.length > 0 ? `
+                                    ${
+                                        feature.dependencies && feature.dependencies.length > 0
+                                            ? `
                                         <div class="feature-dependencies">
                                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--warning-600)" stroke-width="2">
                                                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
                                                 <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
                                             </svg>
-                                            <span>Depends on: ${feature.dependencies.map(d => `<em>${escapeHtml(d)}</em>`).join(', ')}</span>
+                                            <span>Depends on: ${feature.dependencies.map((d) => `<em>${escapeHtml(d)}</em>`).join(', ')}</span>
                                         </div>
-                                    ` : ''}
-                                    ${feature.blockers && feature.blockers.length > 0 ? `
+                                    `
+                                            : ''
+                                    }
+                                    ${
+                                        feature.blockers && feature.blockers.length > 0
+                                            ? `
                                         <div class="feature-blockers">
                                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2">
                                                 <circle cx="12" cy="12" r="10"></circle>
                                                 <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
                                             </svg>
-                                            <span>Blocked by: ${feature.blockers.map(b => `<em>${escapeHtml(b)}</em>`).join(', ')}</span>
+                                            <span>Blocked by: ${feature.blockers.map((b) => `<em>${escapeHtml(b)}</em>`).join(', ')}</span>
                                         </div>
-                                    ` : ''}
+                                    `
+                                            : ''
+                                    }
 
                                     <div class="feature-meta">
-                                        ${feature.category ? `
+                                        ${
+                                            feature.category
+                                                ? `
                                             <span class="feature-category">${escapeHtml(feature.category)}</span>
-                                        ` : ''}
-                                        ${feature.eta ? `
+                                        `
+                                                : ''
+                                        }
+                                        ${
+                                            feature.eta
+                                                ? `
                                             <span class="feature-eta">
                                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -8969,30 +10795,42 @@ Upload photos once, use them across all your listings.`
                                                 </svg>
                                                 ${escapeHtml(feature.eta)}
                                             </span>
-                                        ` : ''}
-                                        ${feature.comments > 0 ? `
+                                        `
+                                                : ''
+                                        }
+                                        ${
+                                            feature.comments > 0
+                                                ? `
                                             <span class="feature-comments">
                                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                                                 </svg>
                                                 ${feature.comments}
                                             </span>
-                                        ` : ''}
-                                        ${feature.status === 'completed' ? `
+                                        `
+                                                : ''
+                                        }
+                                        ${
+                                            feature.status === 'completed'
+                                                ? `
                                             <a href="#changelog" class="feature-changelog-link" onclick="router.navigate('changelog')" title="View Changelog">
                                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                     <polyline points="9 18 15 12 9 6"></polyline>
                                                 </svg>
                                                 View Changelog
                                             </a>
-                                        ` : ''}
+                                        `
+                                                : ''
+                                        }
                                     </div>
                                 </div>
                             </div>
                         `;
-                    }).join('')}
+                        })
+                        .join('')}
                 </div>
-            `}
+            `
+            }
         `;
     },
 
@@ -9002,7 +10840,7 @@ Upload photos once, use them across all your listings.`
         const features = store.state.roadmapFeatures || [];
         // Sort by votes descending, take top 5
         const topFeatures = [...features]
-            .filter(f => f.status === 'planned')
+            .filter((f) => f.status === 'planned')
             .sort((a, b) => (b.votes || 0) - (a.votes || 0))
             .slice(0, 5);
 
@@ -9069,7 +10907,9 @@ Upload photos once, use them across all your listings.`
             </div>
 
             <!-- Top Requested Features -->
-            ${topFeatures.length > 0 ? `
+            ${
+                topFeatures.length > 0
+                    ? `
                 <div class="card mt-6">
                     <div class="card-header">
                         <h2 class="card-title">Most Requested Features</h2>
@@ -9077,7 +10917,9 @@ Upload photos once, use them across all your listings.`
                     </div>
                     <div class="card-body" style="padding: 0;">
                         <div class="divide-y">
-                            ${topFeatures.map((feature, index) => `
+                            ${topFeatures
+                                .map(
+                                    (feature, index) => `
                                 <div class="flex items-center gap-4 p-4">
                                     <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: var(--gray-100); display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--gray-600);">
                                         #${index + 1}
@@ -9093,11 +10935,15 @@ Upload photos once, use them across all your listings.`
                                         </button>
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Categories -->
             <div class="card mt-6">
@@ -9143,7 +10989,7 @@ Upload photos once, use them across all your listings.`
             feature: '✨',
             improvement: '📈',
             bug: '🐛',
-            general: '💬'
+            general: '💬',
         };
 
         const statusColors = {
@@ -9151,7 +10997,7 @@ Upload photos once, use them across all your listings.`
             reviewing: 'badge-primary',
             planned: 'badge-success',
             completed: 'badge-success',
-            declined: 'badge-danger'
+            declined: 'badge-danger',
         };
 
         return `
@@ -9169,7 +11015,7 @@ Upload photos once, use them across all your listings.`
                     <form id="feedback-form" onsubmit="handlers.submitFeedbackForm(event)">
                         <!-- Type Selection -->
                         <div style="margin-bottom: 20px;">
-                            <label class="form-label">Feedback Type <span style="color: var(--danger-600);">*</span></label>
+                            <p class="form-label">Feedback Type <span style="color: var(--danger-600);">*</span></p>
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
                                 <button type="button"
                                         class="btn ${feedbackType === 'feature' ? 'btn-primary' : 'btn-outline'}"
@@ -9234,7 +11080,9 @@ Upload photos once, use them across all your listings.`
                                     ${components.icon('notification', 14)} Similar feedback already exists:
                                 </div>
                                 <div id="similar-feedback-list">
-                                    ${(store.state.similarFeedback || []).map(item => `
+                                    ${(store.state.similarFeedback || [])
+                                        .map(
+                                            (item) => `
                                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; cursor: pointer;" role="button" tabindex="0" onclick="handlers.showFeedbackDetail('${item.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.showFeedbackDetail('${item.id}')}">
                                             <span style="font-size: 13px; color: var(--gray-700);">${escapeHtml(item.title)}</span>
                                             <div style="display: flex; align-items: center; gap: 8px;">
@@ -9242,7 +11090,9 @@ Upload photos once, use them across all your listings.`
                                                 <span style="font-size: 12px; color: var(--gray-500);">${(item.votes_up || 0) - (item.votes_down || 0)} votes</span>
                                             </div>
                                         </div>
-                                    `).join('')}
+                                    `,
+                                        )
+                                        .join('')}
                                 </div>
                             </div>
                         </div>
@@ -9262,14 +11112,17 @@ Upload photos once, use them across all your listings.`
 
                         <!-- Screenshot Upload (shown for bug reports) -->
                         <div id="screenshot-section" style="margin-bottom: 24px; display: ${feedbackType === 'bug' ? 'block' : 'none'};">
-                            <label class="form-label">Screenshot (Optional)</label>
+                            <p class="form-label">Screenshot (Optional)</p>
                             <div style="border: 2px dashed var(--gray-300); border-radius: 8px; padding: 24px; text-align: center; cursor: pointer; transition: border-color 0.2s;" role="button" tabindex="0" aria-label="Upload screenshot" onclick="document.getElementById('screenshot-input').click()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('screenshot-input').click()}" id="screenshot-drop-zone">
-                                ${store.state.feedbackScreenshot ? `
+                                ${
+                                    store.state.feedbackScreenshot
+                                        ? `
                                     <div style="position: relative; display: inline-block;">
                                         <img src="${store.state.feedbackScreenshot}" style="max-width: 300px; max-height: 200px; border-radius: 4px;" alt="Screenshot preview">
                                         <button type="button" onclick="event.stopPropagation(); handlers.clearScreenshot();" style="position: absolute; top: -8px; right: -8px; background: var(--danger-600); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;">x</button>
                                     </div>
-                                ` : `
+                                `
+                                        : `
                                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2" style="margin-bottom: 8px;">
                                         <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                                         <circle cx="8.5" cy="8.5" r="1.5"></circle>
@@ -9277,7 +11130,8 @@ Upload photos once, use them across all your listings.`
                                     </svg>
                                     <p style="margin: 0; color: var(--gray-500); font-size: 14px;">Click to upload a screenshot</p>
                                     <p style="margin: 4px 0 0 0; color: var(--gray-400); font-size: 12px;">PNG, JPEG, GIF, or WebP (max 2MB)</p>
-                                `}
+                                `
+                                }
                             </div>
                             <input type="file" id="screenshot-input" accept="image/png,image/jpeg,image/gif,image/webp" style="display: none;" onchange="handlers.handleScreenshotUpload(event)" aria-label="Screenshot Input">
                         </div>
@@ -9309,15 +11163,20 @@ Upload photos once, use them across all your listings.`
                     <h2 style="margin: 0; font-size: 18px; font-weight: 600;">Your Recent Feedback</h2>
                 </div>
                 <div class="card-body" style="padding: 0;">
-                    ${userFeedback.length === 0 ? `
+                    ${
+                        userFeedback.length === 0
+                            ? `
                         <div style="text-align: center; padding: 48px 24px; color: var(--gray-500);">
                             <div style="font-size: 48px; margin-bottom: 12px;">📬</div>
                             <p style="margin: 0;">No feedback submitted yet</p>
                             <p style="margin: 8px 0 0 0; font-size: 14px;">Your submissions will appear here</p>
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div>
-                            ${userFeedback.map((feedback, idx) => `
+                            ${userFeedback
+                                .map(
+                                    (feedback, idx) => `
                                 <div style="padding: 20px 24px; ${idx < userFeedback.length - 1 ? 'border-bottom: 1px solid var(--gray-100);' : ''}">
                                     <div style="display: flex; gap: 12px; align-items: start;">
                                         <div style="font-size: 24px; line-height: 1; flex-shrink: 0;">${typeIcons[feedback.type] || '💬'}</div>
@@ -9339,7 +11198,9 @@ Upload photos once, use them across all your listings.`
                                             <p style="margin: 0 0 8px 0; color: var(--gray-600); font-size: 14px; line-height: 1.6;">
                                                 ${escapeHtml(feedback.description)}
                                             </p>
-                                            ${feedback.admin_response ? `
+                                            ${
+                                                feedback.admin_response
+                                                    ? `
                                                 <div style="background: var(--primary-50); border-left: 3px solid var(--primary-500); padding: 12px; border-radius: 4px; margin-top: 12px;">
                                                     <div style="font-weight: 600; font-size: 13px; color: var(--primary-700); margin-bottom: 4px;">
                                                         ${components.icon('notification', 14)} Admin Response
@@ -9348,7 +11209,9 @@ Upload photos once, use them across all your listings.`
                                                         ${escapeHtml(feedback.admin_response)}
                                                     </p>
                                                 </div>
-                                            ` : ''}
+                                            `
+                                                    : ''
+                                            }
                                             <div style="margin-top: 8px;">
                                                 <button class="btn btn-sm btn-outline" onclick="handlers.showFeedbackDetail('${feedback.id}')">
                                                     View Detail & Responses
@@ -9357,9 +11220,12 @@ Upload photos once, use them across all your listings.`
                                         </div>
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
         `;
@@ -9373,50 +11239,200 @@ Upload photos once, use them across all your listings.`
                 version: 'v0.9.0',
                 date: '2026-04-01',
                 changes: [
-                    { type: 'feature', title: 'Sidebar Icon-Only Mode', description: 'Collapsed sidebar now shows icons for quick navigation with hover tooltips', areas: ['Navigation', 'UI'] },
-                    { type: 'feature', title: 'Pie Chart Component', description: 'New pie chart visualization option for analytics', areas: ['Analytics'] },
-                    { type: 'feature', title: 'Chart Type Toggle', description: 'Switch between bar and pie charts for platform revenue and sales data', areas: ['Analytics', 'Dashboard'] },
-                    { type: 'feature', title: 'About Us Page', description: 'Company information and VaultLister stats page', areas: ['Company'] },
-                    { type: 'feature', title: 'Gmail Integration', description: 'Automatic receipt detection and import from Gmail inbox', areas: ['Integrations', 'Settings'] },
-                    { type: 'feature', title: 'Batch Photo Processing', description: 'Apply AI edits to multiple images at once with presets', areas: ['Image Bank'] },
-                    { type: 'feature', title: 'Receipt Parser AI', description: 'Upload receipts and let AI extract vendor, items, and totals', areas: ['Transactions'] },
-                    { type: 'feature', title: 'Calendar View', description: 'Track listings, orders, and events in a visual calendar', areas: ['Calendar'] },
-                    { type: 'feature', title: 'Product Roadmap', description: 'See upcoming features and vote for your favorites', areas: ['Roadmap'] },
-                    { type: 'feature', title: 'Enhanced Notifications', description: 'Bell dropdown with search and filters', areas: ['Navigation', 'UI'] },
-                    { type: 'feature', title: 'Help & Support System', description: 'Tutorials, FAQs, and knowledge base articles', areas: ['Help & Support'] },
-                    { type: 'feature', title: 'Support Tickets', description: 'Submit and track bug reports and feature requests', areas: ['Help & Support'] },
-                    { type: 'feature', title: 'Chrome Extension', description: 'Import listings directly from marketplace pages', areas: ['My Listings', 'Integrations'] },
-                    { type: 'feature', title: 'Image Bank', description: 'Organize photos in folders with drag-and-drop support', areas: ['Image Bank'] },
-                    { type: 'feature', title: 'Community Features', description: 'Tips library and seller discussions', areas: ['Community'] },
-                    { type: 'improvement', title: 'Analytics Sales Tab', description: 'Added summary stat cards with key metrics', areas: ['Analytics'] },
-                    { type: 'improvement', title: 'Full OAuth Integration', description: 'Enhanced platform sync with real-time status tracking', areas: ['My Shops', 'Integrations'] },
-                    { type: 'improvement', title: 'Navigation Reorganization', description: 'Added Tools and Company sections for better organization', areas: ['Navigation'] },
-                    { type: 'improvement', title: 'Sidebar Collapse', description: 'Fixed text visibility when sidebar is collapsed', areas: ['Navigation', 'UI'] },
-                    { type: 'security', title: 'Token Encryption', description: 'AES-256-GCM encryption for stored OAuth tokens', areas: ['Security', 'Settings'] }
-                ]
+                    {
+                        type: 'feature',
+                        title: 'Sidebar Icon-Only Mode',
+                        description: 'Collapsed sidebar now shows icons for quick navigation with hover tooltips',
+                        areas: ['Navigation', 'UI'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Pie Chart Component',
+                        description: 'New pie chart visualization option for analytics',
+                        areas: ['Analytics'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Chart Type Toggle',
+                        description: 'Switch between bar and pie charts for platform revenue and sales data',
+                        areas: ['Analytics', 'Dashboard'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'About Us Page',
+                        description: 'Company information and VaultLister stats page',
+                        areas: ['Company'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Gmail Integration',
+                        description: 'Automatic receipt detection and import from Gmail inbox',
+                        areas: ['Integrations', 'Settings'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Batch Photo Processing',
+                        description: 'Apply AI edits to multiple images at once with presets',
+                        areas: ['Image Bank'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Receipt Parser AI',
+                        description: 'Upload receipts and let AI extract vendor, items, and totals',
+                        areas: ['Transactions'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Calendar View',
+                        description: 'Track listings, orders, and events in a visual calendar',
+                        areas: ['Calendar'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Product Roadmap',
+                        description: 'See upcoming features and vote for your favorites',
+                        areas: ['Roadmap'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Enhanced Notifications',
+                        description: 'Bell dropdown with search and filters',
+                        areas: ['Navigation', 'UI'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Help & Support System',
+                        description: 'Tutorials, FAQs, and knowledge base articles',
+                        areas: ['Help & Support'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Support Tickets',
+                        description: 'Submit and track bug reports and feature requests',
+                        areas: ['Help & Support'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Chrome Extension',
+                        description: 'Import listings directly from marketplace pages',
+                        areas: ['My Listings', 'Integrations'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Image Bank',
+                        description: 'Organize photos in folders with drag-and-drop support',
+                        areas: ['Image Bank'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Community Features',
+                        description: 'Tips library and seller discussions',
+                        areas: ['Community'],
+                    },
+                    {
+                        type: 'improvement',
+                        title: 'Analytics Sales Tab',
+                        description: 'Added summary stat cards with key metrics',
+                        areas: ['Analytics'],
+                    },
+                    {
+                        type: 'improvement',
+                        title: 'Full OAuth Integration',
+                        description: 'Enhanced platform sync with real-time status tracking',
+                        areas: ['My Shops', 'Integrations'],
+                    },
+                    {
+                        type: 'improvement',
+                        title: 'Navigation Reorganization',
+                        description: 'Added Tools and Company sections for better organization',
+                        areas: ['Navigation'],
+                    },
+                    {
+                        type: 'improvement',
+                        title: 'Sidebar Collapse',
+                        description: 'Fixed text visibility when sidebar is collapsed',
+                        areas: ['Navigation', 'UI'],
+                    },
+                    {
+                        type: 'security',
+                        title: 'Token Encryption',
+                        description: 'AES-256-GCM encryption for stored OAuth tokens',
+                        areas: ['Security', 'Settings'],
+                    },
+                ],
             },
             {
                 version: 'v0.5.0',
                 date: '2026-03-15',
                 changes: [
-                    { type: 'feature', title: 'Listing Templates', description: 'Save and reuse item details for faster listing', areas: ['My Listings'] },
-                    { type: 'feature', title: 'Low Stock Alerts', description: 'Get notified when inventory runs low', areas: ['Inventory', 'Notifications'] },
-                    { type: 'feature', title: 'AI Listing Generation', description: 'Generate listing titles and descriptions using Claude AI', areas: ['My Listings', 'AI'] },
-                    { type: 'feature', title: 'Price Predictions', description: 'AI-powered pricing suggestions and demand forecasts', areas: ['Intelligence'] },
-                    { type: 'improvement', title: 'OAuth Integration', description: 'Connect marketplace accounts securely', areas: ['Settings', 'Integrations'] },
-                    { type: 'fix', title: 'Cross-listing', description: 'Fixed image upload issues on certain platforms', areas: ['My Listings'] }
-                ]
+                    {
+                        type: 'feature',
+                        title: 'Listing Templates',
+                        description: 'Save and reuse item details for faster listing',
+                        areas: ['My Listings'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Low Stock Alerts',
+                        description: 'Get notified when inventory runs low',
+                        areas: ['Inventory', 'Notifications'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'AI Listing Generation',
+                        description: 'Generate listing titles and descriptions using Claude AI',
+                        areas: ['My Listings', 'AI'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Price Predictions',
+                        description: 'AI-powered pricing suggestions and demand forecasts',
+                        areas: ['Intelligence'],
+                    },
+                    {
+                        type: 'improvement',
+                        title: 'OAuth Integration',
+                        description: 'Connect marketplace accounts securely',
+                        areas: ['Settings', 'Integrations'],
+                    },
+                    {
+                        type: 'fix',
+                        title: 'Cross-listing',
+                        description: 'Fixed image upload issues on certain platforms',
+                        areas: ['My Listings'],
+                    },
+                ],
             },
             {
                 version: 'v0.1.0',
                 date: '2026-03-02',
                 changes: [
-                    { type: 'feature', title: 'Initial Alpha', description: 'Inventory management and cross-listing tools', areas: ['Inventory', 'My Listings'] },
-                    { type: 'feature', title: 'Multi-Platform Support', description: 'Poshmark, eBay, Mercari, Depop, Grailed, Facebook', areas: ['My Shops'] },
-                    { type: 'feature', title: 'Analytics Dashboard', description: 'Track sales, revenue, and performance metrics', areas: ['Analytics', 'Dashboard'] },
-                    { type: 'feature', title: 'Automation Rules', description: 'Automate pricing, sharing, and listing updates', areas: ['Automations'] }
-                ]
-            }
+                    {
+                        type: 'feature',
+                        title: 'Initial Alpha',
+                        description: 'Inventory management and cross-listing tools',
+                        areas: ['Inventory', 'My Listings'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Multi-Platform Support',
+                        description: 'Poshmark, eBay, Mercari, Depop, Grailed, Facebook',
+                        areas: ['My Shops'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Analytics Dashboard',
+                        description: 'Track sales, revenue, and performance metrics',
+                        areas: ['Analytics', 'Dashboard'],
+                    },
+                    {
+                        type: 'feature',
+                        title: 'Automation Rules',
+                        description: 'Automate pricing, sharing, and listing updates',
+                        areas: ['Automations'],
+                    },
+                ],
+            },
         ];
 
         const changelogVotes = store.state.changelogVotes || {};
@@ -9425,41 +11441,54 @@ Upload photos once, use them across all your listings.`
         const versionFilter = store.state.changelogVersionFilter || 'all';
 
         // Track "New since last visit"
-        const lastChangelogVisit = (() => { try { return localStorage.getItem('vaultlister_changelog_last_visit'); } catch { return null; } })();
+        const lastChangelogVisit = (() => {
+            try {
+                return localStorage.getItem('vaultlister_changelog_last_visit');
+            } catch {
+                return null;
+            }
+        })();
         const lastVisitDate = lastChangelogVisit ? new Date(lastChangelogVisit) : null;
-        setTimeout(() => { try { localStorage.setItem('vaultlister_changelog_last_visit', new Date().toISOString()); } catch(e) {} }, 2000);
+        setTimeout(() => {
+            try {
+                localStorage.setItem('vaultlister_changelog_last_visit', new Date().toISOString());
+            } catch (e) {}
+        }, 2000);
 
         // Count changes by type
-        const allChanges = versions.flatMap(v => v.changes);
-        const featureCount = allChanges.filter(c => c.type === 'feature').length;
-        const improvementCount = allChanges.filter(c => c.type === 'improvement').length;
-        const fixCount = allChanges.filter(c => c.type === 'fix').length;
-        const securityCount = allChanges.filter(c => c.type === 'security').length;
+        const allChanges = versions.flatMap((v) => v.changes);
+        const featureCount = allChanges.filter((c) => c.type === 'feature').length;
+        const improvementCount = allChanges.filter((c) => c.type === 'improvement').length;
+        const fixCount = allChanges.filter((c) => c.type === 'fix').length;
+        const securityCount = allChanges.filter((c) => c.type === 'security').length;
 
         // Filter versions and changes
-        const filteredVersions = versions.map(version => {
-            if (versionFilter !== 'all' && version.version !== versionFilter) return { ...version, changes: [] };
-            let changes = version.changes;
-            if (typeFilter !== 'all') {
-                changes = changes.filter(c => c.type === typeFilter);
-            }
-            if (searchQuery) {
-                const query = searchQuery.toLowerCase();
-                changes = changes.filter(c =>
-                    c.title.toLowerCase().includes(query) ||
-                    (c.description && c.description.toLowerCase().includes(query)) ||
-                    (c.areas && c.areas.some(a => a.toLowerCase().includes(query)))
-                );
-            }
-            return { ...version, changes };
-        }).filter(v => v.changes.length > 0);
+        const filteredVersions = versions
+            .map((version) => {
+                if (versionFilter !== 'all' && version.version !== versionFilter) return { ...version, changes: [] };
+                let changes = version.changes;
+                if (typeFilter !== 'all') {
+                    changes = changes.filter((c) => c.type === typeFilter);
+                }
+                if (searchQuery) {
+                    const query = searchQuery.toLowerCase();
+                    changes = changes.filter(
+                        (c) =>
+                            c.title.toLowerCase().includes(query) ||
+                            (c.description && c.description.toLowerCase().includes(query)) ||
+                            (c.areas && c.areas.some((a) => a.toLowerCase().includes(query))),
+                    );
+                }
+                return { ...version, changes };
+            })
+            .filter((v) => v.changes.length > 0);
 
         const typeIcons = {
             feature: '✨',
             improvement: '📈',
             fix: '🐛',
             breaking: '⚠️',
-            security: '🔒'
+            security: '🔒',
         };
 
         const typeBadges = {
@@ -9467,7 +11496,7 @@ Upload photos once, use them across all your listings.`
             improvement: 'badge-success',
             fix: 'badge-warning',
             breaking: 'badge-danger',
-            security: 'badge-danger'
+            security: 'badge-danger',
         };
 
         return `
@@ -9501,13 +11530,19 @@ Upload photos once, use them across all your listings.`
                 <!-- Version Timeline Sidebar -->
                 <div class="changelog-timeline">
                     <h2 class="timeline-header">Versions</h2>
-                    ${versionFilter !== 'all' ? `
+                    ${
+                        versionFilter !== 'all'
+                            ? `
                         <button class="btn btn-sm btn-secondary mb-2" style="width: 100%; font-size: 11px;" onclick="handlers.filterChangelogVersion('all')">
                             Clear Filter
                         </button>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                     <div class="timeline-list">
-                        ${versions.map((version, idx) => `
+                        ${versions
+                            .map(
+                                (version, idx) => `
                             <button class="timeline-item ${idx === 0 ? 'latest' : ''} ${versionFilter === version.version ? 'active-filter' : ''}" onclick="handlers.filterChangelogVersion('${version.version}')">
                                 <div class="timeline-dot"></div>
                                 <div class="timeline-content">
@@ -9516,7 +11551,9 @@ Upload photos once, use them across all your listings.`
                                 </div>
                                 ${idx === 0 ? '<span class="badge badge-success badge-sm">Latest</span>' : ''}
                             </button>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
 
@@ -9544,15 +11581,21 @@ Upload photos once, use them across all your listings.`
                             <button class="type-filter-btn ${typeFilter === 'fix' ? 'active' : ''}" onclick="handlers.filterChangelogType('fix')">
                                 🐛 Fixes <span class="filter-count">${fixCount}</span>
                             </button>
-                            ${securityCount > 0 ? `
+                            ${
+                                securityCount > 0
+                                    ? `
                                 <button class="type-filter-btn ${typeFilter === 'security' ? 'active' : ''}" onclick="handlers.filterChangelogType('security')">
                                     🔒 Security <span class="filter-count">${securityCount}</span>
                                 </button>
-                            ` : ''}
+                            `
+                                    : ''
+                            }
                         </div>
                     </div>
 
-                    ${filteredVersions.length === 0 ? `
+                    ${
+                        filteredVersions.length === 0
+                            ? `
                         <div class="card">
                             <div class="card-body text-center py-12">
                                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--gray-300)" stroke-width="1.5" style="margin: 0 auto 16px;">
@@ -9563,9 +11606,12 @@ Upload photos once, use them across all your listings.`
                                 <p style="color: var(--gray-500);">Try adjusting your search or filters</p>
                             </div>
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div class="changelog-versions">
-                            ${filteredVersions.map((version, vIdx) => `
+                            ${filteredVersions
+                                .map(
+                                    (version, vIdx) => `
                                 <div class="changelog-version-card" id="version-${version.version.replace(/\./g, '-')}">
                                     <div class="version-header">
                                         <div class="version-info">
@@ -9587,10 +11633,15 @@ Upload photos once, use them across all your listings.`
                                         </div>
                                     </div>
                                     <div class="version-changes">
-                                        ${version.changes.map((change, idx) => {
-                                            const changeKey = version.version + '-' + idx;
-                                            const votes = changelogVotes[changeKey] || { helpful: 0, notHelpful: 0, voted: null };
-                                            return `
+                                        ${version.changes
+                                            .map((change, idx) => {
+                                                const changeKey = version.version + '-' + idx;
+                                                const votes = changelogVotes[changeKey] || {
+                                                    helpful: 0,
+                                                    notHelpful: 0,
+                                                    voted: null,
+                                                };
+                                                return `
                                             <div class="change-item" role="button" tabindex="0" onclick="handlers.toggleChangeDetails(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.toggleChangeDetails(this)}">
                                                 <div class="change-icon">${typeIcons[change.type] || '📌'}</div>
                                                 <div class="change-content">
@@ -9598,14 +11649,22 @@ Upload photos once, use them across all your listings.`
                                                         <h2 class="change-title">${escapeHtml(change.title)}</h2>
                                                         <span class="badge badge-sm changelog-type-badge changelog-type-${change.type}">${typeIcons[change.type] || ''} ${change.type}</span>
                                                     </div>
-                                                    ${change.description ? `
+                                                    ${
+                                                        change.description
+                                                            ? `
                                                         <p class="change-description">${escapeHtml(change.description)}</p>
-                                                    ` : ''}
-                                                    ${change.areas && change.areas.length > 0 ? `
+                                                    `
+                                                            : ''
+                                                    }
+                                                    ${
+                                                        change.areas && change.areas.length > 0
+                                                            ? `
                                                         <div class="change-areas">
-                                                            ${change.areas.map(area => `<span class="change-area-tag">${escapeHtml(area)}</span>`).join('')}
+                                                            ${change.areas.map((area) => `<span class="change-area-tag">${escapeHtml(area)}</span>`).join('')}
                                                         </div>
-                                                    ` : ''}
+                                                    `
+                                                            : ''
+                                                    }
                                                 </div>
                                                 <button class="change-expand-btn" aria-label="Expand">
                                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -9616,37 +11675,53 @@ Upload photos once, use them across all your listings.`
                                             <div class="change-details">
                                                 <div class="change-details-inner">
                                                     <p style="color: var(--gray-600); font-size: 13px; margin-bottom: 8px;">${escapeHtml(change.description || 'No additional details available.')}</p>
-                                                    ${change.areas && change.areas.length > 0 ? `
+                                                    ${
+                                                        change.areas && change.areas.length > 0
+                                                            ? `
                                                         <div style="margin-bottom: 8px;">
                                                             <span style="font-size: 11px; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.5px;">Affected Areas</span>
                                                             <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px;">
-                                                                ${change.areas.map(area => `<span class="badge badge-outline badge-sm">${escapeHtml(area)}</span>`).join('')}
+                                                                ${change.areas.map((area) => `<span class="badge badge-outline badge-sm">${escapeHtml(area)}</span>`).join('')}
                                                             </div>
                                                         </div>
-                                                    ` : ''}
-                                                    ${change.screenshots ? `
+                                                    `
+                                                            : ''
+                                                    }
+                                                    ${
+                                                        change.screenshots
+                                                            ? `
                                                         <div class="change-screenshots" style="margin-bottom: 8px;">
                                                             <span style="font-size: 11px; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.5px;">Before / After</span>
                                                             <div class="screenshot-comparison" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 6px;">
-                                                                ${change.screenshots.before ? `
+                                                                ${
+                                                                    change.screenshots.before
+                                                                        ? `
                                                                     <div class="screenshot-panel">
                                                                         <span class="screenshot-label" style="font-size: 10px; font-weight: 600; color: var(--danger); text-transform: uppercase;">Before</span>
                                                                         <div class="screenshot-img" style="border: 1px solid var(--gray-200); border-radius: 8px; padding: 8px; background: var(--gray-50); min-height: 80px; display: flex; align-items: center; justify-content: center;">
                                                                             <img src="${change.screenshots.before}" alt="Before" style="max-width: 100%; border-radius: 4px;" onerror="this.style.display='none'">
                                                                         </div>
                                                                     </div>
-                                                                ` : ''}
-                                                                ${change.screenshots.after ? `
+                                                                `
+                                                                        : ''
+                                                                }
+                                                                ${
+                                                                    change.screenshots.after
+                                                                        ? `
                                                                     <div class="screenshot-panel">
                                                                         <span class="screenshot-label" style="font-size: 10px; font-weight: 600; color: var(--success); text-transform: uppercase;">After</span>
                                                                         <div class="screenshot-img" style="border: 1px solid var(--gray-200); border-radius: 8px; padding: 8px; background: var(--gray-50); min-height: 80px; display: flex; align-items: center; justify-content: center;">
                                                                             <img src="${change.screenshots.after}" alt="After" style="max-width: 100%; border-radius: 4px;" onerror="this.style.display='none'">
                                                                         </div>
                                                                     </div>
-                                                                ` : ''}
+                                                                `
+                                                                        : ''
+                                                                }
                                                             </div>
                                                         </div>
-                                                    ` : ''}
+                                                    `
+                                                            : ''
+                                                    }
                                                     <div role="button" tabindex="0" class="change-vote-section" onclick="event.stopPropagation()">
                                                         <span style="font-size: 12px; color: var(--gray-500);">Was this helpful?</span>
                                                         <div class="change-vote-buttons">
@@ -9666,12 +11741,17 @@ Upload photos once, use them across all your listings.`
                                                     </div>
                                                 </div>
                                             </div>
-                                        `}).join('')}
+                                        `;
+                                            })
+                                            .join('')}
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
-                    `}
+                    `
+                    }
 
                     <!-- Subscribe CTA -->
                     <div class="changelog-subscribe-cta">
@@ -9699,21 +11779,84 @@ Upload photos once, use them across all your listings.`
 
     terms() {
         const sections = [
-            { id: 'acceptance', icon: '✓', title: 'Acceptance of Terms', content: 'By accessing and using VaultLister, you accept and agree to be bound by the terms and provision of this agreement.' },
-            { id: 'license', icon: '📋', title: 'Use License', content: 'Permission is granted to temporarily use VaultLister for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title.', list: ['Modify or copy the materials', 'Use the materials for any commercial purpose', 'Attempt to decompile or reverse engineer any software contained in VaultLister', 'Remove any copyright or other proprietary notations from the materials'] },
-            { id: 'accounts', icon: '👤', title: 'User Accounts', content: 'When you create an account with us, you must provide accurate, complete, and current information at all times. Failure to do so constitutes a breach of the Terms, which may result in immediate termination of your account.' },
-            { id: 'availability', icon: '🌐', title: 'Service Availability', content: 'We reserve the right to withdraw or amend our service, and any service or material we provide, in our sole discretion without notice. We will not be liable if for any reason all or any part of the service is unavailable at any time or for any period.' },
-            { id: 'ip', icon: '©', title: 'Intellectual Property', content: 'The service and its original content, features, and functionality are and will remain the exclusive property of VaultLister and its licensors. The service is protected by copyright, trademark, and other laws.' },
-            { id: 'liability', icon: '⚖️', title: 'Limitation of Liability', content: 'In no event shall VaultLister or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use VaultLister.' },
-            { id: 'law', icon: '📜', title: 'Governing Law', content: 'These terms shall be governed and construed in accordance with the laws, without regard to its conflict of law provisions.' },
-            { id: 'changes', icon: '🔄', title: 'Changes to Terms', content: 'We reserve the right, at our sole discretion, to modify or replace these Terms at any time. We will provide notice of any changes by posting the new Terms on this page.' },
-            { id: 'contact', icon: '📧', title: 'Contact Us', content: 'If you have any questions about these Terms, please contact us at hello@vaultlister.com' }
+            {
+                id: 'acceptance',
+                icon: '✓',
+                title: 'Acceptance of Terms',
+                content:
+                    'By accessing and using VaultLister, you accept and agree to be bound by the terms and provision of this agreement.',
+            },
+            {
+                id: 'license',
+                icon: '📋',
+                title: 'Use License',
+                content:
+                    'Permission is granted to temporarily use VaultLister for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title.',
+                list: [
+                    'Modify or copy the materials',
+                    'Use the materials for any commercial purpose',
+                    'Attempt to decompile or reverse engineer any software contained in VaultLister',
+                    'Remove any copyright or other proprietary notations from the materials',
+                ],
+            },
+            {
+                id: 'accounts',
+                icon: '👤',
+                title: 'User Accounts',
+                content:
+                    'When you create an account with us, you must provide accurate, complete, and current information at all times. Failure to do so constitutes a breach of the Terms, which may result in immediate termination of your account.',
+            },
+            {
+                id: 'availability',
+                icon: '🌐',
+                title: 'Service Availability',
+                content:
+                    'We reserve the right to withdraw or amend our service, and any service or material we provide, in our sole discretion without notice. We will not be liable if for any reason all or any part of the service is unavailable at any time or for any period.',
+            },
+            {
+                id: 'ip',
+                icon: '©',
+                title: 'Intellectual Property',
+                content:
+                    'The service and its original content, features, and functionality are and will remain the exclusive property of VaultLister and its licensors. The service is protected by copyright, trademark, and other laws.',
+            },
+            {
+                id: 'liability',
+                icon: '⚖️',
+                title: 'Limitation of Liability',
+                content:
+                    'In no event shall VaultLister or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use VaultLister.',
+            },
+            {
+                id: 'law',
+                icon: '📜',
+                title: 'Governing Law',
+                content:
+                    'These terms shall be governed and construed in accordance with the laws, without regard to its conflict of law provisions.',
+            },
+            {
+                id: 'changes',
+                icon: '🔄',
+                title: 'Changes to Terms',
+                content:
+                    'We reserve the right, at our sole discretion, to modify or replace these Terms at any time. We will provide notice of any changes by posting the new Terms on this page.',
+            },
+            {
+                id: 'contact',
+                icon: '📧',
+                title: 'Contact Us',
+                content: 'If you have any questions about these Terms, please contact us at hello@vaultlister.com',
+            },
         ];
 
         const keyPoints = [
             { icon: '✓', title: 'Free to Use', description: 'VaultLister is free for personal use' },
-            { icon: '🔒', title: 'Your Data, Your Control', description: 'Data stored securely in encrypted cloud databases' },
-            { icon: '📋', title: 'Fair Use Policy', description: 'Use responsibly and ethically' }
+            {
+                icon: '🔒',
+                title: 'Your Data, Your Control',
+                description: 'Data stored securely in encrypted cloud databases',
+            },
+            { icon: '📋', title: 'Fair Use Policy', description: 'Use responsibly and ethically' },
         ];
 
         return `
@@ -9758,7 +11901,9 @@ Upload photos once, use them across all your listings.`
                 <div class="legal-key-points">
                     <h2>Key Points</h2>
                     <div class="key-points-grid">
-                        ${keyPoints.map(p => `
+                        ${keyPoints
+                            .map(
+                                (p) => `
                             <div class="key-point-card">
                                 <span class="key-point-icon">${p.icon}</span>
                                 <div>
@@ -9766,7 +11911,9 @@ Upload photos once, use them across all your listings.`
                                     <p>${p.description}</p>
                                 </div>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
 
@@ -9775,18 +11922,24 @@ Upload photos once, use them across all your listings.`
                     <div class="legal-toc">
                         <h2>Table of Contents</h2>
                         <nav class="toc-nav" aria-label="Table of contents">
-                            ${sections.map((s, i) => `
+                            ${sections
+                                .map(
+                                    (s, i) => `
                                 <a href="#${s.id}" class="toc-link" onclick="handlers.scrollToSection('${s.id}')">
                                     <span class="toc-number">${i + 1}</span>
                                     ${s.title}
                                 </a>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </nav>
                     </div>
 
                     <!-- Content -->
                     <div class="legal-content">
-                        ${sections.map((s, i) => `
+                        ${sections
+                            .map(
+                                (s, i) => `
                             <div class="legal-section" id="${s.id}">
                                 <div class="section-header" role="button" tabindex="0" onclick="handlers.toggleLegalSection(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.toggleLegalSection(this)}">
                                     <div class="section-icon">${s.icon}</div>
@@ -9797,15 +11950,21 @@ Upload photos once, use them across all your listings.`
                                 </div>
                                 <div class="section-body">
                                     <p>${s.content}</p>
-                                    ${s.list ? `
+                                    ${
+                                        s.list
+                                            ? `
                                         <p style="margin-top: 12px;">Under this license you may not:</p>
                                         <ul class="legal-list">
-                                            ${s.list.map(item => `<li>${item}</li>`).join('')}
+                                            ${s.list.map((item) => `<li>${item}</li>`).join('')}
                                         </ul>
-                                    ` : ''}
+                                    `
+                                            : ''
+                                    }
                                 </div>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
 
                         <!-- Contact Card -->
                         <div class="legal-contact-card">
@@ -9837,29 +11996,116 @@ Upload photos once, use them across all your listings.`
 
     privacy() {
         const sections = [
-            { id: 'collect', icon: '📊', title: 'Information We Collect', content: 'We collect information that you provide directly to us when you:', list: ['Create or modify your account', 'Use our services to manage your inventory and listings', 'Connect your marketplace accounts', 'Communicate with us', 'Participate in surveys or promotions'] },
-            { id: 'use', icon: '🔧', title: 'How We Use Your Information', content: 'We use the information we collect to:', list: ['Provide, maintain, and improve our services', 'Process transactions and send related information', 'Send technical notices and support messages', 'Respond to your comments and questions', 'Monitor and analyze trends and usage'] },
-            { id: 'sharing', icon: '🤝', title: 'Information Sharing', content: 'We do not share, sell, rent, or trade your personal information with third parties for their promotional purposes. We may share your information with third-party service providers who perform services on our behalf, such as payment processing and data analysis.' },
-            { id: 'security', icon: '🔒', title: 'Data Security', content: 'We take reasonable measures to help protect your personal information from loss, theft, misuse, unauthorized access, disclosure, alteration, and destruction. However, no internet or email transmission is ever fully secure or error free.' },
-            { id: 'rights', icon: '⚖️', title: 'Your Rights', content: 'You have the right to:', list: ['Access and receive a copy of your personal data', 'Rectify or update your personal information', 'Delete your account and personal data', 'Object to or restrict certain processing of your data', 'Data portability'] },
-            { id: 'cookies', icon: '🍪', title: 'Cookies and Tracking', content: 'We use cookies and similar tracking technologies to track activity on our service and hold certain information. You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent.' },
-            { id: 'children', icon: '👶', title: "Children's Privacy", content: 'Our service does not address anyone under the age of 13. We do not knowingly collect personally identifiable information from children under 13.' },
-            { id: 'changes', icon: '🔄', title: 'Changes to Privacy Policy', content: 'We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.' },
-            { id: 'contact', icon: '📧', title: 'Contact Us', content: 'If you have any questions about this Privacy Policy, please contact us at privacy@vaultlister.com' }
+            {
+                id: 'collect',
+                icon: '📊',
+                title: 'Information We Collect',
+                content: 'We collect information that you provide directly to us when you:',
+                list: [
+                    'Create or modify your account',
+                    'Use our services to manage your inventory and listings',
+                    'Connect your marketplace accounts',
+                    'Communicate with us',
+                    'Participate in surveys or promotions',
+                ],
+            },
+            {
+                id: 'use',
+                icon: '🔧',
+                title: 'How We Use Your Information',
+                content: 'We use the information we collect to:',
+                list: [
+                    'Provide, maintain, and improve our services',
+                    'Process transactions and send related information',
+                    'Send technical notices and support messages',
+                    'Respond to your comments and questions',
+                    'Monitor and analyze trends and usage',
+                ],
+            },
+            {
+                id: 'sharing',
+                icon: '🤝',
+                title: 'Information Sharing',
+                content:
+                    'We do not share, sell, rent, or trade your personal information with third parties for their promotional purposes. We may share your information with third-party service providers who perform services on our behalf, such as payment processing and data analysis.',
+            },
+            {
+                id: 'security',
+                icon: '🔒',
+                title: 'Data Security',
+                content:
+                    'We take reasonable measures to help protect your personal information from loss, theft, misuse, unauthorized access, disclosure, alteration, and destruction. However, no internet or email transmission is ever fully secure or error free.',
+            },
+            {
+                id: 'rights',
+                icon: '⚖️',
+                title: 'Your Rights',
+                content: 'You have the right to:',
+                list: [
+                    'Access and receive a copy of your personal data',
+                    'Rectify or update your personal information',
+                    'Delete your account and personal data',
+                    'Object to or restrict certain processing of your data',
+                    'Data portability',
+                ],
+            },
+            {
+                id: 'cookies',
+                icon: '🍪',
+                title: 'Cookies and Tracking',
+                content:
+                    'We use cookies and similar tracking technologies to track activity on our service and hold certain information. You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent.',
+            },
+            {
+                id: 'children',
+                icon: '👶',
+                title: "Children's Privacy",
+                content:
+                    'Our service does not address anyone under the age of 13. We do not knowingly collect personally identifiable information from children under 13.',
+            },
+            {
+                id: 'changes',
+                icon: '🔄',
+                title: 'Changes to Privacy Policy',
+                content:
+                    'We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.',
+            },
+            {
+                id: 'contact',
+                icon: '📧',
+                title: 'Contact Us',
+                content:
+                    'If you have any questions about this Privacy Policy, please contact us at privacy@vaultlister.com',
+            },
         ];
 
         const dataCategories = [
-            { icon: '👤', category: 'Account Data', examples: 'Name, email, username', retention: 'Until account deletion' },
-            { icon: '📦', category: 'Inventory Data', examples: 'Listings, photos, prices', retention: 'Until account deletion' },
+            {
+                icon: '👤',
+                category: 'Account Data',
+                examples: 'Name, email, username',
+                retention: 'Until account deletion',
+            },
+            {
+                icon: '📦',
+                category: 'Inventory Data',
+                examples: 'Listings, photos, prices',
+                retention: 'Until account deletion',
+            },
             { icon: '📈', category: 'Usage Data', examples: 'Features used, preferences', retention: '90 days' },
-            { icon: '🔗', category: 'Integration Data', examples: 'Connected platform tokens', retention: 'Until disconnection' }
+            {
+                icon: '🔗',
+                category: 'Integration Data',
+                examples: 'Connected platform tokens',
+                retention: 'Until disconnection',
+            },
         ];
 
         const yourRights = [
             { icon: '👁️', title: 'Access', description: 'View all data we have about you' },
             { icon: '✏️', title: 'Rectify', description: 'Correct any inaccurate information' },
             { icon: '🗑️', title: 'Delete', description: 'Request deletion of your data' },
-            { icon: '📤', title: 'Export', description: 'Download your data anytime' }
+            { icon: '📤', title: 'Export', description: 'Download your data anytime' },
         ];
 
         return `
@@ -9931,7 +12177,9 @@ Upload photos once, use them across all your listings.`
                 <div class="data-categories-section">
                     <h2>Data We Handle</h2>
                     <div class="data-categories-grid">
-                        ${dataCategories.map(d => `
+                        ${dataCategories
+                            .map(
+                                (d) => `
                             <div class="data-category-card">
                                 <div class="data-category-icon">${d.icon}</div>
                                 <div class="data-category-info">
@@ -9940,7 +12188,9 @@ Upload photos once, use them across all your listings.`
                                     <p class="data-retention">Retention: ${d.retention}</p>
                                 </div>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
 
@@ -9948,13 +12198,17 @@ Upload photos once, use them across all your listings.`
                 <div class="your-rights-section">
                     <h2>Your Privacy Rights</h2>
                     <div class="rights-grid">
-                        ${yourRights.map(r => `
+                        ${yourRights
+                            .map(
+                                (r) => `
                             <div class="right-card">
                                 <div class="right-icon">${r.icon}</div>
                                 <h3>${r.title}</h3>
                                 <p>${r.description}</p>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                     <button class="btn btn-primary" onclick="router.navigate('settings')" style="margin-top: 16px;">
                         Manage Your Data
@@ -9966,18 +12220,24 @@ Upload photos once, use them across all your listings.`
                     <div class="legal-toc">
                         <h2>Table of Contents</h2>
                         <nav class="toc-nav" aria-label="Table of contents">
-                            ${sections.map((s, i) => `
+                            ${sections
+                                .map(
+                                    (s, i) => `
                                 <a href="#${s.id}" class="toc-link" onclick="handlers.scrollToSection('${s.id}')">
                                     <span class="toc-number">${i + 1}</span>
                                     ${s.title}
                                 </a>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </nav>
                     </div>
 
                     <!-- Content -->
                     <div class="legal-content">
-                        ${sections.map((s, i) => `
+                        ${sections
+                            .map(
+                                (s, i) => `
                             <div class="legal-section" id="${s.id}">
                                 <div class="section-header" role="button" tabindex="0" onclick="handlers.toggleLegalSection(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.toggleLegalSection(this)}">
                                     <div class="section-icon">${s.icon}</div>
@@ -9988,14 +12248,20 @@ Upload photos once, use them across all your listings.`
                                 </div>
                                 <div class="section-body">
                                     <p>${s.content}</p>
-                                    ${s.list ? `
+                                    ${
+                                        s.list
+                                            ? `
                                         <ul class="legal-list">
-                                            ${s.list.map(item => `<li>${item}</li>`).join('')}
+                                            ${s.list.map((item) => `<li>${item}</li>`).join('')}
                                         </ul>
-                                    ` : ''}
+                                    `
+                                            : ''
+                                    }
                                 </div>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
 
                         <!-- Contact Card -->
                         <div class="legal-contact-card">
@@ -10038,7 +12304,7 @@ Upload photos once, use them across all your listings.`
             { token: '{month}', desc: 'Current month (01-12)' }, // placeholder
             { token: '{day}', desc: 'Current day (01-31)' }, // placeholder
             { token: '{counter}', desc: 'Auto-increment number' }, // placeholder
-            { token: '{random}', desc: 'Random 4-char code' } // placeholder
+            { token: '{random}', desc: 'Random 4-char code' }, // placeholder
         ];
 
         return `
@@ -10064,12 +12330,16 @@ Upload photos once, use them across all your listings.`
                 </div>
                 <div class="card-body">
                     <div class="flex flex-wrap gap-3">
-                        ${patternVars.map(v => `
+                        ${patternVars
+                            .map(
+                                (v) => `
                             <div class="sku-var-chip" title="${v.desc}">
                                 <code>${v.token}</code>
                                 <span class="text-xs text-gray-500">${v.desc}</span>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                     <p class="text-sm text-gray-500 mt-3">
                         Example pattern: <code class="bg-gray-100 px-2 py-1 rounded">{brand}-{category}-{counter}</code>
@@ -10078,7 +12348,9 @@ Upload photos once, use them across all your listings.`
                 </div>
             </div>
 
-            ${rules.length === 0 ? `
+            ${
+                rules.length === 0
+                    ? `
                 <div class="card">
                     <div class="card-body">
                         <div class="empty-state" style="text-align: center; padding: 3rem;">
@@ -10093,9 +12365,12 @@ Upload photos once, use them across all your listings.`
                         </div>
                     </div>
                 </div>
-            ` : `
+            `
+                    : `
                 <div class="grid grid-cols-2 gap-4">
-                    ${rules.map(rule => `
+                    ${rules
+                        .map(
+                            (rule) => `
                         <div class="card sku-rule-card ${rule.is_default ? 'sku-rule-default' : ''}">
                             <div class="card-body">
                                 <div class="flex items-center justify-between mb-3">
@@ -10107,11 +12382,15 @@ Upload photos once, use them across all your listings.`
                                         <button class="btn btn-icon btn-sm" onclick="handlers.editSkuRule('${rule.id}')" title="Edit">
                                             ${components.icon('edit', 14)}
                                         </button>
-                                        ${!rule.is_default ? `
+                                        ${
+                                            !rule.is_default
+                                                ? `
                                             <button class="btn btn-icon btn-sm" onclick="handlers.setDefaultSkuRule('${rule.id}')" title="Set as Default">
                                                 &#9734;
                                             </button>
-                                        ` : ''}
+                                        `
+                                                : ''
+                                        }
                                         <button class="btn btn-icon btn-sm btn-error" onclick="handlers.deleteSkuRule('${rule.id}')" title="Delete">
                                             ${components.icon('trash', 14)}
                                         </button>
@@ -10123,9 +12402,13 @@ Upload photos once, use them across all your listings.`
                                     <code>${escapeHtml(rule.pattern)}</code>
                                 </div>
 
-                                ${rule.description ? `
+                                ${
+                                    rule.description
+                                        ? `
                                     <p class="text-sm text-gray-600 mt-2">${escapeHtml(rule.description)}</p>
-                                ` : ''}
+                                `
+                                        : ''
+                                }
 
                                 <div class="sku-rule-meta mt-3">
                                     ${rule.prefix ? `<span class="badge badge-sm">Prefix: ${escapeHtml(rule.prefix)}</span>` : ''}
@@ -10144,9 +12427,12 @@ Upload photos once, use them across all your listings.`
                                 </div>
                             </div>
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
-            `}
+            `
+            }
         `;
     },
 
@@ -10160,9 +12446,9 @@ Upload photos once, use them across all your listings.`
         const emailConnecting = store.state.emailConnecting;
 
         // Separate receipts by status
-        const pendingReceipts = receipts.filter(r => r.status === 'pending' || r.status === 'parsed');
-        const processedReceipts = receipts.filter(r => r.status === 'processed');
-        const ignoredReceipts = receipts.filter(r => r.status === 'ignored');
+        const pendingReceipts = receipts.filter((r) => r.status === 'pending' || r.status === 'parsed');
+        const processedReceipts = receipts.filter((r) => r.status === 'processed');
+        const ignoredReceipts = receipts.filter((r) => r.status === 'ignored');
 
         // Format confidence badge
         const confidenceBadge = (confidence) => {
@@ -10170,12 +12456,12 @@ Upload photos once, use them across all your listings.`
             const colors = {
                 high: 'success',
                 medium: 'warning',
-                low: 'error'
+                low: 'error',
             };
             const icons = {
                 high: '&#10003;',
                 medium: '&#9888;',
-                low: '&#10007;'
+                low: '&#10007;',
             };
             return `<span class="badge badge-${colors[confidence] || 'secondary'}">${icons[confidence] || ''} ${confidence}</span>`;
         };
@@ -10186,7 +12472,7 @@ Upload photos once, use them across all your listings.`
                 purchase: 'primary',
                 sale: 'success',
                 shipping: 'secondary',
-                expense: 'warning'
+                expense: 'warning',
             };
             return `<span class="badge badge-${colors[type] || 'secondary'}">${type || 'unknown'}</span>`;
         };
@@ -10210,9 +12496,13 @@ Upload photos once, use them across all your listings.`
                     </div>
                 </div>
                 <div class="card-body">
-                    ${emailAccounts.length > 0 ? `
+                    ${
+                        emailAccounts.length > 0
+                            ? `
                         <div style="display: grid; gap: 12px;">
-                            ${emailAccounts.map(account => `
+                            ${emailAccounts
+                                .map(
+                                    (account) => `
                                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--gray-50); border-radius: 8px; border: 1px solid var(--gray-200);">
                                     <div style="flex: 1;">
                                         <div style="font-weight: 500; margin-bottom: 4px;">${escapeHtml(account.email)}</div>
@@ -10220,13 +12510,17 @@ Upload photos once, use them across all your listings.`
                                             Provider: ${escapeHtml(account.provider || 'Gmail')}
                                             ${account.last_sync ? ` | Last synced: ${new Date(account.last_sync).toLocaleString()}` : ' | Never synced'}
                                         </div>
-                                        ${account.sync_status ? `
+                                        ${
+                                            account.sync_status
+                                                ? `
                                             <div style="font-size: 12px; margin-top: 4px;">
                                                 <span class="badge badge-${account.sync_status === 'completed' ? 'success' : account.sync_status === 'syncing' ? 'primary' : 'warning'}">
                                                     ${escapeHtml(account.sync_status)}
                                                 </span>
                                             </div>
-                                        ` : ''}
+                                        `
+                                                : ''
+                                        }
                                     </div>
                                     <div style="display: flex; gap: 8px; margin-left: 12px;">
                                         <button class="btn btn-sm btn-secondary" onclick="handlers.syncEmailAccount('${account.id}')" ${account.sync_status === 'syncing' ? 'disabled' : ''}>
@@ -10237,14 +12531,18 @@ Upload photos once, use them across all your listings.`
                                         </button>
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div style="text-align: center; padding: 24px; color: var(--gray-500);">
                             <p>No email accounts connected. Click "Connect Gmail" to sync receipts from your email.</p>
                             <p style="font-size: 12px; margin-top: 8px;">More email providers (Outlook, Yahoo) coming soon.</p>
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
@@ -10260,7 +12558,9 @@ Upload photos once, use them across all your listings.`
                          onclick="document.getElementById('receipt-file-input').click()">
                         <input type="file" id="receipt-file-input" aria-label="Upload receipt files" accept="image/*,.pdf" multiple
                                onchange="handlers.handleReceiptFileSelect(event)" style="display:none">
-                        ${isParsing ? `
+                        ${
+                            isParsing
+                                ? `
                             <div class="receipt-upload-progress">
                                 <div class="spinner"></div>
                                 <p>Parsing receipts... ${uploadProgress || 0}%</p>
@@ -10268,48 +12568,61 @@ Upload photos once, use them across all your listings.`
                                     <div class="progress-fill" style="width: ${uploadProgress || 0}%"></div>
                                 </div>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="receipt-dropzone-content">
                                 ${components.icon('file-text', 48)}
                                 <p class="font-medium">Drop receipts here or click to upload</p>
                                 <p class="text-sm text-gray-500">Supports JPG, PNG, WebP, and PDF (max 10MB)</p>
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
             </div>
 
             <!-- Pending Review -->
-            ${pendingReceipts.length > 0 ? `
+            ${
+                pendingReceipts.length > 0
+                    ? `
                 <div class="card mb-4">
                     <div class="card-header">
                         <h2 class="card-title">Pending Review (${pendingReceipts.length})</h2>
                     </div>
                     <div class="card-body">
                         <div class="receipt-queue">
-                            ${pendingReceipts.map(receipt => {
-                                const parsed = receipt.parsed_data ? (typeof receipt.parsed_data === 'string' ? JSON.parse(receipt.parsed_data) : receipt.parsed_data) : {};
-                                const itemCount = parsed.items?.length || 0;
-                                const total = parsed.total || 0;
-                                const vendorName = parsed.vendor?.name || receipt.source_file || 'Unknown';
-                                const date = parsed.date || receipt.created_at?.split('T')[0] || '';
-                                const confidence = parsed.confidence || 'medium';
+                            ${pendingReceipts
+                                .map((receipt) => {
+                                    const parsed = receipt.parsed_data
+                                        ? typeof receipt.parsed_data === 'string'
+                                            ? JSON.parse(receipt.parsed_data)
+                                            : receipt.parsed_data
+                                        : {};
+                                    const itemCount = parsed.items?.length || 0;
+                                    const total = parsed.total || 0;
+                                    const vendorName = parsed.vendor?.name || receipt.source_file || 'Unknown';
+                                    const date = parsed.date || receipt.created_at?.split('T')[0] || '';
+                                    const confidence = parsed.confidence || 'medium';
 
-                                return `
+                                    return `
                                     <div class="receipt-card receipt-card-pending">
                                         <div class="receipt-card-preview">
-                                            ${receipt.image_data ? `
+                                            ${
+                                                receipt.image_data
+                                                    ? `
                                                 <img src="data:${receipt.file_type === 'pdf' ? 'application/pdf' : 'image/jpeg'};base64,${receipt.image_data.substring(0, 100)}..."
                                                      alt="Receipt preview" class="receipt-thumbnail"
                                                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
                                                 <div class="receipt-thumbnail-placeholder" style="display:none">
                                                     ${components.icon('image', 32)}
                                                 </div>
-                                            ` : `
+                                            `
+                                                    : `
                                                 <div class="receipt-thumbnail-placeholder">
                                                     ${components.icon('image', 32)}
                                                 </div>
-                                            `}
+                                            `
+                                            }
                                         </div>
                                         <div class="receipt-card-info">
                                             <div class="receipt-card-header">
@@ -10335,11 +12648,13 @@ Upload photos once, use them across all your listings.`
                                         </div>
                                     </div>
                                 `;
-                            }).join('')}
+                                })
+                                .join('')}
                         </div>
                     </div>
                 </div>
-            ` : `
+            `
+                    : `
                 <div class="card mb-4">
                     <div class="card-body">
                         <div class="empty-state" style="text-align: center; padding: 2rem;">
@@ -10351,22 +12666,31 @@ Upload photos once, use them across all your listings.`
                         </div>
                     </div>
                 </div>
-            `}
+            `
+            }
 
             <!-- Recently Processed -->
-            ${processedReceipts.length > 0 ? `
+            ${
+                processedReceipts.length > 0
+                    ? `
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Recently Processed (${processedReceipts.length})</h2>
                     </div>
                     <div class="card-body">
                         <div class="receipt-queue">
-                            ${processedReceipts.slice(0, 5).map(receipt => {
-                                const parsed = receipt.parsed_data ? (typeof receipt.parsed_data === 'string' ? JSON.parse(receipt.parsed_data) : receipt.parsed_data) : {};
-                                const vendorName = parsed.vendor?.name || receipt.source_file || 'Unknown';
-                                const total = parsed.total || 0;
+                            ${processedReceipts
+                                .slice(0, 5)
+                                .map((receipt) => {
+                                    const parsed = receipt.parsed_data
+                                        ? typeof receipt.parsed_data === 'string'
+                                            ? JSON.parse(receipt.parsed_data)
+                                            : receipt.parsed_data
+                                        : {};
+                                    const vendorName = parsed.vendor?.name || receipt.source_file || 'Unknown';
+                                    const total = parsed.total || 0;
 
-                                return `
+                                    return `
                                     <div class="receipt-card receipt-card-processed">
                                         <div class="receipt-card-info" style="flex: 1;">
                                             <div class="receipt-card-header">
@@ -10380,16 +12704,23 @@ Upload photos once, use them across all your listings.`
                                         </div>
                                     </div>
                                 `;
-                            }).join('')}
+                                })
+                                .join('')}
                         </div>
-                        ${processedReceipts.length > 5 ? `
+                        ${
+                            processedReceipts.length > 5
+                                ? `
                             <p class="text-center text-sm text-gray-500 mt-3">
                                 + ${processedReceipts.length - 5} more processed receipts
                             </p>
-                        ` : ''}
+                        `
+                                : ''
+                        }
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
         `;
     },
 
@@ -10397,7 +12728,7 @@ Upload photos once, use them across all your listings.`
 
     heatmaps() {
         const days = [7, 14, 30, 90];
-        const platforms = (window.SUPPORTED_PLATFORMS || []).map(p => p.id);
+        const platforms = (window.SUPPORTED_PLATFORMS || []).map((p) => p.id);
         const heatmapData = store.state.heatmapData || { grid: [], peakTimes: [] };
         const grid = heatmapData.grid || [];
         const peakTimes = heatmapData.peakTimes || [];
@@ -10418,16 +12749,16 @@ Upload photos once, use them across all your listings.`
                 <div class="card-body">
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="form-label">Time Period</label>
-                            <select class="form-select" aria-label="Time period" onchange="store.setState({ heatmapDays: parseInt(this.value) }); handlers.loadHeatmapData()">
-                                ${days.map(d => `<option value="${d}" ${store.state.heatmapDays === d ? 'selected' : ''}>${d} Days</option>`).join('')}
+                            <label class="form-label" for="pd-heatmap-days">Time Period</label>
+                            <select id="pd-heatmap-days" class="form-select" aria-label="Time period" onchange="store.setState({ heatmapDays: parseInt(this.value) }); handlers.loadHeatmapData()">
+                                ${days.map((d) => `<option value="${d}" ${store.state.heatmapDays === d ? 'selected' : ''}>${d} Days</option>`).join('')}
                             </select>
                         </div>
                         <div>
-                            <label class="form-label">Platform</label>
-                            <select class="form-select" aria-label="Platform" onchange="store.setState({ heatmapPlatform: this.value }); handlers.loadHeatmapData()">
+                            <label class="form-label" for="pd-heatmap-platform">Platform</label>
+                            <select id="pd-heatmap-platform" class="form-select" aria-label="Platform" onchange="store.setState({ heatmapPlatform: this.value }); handlers.loadHeatmapData()">
                                 <option value="">All Platforms</option>
-                                ${platforms.map(p => `<option value="${p}" ${store.state.heatmapPlatform === p ? 'selected' : ''}>${p.charAt(0).toUpperCase() + p.slice(1)}</option>`).join('')}
+                                ${platforms.map((p) => `<option value="${p}" ${store.state.heatmapPlatform === p ? 'selected' : ''}>${p.charAt(0).toUpperCase() + p.slice(1)}</option>`).join('')}
                             </select>
                         </div>
                     </div>
@@ -10439,40 +12770,68 @@ Upload photos once, use them across all your listings.`
                     <h2 class="card-title">7-Day Engagement Pattern (24 Hours)</h2>
                 </div>
                 <div class="card-body" style="overflow-x: auto;">
-                    ${grid.length === 0 ? `
+                    ${
+                        grid.length === 0
+                            ? `
                     <div class="heatmap-skeleton" style="display: grid; grid-template-columns: 40px repeat(24, 1fr); gap: 2px;">
                         <div style="grid-column: 1; grid-row: 1;"></div>
-                        ${Array.from({length: 24}).map((_, h) => `
+                        ${Array.from({ length: 24 })
+                            .map(
+                                (_, h) => `
                             <div style="grid-column: ${h + 2}; grid-row: 1; text-align: center; font-size: 11px; color: var(--gray-400);">${h}</div>
-                        `).join('')}
-                        ${Array.from({length: 7}).map((_, d) => `
+                        `,
+                            )
+                            .join('')}
+                        ${Array.from({ length: 7 })
+                            .map(
+                                (_, d) => `
                             <div style="grid-column: 1; grid-row: ${d + 2}; font-size: 12px; color: var(--gray-400); text-align: center;">${dayNames[d]}</div>
-                            ${Array.from({length: 24}).map((_, h) => `
+                            ${Array.from({ length: 24 })
+                                .map(
+                                    (_, h) => `
                                 <div style="grid-column: ${h + 2}; grid-row: ${d + 2}; height: 20px; background: var(--gray-100); border-radius: 2px; animation: shimmer 1.5s infinite;"></div>
-                            `).join('')}
-                        `).join('')}
+                            `,
+                                )
+                                .join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                     <p style="text-align: center; color: var(--text-secondary); font-size: 13px; margin-top: 16px;">Loading engagement data...</p>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                     <div class="heatmap-grid" ${grid.length === 0 ? 'style="display:none"' : ''}>
                         <!-- Hour labels -->
                         <div style="grid-column: 1; grid-row: 1; text-align: center; font-size: 12px; font-weight: 600; color: var(--gray-600);">Day</div>
-                        ${Array.from({length: 24}).map((_, h) => `
+                        ${Array.from({ length: 24 })
+                            .map(
+                                (_, h) => `
                             <div style="grid-column: ${h + 2}; grid-row: 1; text-align: center; font-size: 11px; font-weight: 600; color: var(--gray-600);">${h}:00</div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
 
                         <!-- Day rows -->
-                        ${dayNames.map((day, dayIdx) => `
+                        ${dayNames
+                            .map(
+                                (day, dayIdx) => `
                             <div style="grid-column: 1; grid-row: ${dayIdx + 2}; text-align: center; font-size: 12px; font-weight: 600; color: var(--gray-600);">${day}</div>
-                            ${Array.from({length: 24}).map((_, hourIdx) => {
-                                const cellIdx = dayIdx * 24 + hourIdx;
-                                const intensity = grid[cellIdx] ? Math.min(5, Math.ceil((grid[cellIdx] || 0) / 10)) : 0;
-                                const eventCount = grid[cellIdx] || 0;
-                                return `
+                            ${Array.from({ length: 24 })
+                                .map((_, hourIdx) => {
+                                    const cellIdx = dayIdx * 24 + hourIdx;
+                                    const intensity = grid[cellIdx]
+                                        ? Math.min(5, Math.ceil((grid[cellIdx] || 0) / 10))
+                                        : 0;
+                                    const eventCount = grid[cellIdx] || 0;
+                                    return `
                                     <div class="heatmap-cell" data-intensity="${intensity}" style="grid-column: ${hourIdx + 2}; grid-row: ${dayIdx + 2};" title="${day} ${hourIdx}:00 - ${eventCount} events"></div>
                                 `;
-                            }).join('')}
-                        `).join('')}
+                                })
+                                .join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
 
                     <div class="mt-6" style="display: flex; gap: 8px; align-items: center; justify-content: center; font-size: 12px;">
@@ -10488,24 +12847,33 @@ Upload photos once, use them across all your listings.`
                 </div>
             </div>
 
-            ${peakTimes.length > 0 ? `
+            ${
+                peakTimes.length > 0
+                    ? `
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Peak Engagement Times</h2>
                     </div>
                     <div class="card-body">
                         <div class="grid grid-cols-3 gap-4">
-                            ${peakTimes.slice(0, 3).map(peak => `
+                            ${peakTimes
+                                .slice(0, 3)
+                                .map(
+                                    (peak) => `
                                 <div style="padding: 16px; background: var(--gray-50); border-radius: 8px; text-align: center;">
                                     <div style="font-size: 24px; font-weight: 700; color: var(--primary-600);">${peak.time || 'N/A'}</div>
                                     <div style="font-size: 12px; color: var(--gray-600); margin-top: 4px;">${peak.day || 'Peak Time'}</div>
                                     <div style="font-size: 14px; color: var(--success); margin-top: 8px; font-weight: 600;">${peak.events || 0} events</div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
         `;
     },
 
@@ -10516,107 +12884,190 @@ Upload photos once, use them across all your listings.`
         const displayPredictions = predictions;
 
         // Calculate overall confidence
-        const avgConfidence = displayPredictions.length > 0
-            ? Math.round(displayPredictions.reduce((sum, p) => sum + (p.confidence || 0), 0) / displayPredictions.length)
-            : 0;
+        const avgConfidence =
+            displayPredictions.length > 0
+                ? Math.round(
+                      displayPredictions.reduce((sum, p) => sum + (p.confidence || 0), 0) / displayPredictions.length,
+                  )
+                : 0;
 
-        const mockForecasts = demandForecasts.length > 0
-            ? demandForecasts.slice(0, 4).map(f => ({ period: f.period || 'Upcoming', change: f.forecast_score ? Math.round(f.forecast_score * 100) : 0, category: f.category || '' }))
-            : [];
+        const mockForecasts =
+            demandForecasts.length > 0
+                ? demandForecasts.slice(0, 4).map((f) => ({
+                      period: f.period || 'Upcoming',
+                      change: f.forecast_score ? Math.round(f.forecast_score * 100) : 0,
+                      category: f.category || '',
+                  }))
+                : [];
 
         // Demand data by category — derived from live market insights
         const rawInsightsForHeatmap = store.state.marketInsights || [];
-        const demandData = rawInsightsForHeatmap.length > 0
-            ? rawInsightsForHeatmap.reduce((acc, i) => {
-                const cat = i.category || '';
-                if (cat) {
-                    const base = Math.min(1, (i.opportunity_score || 0) / 100);
-                    acc[cat] = [
-                        Math.min(1, base * 0.8),
-                        Math.min(1, base * 1.0),
-                        Math.min(1, base * 1.2),
-                        Math.min(1, base * 0.9)
-                    ];
-                }
-                return acc;
-            }, {})
-            : {};
+        const demandData =
+            rawInsightsForHeatmap.length > 0
+                ? rawInsightsForHeatmap.reduce((acc, i) => {
+                      const cat = i.category || '';
+                      if (cat) {
+                          const base = Math.min(1, (i.opportunity_score || 0) / 100);
+                          acc[cat] = [
+                              Math.min(1, base * 0.8),
+                              Math.min(1, base * 1.0),
+                              Math.min(1, base * 1.2),
+                              Math.min(1, base * 0.9),
+                          ];
+                      }
+                      return acc;
+                  }, {})
+                : {};
 
         // Filter state
         const predictionFilter = store.state.predictionFilter || 'all';
 
         const inventoryItems = store.state.inventoryItems || [];
-        const predictionsEmptyState = displayPredictions.length === 0
-            ? '<div class="empty-state" style="padding: 32px; text-align: center; color: var(--gray-500);"><p style="margin-bottom: 8px;">No predictions yet.</p><p style="margin-bottom: 8px;">Add items to your inventory and run the AI model to get price predictions.</p>' +
-              (inventoryItems.length === 0 ? '<p style="font-size: 13px;">Start by adding items to your inventory.</p>' : '<p style="font-size: 13px;">Click &#8220;Run AI Model&#8221; above to generate predictions for your inventory.</p>') +
-              '</div>'
-            : null;
+        const predictionsEmptyState =
+            displayPredictions.length === 0
+                ? '<div class="empty-state" style="padding: 32px; text-align: center; color: var(--gray-500);"><p style="margin-bottom: 8px;">No predictions yet.</p><p style="margin-bottom: 8px;">Add items to your inventory and run the AI model to get price predictions.</p>' +
+                  (inventoryItems.length === 0
+                      ? '<p style="font-size: 13px;">Start by adding items to your inventory.</p>'
+                      : '<p style="font-size: 13px;">Click &#8220;Run AI Model&#8221; above to generate predictions for your inventory.</p>') +
+                  '</div>'
+                : null;
 
-        const predictionsCardBody = predictionsEmptyState !== null ? predictionsEmptyState : (
-            '<div class="grid grid-cols-3 gap-4">' +
-            displayPredictions.slice(0, 6).map(pred => {
-                const priceChange = pred.predicted_price - pred.current_price;
-                const priceChangePercent = ((priceChange / pred.current_price) * 100).toFixed(1);
-                const isPositive = priceChange >= 0;
-                const recColor = pred.recommendation === 'Buy' ? 'var(--success)' : pred.recommendation === 'Reduce' ? 'var(--error)' : 'var(--warning)';
-                const confidence = pred.confidence || 0;
-                const confidenceColor = confidence >= 80 ? 'var(--success)' : confidence >= 60 ? 'var(--warning)' : 'var(--error)';
-                const factors = [];
-                if (pred.market_data_count > 50) factors.push({ name: 'Market Data', score: 95, desc: 'High volume of sales data' });
-                else if (pred.market_data_count > 20) factors.push({ name: 'Market Data', score: 75, desc: 'Moderate sales data' });
-                else factors.push({ name: 'Market Data', score: 45, desc: 'Limited sales data available' });
-                if (pred.price_volatility < 0.1) factors.push({ name: 'Price Stability', score: 90, desc: 'Low price volatility' });
-                else if (pred.price_volatility < 0.3) factors.push({ name: 'Price Stability', score: 65, desc: 'Moderate price changes' });
-                else factors.push({ name: 'Price Stability', score: 35, desc: 'High price volatility' });
-                if (pred.demand_score === 'High' || pred.demand_score > 70) factors.push({ name: 'Demand Signal', score: 85, desc: 'Strong buyer interest' });
-                else if (pred.demand_score === 'Medium' || pred.demand_score > 40) factors.push({ name: 'Demand Signal', score: 60, desc: 'Moderate demand' });
-                else factors.push({ name: 'Demand Signal', score: 40, desc: 'Limited demand indicators' });
-                // Seasonality factor requires real historical data
-                const factorsHtml = factors.map(f =>
-                    '<div style="display: flex; align-items: center; gap: 6px;">' +
-                    '<div style="width: 70px; font-size: 9px; color: var(--gray-600);">' + f.name + '</div>' +
-                    '<div style="flex: 1; height: 4px; background: var(--gray-200); border-radius: 2px; overflow: hidden;">' +
-                    '<div style="width: ' + f.score + '%; height: 100%; background: ' + (f.score >= 70 ? 'var(--success)' : f.score >= 50 ? 'var(--warning)' : 'var(--error)') + '; border-radius: 2px;"></div>' +
-                    '</div>' +
-                    '<div style="width: 28px; font-size: 9px; font-weight: 600; text-align: right;">' + f.score + '%</div>' +
-                    '</div>'
-                ).join('');
-                const topFactor = factors.find(f => f.score === Math.max(...factors.map(x => x.score)));
-                return '<div class="prediction-card" style="padding: 16px; border: 1px solid var(--gray-200); border-radius: 12px; border-left: 4px solid ' + recColor + ';">' +
-                    '<div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">' +
-                    '<div class="font-medium" style="flex: 1;">' + escapeHtml(pred.item_title || 'Item') + '</div>' +
-                    '<span class="badge badge-sm" style="background: ' + recColor + '20; color: ' + recColor + ';">' + (pred.recommendation || 'Hold') + '</span>' +
-                    '</div>' +
-                    '<div style="display: flex; gap: 16px; margin-bottom: 12px;">' +
-                    '<div><div style="font-size: 11px; color: var(--gray-500); text-transform: uppercase;">Current</div><div style="font-size: 20px; font-weight: 700;">$' + (pred.current_price || 0).toFixed(0) + '</div></div>' +
-                    '<div style="display: flex; align-items: center; color: var(--gray-300);">\u2192</div>' +
-                    '<div><div style="font-size: 11px; color: var(--gray-500); text-transform: uppercase;">Predicted</div><div style="font-size: 20px; font-weight: 700; color: var(--primary);">$' + (pred.predicted_price || 0).toFixed(0) + '</div></div>' +
-                    '</div>' +
-                    '<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">' +
-                    '<span style="color: ' + (isPositive ? 'var(--success)' : 'var(--error)') + '; font-weight: 600; font-size: 14px;">' + (isPositive ? '+' : '') + priceChangePercent + '%</span>' +
-                    priceTrendSparkline.render([40, 42, 38, 45, 43, pred.predicted_price]) +
-                    '</div>' +
-                    '<div class="prediction-confidence" style="background: var(--gray-50); border-radius: 8px; padding: 10px; margin-top: 8px;">' +
-                    '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">' +
-                    '<span style="font-size: 11px; font-weight: 600; color: var(--gray-600);">AI Confidence</span>' +
-                    '<div style="display: flex; align-items: center; gap: 6px;">' +
-                    '<div style="width: 60px; height: 6px; background: var(--gray-200); border-radius: 3px; overflow: hidden;">' +
-                    '<div style="width: ' + confidence + '%; height: 100%; background: ' + confidenceColor + '; border-radius: 3px;"></div>' +
-                    '</div>' +
-                    '<span style="font-size: 13px; font-weight: 700; color: ' + confidenceColor + ';">' + confidence + '%</span>' +
-                    '</div></div>' +
-                    '<details style="margin-top: 6px;">' +
-                    '<summary style="font-size: 10px; color: var(--primary); cursor: pointer; user-select: none;">View confidence factors</summary>' +
-                    '<div style="margin-top: 8px; display: flex; flex-direction: column; gap: 6px;">' + factorsHtml +
-                    '<div style="font-size: 9px; color: var(--gray-500); margin-top: 4px; padding-top: 4px; border-top: 1px dashed var(--gray-200);">' + (topFactor ? topFactor.desc : 'Based on historical data analysis') + '</div>' +
-                    '</div></details></div>' +
-                    '<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--gray-200);">' +
-                    '<div style="font-size: 11px;"><span style="color: var(--gray-500);">Demand:</span> <strong>' + (pred.demand_score || 'Medium') + '</strong></div>' +
-                    '<button class="btn btn-xs btn-ghost" onclick="handlers.showPredictionDetails(\'' + (pred.id || 'pred') + '\')" style="font-size: 10px;">Details \u2192</button>' +
-                    '</div></div>';
-            }).join('') +
-            '</div>'
-        );
+        const predictionsCardBody =
+            predictionsEmptyState !== null
+                ? predictionsEmptyState
+                : '<div class="grid grid-cols-3 gap-4">' +
+                  displayPredictions
+                      .slice(0, 6)
+                      .map((pred) => {
+                          const priceChange = pred.predicted_price - pred.current_price;
+                          const priceChangePercent = ((priceChange / pred.current_price) * 100).toFixed(1);
+                          const isPositive = priceChange >= 0;
+                          const recColor =
+                              pred.recommendation === 'Buy'
+                                  ? 'var(--success)'
+                                  : pred.recommendation === 'Reduce'
+                                    ? 'var(--error)'
+                                    : 'var(--warning)';
+                          const confidence = pred.confidence || 0;
+                          const confidenceColor =
+                              confidence >= 80
+                                  ? 'var(--success)'
+                                  : confidence >= 60
+                                    ? 'var(--warning)'
+                                    : 'var(--error)';
+                          const factors = [];
+                          if (pred.market_data_count > 50)
+                              factors.push({ name: 'Market Data', score: 95, desc: 'High volume of sales data' });
+                          else if (pred.market_data_count > 20)
+                              factors.push({ name: 'Market Data', score: 75, desc: 'Moderate sales data' });
+                          else factors.push({ name: 'Market Data', score: 45, desc: 'Limited sales data available' });
+                          if (pred.price_volatility < 0.1)
+                              factors.push({ name: 'Price Stability', score: 90, desc: 'Low price volatility' });
+                          else if (pred.price_volatility < 0.3)
+                              factors.push({ name: 'Price Stability', score: 65, desc: 'Moderate price changes' });
+                          else factors.push({ name: 'Price Stability', score: 35, desc: 'High price volatility' });
+                          if (pred.demand_score === 'High' || pred.demand_score > 70)
+                              factors.push({ name: 'Demand Signal', score: 85, desc: 'Strong buyer interest' });
+                          else if (pred.demand_score === 'Medium' || pred.demand_score > 40)
+                              factors.push({ name: 'Demand Signal', score: 60, desc: 'Moderate demand' });
+                          else factors.push({ name: 'Demand Signal', score: 40, desc: 'Limited demand indicators' });
+                          // Seasonality factor requires real historical data
+                          const factorsHtml = factors
+                              .map(
+                                  (f) =>
+                                      '<div style="display: flex; align-items: center; gap: 6px;">' +
+                                      '<div style="width: 70px; font-size: 9px; color: var(--gray-600);">' +
+                                      f.name +
+                                      '</div>' +
+                                      '<div style="flex: 1; height: 4px; background: var(--gray-200); border-radius: 2px; overflow: hidden;">' +
+                                      '<div style="width: ' +
+                                      f.score +
+                                      '%; height: 100%; background: ' +
+                                      (f.score >= 70
+                                          ? 'var(--success)'
+                                          : f.score >= 50
+                                            ? 'var(--warning)'
+                                            : 'var(--error)') +
+                                      '; border-radius: 2px;"></div>' +
+                                      '</div>' +
+                                      '<div style="width: 28px; font-size: 9px; font-weight: 600; text-align: right;">' +
+                                      f.score +
+                                      '%</div>' +
+                                      '</div>',
+                              )
+                              .join('');
+                          const topFactor = factors.find((f) => f.score === Math.max(...factors.map((x) => x.score)));
+                          return (
+                              '<div class="prediction-card" style="padding: 16px; border: 1px solid var(--gray-200); border-radius: 12px; border-left: 4px solid ' +
+                              recColor +
+                              ';">' +
+                              '<div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">' +
+                              '<div class="font-medium" style="flex: 1;">' +
+                              escapeHtml(pred.item_title || 'Item') +
+                              '</div>' +
+                              '<span class="badge badge-sm" style="background: ' +
+                              recColor +
+                              '20; color: ' +
+                              recColor +
+                              ';">' +
+                              (pred.recommendation || 'Hold') +
+                              '</span>' +
+                              '</div>' +
+                              '<div style="display: flex; gap: 16px; margin-bottom: 12px;">' +
+                              '<div><div style="font-size: 11px; color: var(--gray-500); text-transform: uppercase;">Current</div><div style="font-size: 20px; font-weight: 700;">$' +
+                              (pred.current_price || 0).toFixed(0) +
+                              '</div></div>' +
+                              '<div style="display: flex; align-items: center; color: var(--gray-300);">\u2192</div>' +
+                              '<div><div style="font-size: 11px; color: var(--gray-500); text-transform: uppercase;">Predicted</div><div style="font-size: 20px; font-weight: 700; color: var(--primary);">$' +
+                              (pred.predicted_price || 0).toFixed(0) +
+                              '</div></div>' +
+                              '</div>' +
+                              '<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">' +
+                              '<span style="color: ' +
+                              (isPositive ? 'var(--success)' : 'var(--error)') +
+                              '; font-weight: 600; font-size: 14px;">' +
+                              (isPositive ? '+' : '') +
+                              priceChangePercent +
+                              '%</span>' +
+                              priceTrendSparkline.render([40, 42, 38, 45, 43, pred.predicted_price]) +
+                              '</div>' +
+                              '<div class="prediction-confidence" style="background: var(--gray-50); border-radius: 8px; padding: 10px; margin-top: 8px;">' +
+                              '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">' +
+                              '<span style="font-size: 11px; font-weight: 600; color: var(--gray-600);">AI Confidence</span>' +
+                              '<div style="display: flex; align-items: center; gap: 6px;">' +
+                              '<div style="width: 60px; height: 6px; background: var(--gray-200); border-radius: 3px; overflow: hidden;">' +
+                              '<div style="width: ' +
+                              confidence +
+                              '%; height: 100%; background: ' +
+                              confidenceColor +
+                              '; border-radius: 3px;"></div>' +
+                              '</div>' +
+                              '<span style="font-size: 13px; font-weight: 700; color: ' +
+                              confidenceColor +
+                              ';">' +
+                              confidence +
+                              '%</span>' +
+                              '</div></div>' +
+                              '<details style="margin-top: 6px;">' +
+                              '<summary style="font-size: 10px; color: var(--primary); cursor: pointer; user-select: none;">View confidence factors</summary>' +
+                              '<div style="margin-top: 8px; display: flex; flex-direction: column; gap: 6px;">' +
+                              factorsHtml +
+                              '<div style="font-size: 9px; color: var(--gray-500); margin-top: 4px; padding-top: 4px; border-top: 1px dashed var(--gray-200);">' +
+                              (topFactor ? topFactor.desc : 'Based on historical data analysis') +
+                              '</div>' +
+                              '</div></details></div>' +
+                              '<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--gray-200);">' +
+                              '<div style="font-size: 11px;"><span style="color: var(--gray-500);">Demand:</span> <strong>' +
+                              (pred.demand_score || 'Medium') +
+                              '</strong></div>' +
+                              '<button class="btn btn-xs btn-ghost" onclick="handlers.showPredictionDetails(\'' +
+                              (pred.id || 'pred') +
+                              '\')" style="font-size: 10px;">Details \u2192</button>' +
+                              '</div></div>'
+                          );
+                      })
+                      .join('') +
+                  '</div>';
 
         return `
             <div class="page-header">
@@ -10691,29 +13142,38 @@ Upload photos once, use them across all your listings.`
                 </div>
             </div>
 
-            ${demandForecasts.length > 0 ? `
+            ${
+                demandForecasts.length > 0
+                    ? `
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">${components.icon('bar-chart-2', 18)} Demand Forecasts</h2>
                     </div>
                     <div class="card-body">
                         <div class="space-y-3">
-                            ${demandForecasts.slice(0, 5).map(forecast => `
+                            ${demandForecasts
+                                .slice(0, 5)
+                                .map(
+                                    (forecast) => `
                                 <div style="display: flex; justify-content: space-between; padding: 12px; background: var(--gray-50); border-radius: 6px;">
                                     <div>
                                         <div style="font-weight: 600; margin-bottom: 4px;">${escapeHtml(forecast.category || 'Category')}</div>
                                         <div style="font-size: 12px; color: var(--gray-600);">Trend: ${forecast.trend || 'Stable'}</div>
                                     </div>
                                     <div style="text-align: right;">
-                                        <div style="font-size: 18px; font-weight: 700; color: var(--primary-600);">${(forecast.forecast_score || 0) * 100 | 0}%</div>
+                                        <div style="font-size: 18px; font-weight: 700; color: var(--primary-600);">${((forecast.forecast_score || 0) * 100) | 0}%</div>
                                         <div style="font-size: 12px; color: var(--gray-600);">${forecast.period || 'Next 30d'}</div>
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Price Prediction Bands (Optimistic / Expected / Pessimistic) -->
             <div class="card mb-6">
@@ -10735,13 +13195,18 @@ Upload photos once, use them across all your listings.`
                                 </tr>
                             </thead>
                             <tbody>
-                                ${displayPredictions.slice(0, 6).map(pred => {
-                                    const expected = pred.predicted_price || pred.current_price;
-                                    const pessimistic = Math.round(expected * 0.82);
-                                    const optimistic = Math.round(expected * 1.22);
-                                    const rangeWidth = optimistic - pessimistic;
-                                    const currentPos = pred.current_price > 0 ? ((pred.current_price - pessimistic) / rangeWidth * 100) : 50;
-                                    return `
+                                ${displayPredictions
+                                    .slice(0, 6)
+                                    .map((pred) => {
+                                        const expected = pred.predicted_price || pred.current_price;
+                                        const pessimistic = Math.round(expected * 0.82);
+                                        const optimistic = Math.round(expected * 1.22);
+                                        const rangeWidth = optimistic - pessimistic;
+                                        const currentPos =
+                                            pred.current_price > 0
+                                                ? ((pred.current_price - pessimistic) / rangeWidth) * 100
+                                                : 50;
+                                        return `
                                         <tr>
                                             <td class="font-medium">${escapeHtml((pred.item_title || 'Item').substring(0, 25))}</td>
                                             <td>C$${(pred.current_price || 0).toFixed(0)}</td>
@@ -10755,7 +13220,8 @@ Upload photos once, use them across all your listings.`
                                             </td>
                                         </tr>
                                     `;
-                                }).join('')}
+                                    })
+                                    .join('')}
                             </tbody>
                         </table>
                     </div>
@@ -10769,17 +13235,24 @@ Upload photos once, use them across all your listings.`
                 </div>
                 <div class="card-body">
                     <div class="grid grid-cols-3 gap-4">
-                        ${['30', '60', '90'].map(days => {
-                            const categories = ['Tops', 'Bottoms', 'Shoes', 'Bags', 'Dresses', 'Accessories'];
-                            return `
+                        ${['30', '60', '90']
+                            .map((days) => {
+                                const categories = ['Tops', 'Bottoms', 'Shoes', 'Bags', 'Dresses', 'Accessories'];
+                                return `
                                 <div style="padding: 16px; border: 1px solid var(--gray-200); border-radius: 12px;">
                                     <div style="font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 4px;">Next ${days} Days</div>
                                     <div class="text-xs text-gray-500 mb-3">Projected demand by category</div>
                                     <div class="space-y-2">
-                                        ${categories.map(cat => {
-                                            const demand = 0;
-                                            const barColor = demand >= 70 ? 'var(--success)' : demand >= 40 ? 'var(--warning)' : 'var(--error)';
-                                            return `
+                                        ${categories
+                                            .map((cat) => {
+                                                const demand = 0;
+                                                const barColor =
+                                                    demand >= 70
+                                                        ? 'var(--success)'
+                                                        : demand >= 40
+                                                          ? 'var(--warning)'
+                                                          : 'var(--error)';
+                                                return `
                                                 <div class="flex items-center gap-2">
                                                     <span style="width: 70px; font-size: 11px; color: var(--gray-600);">${cat}</span>
                                                     <div style="flex: 1; height: 6px; background: var(--gray-200); border-radius: 3px; overflow: hidden;">
@@ -10788,11 +13261,13 @@ Upload photos once, use them across all your listings.`
                                                     <span style="width: 30px; font-size: 10px; font-weight: 600; text-align: right;">${demand}%</span>
                                                 </div>
                                             `;
-                                        }).join('')}
+                                            })
+                                            .join('')}
                                     </div>
                                 </div>
                             `;
-                        }).join('')}
+                            })
+                            .join('')}
                     </div>
                 </div>
             </div>
@@ -10836,7 +13311,9 @@ Upload photos once, use them across all your listings.`
                         </div>
                     </div>
                     <div id="whatif-results" style="background: var(--gray-50); border-radius: 10px; padding: 16px;">
-                        ${store.state.whatIfResults ? `
+                        ${
+                            store.state.whatIfResults
+                                ? `
                             <div class="grid grid-cols-4 gap-3">
                                 <div style="text-align: center;">
                                     <div class="text-xs text-gray-500">Est. Revenue</div>
@@ -10857,11 +13334,13 @@ Upload photos once, use them across all your listings.`
                                     </div>
                                 </div>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="text-center text-gray-400 text-sm py-4">
                                 Adjust parameters and click "Run Scenario" to see projected outcomes
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
             </div>
@@ -10874,17 +13353,56 @@ Upload photos once, use them across all your listings.`
                 <div class="card-body">
                     ${(() => {
                         const alerts = store.state.trendAlerts || [
-                            { category: 'Vintage Denim', type: 'price_up', change: '+18%', message: 'Prices rising in vintage denim category. Consider listing vintage items now.', severity: 'success', time: '2 hours ago' },
-                            { category: 'Designer Bags', type: 'demand_spike', change: '+25%', message: 'Demand spike detected for designer bags on eBay and Poshmark.', severity: 'info', time: '5 hours ago' },
-                            { category: 'Athletic Shoes', type: 'price_drop', change: '-12%', message: 'Market prices declining for athletic shoes. Hold off on new acquisitions.', severity: 'warning', time: '1 day ago' },
-                            { category: 'Band Tees', type: 'saturation', change: '+40% listings', message: 'Market becoming saturated with band tees. Differentiate with rare finds.', severity: 'error', time: '2 days ago' }
+                            {
+                                category: 'Vintage Denim',
+                                type: 'price_up',
+                                change: '+18%',
+                                message: 'Prices rising in vintage denim category. Consider listing vintage items now.',
+                                severity: 'success',
+                                time: '2 hours ago',
+                            },
+                            {
+                                category: 'Designer Bags',
+                                type: 'demand_spike',
+                                change: '+25%',
+                                message: 'Demand spike detected for designer bags on eBay and Poshmark.',
+                                severity: 'info',
+                                time: '5 hours ago',
+                            },
+                            {
+                                category: 'Athletic Shoes',
+                                type: 'price_drop',
+                                change: '-12%',
+                                message: 'Market prices declining for athletic shoes. Hold off on new acquisitions.',
+                                severity: 'warning',
+                                time: '1 day ago',
+                            },
+                            {
+                                category: 'Band Tees',
+                                type: 'saturation',
+                                change: '+40% listings',
+                                message: 'Market becoming saturated with band tees. Differentiate with rare finds.',
+                                severity: 'error',
+                                time: '2 days ago',
+                            },
                         ];
                         return `
                             <div class="space-y-3">
-                                ${alerts.map(alert => {
-                                    const colors = { success: 'var(--success)', info: 'var(--primary)', warning: 'var(--warning)', error: 'var(--error)' };
-                                    const icons = { price_up: 'trending-up', demand_spike: 'zap', price_drop: 'trending-down', saturation: 'alert-triangle' };
-                                    return `
+                                ${alerts
+                                    .map((alert) => {
+                                        const colors = {
+                                            success: 'var(--success)',
+                                            info: 'var(--primary)',
+                                            warning: 'var(--warning)',
+                                            error: 'var(--error)',
+                                        };
+                                        const icons = {
+                                            price_up: 'trending-up',
+                                            demand_spike: 'zap',
+                                            price_drop: 'trending-down',
+                                            saturation: 'alert-triangle',
+                                        };
+                                        return `
                                         <div style="display: flex; gap: 12px; padding: 12px; border-radius: 10px; border: 1px solid ${colors[alert.severity]}30; background: ${colors[alert.severity]}08;">
                                             <div style="width: 36px; height: 36px; border-radius: 8px; background: ${colors[alert.severity]}15; display: flex; align-items: center; justify-content: center; color: ${colors[alert.severity]}; flex-shrink: 0;">
                                                 ${components.icon(icons[alert.type] || 'bell', 18)}
@@ -10899,7 +13417,8 @@ Upload photos once, use them across all your listings.`
                                             </div>
                                         </div>
                                     `;
-                                }).join('')}
+                                    })
+                                    .join('')}
                             </div>
                         `;
                     })()}
@@ -10914,10 +13433,15 @@ Upload photos once, use them across all your listings.`
                 <div class="card-body">
                     ${(() => {
                         const accuracy = store.state.predictionAccuracy || {
-                            total: 156, correct: 118, avgError: 8.2, bestCategory: 'Shoes', worstCategory: 'Accessories',
-                            monthly: [72, 75, 68, 80, 76, 82, 78, 85]
+                            total: 156,
+                            correct: 118,
+                            avgError: 8.2,
+                            bestCategory: 'Shoes',
+                            worstCategory: 'Accessories',
+                            monthly: [72, 75, 68, 80, 76, 82, 78, 85],
                         };
-                        const successRate = accuracy.total > 0 ? ((accuracy.correct / accuracy.total) * 100).toFixed(1) : 0;
+                        const successRate =
+                            accuracy.total > 0 ? ((accuracy.correct / accuracy.total) * 100).toFixed(1) : 0;
                         return `
                             <div class="grid grid-cols-4 gap-4 mb-4">
                                 <div style="text-align: center; padding: 14px; background: var(--primary-50); border-radius: 10px;">
@@ -10940,15 +13464,22 @@ Upload photos once, use them across all your listings.`
                             <div>
                                 <div class="text-xs font-semibold text-gray-600 mb-2">Monthly Accuracy Trend</div>
                                 <div style="display: flex; align-items: flex-end; gap: 4px; height: 60px;">
-                                    ${accuracy.monthly.map((val, i) => {
-                                        const barHeight = (val / 100) * 60;
-                                        const barColor = val >= 80 ? 'var(--success)' : val >= 65 ? 'var(--warning)' : 'var(--error)';
-                                        const months = ['Mar','Apr','May','Jun','Jul','Aug','Sep','Oct'];
-                                        return `<div style="flex: 1; display: flex; flex-direction: column; align-items: center;" title="${months[i]}: ${val}%">
+                                    ${accuracy.monthly
+                                        .map((val, i) => {
+                                            const barHeight = (val / 100) * 60;
+                                            const barColor =
+                                                val >= 80
+                                                    ? 'var(--success)'
+                                                    : val >= 65
+                                                      ? 'var(--warning)'
+                                                      : 'var(--error)';
+                                            const months = ['Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'];
+                                            return `<div style="flex: 1; display: flex; flex-direction: column; align-items: center;" title="${months[i]}: ${val}%">
                                             <div style="width: 100%; height: ${barHeight}px; background: ${barColor}; border-radius: 3px 3px 0 0;"></div>
                                             <div style="font-size: 8px; color: var(--gray-400); margin-top: 2px;">${months[i]}</div>
                                         </div>`;
-                                    }).join('')}
+                                        })
+                                        .join('')}
                                 </div>
                             </div>
                         `;
@@ -10966,11 +13497,28 @@ Upload photos once, use them across all your listings.`
                         <p class="text-xs text-gray-500 mb-3">Compare outputs from different prediction models.</p>
                         ${(() => {
                             const models = [
-                                { name: 'Market Comps', accuracy: 78, speed: 'Fast', approach: 'Recent comparable sales analysis' },
-                                { name: 'Seasonal AI', accuracy: 82, speed: 'Medium', approach: 'Historical seasonal patterns' },
-                                { name: 'Demand-Weighted', accuracy: 85, speed: 'Slow', approach: 'Demand score + price elasticity' }
+                                {
+                                    name: 'Market Comps',
+                                    accuracy: 78,
+                                    speed: 'Fast',
+                                    approach: 'Recent comparable sales analysis',
+                                },
+                                {
+                                    name: 'Seasonal AI',
+                                    accuracy: 82,
+                                    speed: 'Medium',
+                                    approach: 'Historical seasonal patterns',
+                                },
+                                {
+                                    name: 'Demand-Weighted',
+                                    accuracy: 85,
+                                    speed: 'Slow',
+                                    approach: 'Demand score + price elasticity',
+                                },
                             ];
-                            return `<div class="space-y-3">${models.map(m => `
+                            return `<div class="space-y-3">${models
+                                .map(
+                                    (m) => `
                                 <div style="padding: 10px; border: 1px solid var(--gray-200); border-radius: 8px;">
                                     <div class="flex items-center justify-between mb-1">
                                         <span class="font-medium text-sm">${m.name}</span>
@@ -10979,7 +13527,9 @@ Upload photos once, use them across all your listings.`
                                     <div class="text-xs text-gray-500">${m.approach}</div>
                                     <div class="text-xs text-gray-400 mt-1">Speed: ${m.speed}</div>
                                 </div>
-                            `).join('')}</div>`;
+                            `,
+                                )
+                                .join('')}</div>`;
                         })()}
                     </div>
                 </div>
@@ -10992,19 +13542,25 @@ Upload photos once, use them across all your listings.`
                     <div class="card-body">
                         <p class="text-xs text-gray-500 mb-3">Plain-language explanations of why prices are predicted to change.</p>
                         <div class="space-y-3">
-                            ${displayPredictions.slice(0, 3).map(pred => {
-                                const change = pred.predicted_price - pred.current_price;
-                                const pct = ((change / (pred.current_price || 1)) * 100).toFixed(0);
-                                const isUp = change >= 0;
-                                const reasons = isUp
-                                    ? [`Strong demand in this category with recent sales activity.`,
-                                       `Seasonal trends favor this item type in the coming weeks.`,
-                                       `Limited supply detected with few similar active listings.`]
-                                    : [`Market showing softening demand for this category.`,
-                                       `Several new competing listings appeared recently.`,
-                                       `Seasonal demand typically decreases for this item type now.`];
-                                const reason = reasons[0];
-                                return `
+                            ${displayPredictions
+                                .slice(0, 3)
+                                .map((pred) => {
+                                    const change = pred.predicted_price - pred.current_price;
+                                    const pct = ((change / (pred.current_price || 1)) * 100).toFixed(0);
+                                    const isUp = change >= 0;
+                                    const reasons = isUp
+                                        ? [
+                                              `Strong demand in this category with recent sales activity.`,
+                                              `Seasonal trends favor this item type in the coming weeks.`,
+                                              `Limited supply detected with few similar active listings.`,
+                                          ]
+                                        : [
+                                              `Market showing softening demand for this category.`,
+                                              `Several new competing listings appeared recently.`,
+                                              `Seasonal demand typically decreases for this item type now.`,
+                                          ];
+                                    const reason = reasons[0];
+                                    return `
                                     <div style="padding: 10px; background: var(--gray-50); border-radius: 8px;">
                                         <div class="flex items-center gap-2 mb-1">
                                             <span class="font-medium text-sm">${escapeHtml((pred.item_title || 'Item').substring(0, 25))}</span>
@@ -11013,7 +13569,8 @@ Upload photos once, use them across all your listings.`
                                         <p class="text-xs text-gray-600">${reason}</p>
                                     </div>
                                 `;
-                            }).join('')}
+                                })
+                                .join('')}
                         </div>
                     </div>
                 </div>
@@ -11074,29 +13631,53 @@ Upload photos once, use them across all your listings.`
                 <div class="card-body">
                     <div class="text-xs text-gray-500 mb-3">Monthly seasonality factors applied to predictions. Values above 1.0 indicate high-demand periods.</div>
                     ${(() => {
-                        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                        const months = [
+                            'Jan',
+                            'Feb',
+                            'Mar',
+                            'Apr',
+                            'May',
+                            'Jun',
+                            'Jul',
+                            'Aug',
+                            'Sep',
+                            'Oct',
+                            'Nov',
+                            'Dec',
+                        ];
                         const seasonalFactors = {
-                            'Clothing': [0.85, 0.80, 0.90, 0.95, 1.00, 0.90, 0.85, 0.95, 1.05, 1.10, 1.20, 1.25],
-                            'Shoes': [0.90, 0.85, 0.95, 1.00, 1.05, 0.95, 0.90, 1.00, 1.05, 1.15, 1.15, 1.20],
-                            'Electronics': [0.80, 0.75, 0.85, 0.90, 0.90, 0.85, 0.80, 0.85, 0.90, 1.00, 1.25, 1.30]
+                            Clothing: [0.85, 0.8, 0.9, 0.95, 1.0, 0.9, 0.85, 0.95, 1.05, 1.1, 1.2, 1.25],
+                            Shoes: [0.9, 0.85, 0.95, 1.0, 1.05, 0.95, 0.9, 1.0, 1.05, 1.15, 1.15, 1.2],
+                            Electronics: [0.8, 0.75, 0.85, 0.9, 0.9, 0.85, 0.8, 0.85, 0.9, 1.0, 1.25, 1.3],
                         };
-                        return `<div class="space-y-4">${Object.entries(seasonalFactors).map(([cat, factors]) => `
+                        return `<div class="space-y-4">${Object.entries(seasonalFactors)
+                            .map(
+                                ([cat, factors]) => `
                             <div>
                                 <div class="text-xs font-semibold mb-1">${cat}</div>
                                 <div style="display: flex; gap: 2px; align-items: flex-end; height: 40px;">
-                                    ${factors.map((f, i) => {
-                                        const h = Math.round(f * 30);
-                                        const color = f >= 1.1 ? 'var(--success)' : f >= 0.95 ? 'var(--primary)' : 'var(--gray-300)';
-                                        const now = new Date().getMonth();
-                                        const border = i === now ? '2px solid var(--primary-600)' : 'none';
-                                        return `<div style="flex: 1; height: ${h}px; background: ${color}; border-radius: 2px 2px 0 0; border: ${border};" title="${months[i]}: ${f.toFixed(2)}x"></div>`;
-                                    }).join('')}
+                                    ${factors
+                                        .map((f, i) => {
+                                            const h = Math.round(f * 30);
+                                            const color =
+                                                f >= 1.1
+                                                    ? 'var(--success)'
+                                                    : f >= 0.95
+                                                      ? 'var(--primary)'
+                                                      : 'var(--gray-300)';
+                                            const now = new Date().getMonth();
+                                            const border = i === now ? '2px solid var(--primary-600)' : 'none';
+                                            return `<div style="flex: 1; height: ${h}px; background: ${color}; border-radius: 2px 2px 0 0; border: ${border};" title="${months[i]}: ${f.toFixed(2)}x"></div>`;
+                                        })
+                                        .join('')}
                                 </div>
                                 <div style="display: flex; gap: 2px;">
-                                    ${months.map(m => `<div style="flex: 1; font-size: 7px; text-align: center; color: var(--gray-400);">${m}</div>`).join('')}
+                                    ${months.map((m) => `<div style="flex: 1; font-size: 7px; text-align: center; color: var(--gray-400);">${m}</div>`).join('')}
                                 </div>
                             </div>
-                        `).join('')}</div>`;
+                        `,
+                            )
+                            .join('')}</div>`;
                     })()}
                 </div>
             </div>
@@ -11111,7 +13692,7 @@ Upload photos once, use them across all your listings.`
         // Apply search filter (Feature 1)
         const searchQuery = store.state.supplierSearchQuery || '';
         if (searchQuery.trim()) {
-            displaySuppliers = displaySuppliers.filter(supplier => {
+            displaySuppliers = displaySuppliers.filter((supplier) => {
                 const query = searchQuery.toLowerCase();
                 return (
                     (supplier.name || '').toLowerCase().includes(query) ||
@@ -11137,10 +13718,12 @@ Upload photos once, use them across all your listings.`
         }
 
         // Price drop alerts
-        const priceDropAlerts = displaySuppliers.filter(s => s.has_price_drop).map(s => ({
-            supplier_name: s.name,
-            supplier_id: s.id
-        }));
+        const priceDropAlerts = displaySuppliers
+            .filter((s) => s.has_price_drop)
+            .map((s) => ({
+                supplier_name: s.name,
+                supplier_id: s.id,
+            }));
 
         return `
             <div class="page-header">
@@ -11187,7 +13770,9 @@ Upload photos once, use them across all your listings.`
                     </div>
                 </div>
                 <div class="card-body">
-                    ${displaySuppliers.length === 0 ? `
+                    ${
+                        displaySuppliers.length === 0
+                            ? `
                         <div class="empty-state" style="text-align: center; padding: 60px;">
                             ${components.icon('package', 48)}
                             <h2 style="margin: 16px 0 8px;">No Suppliers Yet</h2>
@@ -11196,16 +13781,20 @@ Upload photos once, use them across all your listings.`
                                 ${components.icon('plus', 16)} Add Your First Supplier
                             </button>
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div class="grid grid-cols-2 gap-6">
-                            ${displaySuppliers.map(supplier => supplierCardEnhanced.render(supplier)).join('')}
+                            ${displaySuppliers.map((supplier) => supplierCardEnhanced.render(supplier)).join('')}
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
             <!-- Price Comparison Section -->
-            ${displaySuppliers.length > 1 ? `
+            ${
+                displaySuppliers.length > 1
+                    ? `
                 <div class="card mt-6">
                     <div class="card-header">
                         <h2 class="card-title">${components.icon('bar-chart-2', 18)} Price Comparison</h2>
@@ -11225,14 +13814,22 @@ Upload photos once, use them across all your listings.`
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${displaySuppliers.map(s => {
-                                        // Calculate reliability for table
-                                        const tblOrderAcc = s.order_accuracy || 0;
-                                        const tblOnTime = s.on_time_delivery || 0;
-                                        const tblQuality = s.quality_rating || 0;
-                                        const tblReliability = s.reliability_score || Math.round(tblOrderAcc * 0.4 + tblOnTime * 0.3 + tblQuality * 0.3);
-                                        const tblRelColor = tblReliability >= 90 ? 'success' : tblReliability >= 70 ? 'warning' : 'error';
-                                        return `
+                                    ${displaySuppliers
+                                        .map((s) => {
+                                            // Calculate reliability for table
+                                            const tblOrderAcc = s.order_accuracy || 0;
+                                            const tblOnTime = s.on_time_delivery || 0;
+                                            const tblQuality = s.quality_rating || 0;
+                                            const tblReliability =
+                                                s.reliability_score ||
+                                                Math.round(tblOrderAcc * 0.4 + tblOnTime * 0.3 + tblQuality * 0.3);
+                                            const tblRelColor =
+                                                tblReliability >= 90
+                                                    ? 'success'
+                                                    : tblReliability >= 70
+                                                      ? 'warning'
+                                                      : 'error';
+                                            return `
                                         <tr>
                                             <td>
                                                 <div class="flex items-center gap-3">
@@ -11254,7 +13851,7 @@ Upload photos once, use them across all your listings.`
                                             </td>
                                             <td>
                                                 <div class="supplier-rating-sm">
-                                                    ${[1, 2, 3, 4, 5].map(star => `<span style="color: ${star <= (s.rating || 0) ? 'var(--primary-400)' : 'var(--gray-300)'};">★</span>`).join('')}
+                                                    ${[1, 2, 3, 4, 5].map((star) => `<span style="color: ${star <= (s.rating || 0) ? 'var(--primary-400)' : 'var(--gray-300)'};">★</span>`).join('')}
                                                 </div>
                                             </td>
                                             <td>
@@ -11266,13 +13863,17 @@ Upload photos once, use them across all your listings.`
                                                 ${priceTrendSparkline.render(s.price_history || [30, 32, 31, 30, 29, 28])}
                                             </td>
                                         </tr>
-                                    `;}).join('')}
+                                    `;
+                                        })
+                                        .join('')}
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Purchase Order Management -->
             <div class="card mt-6">
@@ -11281,7 +13882,9 @@ Upload photos once, use them across all your listings.`
                     <button class="btn btn-sm btn-primary" onclick="handlers.createPurchaseOrder()">+ New PO</button>
                 </div>
                 <div class="card-body">
-                    ${(store.state.purchaseOrders || []).length > 0 ? `
+                    ${
+                        (store.state.purchaseOrders || []).length > 0
+                            ? `
                         <div class="table-container">
                             <table class="table">
                                 <thead>
@@ -11296,7 +13899,9 @@ Upload photos once, use them across all your listings.`
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${(store.state.purchaseOrders || []).map(po => `
+                                    ${(store.state.purchaseOrders || [])
+                                        .map(
+                                            (po) => `
                                         <tr>
                                             <td class="font-medium">${escapeHtml(po.number || 'PO-' + po.id)}</td>
                                             <td>${escapeHtml(po.supplierName || 'Unknown')}</td>
@@ -11306,16 +13911,20 @@ Upload photos once, use them across all your listings.`
                                             <td class="text-sm text-gray-500">${po.created_at ? new Date(po.created_at).toLocaleDateString() : '-'}</td>
                                             <td><button class="btn btn-sm btn-ghost" onclick="handlers.viewPurchaseOrder('${po.id}')" aria-label="View purchase order">${components.icon('eye', 14)}</button></td>
                                         </tr>
-                                    `).join('')}
+                                    `,
+                                        )
+                                        .join('')}
                                 </tbody>
                             </table>
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div class="text-center py-8">
                             <p style="color: var(--gray-500); margin-bottom: 12px;">No purchase orders yet. Create one to track supplier orders.</p>
                             <button class="btn btn-primary btn-sm" onclick="handlers.createPurchaseOrder()">+ Create First PO</button>
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
@@ -11357,21 +13966,42 @@ Upload photos once, use them across all your listings.`
                                 </tr>
                             </thead>
                             <tbody>
-                                ${displaySuppliers.slice(0, 5).map(s => {
-                                    const proc = '—';
-                                    const ship = '—';
-                                    const total = '—';
-                                    const onTime = '—';
-                                    const improving = null;
-                                    return '<tr>' +
-                                        '<td class="font-medium">' + escapeHtml(s.name) + '</td>' +
-                                        '<td>' + proc + ' days</td>' +
-                                        '<td>' + ship + ' days</td>' +
-                                        '<td class="font-medium">' + total + ' days</td>' +
-                                        '<td><span class="badge badge-' + (onTime >= 90 ? 'success' : 'warning') + '">' + onTime + '%</span></td>' +
-                                        '<td style="color: ' + (improving ? 'var(--success)' : 'var(--danger)') + ';">' + (improving ? '↑ Improving' : '↓ Slower') + '</td>' +
-                                    '</tr>';
-                                }).join('')}
+                                ${displaySuppliers
+                                    .slice(0, 5)
+                                    .map((s) => {
+                                        const proc = '—';
+                                        const ship = '—';
+                                        const total = '—';
+                                        const onTime = '—';
+                                        const improving = null;
+                                        return (
+                                            '<tr>' +
+                                            '<td class="font-medium">' +
+                                            escapeHtml(s.name) +
+                                            '</td>' +
+                                            '<td>' +
+                                            proc +
+                                            ' days</td>' +
+                                            '<td>' +
+                                            ship +
+                                            ' days</td>' +
+                                            '<td class="font-medium">' +
+                                            total +
+                                            ' days</td>' +
+                                            '<td><span class="badge badge-' +
+                                            (onTime >= 90 ? 'success' : 'warning') +
+                                            '">' +
+                                            onTime +
+                                            '%</span></td>' +
+                                            '<td style="color: ' +
+                                            (improving ? 'var(--success)' : 'var(--danger)') +
+                                            ';">' +
+                                            (improving ? '↑ Improving' : '↓ Slower') +
+                                            '</td>' +
+                                            '</tr>'
+                                        );
+                                    })
+                                    .join('')}
                             </tbody>
                         </table>
                     </div>
@@ -11386,24 +14016,53 @@ Upload photos once, use them across all your listings.`
                 </div>
                 <div class="card-body">
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
-                        ${displaySuppliers.slice(0, 6).map(s => {
-                            const contacts = s.contacts || [
-                                { name: s.name + ' Sales', role: 'Sales Rep', email: (s.email || s.name.toLowerCase().replace(/\s/g, '') + '@example.com'), phone: s.phone || 'No phone on file' }
-                            ];
-                            return contacts.map(c => '<div style="padding: 16px; background: var(--gray-50); border-radius: 8px; border: 1px solid var(--gray-200);">' +
-                                '<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">' +
-                                    '<div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-100); color: var(--primary-600); display: flex; align-items: center; justify-content: center; font-weight: 600;">' + (c.name || 'C')[0].toUpperCase() + '</div>' +
-                                    '<div>' +
-                                        '<div style="font-weight: 600; font-size: 14px;">' + escapeHtml(c.name) + '</div>' +
-                                        '<div style="font-size: 12px; color: var(--gray-500);">' + escapeHtml(c.role || 'Contact') + ' &middot; ' + escapeHtml(s.name) + '</div>' +
-                                    '</div>' +
-                                '</div>' +
-                                '<div style="display: grid; gap: 6px; font-size: 12px;">' +
-                                    '<div style="display: flex; align-items: center; gap: 8px; color: var(--gray-600);">' + components.icon('mail', 12) + ' ' + escapeHtml(c.email || '') + '</div>' +
-                                    '<div style="display: flex; align-items: center; gap: 8px; color: var(--gray-600);">' + components.icon('phone', 12) + ' ' + escapeHtml(c.phone || '') + '</div>' +
-                                '</div>' +
-                            '</div>').join('');
-                        }).join('')}
+                        ${displaySuppliers
+                            .slice(0, 6)
+                            .map((s) => {
+                                const contacts = s.contacts || [
+                                    {
+                                        name: s.name + ' Sales',
+                                        role: 'Sales Rep',
+                                        email: s.email || s.name.toLowerCase().replace(/\s/g, '') + '@example.com',
+                                        phone: s.phone || 'No phone on file',
+                                    },
+                                ];
+                                return contacts
+                                    .map(
+                                        (c) =>
+                                            '<div style="padding: 16px; background: var(--gray-50); border-radius: 8px; border: 1px solid var(--gray-200);">' +
+                                            '<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">' +
+                                            '<div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-100); color: var(--primary-600); display: flex; align-items: center; justify-content: center; font-weight: 600;">' +
+                                            (c.name || 'C')[0].toUpperCase() +
+                                            '</div>' +
+                                            '<div>' +
+                                            '<div style="font-weight: 600; font-size: 14px;">' +
+                                            escapeHtml(c.name) +
+                                            '</div>' +
+                                            '<div style="font-size: 12px; color: var(--gray-500);">' +
+                                            escapeHtml(c.role || 'Contact') +
+                                            ' &middot; ' +
+                                            escapeHtml(s.name) +
+                                            '</div>' +
+                                            '</div>' +
+                                            '</div>' +
+                                            '<div style="display: grid; gap: 6px; font-size: 12px;">' +
+                                            '<div style="display: flex; align-items: center; gap: 8px; color: var(--gray-600);">' +
+                                            components.icon('mail', 12) +
+                                            ' ' +
+                                            escapeHtml(c.email || '') +
+                                            '</div>' +
+                                            '<div style="display: flex; align-items: center; gap: 8px; color: var(--gray-600);">' +
+                                            components.icon('phone', 12) +
+                                            ' ' +
+                                            escapeHtml(c.phone || '') +
+                                            '</div>' +
+                                            '</div>' +
+                                            '</div>',
+                                    )
+                                    .join('');
+                            })
+                            .join('')}
                     </div>
                 </div>
             </div>
@@ -11427,22 +14086,38 @@ Upload photos once, use them across all your listings.`
                                 </tr>
                             </thead>
                             <tbody>
-                                ${displaySuppliers.map(s => {
-                                    const base = s.avg_price || 15;
-                                    const moq = s.moq || '—';
-                                    const t1 = base.toFixed(2);
-                                    const t2 = (base * 0.85).toFixed(2);
-                                    const t3 = (base * 0.70).toFixed(2);
-                                    const savings = Math.round((1 - (base * 0.70) / base) * 100);
-                                    return '<tr>' +
-                                        '<td class="font-medium">' + escapeHtml(s.name) + '</td>' +
-                                        '<td><span class="badge badge-secondary">' + moq + ' units</span></td>' +
-                                        '<td>$' + t1 + '/unit</td>' +
-                                        '<td>$' + t2 + '/unit</td>' +
-                                        '<td style="color: var(--success); font-weight: 600;">$' + t3 + '/unit</td>' +
-                                        '<td><span class="badge badge-success">' + savings + '% savings</span></td>' +
-                                    '</tr>';
-                                }).join('')}
+                                ${displaySuppliers
+                                    .map((s) => {
+                                        const base = s.avg_price || 15;
+                                        const moq = s.moq || '—';
+                                        const t1 = base.toFixed(2);
+                                        const t2 = (base * 0.85).toFixed(2);
+                                        const t3 = (base * 0.7).toFixed(2);
+                                        const savings = Math.round((1 - (base * 0.7) / base) * 100);
+                                        return (
+                                            '<tr>' +
+                                            '<td class="font-medium">' +
+                                            escapeHtml(s.name) +
+                                            '</td>' +
+                                            '<td><span class="badge badge-secondary">' +
+                                            moq +
+                                            ' units</span></td>' +
+                                            '<td>$' +
+                                            t1 +
+                                            '/unit</td>' +
+                                            '<td>$' +
+                                            t2 +
+                                            '/unit</td>' +
+                                            '<td style="color: var(--success); font-weight: 600;">$' +
+                                            t3 +
+                                            '/unit</td>' +
+                                            '<td><span class="badge badge-success">' +
+                                            savings +
+                                            '% savings</span></td>' +
+                                            '</tr>'
+                                        );
+                                    })
+                                    .join('')}
                             </tbody>
                         </table>
                     </div>
@@ -11456,9 +14131,14 @@ Upload photos once, use them across all your listings.`
                     <button class="btn btn-sm btn-secondary" onclick="handlers.addCommunicationEntry()">+ Log Entry</button>
                 </div>
                 <div class="card-body">
-                    ${(store.state.supplierComms || []).length > 0 ? `
+                    ${
+                        (store.state.supplierComms || []).length > 0
+                            ? `
                         <div class="space-y-3">
-                            ${(store.state.supplierComms || []).slice(0, 10).map(entry => `
+                            ${(store.state.supplierComms || [])
+                                .slice(0, 10)
+                                .map(
+                                    (entry) => `
                                 <div style="display: flex; gap: 12px; padding: 12px; background: var(--gray-50); border-radius: 8px; border-left: 3px solid var(--${entry.type === 'email' ? 'primary' : entry.type === 'phone' ? 'success' : 'warning'});">
                                     <div style="flex-shrink: 0;">${components.icon(entry.type === 'email' ? 'mail' : entry.type === 'phone' ? 'phone' : 'message-square', 16)}</div>
                                     <div style="flex: 1;">
@@ -11469,14 +14149,18 @@ Upload photos once, use them across all your listings.`
                                         <p style="font-size: 12px; color: var(--gray-600); margin: 4px 0 0;">${escapeHtml(entry.note || '')}</p>
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div class="text-center py-8">
                             <p style="color: var(--gray-500); margin-bottom: 12px;">No communication entries yet. Log calls, emails, and messages with suppliers.</p>
                             <button class="btn btn-primary btn-sm" onclick="handlers.addCommunicationEntry()">+ Log First Entry</button>
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
@@ -11492,15 +14176,38 @@ Upload photos once, use them across all your listings.`
                             <rect width="960" height="600" fill="var(--gray-100)" rx="8"/>
                             <!-- US outline simplified -->
                             <path d="M230,120 L350,100 L470,95 L550,105 L650,100 L750,110 L800,130 L820,180 L810,250 L780,310 L740,350 L700,380 L650,400 L580,420 L500,440 L420,450 L350,445 L290,430 L240,400 L200,360 L180,300 L190,240 L210,180 Z" fill="var(--gray-200)" stroke="var(--gray-300)" stroke-width="2"/>
-                            ${displaySuppliers.map((s, i) => {
-                                const positions = [{x: 350, y: 200}, {x: 500, y: 180}, {x: 650, y: 250}, {x: 400, y: 350}, {x: 550, y: 300}, {x: 300, y: 280}];
-                                const pos = positions[i % positions.length];
-                                const color = s.active !== false ? 'var(--success)' : 'var(--gray-400)';
-                                return '<g>' +
-                                    '<circle cx="' + pos.x + '" cy="' + pos.y + '" r="8" fill="' + color + '" stroke="white" stroke-width="2"/>' +
-                                    '<text x="' + pos.x + '" y="' + (pos.y - 14) + '" text-anchor="middle" font-size="11" fill="var(--gray-700)" font-weight="600">' + escapeHtml(s.name) + '</text>' +
-                                '</g>';
-                            }).join('')}
+                            ${displaySuppliers
+                                .map((s, i) => {
+                                    const positions = [
+                                        { x: 350, y: 200 },
+                                        { x: 500, y: 180 },
+                                        { x: 650, y: 250 },
+                                        { x: 400, y: 350 },
+                                        { x: 550, y: 300 },
+                                        { x: 300, y: 280 },
+                                    ];
+                                    const pos = positions[i % positions.length];
+                                    const color = s.active !== false ? 'var(--success)' : 'var(--gray-400)';
+                                    return (
+                                        '<g>' +
+                                        '<circle cx="' +
+                                        pos.x +
+                                        '" cy="' +
+                                        pos.y +
+                                        '" r="8" fill="' +
+                                        color +
+                                        '" stroke="white" stroke-width="2"/>' +
+                                        '<text x="' +
+                                        pos.x +
+                                        '" y="' +
+                                        (pos.y - 14) +
+                                        '" text-anchor="middle" font-size="11" fill="var(--gray-700)" font-weight="600">' +
+                                        escapeHtml(s.name) +
+                                        '</text>' +
+                                        '</g>'
+                                    );
+                                })
+                                .join('')}
                         </svg>
                         <div style="display: flex; gap: 16px; justify-content: center; margin-top: 12px;">
                             <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;"><div style="width: 10px; height: 10px; border-radius: 50%; background: var(--success);"></div> Active</div>
@@ -11517,10 +14224,20 @@ Upload photos once, use them across all your listings.`
         const competitorSortDir = store.state.competitorSortDir || 'asc';
         const sortedCompetitors = [...(store.state.competitors || [])].sort((a, b) => {
             let av, bv;
-            if (competitorSortCol === 'name') { av = (a.name || '').toLowerCase(); bv = (b.name || '').toLowerCase(); }
-            else if (competitorSortCol === 'items') { av = a.item_count || 0; bv = b.item_count || 0; }
-            else if (competitorSortCol === 'price') { av = a.avg_price || 0; bv = b.avg_price || 0; }
-            else if (competitorSortCol === 'threat') { const order = { Low: 0, Medium: 1, High: 2 }; av = order[a.item_count > 200 ? 'High' : a.item_count > 100 ? 'Medium' : 'Low']; bv = order[b.item_count > 200 ? 'High' : b.item_count > 100 ? 'Medium' : 'Low']; }
+            if (competitorSortCol === 'name') {
+                av = (a.name || '').toLowerCase();
+                bv = (b.name || '').toLowerCase();
+            } else if (competitorSortCol === 'items') {
+                av = a.item_count || 0;
+                bv = b.item_count || 0;
+            } else if (competitorSortCol === 'price') {
+                av = a.avg_price || 0;
+                bv = b.avg_price || 0;
+            } else if (competitorSortCol === 'threat') {
+                const order = { Low: 0, Medium: 1, High: 2 };
+                av = order[a.item_count > 200 ? 'High' : a.item_count > 100 ? 'Medium' : 'Low'];
+                bv = order[b.item_count > 200 ? 'High' : b.item_count > 100 ? 'Medium' : 'Low'];
+            }
             if (av < bv) return competitorSortDir === 'asc' ? -1 : 1;
             if (av > bv) return competitorSortDir === 'asc' ? 1 : -1;
             return 0;
@@ -11529,16 +14246,29 @@ Upload photos once, use them across all your listings.`
         const marketInsights = store.state.marketInsights || [];
         const rawInsights = marketInsights;
         const marketTrends = store.state.marketTrends || {
-            demand: 0, competition: 0, pricing: 0, opportunity: 0, volatility: 0, growth: 0
+            demand: 0,
+            competition: 0,
+            pricing: 0,
+            opportunity: 0,
+            volatility: 0,
+            growth: 0,
         };
         const competitorActivity = store.state.competitorActivity || [];
         const opportunities = store.state.marketOpportunities || [];
         const trendingTerms = store.state.trendingKeywords || [];
 
-        const lastUpdated = store.state.marketIntelLastUpdated ? new Date(store.state.marketIntelLastUpdated) : new Date();
+        const lastUpdated = store.state.marketIntelLastUpdated
+            ? new Date(store.state.marketIntelLastUpdated)
+            : new Date();
         const minutesAgo = Math.round((Date.now() - lastUpdated.getTime()) / 60000);
-        const freshnessLabel = minutesAgo < 1 ? 'Just now' : minutesAgo < 60 ? `${minutesAgo}m ago` : `${Math.round(minutesAgo / 60)}h ago`;
-        const freshnessColor = minutesAgo < 5 ? 'var(--success)' : minutesAgo < 30 ? 'var(--warning)' : 'var(--danger-600)';
+        const freshnessLabel =
+            minutesAgo < 1
+                ? 'Just now'
+                : minutesAgo < 60
+                  ? `${minutesAgo}m ago`
+                  : `${Math.round(minutesAgo / 60)}h ago`;
+        const freshnessColor =
+            minutesAgo < 5 ? 'var(--success)' : minutesAgo < 30 ? 'var(--warning)' : 'var(--danger-600)';
 
         return `
             <div class="page-header">
@@ -11583,21 +14313,36 @@ Upload photos once, use them across all your listings.`
                 <div class="card" style="padding: 20px; text-align: center;">
                     <div style="font-size: 13px; color: var(--gray-600); margin-bottom: 8px;">Market Saturation</div>
                     ${(() => {
-                        const avgSaturation = rawInsights.length > 0
-                            ? Math.round(rawInsights.reduce((s, i) => s + (i.saturation_score || 0), 0) / rawInsights.length)
-                            : null;
+                        const avgSaturation =
+                            rawInsights.length > 0
+                                ? Math.round(
+                                      rawInsights.reduce((s, i) => s + (i.saturation_score || 0), 0) /
+                                          rawInsights.length,
+                                  )
+                                : null;
                         const satDisplay = avgSaturation !== null ? avgSaturation + '%' : 'N/A';
-                        const satDash = avgSaturation !== null ? Math.round(220 * (avgSaturation / 100)) + ' 220' : '0 220';
-                        return '<div style="position: relative; width: 80px; height: 80px; margin: 0 auto 8px;">' +
+                        const satDash =
+                            avgSaturation !== null ? Math.round(220 * (avgSaturation / 100)) + ' 220' : '0 220';
+                        return (
+                            '<div style="position: relative; width: 80px; height: 80px; margin: 0 auto 8px;">' +
                             '<svg viewBox="0 0 80 80" style="width: 100%; height: 100%;">' +
-                                '<circle cx="40" cy="40" r="35" fill="none" stroke="var(--gray-200)" stroke-width="6"></circle>' +
-                                '<circle cx="40" cy="40" r="35" fill="none" stroke="var(--warning)" stroke-width="6" stroke-dasharray="' + satDash + '" transform="rotate(-90 40 40)"></circle>' +
+                            '<circle cx="40" cy="40" r="35" fill="none" stroke="var(--gray-200)" stroke-width="6"></circle>' +
+                            '<circle cx="40" cy="40" r="35" fill="none" stroke="var(--warning)" stroke-width="6" stroke-dasharray="' +
+                            satDash +
+                            '" transform="rotate(-90 40 40)"></circle>' +
                             '</svg>' +
                             '<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">' +
-                                '<div style="font-size: ' + (avgSaturation !== null ? '20' : '14') + 'px; font-weight: 700;">' + satDisplay + '</div>' +
+                            '<div style="font-size: ' +
+                            (avgSaturation !== null ? '20' : '14') +
+                            'px; font-weight: 700;">' +
+                            satDisplay +
                             '</div>' +
-                        '</div>' +
-                        '<div style="font-size: 11px; color: var(--warning);">' + (avgSaturation !== null ? 'Moderately Saturated' : 'No data yet') + '</div>';
+                            '</div>' +
+                            '</div>' +
+                            '<div style="font-size: 11px; color: var(--warning);">' +
+                            (avgSaturation !== null ? 'Moderately Saturated' : 'No data yet') +
+                            '</div>'
+                        );
                     })()}
                 </div>
                 <div class="card" style="padding: 20px; text-align: center;">
@@ -11650,41 +14395,95 @@ Upload photos once, use them across all your listings.`
                 <div class="card-body">
                     <div class="demand-index-list">
                         ${(() => {
-                            const demandData = rawInsights.length > 0
-                                ? rawInsights.slice(0, 5).map(i => ({
-                                    category: i.category || 'Unknown',
-                                    demand: Math.round(i.opportunity_score || 0),
-                                    trend: i.demand_trend === 'rising' ? 'up' : i.demand_trend === 'falling' ? 'down' : 'stable',
-                                    competition: i.competition_level === 'high' ? 'High' : i.competition_level === 'low' ? 'Low' : 'Medium'
-                                }))
-                                : [];
-                            return demandData.length > 0 ? demandData.map((item, idx) => {
-                                const demandLevel = item.demand >= 80 ? 'hot' : item.demand >= 60 ? 'warm' : 'cool';
-                                const trendIcon = item.trend === 'up' ? 'trending-up' : item.trend === 'down' ? 'trending-down' : 'minus';
-                                const trendColor = item.trend === 'up' ? 'var(--success)' : item.trend === 'down' ? 'var(--error)' : 'var(--gray-500)';
-                                const compColor = item.competition === 'Low' ? 'var(--success)' : item.competition === 'High' ? 'var(--error)' : 'var(--warning)';
-                                return '<div class="demand-index-row">' +
-                                    '<div class="demand-rank">#' + (idx + 1) + '</div>' +
-                                    '<div class="demand-category-info">' +
-                                        '<span class="demand-category-name">' + item.category + '</span>' +
-                                        '<div class="demand-meta">' +
-                                            '<span class="demand-trend" style="color: ' + trendColor + ';">' +
-                                                components.icon(trendIcon, 12) +
-                                                (item.trend === 'up' ? 'Rising' : item.trend === 'down' ? 'Falling' : 'Stable') +
-                                            '</span>' +
-                                            '<span class="demand-competition" style="color: ' + compColor + ';">' +
-                                                item.competition + ' competition' +
-                                            '</span>' +
-                                        '</div>' +
-                                    '</div>' +
-                                    '<div class="demand-bar-container">' +
-                                        '<div class="demand-bar">' +
-                                            '<div class="demand-bar-fill demand-' + demandLevel + '" style="width: ' + item.demand + '%;"></div>' +
-                                        '</div>' +
-                                    '</div>' +
-                                    '<div class="demand-score demand-' + demandLevel + '">' + item.demand + '%</div>' +
-                                '</div>';
-                            }).join('') : '<div class="empty-state" style="padding: 24px; text-align: center; color: var(--gray-500);">No category data yet. Add market insights to see demand trends.</div>';
+                            const demandData =
+                                rawInsights.length > 0
+                                    ? rawInsights.slice(0, 5).map((i) => ({
+                                          category: i.category || 'Unknown',
+                                          demand: Math.round(i.opportunity_score || 0),
+                                          trend:
+                                              i.demand_trend === 'rising'
+                                                  ? 'up'
+                                                  : i.demand_trend === 'falling'
+                                                    ? 'down'
+                                                    : 'stable',
+                                          competition:
+                                              i.competition_level === 'high'
+                                                  ? 'High'
+                                                  : i.competition_level === 'low'
+                                                    ? 'Low'
+                                                    : 'Medium',
+                                      }))
+                                    : [];
+                            return demandData.length > 0
+                                ? demandData
+                                      .map((item, idx) => {
+                                          const demandLevel =
+                                              item.demand >= 80 ? 'hot' : item.demand >= 60 ? 'warm' : 'cool';
+                                          const trendIcon =
+                                              item.trend === 'up'
+                                                  ? 'trending-up'
+                                                  : item.trend === 'down'
+                                                    ? 'trending-down'
+                                                    : 'minus';
+                                          const trendColor =
+                                              item.trend === 'up'
+                                                  ? 'var(--success)'
+                                                  : item.trend === 'down'
+                                                    ? 'var(--error)'
+                                                    : 'var(--gray-500)';
+                                          const compColor =
+                                              item.competition === 'Low'
+                                                  ? 'var(--success)'
+                                                  : item.competition === 'High'
+                                                    ? 'var(--error)'
+                                                    : 'var(--warning)';
+                                          return (
+                                              '<div class="demand-index-row">' +
+                                              '<div class="demand-rank">#' +
+                                              (idx + 1) +
+                                              '</div>' +
+                                              '<div class="demand-category-info">' +
+                                              '<span class="demand-category-name">' +
+                                              item.category +
+                                              '</span>' +
+                                              '<div class="demand-meta">' +
+                                              '<span class="demand-trend" style="color: ' +
+                                              trendColor +
+                                              ';">' +
+                                              components.icon(trendIcon, 12) +
+                                              (item.trend === 'up'
+                                                  ? 'Rising'
+                                                  : item.trend === 'down'
+                                                    ? 'Falling'
+                                                    : 'Stable') +
+                                              '</span>' +
+                                              '<span class="demand-competition" style="color: ' +
+                                              compColor +
+                                              ';">' +
+                                              item.competition +
+                                              ' competition' +
+                                              '</span>' +
+                                              '</div>' +
+                                              '</div>' +
+                                              '<div class="demand-bar-container">' +
+                                              '<div class="demand-bar">' +
+                                              '<div class="demand-bar-fill demand-' +
+                                              demandLevel +
+                                              '" style="width: ' +
+                                              item.demand +
+                                              '%;"></div>' +
+                                              '</div>' +
+                                              '</div>' +
+                                              '<div class="demand-score demand-' +
+                                              demandLevel +
+                                              '">' +
+                                              item.demand +
+                                              '%</div>' +
+                                              '</div>'
+                                          );
+                                      })
+                                      .join('')
+                                : '<div class="empty-state" style="padding: 24px; text-align: center; color: var(--gray-500);">No category data yet. Add market insights to see demand trends.</div>';
                         })()}
                     </div>
                 </div>
@@ -11727,7 +14526,9 @@ Upload photos once, use them across all your listings.`
                     </div>
                 </div>
                 <div class="card-body">
-                    ${store.state.marketIntelLoading ? `
+                    ${
+                        store.state.marketIntelLoading
+                            ? `
                         <div style="display: flex; flex-direction: column; gap: 12px; padding: 20px;">
                             <div class="skeleton" style="width: 100%; height: 200px; border-radius: 8px;"></div>
                             <div style="display: flex; gap: 16px; justify-content: center;">
@@ -11736,18 +14537,24 @@ Upload photos once, use them across all your listings.`
                                 <div class="skeleton" style="width: 80px; height: 12px; border-radius: 4px;"></div>
                             </div>
                         </div>
-                    ` : pricePositionChart.render({ competitors })}
+                    `
+                            : pricePositionChart.render({ competitors })
+                    }
                 </div>
             </div>
 
-            ${store.state.marketIntelLoading ? `
+            ${
+                store.state.marketIntelLoading
+                    ? `
                 <div class="card mb-6">
                     <div class="card-header">
                         <h2 class="card-title">Tracked Competitors</h2>
                         <span style="font-size: 12px; color: var(--gray-500);">Loading...</span>
                     </div>
                     <div class="card-body">
-                        ${[1,2,3].map(() => `
+                        ${[1, 2, 3]
+                            .map(
+                                () => `
                             <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--gray-100);">
                                 <div class="skeleton" style="width: 36px; height: 36px; border-radius: 50%;"></div>
                                 <div style="flex: 1;">
@@ -11758,10 +14565,14 @@ Upload photos once, use them across all your listings.`
                                 <div class="skeleton" style="width: 60px; height: 14px; border-radius: 4px;"></div>
                                 <div class="skeleton" style="width: 50px; height: 24px; border-radius: 12px;"></div>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
-            ` : competitors.length > 0 ? `
+            `
+                    : competitors.length > 0
+                      ? `
                 <div class="card mb-6">
                     <div class="card-header">
                         <h2 class="card-title">Tracked Competitors</h2>
@@ -11773,23 +14584,47 @@ Upload photos once, use them across all your listings.`
                                 <thead>
                                     <tr>
                                         ${(() => {
-                                            const cols = [['name','Competitor','left'],['items','Items','right'],['price','Avg Price','right'],['threat','Threat Level','center']];
-                                            return cols.map(([col, label, align]) => {
-                                                const isActive = competitorSortCol === col;
-                                                const arrow = isActive ? (competitorSortDir === 'asc' ? ' ▲' : ' ▼') : '';
-                                                const nextDir = isActive && competitorSortDir === 'asc' ? 'desc' : 'asc';
-                                                return `<th style="padding: 12px; text-align: ${align}; cursor: pointer; user-select: none; white-space: nowrap; color: ${isActive ? 'var(--primary)' : 'inherit'};" onclick="store.setState({ competitorSortCol: '${col}', competitorSortDir: '${nextDir}' }); renderApp(pages.marketIntel());">${label}${arrow}</th>`;
-                                            }).join('');
+                                            const cols = [
+                                                ['name', 'Competitor', 'left'],
+                                                ['items', 'Items', 'right'],
+                                                ['price', 'Avg Price', 'right'],
+                                                ['threat', 'Threat Level', 'center'],
+                                            ];
+                                            return cols
+                                                .map(([col, label, align]) => {
+                                                    const isActive = competitorSortCol === col;
+                                                    const arrow = isActive
+                                                        ? competitorSortDir === 'asc'
+                                                            ? ' ▲'
+                                                            : ' ▼'
+                                                        : '';
+                                                    const nextDir =
+                                                        isActive && competitorSortDir === 'asc' ? 'desc' : 'asc';
+                                                    return `<th style="padding: 12px; text-align: ${align}; cursor: pointer; user-select: none; white-space: nowrap; color: ${isActive ? 'var(--primary)' : 'inherit'};" onclick="store.setState({ competitorSortCol: '${col}', competitorSortDir: '${nextDir}' }); renderApp(pages.marketIntel());">${label}${arrow}</th>`;
+                                                })
+                                                .join('');
                                         })()}
                                         <th style="padding: 12px; text-align: right;">Activity</th>
                                         <th style="padding: 12px; text-align: center;">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${competitors.slice(0, 10).map(competitor => {
-                                        const threatLevel = competitor.item_count > 200 ? 'High' : competitor.item_count > 100 ? 'Medium' : 'Low';
-                                        const threatColor = threatLevel === 'High' ? 'danger' : threatLevel === 'Medium' ? 'warning' : 'success';
-                                        return `
+                                    ${competitors
+                                        .slice(0, 10)
+                                        .map((competitor) => {
+                                            const threatLevel =
+                                                competitor.item_count > 200
+                                                    ? 'High'
+                                                    : competitor.item_count > 100
+                                                      ? 'Medium'
+                                                      : 'Low';
+                                            const threatColor =
+                                                threatLevel === 'High'
+                                                    ? 'danger'
+                                                    : threatLevel === 'Medium'
+                                                      ? 'warning'
+                                                      : 'success';
+                                            return `
                                             <tr style="border-bottom: 1px solid var(--gray-200);">
                                                 <td style="padding: 12px;">
                                                     <div style="display: flex; align-items: center; gap: 10px;">
@@ -11828,13 +14663,15 @@ Upload photos once, use them across all your listings.`
                                                 </td>
                                             </tr>
                                         `;
-                                    }).join('')}
+                                        })
+                                        .join('')}
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
-            ` : `
+            `
+                      : `
                 <div class="card mb-6">
                     <div class="card-body" style="text-align: center; padding: 60px 20px;">
                         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="1.5" style="margin-bottom: 16px;">
@@ -11848,9 +14685,12 @@ Upload photos once, use them across all your listings.`
                         <button class="btn btn-primary" onclick="handlers.addCompetitor()">Track Your First Competitor</button>
                     </div>
                 </div>
-            `}
+            `
+            }
 
-            ${marketInsights.length > 0 ? `
+            ${
+                marketInsights.length > 0
+                    ? `
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">AI Market Insights</h2>
@@ -11858,10 +14698,12 @@ Upload photos once, use them across all your listings.`
                     </div>
                     <div class="card-body">
                         <div class="space-y-3">
-                            ${marketInsights.slice(0, 5).map((insight, idx) => {
-                                const icons = ['trending-up', 'alert-triangle', 'target', 'zap', 'star'];
-                                const colors = ['success', 'warning', 'primary', 'info', 'secondary'];
-                                return `
+                            ${marketInsights
+                                .slice(0, 5)
+                                .map((insight, idx) => {
+                                    const icons = ['trending-up', 'alert-triangle', 'target', 'zap', 'star'];
+                                    const colors = ['success', 'warning', 'primary', 'info', 'secondary'];
+                                    return `
                                     <div style="padding: 16px; background: var(--gray-50); border-left: 4px solid var(--${colors[idx % colors.length]}); border-radius: 4px; display: flex; gap: 12px; align-items: start;">
                                         <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--${colors[idx % colors.length]}-light, var(--gray-100)); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--${colors[idx % colors.length]})" stroke-width="2">
@@ -11876,11 +14718,14 @@ Upload photos once, use them across all your listings.`
                                         <button class="btn btn-sm btn-secondary" onclick="handlers.viewInsightDetails('${insight.id || idx}')">Details</button>
                                     </div>
                                 `;
-                            }).join('')}
+                                })
+                                .join('')}
                         </div>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Price Tracking with Historical Charts -->
             <div class="card">
@@ -11889,17 +14734,30 @@ Upload photos once, use them across all your listings.`
                     <button class="btn btn-sm btn-secondary" onclick="handlers.addPriceWatch()">+ Watch Item</button>
                 </div>
                 <div class="card-body">
-                    ${(store.state.priceWatchlist || []).length > 0 ? `
+                    ${
+                        (store.state.priceWatchlist || []).length > 0
+                            ? `
                         <div class="space-y-3">
-                            ${(store.state.priceWatchlist || []).slice(0, 5).map(item => {
-                                const priceHistory = item.history || [45, 42, 48, 44, 50, 47, 52];
-                                const min = Math.min(...priceHistory);
-                                const max = Math.max(...priceHistory);
-                                const range = max - min || 1;
-                                const points = priceHistory.map((p, i) => `${(i / (priceHistory.length - 1)) * 200},${40 - ((p - min) / range) * 35}`).join(' ');
-                                const trend = priceHistory[priceHistory.length - 1] > priceHistory[0] ? 'up' : 'down';
-                                const pctChange = (((priceHistory[priceHistory.length - 1] - priceHistory[0]) / priceHistory[0]) * 100).toFixed(1);
-                                return `
+                            ${(store.state.priceWatchlist || [])
+                                .slice(0, 5)
+                                .map((item) => {
+                                    const priceHistory = item.history || [45, 42, 48, 44, 50, 47, 52];
+                                    const min = Math.min(...priceHistory);
+                                    const max = Math.max(...priceHistory);
+                                    const range = max - min || 1;
+                                    const points = priceHistory
+                                        .map(
+                                            (p, i) =>
+                                                `${(i / (priceHistory.length - 1)) * 200},${40 - ((p - min) / range) * 35}`,
+                                        )
+                                        .join(' ');
+                                    const trend =
+                                        priceHistory[priceHistory.length - 1] > priceHistory[0] ? 'up' : 'down';
+                                    const pctChange = (
+                                        ((priceHistory[priceHistory.length - 1] - priceHistory[0]) / priceHistory[0]) *
+                                        100
+                                    ).toFixed(1);
+                                    return `
                                     <div style="display: flex; align-items: center; gap: 16px; padding: 12px; background: var(--gray-50); border-radius: 8px;">
                                         <div style="flex: 1;">
                                             <div style="font-weight: 600; font-size: 14px;">${escapeHtml(item.title || 'Watched Item')}</div>
@@ -11921,14 +14779,17 @@ Upload photos once, use them across all your listings.`
                                         </button>
                                     </div>
                                 `;
-                            }).join('')}
+                                })
+                                .join('')}
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div class="text-center py-8">
                             <p style="color: var(--gray-500); margin-bottom: 12px;">No items being tracked. Add items to monitor price changes over time.</p>
                             <button class="btn btn-primary btn-sm" onclick="handlers.addPriceWatch()">+ Add First Watch</button>
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
@@ -11958,14 +14819,18 @@ Upload photos once, use them across all your listings.`
                             { label: 'Avg Sale Price', value: 'N/A', change: '', up: true },
                             { label: 'Avg Days to Sell', value: 'N/A', change: '', up: true },
                             { label: 'Sell-Through Rate', value: 'N/A', change: '', up: true },
-                            { label: 'Items Analyzed', value: '0', change: '', up: true }
-                        ].map(stat => `
+                            { label: 'Items Analyzed', value: '0', change: '', up: true },
+                        ]
+                            .map(
+                                (stat) => `
                             <div style="text-align: center; padding: 16px; background: var(--gray-50); border-radius: 8px;">
                                 <div style="font-size: 24px; font-weight: 700;">${stat.value}</div>
                                 <div style="font-size: 12px; color: var(--gray-500); margin-bottom: 4px;">${stat.label}</div>
                                 ${stat.change ? `<span style="font-size: 11px; color: ${stat.up ? 'var(--success)' : 'var(--danger)'};">${stat.change}</span>` : ''}
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                     <div style="text-center; padding: 2rem; color: var(--gray-400);">
                         <p>Not enough sales data yet. Sold listing analysis will appear once you have completed sales.</p>
@@ -11974,7 +14839,9 @@ Upload photos once, use them across all your listings.`
                         <table class="table">
                             <thead><tr><th>Category</th><th>Avg Price</th><th>Sales Volume</th><th>Avg Days</th><th>Top Brand</th></tr></thead>
                             <tbody>
-                                ${[].map(row => `
+                                ${[]
+                                    .map(
+                                        (row) => `
                                     <tr>
                                         <td style="font-weight: 500;">${row.cat}</td>
                                         <td>${row.price}</td>
@@ -11982,7 +14849,9 @@ Upload photos once, use them across all your listings.`
                                         <td>${row.days}d</td>
                                         <td><span class="badge badge-outline badge-sm">${row.brand}</span></td>
                                     </tr>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </tbody>
                         </table>
                     </div>
@@ -11999,12 +14868,12 @@ Upload photos once, use them across all your listings.`
                         <div>
                             <p style="font-size: 13px; color: var(--gray-600); margin-bottom: 16px;">Enter item details to get AI-powered pricing recommendations based on market data.</p>
                             <div class="form-group">
-                                <label class="form-label">Item Title</label>
+                                <label class="form-label" for="price-suggest-title">Item Title</label>
                                 <input aria-label="Vintage Sony Walkman" type="text" class="form-input" id="price-suggest-title" placeholder="e.g., Vintage Sony Walkman">
                             </div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                                 <div class="form-group">
-                                    <label class="form-label">Category</label>
+                                    <label class="form-label" for="price-suggest-category">Category</label>
                                     <select class="form-input" id="price-suggest-category" aria-label="Price Suggest Category">
                                         <option value="">Select...</option>
                                         <option>Electronics</option><option>Clothing</option><option>Shoes</option>
@@ -12012,7 +14881,7 @@ Upload photos once, use them across all your listings.`
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label">Condition</label>
+                                    <label class="form-label" for="price-suggest-condition">Condition</label>
                                     <select class="form-input" id="price-suggest-condition" aria-label="Price Suggest Condition">
                                         <option value="">Select...</option>
                                         <option>New</option><option>Like New</option><option>Good</option>
@@ -12044,25 +14913,50 @@ Upload photos once, use them across all your listings.`
                 <div class="card-body">
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
                         ${[
-                            { category: 'Clothing & Apparel', bestBuy: 'Jan, Jul', bestSell: 'Mar-May, Sep-Nov', peak: 'Fall/Back-to-School', factor: 1.35 },
-                            { category: 'Electronics', bestBuy: 'Jan, Jun', bestSell: 'Nov-Dec', peak: 'Holiday Season', factor: 1.52 },
-                            { category: 'Collectibles & Vintage', bestBuy: 'Feb-Mar', bestSell: 'Oct-Dec', peak: 'Holiday Gifting', factor: 1.28 }
-                        ].map(cat => {
-                            const months = ['J','F','M','A','M','J','J','A','S','O','N','D'];
-                            const seasonal = [0.7, 0.8, 1.0, 1.1, 1.2, 0.9, 0.8, 0.9, 1.3, 1.4, 1.5, 1.6];
-                            if (cat.category.includes('Clothing')) seasonal.splice(0, 12, 0.6, 0.7, 1.1, 1.2, 1.3, 0.8, 0.6, 0.9, 1.4, 1.3, 1.1, 0.9);
-                            if (cat.category.includes('Electronics')) seasonal.splice(0, 12, 0.7, 0.8, 0.9, 0.9, 1.0, 0.8, 0.9, 1.0, 1.1, 1.2, 1.5, 1.6);
-                            const maxS = Math.max(...seasonal);
-                            return `
+                            {
+                                category: 'Clothing & Apparel',
+                                bestBuy: 'Jan, Jul',
+                                bestSell: 'Mar-May, Sep-Nov',
+                                peak: 'Fall/Back-to-School',
+                                factor: 1.35,
+                            },
+                            {
+                                category: 'Electronics',
+                                bestBuy: 'Jan, Jun',
+                                bestSell: 'Nov-Dec',
+                                peak: 'Holiday Season',
+                                factor: 1.52,
+                            },
+                            {
+                                category: 'Collectibles & Vintage',
+                                bestBuy: 'Feb-Mar',
+                                bestSell: 'Oct-Dec',
+                                peak: 'Holiday Gifting',
+                                factor: 1.28,
+                            },
+                        ]
+                            .map((cat) => {
+                                const months = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+                                const seasonal = [0.7, 0.8, 1.0, 1.1, 1.2, 0.9, 0.8, 0.9, 1.3, 1.4, 1.5, 1.6];
+                                if (cat.category.includes('Clothing'))
+                                    seasonal.splice(0, 12, 0.6, 0.7, 1.1, 1.2, 1.3, 0.8, 0.6, 0.9, 1.4, 1.3, 1.1, 0.9);
+                                if (cat.category.includes('Electronics'))
+                                    seasonal.splice(0, 12, 0.7, 0.8, 0.9, 0.9, 1.0, 0.8, 0.9, 1.0, 1.1, 1.2, 1.5, 1.6);
+                                const maxS = Math.max(...seasonal);
+                                return `
                                 <div style="padding: 16px; background: var(--gray-50); border-radius: 8px;">
                                     <h3 style="font-size: 14px; margin: 0 0 4px;">${cat.category}</h3>
                                     <div style="display: flex; gap: 2px; margin: 12px 0; height: 50px; align-items: flex-end;">
-                                        ${seasonal.map((s, i) => `
+                                        ${seasonal
+                                            .map(
+                                                (s, i) => `
                                             <div style="flex: 1; background: ${s >= 1.2 ? 'var(--success)' : s >= 1.0 ? 'var(--primary-400)' : 'var(--gray-300)'}; height: ${(s / maxS) * 100}%; border-radius: 2px;" title="${months[i]}: ${s.toFixed(2)}x"></div>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </div>
                                     <div style="display: flex; justify-content: space-between; font-size: 9px; color: var(--gray-400);">
-                                        ${months.map(m => `<span>${m}</span>`).join('')}
+                                        ${months.map((m) => `<span>${m}</span>`).join('')}
                                     </div>
                                     <div style="margin-top: 12px; font-size: 12px;">
                                         <div><strong>Best to Buy:</strong> <span style="color: var(--primary-600);">${cat.bestBuy}</span></div>
@@ -12071,7 +14965,8 @@ Upload photos once, use them across all your listings.`
                                     </div>
                                 </div>
                             `;
-                        }).join('')}
+                            })
+                            .join('')}
                     </div>
                 </div>
             </div>
@@ -12083,9 +14978,13 @@ Upload photos once, use them across all your listings.`
                     <button class="btn btn-sm btn-primary" onclick="handlers.addSavedSearch()">+ New Search</button>
                 </div>
                 <div class="card-body">
-                    ${(store.state.savedMarketSearches || []).length > 0 ? `
+                    ${
+                        (store.state.savedMarketSearches || []).length > 0
+                            ? `
                         <div class="space-y-2">
-                            ${(store.state.savedMarketSearches || []).map(search => `
+                            ${(store.state.savedMarketSearches || [])
+                                .map(
+                                    (search) => `
                                 <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--gray-50); border-radius: 8px;">
                                     <div style="flex: 1;">
                                         <div style="font-weight: 600; font-size: 14px;">${escapeHtml(search.query)}</div>
@@ -12095,14 +14994,18 @@ Upload photos once, use them across all your listings.`
                                     <button class="btn btn-sm btn-ghost" onclick="handlers.runSavedSearch('${search.id}')" title="Run search" aria-label="Run search">${components.icon('search', 14)}</button>
                                     <button class="btn btn-sm btn-ghost" onclick="handlers.removeSavedSearch('${search.id}')" title="Remove" aria-label="Remove saved search">${components.icon('x', 14)}</button>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div class="text-center py-8">
                             <p style="color: var(--gray-500); margin-bottom: 12px;">Save frequent searches and get alerts when new matching listings appear.</p>
                             <button class="btn btn-primary btn-sm" onclick="handlers.addSavedSearch()">+ Create First Search</button>
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
@@ -12131,13 +15034,17 @@ Upload photos once, use them across all your listings.`
                                     { metric: 'Sell-Through Rate', values: ['62%', '71%', '58%', '55%', '48%'] },
                                     { metric: 'Seller Fees', values: ['20%', '13%', '10%', '10%', '9%'] },
                                     { metric: 'Active Listings', values: ['8.2M', '12.5M', '4.1M', '3.8M', '1.2M'] },
-                                    { metric: 'Best For', values: ['Women\'s', 'All', 'Budget', 'Trendy', 'Luxury'] }
-                                ].map(row => `
+                                    { metric: 'Best For', values: ["Women's", 'All', 'Budget', 'Trendy', 'Luxury'] },
+                                ]
+                                    .map(
+                                        (row) => `
                                     <tr>
                                         <td style="font-weight: 600; font-size: 13px;">${row.metric}</td>
-                                        ${row.values.map(v => `<td style="text-align: center; font-size: 13px;">${v}</td>`).join('')}
+                                        ${row.values.map((v) => `<td style="text-align: center; font-size: 13px;">${v}</td>`).join('')}
                                     </tr>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </tbody>
                         </table>
                     </div>
@@ -12176,9 +15083,13 @@ Upload photos once, use them across all your listings.`
                     <h2 class="card-title">Webhook Endpoints</h2>
                 </div>
                 <div class="card-body">
-                    ${endpoints.length > 0 ? `
+                    ${
+                        endpoints.length > 0
+                            ? `
                         <div style="display: grid; gap: 16px;">
-                            ${endpoints.map(ep => `
+                            ${endpoints
+                                .map(
+                                    (ep) => `
                                 <div style="padding: 16px; border: 1px solid var(--gray-200); border-radius: 8px; background: var(--gray-50);">
                                     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
                                         <div>
@@ -12197,10 +15108,14 @@ Upload photos once, use them across all your listings.`
                                     <div style="margin-bottom: 12px;">
                                         <span style="font-size: 11px; color: var(--gray-700);">Events:</span>
                                         <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">
-                                            ${(ep.events || []).map(evt => `
+                                            ${(ep.events || [])
+                                                .map(
+                                                    (evt) => `
                                                 <span class="badge badge-secondary" style="font-size: 11px;">${escapeHtml(evt)}</span>
-                                            `).join('')}
-                                            ${(!ep.events || ep.events.length === 0) ? '<span style="font-size: 11px; color: var(--gray-500);">No events subscribed</span>' : ''}
+                                            `,
+                                                )
+                                                .join('')}
+                                            ${!ep.events || ep.events.length === 0 ? '<span style="font-size: 11px; color: var(--gray-500);">No events subscribed</span>' : ''}
                                         </div>
                                     </div>
                                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; padding: 12px; background: white; border-radius: 4px; font-size: 12px;">
@@ -12223,18 +15138,24 @@ Upload photos once, use them across all your listings.`
                                         <button class="btn btn-sm btn-danger" onclick="handlers.deleteWebhookEndpoint('${ep.id}')">Delete</button>
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div style="text-align: center; padding: 40px; color: var(--gray-500);">
                             <p style="margin: 0; font-size: 14px;">No webhook endpoints configured yet.</p>
                             <button class="btn btn-primary" style="margin-top: 12px;" onclick="window.showAddWebhookModal()">Create Your First Endpoint</button>
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
-            ${events.length > 0 ? `
+            ${
+                events.length > 0
+                    ? `
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Recent Events Log</h2>
@@ -12253,7 +15174,10 @@ Upload photos once, use them across all your listings.`
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${events.slice(0, 20).map(evt => `
+                                    ${events
+                                        .slice(0, 20)
+                                        .map(
+                                            (evt) => `
                                         <tr style="border-bottom: 1px solid var(--gray-200);">
                                             <td style="padding: 12px;">${new Date(evt.created_at).toLocaleString()}</td>
                                             <td style="padding: 12px;"><strong>${escapeHtml(evt.event_type)}</strong></td>
@@ -12270,13 +15194,17 @@ Upload photos once, use them across all your listings.`
                                                 ${evt.status === 'failed' ? `<button class="btn btn-xs btn-secondary" onclick="handlers.retryWebhookEvent('${evt.id}')">Retry</button>` : ''}
                                             </td>
                                         </tr>
-                                    `).join('')}
+                                    `,
+                                        )
+                                        .join('')}
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
         `;
     },
 
@@ -12285,7 +15213,8 @@ Upload photos once, use them across all your listings.`
         const settings = store.state.pushSettings || { enabled: true, categories: {} };
         const subscribed = store.state.pushSubscribed || false;
 
-        const supportsNotifications = typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window;
+        const supportsNotifications =
+            typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window;
 
         return `
             <div class="page-header">
@@ -12313,24 +15242,34 @@ Upload photos once, use them across all your listings.`
                         </div>
                     </div>
 
-                    ${supportsNotifications ? `
+                    ${
+                        supportsNotifications
+                            ? `
                         <div style="display: flex; gap: 8px;">
-                            ${subscribed ? `
+                            ${
+                                subscribed
+                                    ? `
                                 <button class="btn btn-danger" onclick="handlers.unsubscribePush()">Disable Push Notifications</button>
-                            ` : `
+                            `
+                                    : `
                                 <button class="btn btn-primary" onclick="handlers.subscribePush()">Enable Push Notifications</button>
-                            `}
+                            `
+                            }
                             <button class="btn btn-secondary" onclick="handlers.testPushNotification()">Send Test Notification</button>
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div style="padding: 12px; background: var(--warning-light); border-left: 4px solid var(--warning); border-radius: 4px; color: var(--gray-800);">
                             <strong>Push notifications are not supported</strong> in your current browser. Please use a modern browser like Chrome, Firefox, or Edge.
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
-            ${subscribed ? `
+            ${
+                subscribed
+                    ? `
                 <div class="card mb-6">
                     <div class="card-header">
                         <h2 class="card-title">Notification Preferences</h2>
@@ -12342,8 +15281,10 @@ Upload photos once, use them across all your listings.`
                                 { key: 'offers', label: 'Offers', description: 'Price changes and offers' },
                                 { key: 'orders', label: 'Orders', description: 'Order status updates' },
                                 { key: 'sync', label: 'Sync', description: 'Inventory sync notifications' },
-                                { key: 'marketing', label: 'Marketing', description: 'Marketing and promotions' }
-                            ].map(cat => `
+                                { key: 'marketing', label: 'Marketing', description: 'Marketing and promotions' },
+                            ]
+                                .map(
+                                    (cat) => `
                                 <div style="padding: 12px; border: 1px solid var(--gray-200); border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
                                     <div>
                                         <div style="font-weight: 600; margin-bottom: 2px;">${cat.label}</div>
@@ -12357,20 +15298,28 @@ Upload photos once, use them across all your listings.`
                                         ">
                                     </label>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
-            ${subscriptions.length > 0 ? `
+            ${
+                subscriptions.length > 0
+                    ? `
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Active Subscriptions</h2>
                     </div>
                     <div class="card-body">
                         <div style="display: grid; gap: 12px;">
-                            ${subscriptions.map(sub => `
+                            ${subscriptions
+                                .map(
+                                    (sub) => `
                                 <div style="padding: 12px; border: 1px solid var(--gray-200); border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
                                     <div style="font-size: 12px;">
                                         <div style="font-weight: 600; margin-bottom: 4px;">Device</div>
@@ -12379,11 +15328,15 @@ Upload photos once, use them across all your listings.`
                                     </div>
                                     <button class="btn btn-sm btn-danger" onclick="handlers.deletePushSubscription('${sub.id}')">Remove</button>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
         `;
     },
 
@@ -12395,19 +15348,39 @@ Upload photos once, use them across all your listings.`
         const _helpArticles = store.state.helpArticles || [];
         const supportStats = store.state.supportStats || { articlesRead: 0, ticketsOpen: 0, avgResponseTime: '< 24h' };
         const popularArticles = store.state.popularArticles || [
-            { id: 'art_getting_started_cross_listing', slug: 'art_getting_started_cross_listing', title: 'Getting Started with Cross-Listing', category: 'Basics' },
-            { id: 'art_connect_ebay_account', slug: 'art_connect_ebay_account', title: 'How to Connect Your eBay Account', category: 'Integrations' },
-            { id: 'art_analytics_dashboard', slug: 'art_analytics_dashboard', title: 'Understanding Analytics Dashboard', category: 'Analytics' },
-            { id: 'art_setting_up_automations', slug: 'art_setting_up_automations', title: 'Setting Up Automations', category: 'Automations' }
+            {
+                id: 'art_getting_started_cross_listing',
+                slug: 'art_getting_started_cross_listing',
+                title: 'Getting Started with Cross-Listing',
+                category: 'Basics',
+            },
+            {
+                id: 'art_connect_ebay_account',
+                slug: 'art_connect_ebay_account',
+                title: 'How to Connect Your eBay Account',
+                category: 'Integrations',
+            },
+            {
+                id: 'art_analytics_dashboard',
+                slug: 'art_analytics_dashboard',
+                title: 'Understanding Analytics Dashboard',
+                category: 'Analytics',
+            },
+            {
+                id: 'art_setting_up_automations',
+                slug: 'art_setting_up_automations',
+                title: 'Setting Up Automations',
+                category: 'Automations',
+            },
         ];
         const gettingStartedSteps = [
             { id: 1, title: 'Create your account', completed: true },
             { id: 2, title: 'Add your first item', completed: (store.state.inventoryItems || []).length > 0 },
             { id: 3, title: 'Create your first listing', completed: (store.state.listings || []).length > 0 },
             { id: 4, title: 'Set up an automation', completed: (store.state.automations || []).length > 0 },
-            { id: 5, title: 'Record your first sale', completed: (store.state.sales || []).length > 0 }
+            { id: 5, title: 'Record your first sale', completed: (store.state.sales || []).length > 0 },
         ];
-        const completedSteps = gettingStartedSteps.filter(s => s.completed).length;
+        const completedSteps = gettingStartedSteps.filter((s) => s.completed).length;
 
         return `
             <div class="page-header">
@@ -12465,20 +15438,44 @@ Upload photos once, use them across all your listings.`
                     </svg>
                     <input type="text" class="help-search-input" aria-label="Search help" placeholder="Search help articles, FAQs, and tutorials..." oninput="handlers.searchHelp(this.value)">
                 </div>
-                <div id="help-search-results" class="help-search-results ${_helpSearchQuery ? '' : 'hidden'}">${_helpSearchQuery ? `
-                    ${(_helpFAQs.length === 0 && _helpArticles.length === 0) ? `
+                <div id="help-search-results" class="help-search-results ${_helpSearchQuery ? '' : 'hidden'}">${
+                    _helpSearchQuery
+                        ? `
+                    ${
+                        _helpFAQs.length === 0 && _helpArticles.length === 0
+                            ? `
                         <div class="help-search-empty">No results for "${escapeHtml(_helpSearchQuery)}"</div>
-                    ` : `
-                        ${_helpFAQs.length > 0 ? `<div class="help-search-section-label">FAQs</div>${_helpFAQs.map(f => `
+                    `
+                            : `
+                        ${
+                            _helpFAQs.length > 0
+                                ? `<div class="help-search-section-label">FAQs</div>${_helpFAQs
+                                      .map(
+                                          (f) => `
                             <button class="help-search-result-item" onclick="router.navigate('support-articles')">
                                 <span>${escapeHtml(f.question)}</span>
-                            </button>`).join('')}` : ''}
-                        ${_helpArticles.length > 0 ? `<div class="help-search-section-label">Articles</div>${_helpArticles.map(a => `
+                            </button>`,
+                                      )
+                                      .join('')}`
+                                : ''
+                        }
+                        ${
+                            _helpArticles.length > 0
+                                ? `<div class="help-search-section-label">Articles</div>${_helpArticles
+                                      .map(
+                                          (a) => `
                             <button class="help-search-result-item" onclick="handlers.loadArticle('${escapeHtml(a.slug)}')">
                                 <span>${escapeHtml(a.title)}</span>
-                            </button>`).join('')}` : ''}
-                    `}
-                ` : ''}</div>
+                            </button>`,
+                                      )
+                                      .join('')}`
+                                : ''
+                        }
+                    `
+                    }
+                `
+                        : ''
+                }</div>
             </div>
 
             <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 24px;">
@@ -12561,18 +15558,26 @@ Upload photos once, use them across all your listings.`
                             <span class="progress-label">${Math.round((completedSteps / gettingStartedSteps.length) * 100)}% complete</span>
                         </div>
                         <div class="getting-started-list">
-                            ${gettingStartedSteps.map(step => `
+                            ${gettingStartedSteps
+                                .map(
+                                    (step) => `
                                 <div class="getting-started-item ${step.completed ? 'completed' : ''}" role="button" tabindex="0" onclick="handlers.toggleGettingStartedStep(${step.id})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.toggleGettingStartedStep(${step.id})}">
                                     <div class="step-checkbox">
-                                        ${step.completed ? `
+                                        ${
+                                            step.completed
+                                                ? `
                                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                                                 <polyline points="20 6 9 17 4 12"></polyline>
                                             </svg>
-                                        ` : ''}
+                                        `
+                                                : ''
+                                        }
                                     </div>
                                     <span class="step-title">${step.title}</span>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
                     </div>
                 </div>
@@ -12586,19 +15591,27 @@ Upload photos once, use them across all your listings.`
                 </div>
                 <div class="card-body">
                     <div class="popular-articles-grid">
-                        ${popularArticles.map(article => `
+                        ${popularArticles
+                            .map(
+                                (article) => `
                             <button class="popular-article-card" onclick="modals.viewArticle('${article.slug || article.id}')">
                                 <div class="article-category">${article.category}</div>
                                 <h3 class="article-title">${escapeHtml(article.title)}</h3>
-                                ${article.views != null ? `<div class="article-meta">
+                                ${
+                                    article.views != null
+                                        ? `<div class="article-meta">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                         <circle cx="12" cy="12" r="3"></circle>
                                     </svg>
                                     ${article.views.toLocaleString()} views
-                                </div>` : ''}
+                                </div>`
+                                        : ''
+                                }
                             </button>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
             </div>
@@ -12666,13 +15679,51 @@ Upload photos once, use them across all your listings.`
                     <p class="text-gray-500 mb-4">Step-by-step guides to help you master each section of VaultLister.</p>
                     <div class="grid grid-cols-3 gap-3">
                         ${[
-                            { page: 'inventory', title: 'Inventory Management', icon: 'package', steps: 5, desc: 'Learn to add, organize, and track your items' },
-                            { page: 'listings', title: 'Creating Listings', icon: 'tag', steps: 4, desc: 'Cross-list items across multiple platforms' },
-                            { page: 'orders', title: 'Order Fulfillment', icon: 'truck', steps: 4, desc: 'Process orders and print shipping labels' },
-                            { page: 'analytics', title: 'Analytics Dashboard', icon: 'bar-chart-2', steps: 3, desc: 'Understand your sales data and trends' },
-                            { page: 'automations', title: 'Setting Up Automations', icon: 'zap', steps: 4, desc: 'Automate sharing, relisting, and pricing' },
-                            { page: 'image-bank', title: 'Image Bank', icon: 'image', steps: 3, desc: 'Manage and organize product photos' }
-                        ].map(t => `
+                            {
+                                page: 'inventory',
+                                title: 'Inventory Management',
+                                icon: 'package',
+                                steps: 5,
+                                desc: 'Learn to add, organize, and track your items',
+                            },
+                            {
+                                page: 'listings',
+                                title: 'Creating Listings',
+                                icon: 'tag',
+                                steps: 4,
+                                desc: 'Cross-list items across multiple platforms',
+                            },
+                            {
+                                page: 'orders',
+                                title: 'Order Fulfillment',
+                                icon: 'truck',
+                                steps: 4,
+                                desc: 'Process orders and print shipping labels',
+                            },
+                            {
+                                page: 'analytics',
+                                title: 'Analytics Dashboard',
+                                icon: 'bar-chart-2',
+                                steps: 3,
+                                desc: 'Understand your sales data and trends',
+                            },
+                            {
+                                page: 'automations',
+                                title: 'Setting Up Automations',
+                                icon: 'zap',
+                                steps: 4,
+                                desc: 'Automate sharing, relisting, and pricing',
+                            },
+                            {
+                                page: 'image-bank',
+                                title: 'Image Bank',
+                                icon: 'image',
+                                steps: 3,
+                                desc: 'Manage and organize product photos',
+                            },
+                        ]
+                            .map(
+                                (t) => `
                             <div class="walkthrough-card" role="button" tabindex="0" onclick="handlers.startWalkthrough('${t.page}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.startWalkthrough('${t.page}')}" style="cursor: pointer; padding: 16px; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); transition: all 0.2s;">
                                 <div class="flex items-center gap-2 mb-2">
                                     ${components.icon(t.icon, 18)}
@@ -12684,7 +15735,9 @@ Upload photos once, use them across all your listings.`
                                     <span class="badge badge-sm badge-primary">Start</span>
                                 </div>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
             </div>
@@ -12813,7 +15866,9 @@ Upload photos once, use them across all your listings.`
                                 <div class="impact-stat-label">Features Influenced</div>
                             </div>
                         </div>
-                        ${userImpact.feedbackSubmitted > 0 ? `<div class="contributor-badge-section">
+                        ${
+                            userImpact.feedbackSubmitted > 0
+                                ? `<div class="contributor-badge-section">
                             <div class="contributor-badge">
                                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2">
                                     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
@@ -12821,7 +15876,9 @@ Upload photos once, use them across all your listings.`
                                 <span>Top Contributor</span>
                             </div>
                             <p class="badge-description">You're in the top 10% of contributors this month!</p>
-                        </div>` : ''}
+                        </div>`
+                                : ''
+                        }
                     </div>
                 </div>
             </div>
@@ -12882,13 +15939,18 @@ Upload photos once, use them across all your listings.`
                     <button class="btn btn-sm btn-secondary" onclick="router.navigate('feedback-analytics')">View All</button>
                 </div>
                 <div class="card-body">
-                    ${trendingSuggestions.length === 0 ? `
+                    ${
+                        trendingSuggestions.length === 0
+                            ? `
                         <div style="text-align: center; padding: 32px; color: var(--gray-500);">
                             <p style="margin: 0;">No suggestions yet. Be the first to submit feedback!</p>
                         </div>
-                    ` : `
+                    `
+                            : `
                     <div class="trending-suggestions-list">
-                        ${trendingSuggestions.map((suggestion, idx) => `
+                        ${trendingSuggestions
+                            .map(
+                                (suggestion, idx) => `
                             <div class="trending-suggestion-item" style="cursor: pointer;" role="button" tabindex="0" onclick="handlers.showFeedbackDetail('${suggestion.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.showFeedbackDetail('${suggestion.id}')}">
                                 <div class="suggestion-rank">#${idx + 1}</div>
                                 <div class="suggestion-content">
@@ -12914,9 +15976,12 @@ Upload photos once, use them across all your listings.`
                                     </button>
                                 </div>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
         `;
@@ -12932,8 +15997,19 @@ Upload photos once, use them across all your listings.`
         const topVoted = analytics.topVoted || [];
         const recentActivity = analytics.recentActivity || [];
 
-        const typeColors = { feature: 'var(--primary-500)', improvement: 'var(--success)', bug: 'var(--danger-600)', general: 'var(--gray-500)' };
-        const statusColors = { pending: 'var(--gray-400)', reviewing: 'var(--primary-500)', planned: 'var(--success)', completed: '#059669', declined: 'var(--danger-600)' };
+        const typeColors = {
+            feature: 'var(--primary-500)',
+            improvement: 'var(--success)',
+            bug: 'var(--danger-600)',
+            general: 'var(--gray-500)',
+        };
+        const statusColors = {
+            pending: 'var(--gray-400)',
+            reviewing: 'var(--primary-500)',
+            planned: 'var(--success)',
+            completed: '#059669',
+            declined: 'var(--danger-600)',
+        };
 
         return `
             <div class="page-header">
@@ -12959,11 +16035,11 @@ Upload photos once, use them across all your listings.`
                     <div style="font-size: 13px; color: var(--gray-500); margin-top: 4px;">Total Votes</div>
                 </div>
                 <div class="card" style="padding: 20px; text-align: center;">
-                    <div style="font-size: 28px; font-weight: 700; color: var(--warning, var(--primary-500));">${byType.find(t => t.type === 'feature')?.count || 0}</div>
+                    <div style="font-size: 28px; font-weight: 700; color: var(--warning, var(--primary-500));">${byType.find((t) => t.type === 'feature')?.count || 0}</div>
                     <div style="font-size: 13px; color: var(--gray-500); margin-top: 4px;">Feature Requests</div>
                 </div>
                 <div class="card" style="padding: 20px; text-align: center;">
-                    <div style="font-size: 28px; font-weight: 700; color: var(--danger-600);">${byType.find(t => t.type === 'bug')?.count || 0}</div>
+                    <div style="font-size: 28px; font-weight: 700; color: var(--danger-600);">${byType.find((t) => t.type === 'bug')?.count || 0}</div>
                     <div style="font-size: 13px; color: var(--gray-500); margin-top: 4px;">Bug Reports</div>
                 </div>
             </div>
@@ -12973,16 +16049,24 @@ Upload photos once, use them across all your listings.`
                 <div class="card">
                     <div class="card-header"><h2 class="card-title">By Type</h2></div>
                     <div class="card-body">
-                        ${byType.length === 0 ? '<p style="color: var(--gray-500); text-align: center;">No data yet</p>' : byType.map(item => `
+                        ${
+                            byType.length === 0
+                                ? '<p style="color: var(--gray-500); text-align: center;">No data yet</p>'
+                                : byType
+                                      .map(
+                                          (item) => `
                             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                                 <div style="width: 12px; height: 12px; border-radius: 50%; background: ${typeColors[item.type] || 'var(--gray-400)'}; flex-shrink: 0;"></div>
                                 <span style="flex: 1; font-size: 14px; text-transform: capitalize;">${item.type}</span>
                                 <div style="flex: 2; background: var(--gray-100); border-radius: 4px; height: 8px; overflow: hidden;">
-                                    <div style="width: ${analytics.totalFeedback ? Math.round(item.count / analytics.totalFeedback * 100) : 0}%; height: 100%; background: ${typeColors[item.type] || 'var(--gray-400)'}; border-radius: 4px;"></div>
+                                    <div style="width: ${analytics.totalFeedback ? Math.round((item.count / analytics.totalFeedback) * 100) : 0}%; height: 100%; background: ${typeColors[item.type] || 'var(--gray-400)'}; border-radius: 4px;"></div>
                                 </div>
                                 <span style="font-weight: 600; font-size: 14px; min-width: 30px; text-align: right;">${item.count}</span>
                             </div>
-                        `).join('')}
+                        `,
+                                      )
+                                      .join('')
+                        }
                     </div>
                 </div>
 
@@ -12990,16 +16074,24 @@ Upload photos once, use them across all your listings.`
                 <div class="card">
                     <div class="card-header"><h2 class="card-title">By Status</h2></div>
                     <div class="card-body">
-                        ${byStatus.length === 0 ? '<p style="color: var(--gray-500); text-align: center;">No data yet</p>' : byStatus.map(item => `
+                        ${
+                            byStatus.length === 0
+                                ? '<p style="color: var(--gray-500); text-align: center;">No data yet</p>'
+                                : byStatus
+                                      .map(
+                                          (item) => `
                             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                                 <div style="width: 12px; height: 12px; border-radius: 50%; background: ${statusColors[item.status] || 'var(--gray-400)'}; flex-shrink: 0;"></div>
                                 <span style="flex: 1; font-size: 14px; text-transform: capitalize;">${item.status}</span>
                                 <div style="flex: 2; background: var(--gray-100); border-radius: 4px; height: 8px; overflow: hidden;">
-                                    <div style="width: ${analytics.totalFeedback ? Math.round(item.count / analytics.totalFeedback * 100) : 0}%; height: 100%; background: ${statusColors[item.status] || 'var(--gray-400)'}; border-radius: 4px;"></div>
+                                    <div style="width: ${analytics.totalFeedback ? Math.round((item.count / analytics.totalFeedback) * 100) : 0}%; height: 100%; background: ${statusColors[item.status] || 'var(--gray-400)'}; border-radius: 4px;"></div>
                                 </div>
                                 <span style="font-weight: 600; font-size: 14px; min-width: 30px; text-align: right;">${item.count}</span>
                             </div>
-                        `).join('')}
+                        `,
+                                      )
+                                      .join('')
+                        }
                     </div>
                 </div>
             </div>
@@ -13008,9 +16100,12 @@ Upload photos once, use them across all your listings.`
             <div class="card" style="margin-bottom: 24px;">
                 <div class="card-header"><h2 class="card-title">Most Popular Feedback</h2></div>
                 <div class="card-body" style="padding: 0;">
-                    ${topVoted.length === 0 ? `
+                    ${
+                        topVoted.length === 0
+                            ? `
                         <div style="text-align: center; padding: 32px; color: var(--gray-500);">No feedback yet</div>
-                    ` : `
+                    `
+                            : `
                         <table style="width: 100%; border-collapse: collapse;">
                             <thead>
                                 <tr style="border-bottom: 1px solid var(--gray-200);">
@@ -13022,7 +16117,9 @@ Upload photos once, use them across all your listings.`
                                 </tr>
                             </thead>
                             <tbody>
-                                ${topVoted.map((item, idx) => `
+                                ${topVoted
+                                    .map(
+                                        (item, idx) => `
                                     <tr style="border-bottom: 1px solid var(--gray-100); cursor: pointer;" onclick="handlers.showFeedbackDetail('${item.id}')">
                                         <td style="padding: 12px 16px; font-weight: 600; color: var(--gray-400);">#${idx + 1}</td>
                                         <td style="padding: 12px 16px; font-weight: 500;">${escapeHtml(item.title)}</td>
@@ -13030,10 +16127,13 @@ Upload photos once, use them across all your listings.`
                                         <td style="padding: 12px 16px;"><span class="badge badge-sm badge-${item.status === 'planned' ? 'success' : item.status === 'reviewing' ? 'primary' : 'outline'}">${item.status}</span></td>
                                         <td style="padding: 12px 16px; text-align: right; font-weight: 600; color: ${item.net_votes > 0 ? 'var(--success)' : item.net_votes < 0 ? 'var(--danger-600)' : 'var(--gray-500)'};">${item.net_votes > 0 ? '+' : ''}${item.net_votes}</td>
                                     </tr>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </tbody>
                         </table>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
@@ -13041,16 +16141,24 @@ Upload photos once, use them across all your listings.`
             <div class="card">
                 <div class="card-header"><h2 class="card-title">Feedback by Category</h2></div>
                 <div class="card-body">
-                    ${byCategory.length === 0 ? '<p style="color: var(--gray-500); text-align: center;">No data yet</p>' : `
+                    ${
+                        byCategory.length === 0
+                            ? '<p style="color: var(--gray-500); text-align: center;">No data yet</p>'
+                            : `
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
-                            ${byCategory.map(item => `
+                            ${byCategory
+                                .map(
+                                    (item) => `
                                 <div style="background: var(--gray-50); border-radius: 8px; padding: 16px; text-align: center;">
                                     <div style="font-size: 24px; font-weight: 700; color: var(--primary-600);">${item.count}</div>
                                     <div style="font-size: 13px; color: var(--gray-600); text-transform: capitalize; margin-top: 4px;">${item.category}</div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
         `;
@@ -13090,7 +16198,9 @@ Upload photos once, use them across all your listings.`
                 </button>
             </div>
 
-            ${activeTab === 'rules' ? `
+            ${
+                activeTab === 'rules'
+                    ? `
                 <div class="card">
                     <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
                         <h2 class="card-title">Relisting Rules</h2>
@@ -13099,9 +16209,13 @@ Upload photos once, use them across all your listings.`
                         </button>
                     </div>
                     <div class="card-body">
-                        ${rules.length > 0 ? `
+                        ${
+                            rules.length > 0
+                                ? `
                             <div class="relisting-rules-grid">
-                                ${rules.map(rule => `
+                                ${rules
+                                    .map(
+                                        (rule) => `
                                     <div class="relisting-rule-card ${rule.is_active ? '' : 'inactive'}">
                                         <div class="relisting-rule-header">
                                             <div>
@@ -13136,18 +16250,26 @@ Upload photos once, use them across all your listings.`
                                             </div>
                                         </div>
                                     </div>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="text-center py-8 text-gray-500">
                                 <p>No relisting rules yet. Create one to get started.</p>
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
-            ${activeTab === 'stale' ? `
+            ${
+                activeTab === 'stale'
+                    ? `
                 <div class="card">
                     <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
                         <h2 class="card-title">Stale Listings (${staleListings.length})</h2>
@@ -13158,15 +16280,21 @@ Upload photos once, use them across all your listings.`
                                 <option value="60">60+ days</option>
                                 <option value="90">90+ days</option>
                             </select>
-                            ${staleListings.length > 0 ? `
+                            ${
+                                staleListings.length > 0
+                                    ? `
                                 <button class="btn btn-primary btn-sm" onclick="handlers.queueAllStale()">
                                     Queue All for Relisting
                                 </button>
-                            ` : ''}
+                            `
+                                    : ''
+                            }
                         </div>
                     </div>
                     <div class="card-body">
-                        ${staleListings.length > 0 ? `
+                        ${
+                            staleListings.length > 0
+                                ? `
                             <div class="table-container">
                                 <table class="table">
                                     <thead>
@@ -13181,7 +16309,9 @@ Upload photos once, use them across all your listings.`
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${staleListings.map(listing => `
+                                        ${staleListings
+                                            .map(
+                                                (listing) => `
                                             <tr>
                                                 <td><input aria-label="Toggle ${escapeHtml(listing.title || '')}" type="checkbox" class="stale-checkbox" value="${listing.id}"></td>
                                                 <td>${escapeHtml(listing.title || '')}</td>
@@ -13198,31 +16328,45 @@ Upload photos once, use them across all your listings.`
                                                     </button>
                                                 </td>
                                             </tr>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </tbody>
                                 </table>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="text-center py-8 text-gray-500">
                                 <p>No stale listings found. All your listings are fresh!</p>
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
-            ${activeTab === 'queue' ? `
+            ${
+                activeTab === 'queue'
+                    ? `
                 <div class="card">
                     <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
                         <h2 class="card-title">Relist Queue</h2>
-                        ${relistQueue.length > 0 ? `
+                        ${
+                            relistQueue.length > 0
+                                ? `
                             <button class="btn btn-primary btn-sm" onclick="handlers.processRelistQueue()">
                                 Process All Pending
                             </button>
-                        ` : ''}
+                        `
+                                : ''
+                        }
                     </div>
                     <div class="card-body">
-                        ${relistQueue.length > 0 ? `
+                        ${
+                            relistQueue.length > 0
+                                ? `
                             <div class="table-container">
                                 <table class="table">
                                     <thead>
@@ -13236,7 +16380,9 @@ Upload photos once, use them across all your listings.`
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${relistQueue.map(item => `
+                                        ${relistQueue
+                                            .map(
+                                                (item) => `
                                             <tr>
                                                 <td>${escapeHtml(item.title || '')}</td>
                                                 <td>C$${(item.original_price || 0).toFixed(2)}</td>
@@ -13246,27 +16392,39 @@ Upload photos once, use them across all your listings.`
                                                 </td>
                                                 <td><span class="badge badge-${item.status === 'completed' ? 'success' : item.status === 'failed' ? 'error' : 'warning'}">${item.status}</span></td>
                                                 <td>
-                                                    ${item.status === 'pending' ? `
+                                                    ${
+                                                        item.status === 'pending'
+                                                            ? `
                                                         <button class="btn btn-ghost btn-sm" onclick="handlers.removeFromRelistQueue('${item.id}')">
                                                             ${components.icon('trash', 14)}
                                                         </button>
-                                                    ` : ''}
+                                                    `
+                                                            : ''
+                                                    }
                                                 </td>
                                             </tr>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </tbody>
                                 </table>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="text-center py-8 text-gray-500">
                                 <p>No items in the relist queue.</p>
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
-            ${activeTab === 'performance' ? `
+            ${
+                activeTab === 'performance'
+                    ? `
                 <div class="stats-grid mb-6">
                     <div class="stat-card">
                         <div class="stat-label">Total Relisted</div>
@@ -13296,7 +16454,9 @@ Upload photos once, use them across all your listings.`
                         </div>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
         `;
     },
 
@@ -13329,7 +16489,9 @@ Upload photos once, use them across all your listings.`
                 </button>
             </div>
 
-            ${activeTab === 'labels' ? `
+            ${
+                activeTab === 'labels'
+                    ? `
                 <div class="card">
                     <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
                         <h2 class="card-title">Shipping Labels</h2>
@@ -13346,7 +16508,9 @@ Upload photos once, use them across all your listings.`
                         </div>
                     </div>
                     <div class="card-body">
-                        ${labels.length > 0 ? `
+                        ${
+                            labels.length > 0
+                                ? `
                             <div class="table-container">
                                 <table class="table">
                                     <thead>
@@ -13362,7 +16526,9 @@ Upload photos once, use them across all your listings.`
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${labels.map(label => `
+                                        ${labels
+                                            .map(
+                                                (label) => `
                                             <tr>
                                                 <td><input aria-label="Toggle ${escapeHtml(label.to_name)}" type="checkbox" class="label-checkbox" value="${label.id}" onchange="handlers.toggleLabelCheckbox(this)"></td>
                                                 <td>${escapeHtml(label.to_name)}</td>
@@ -13375,14 +16541,20 @@ Upload photos once, use them across all your listings.`
                                                     <button class="btn btn-ghost btn-sm" onclick="handlers.viewLabel('${label.id}')" title="View">
                                                         ${components.icon('eye', 14)}
                                                     </button>
-                                                    ${label.status === 'draft' ? `
+                                                    ${
+                                                        label.status === 'draft'
+                                                            ? `
                                                         <button class="btn btn-ghost btn-sm" onclick="handlers.deleteLabel('${label.id}')" title="Delete">
                                                             ${components.icon('trash', 14)}
                                                         </button>
-                                                    ` : ''}
+                                                    `
+                                                            : ''
+                                                    }
                                                 </td>
                                             </tr>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </tbody>
                                 </table>
                             </div>
@@ -13394,16 +16566,22 @@ Upload photos once, use them across all your listings.`
                                     Create Batch from Selected
                                 </button>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="text-center py-8 text-gray-500">
                                 <p>No shipping labels yet. Create one to get started.</p>
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
-            ${activeTab === 'addresses' ? `
+            ${
+                activeTab === 'addresses'
+                    ? `
                 <div class="card">
                     <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
                         <h2 class="card-title">Return Addresses</h2>
@@ -13412,9 +16590,13 @@ Upload photos once, use them across all your listings.`
                         </button>
                     </div>
                     <div class="card-body">
-                        ${addresses.length > 0 ? `
+                        ${
+                            addresses.length > 0
+                                ? `
                             <div class="shipping-address-grid">
-                                ${addresses.map(addr => `
+                                ${addresses
+                                    .map(
+                                        (addr) => `
                                     <div class="shipping-address-card ${addr.is_default ? 'is-default' : ''}">
                                         <div class="shipping-address-header">
                                             <strong>${escapeHtml(addr.name)}</strong>
@@ -13434,24 +16616,34 @@ Upload photos once, use them across all your listings.`
                                             </button>
                                         </div>
                                     </div>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="text-center py-8 text-gray-500">
                                 <p>No return addresses saved. Add one for faster label creation.</p>
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
-            ${activeTab === 'batches' ? `
+            ${
+                activeTab === 'batches'
+                    ? `
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Label Batches</h2>
                     </div>
                     <div class="card-body">
-                        ${batches.length > 0 ? `
+                        ${
+                            batches.length > 0
+                                ? `
                             <div class="table-container">
                                 <table class="table">
                                     <thead>
@@ -13466,7 +16658,9 @@ Upload photos once, use them across all your listings.`
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${batches.map(batch => `
+                                        ${batches
+                                            .map(
+                                                (batch) => `
                                             <tr>
                                                 <td>${escapeHtml(batch.name || 'Unnamed')}</td>
                                                 <td>${batch.total_labels}</td>
@@ -13475,23 +16669,33 @@ Upload photos once, use them across all your listings.`
                                                 <td>C$${(batch.total_postage || 0).toFixed(2)}</td>
                                                 <td><span class="badge badge-${batch.status === 'completed' ? 'success' : batch.status === 'failed' ? 'error' : 'warning'}">${batch.status}</span></td>
                                                 <td>
-                                                    ${batch.status === 'pending' ? `
+                                                    ${
+                                                        batch.status === 'pending'
+                                                            ? `
                                                         <button class="btn btn-primary btn-sm" onclick="handlers.processBatch('${batch.id}')">Process</button>
-                                                    ` : ''}
+                                                    `
+                                                            : ''
+                                                    }
                                                 </td>
                                             </tr>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </tbody>
                                 </table>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="text-center py-8 text-gray-500">
                                 <p>No batches created yet.</p>
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
         `;
     },
 
@@ -13527,8 +16731,12 @@ Upload photos once, use them across all your listings.`
 
             <div id="import-tab-panel" role="tabpanel">
 
-            ${activeTab === 'upload' ? `
-                ${currentJob ? `
+            ${
+                activeTab === 'upload'
+                    ? `
+                ${
+                    currentJob
+                        ? `
                     <!-- Field Mapping Step -->
                     <div class="card mb-6">
                         <div class="card-header">
@@ -13539,10 +16747,18 @@ Upload photos once, use them across all your listings.`
                             ${(() => {
                                 const skipped = currentJob.preview?.skipped_title_rows || 0;
                                 if (skipped > 0) {
-                                    return '<div style="background:var(--info-light); border:1px solid var(--blue-300); border-radius:8px; padding:12px 16px; margin-bottom:16px; font-size:13px; color:var(--blue-800);"><strong>Auto-detected ' + skipped + ' title/metadata row' + (skipped > 1 ? 's' : '') + '</strong> at the top of your file and skipped ' + (skipped > 1 ? 'them' : 'it') + '. The column headers below were detected from your actual data.</div>';
+                                    return (
+                                        '<div style="background:var(--info-light); border:1px solid var(--blue-300); border-radius:8px; padding:12px 16px; margin-bottom:16px; font-size:13px; color:var(--blue-800);"><strong>Auto-detected ' +
+                                        skipped +
+                                        ' title/metadata row' +
+                                        (skipped > 1 ? 's' : '') +
+                                        '</strong> at the top of your file and skipped ' +
+                                        (skipped > 1 ? 'them' : 'it') +
+                                        '. The column headers below were detected from your actual data.</div>'
+                                    );
                                 }
                                 const hdrs = currentJob.preview?.headers || [];
-                                const emptyCount = hdrs.filter(h => !h || !h.trim()).length;
+                                const emptyCount = hdrs.filter((h) => !h || !h.trim()).length;
                                 if (emptyCount > hdrs.length / 2 && hdrs.length > 1) {
                                     return '<div style="background:var(--primary-100); border:1px solid var(--primary-400); border-radius:8px; padding:12px 16px; margin-bottom:16px; font-size:13px; color:var(--primary-800);"><strong>⚠ Many columns have empty headers.</strong> Your file may have a title row before the actual column headers. Try re-uploading with the title row removed, or map the columns manually below.</div>';
                                 }
@@ -13553,7 +16769,7 @@ Upload photos once, use them across all your listings.`
                                 const rawHdrs = currentJob.preview?.headers || [];
                                 const counts = {};
                                 const cleanHdrs = rawHdrs.map((h, idx) => {
-                                    let name = (h && h.trim()) ? h.trim() : 'Column ' + (idx + 1);
+                                    let name = h && h.trim() ? h.trim() : 'Column ' + (idx + 1);
                                     const key = name.toLowerCase();
                                     counts[key] = (counts[key] || 0) + 1;
                                     if (counts[key] > 1) name = name + ' (' + counts[key] + ')';
@@ -13574,23 +16790,46 @@ Upload photos once, use them across all your listings.`
                                 };
 
                                 const initWidth = colCount <= 10 ? (100 / (colCount + 1)).toFixed(2) + '%' : '10%';
-                                const colLetter = (idx) => { let s = ''; idx++; while (idx > 0) { idx--; s = String.fromCharCode(65 + (idx % 26)) + s; idx = Math.floor(idx / 26); } return s; };
+                                const colLetter = (idx) => {
+                                    let s = '';
+                                    idx++;
+                                    while (idx > 0) {
+                                        idx--;
+                                        s = String.fromCharCode(65 + (idx % 26)) + s;
+                                        idx = Math.floor(idx / 26);
+                                    }
+                                    return s;
+                                };
                                 const rowNumW = '42px';
                                 // Column visibility dropdown
                                 let html = '<div style="display:flex; justify-content:flex-end; margin-bottom:8px;">';
                                 html += '<div style="position:relative; display:inline-block;">';
-                                html += '<button class="btn btn-ghost btn-sm" onclick="handlers.toggleColFilterMenu(this)" style="font-size:12px; padding:5px 12px; border:1px solid var(--gray-300); border-radius:6px; display:flex; align-items:center; gap:6px;">';
+                                html +=
+                                    '<button class="btn btn-ghost btn-sm" onclick="handlers.toggleColFilterMenu(this)" style="font-size:12px; padding:5px 12px; border:1px solid var(--gray-300); border-radius:6px; display:flex; align-items:center; gap:6px;">';
                                 html += components.icon('settings', 14) + ' Columns (' + colCount + ')</button>';
-                                html += '<div class="import-col-filter-menu" style="display:none; position:absolute; right:0; top:100%; margin-top:4px; background:#fff; border:1px solid var(--gray-300); border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); z-index:20; min-width:200px; max-height:300px; overflow-y:auto; padding:6px 0;">';
+                                html +=
+                                    '<div class="import-col-filter-menu" style="display:none; position:absolute; right:0; top:100%; margin-top:4px; background:#fff; border:1px solid var(--gray-300); border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); z-index:20; min-width:200px; max-height:300px; overflow-y:auto; padding:6px 0;">';
                                 for (let c = 0; c < colCount; c++) {
-                                    html += '<label style="display:flex; align-items:center; gap:8px; padding:6px 12px; cursor:pointer; font-size:13px; color:var(--gray-700); white-space:nowrap;" onmouseover="this.style.background=\'var(--gray-100)\'" onmouseout="this.style.background=\'transparent\'">';
-                                    html += '<input aria-label="Toggle ${escapeHtml(cleanHdrs[c])}" type="checkbox" checked data-filter-col="' + c + '" onchange="handlers.toggleImportCol(' + c + ', this.checked)" style="accent-color:var(--primary-500);">';
-                                    html += '<span style="color:var(--gray-400); font-size:11px; min-width:18px;">' + colLetter(c) + '</span> ' + escapeHtml(cleanHdrs[c]);
+                                    html +=
+                                        '<label style="display:flex; align-items:center; gap:8px; padding:6px 12px; cursor:pointer; font-size:13px; color:var(--gray-700); white-space:nowrap;" onmouseover="this.style.background=\'var(--gray-100)\'" onmouseout="this.style.background=\'transparent\'">';
+                                    html +=
+                                        '<input aria-label="Toggle ${escapeHtml(cleanHdrs[c])}" type="checkbox" checked data-filter-col="' +
+                                        c +
+                                        '" onchange="handlers.toggleImportCol(' +
+                                        c +
+                                        ', this.checked)" style="accent-color:var(--primary-500);">';
+                                    html +=
+                                        '<span style="color:var(--gray-400); font-size:11px; min-width:18px;">' +
+                                        colLetter(c) +
+                                        '</span> ' +
+                                        escapeHtml(cleanHdrs[c]);
                                     html += '</label>';
                                 }
                                 html += '</div></div></div>';
-                                html += '<div class="import-table-wrap" style="max-height:70vh; overflow:auto; border:1px solid var(--gray-300); border-radius:8px;">';
-                                html += '<table class="table table-sm import-preview-table" style="width:100%; table-layout:fixed; border-collapse:collapse;">';
+                                html +=
+                                    '<div class="import-table-wrap" style="max-height:70vh; overflow:auto; border:1px solid var(--gray-300); border-radius:8px;">';
+                                html +=
+                                    '<table class="table table-sm import-preview-table" style="width:100%; table-layout:fixed; border-collapse:collapse;">';
                                 html += '<colgroup><col style="width:' + rowNumW + ';">';
                                 for (let c = 0; c < colCount; c++) {
                                     html += '<col data-col="' + c + '" style="width:' + initWidth + ';">';
@@ -13599,21 +16838,41 @@ Upload photos once, use them across all your listings.`
                                 // Row 1: column letters
                                 html += '<thead style="position:sticky; top:0; z-index:2;">';
                                 html += '<tr>';
-                                html += '<th style="background:var(--gray-200); border:1px solid var(--gray-300); text-align:center; font-size:11px; font-weight:600; color:var(--gray-500); padding:2px 4px;"></th>';
+                                html +=
+                                    '<th style="background:var(--gray-200); border:1px solid var(--gray-300); text-align:center; font-size:11px; font-weight:600; color:var(--gray-500); padding:2px 4px;"></th>';
                                 for (let c = 0; c < colCount; c++) {
-                                    html += '<th style="position:relative; background:var(--gray-200); border:1px solid var(--gray-300); text-align:center; font-size:11px; font-weight:600; color:var(--gray-500); padding:2px 4px;">' + colLetter(c);
-                                    html += '<div onmousedown="handlers.startColResize(event,' + c + ')" ondblclick="handlers.autoFitCol(event,' + c + ')" style="position:absolute; right:-6px; top:0; bottom:0; width:12px; cursor:col-resize; z-index:4;"></div>';
+                                    html +=
+                                        '<th style="position:relative; background:var(--gray-200); border:1px solid var(--gray-300); text-align:center; font-size:11px; font-weight:600; color:var(--gray-500); padding:2px 4px;">' +
+                                        colLetter(c);
+                                    html +=
+                                        '<div onmousedown="handlers.startColResize(event,' +
+                                        c +
+                                        ')" ondblclick="handlers.autoFitCol(event,' +
+                                        c +
+                                        ')" style="position:absolute; right:-6px; top:0; bottom:0; width:12px; cursor:col-resize; z-index:4;"></div>';
                                     html += '</th>';
                                 }
                                 html += '</tr>';
                                 // Row 2: dropdown selects
                                 html += '<tr>';
-                                html += '<th style="background:var(--gray-100); border:1px solid var(--gray-300); text-align:center; font-size:10px; color:var(--gray-400); padding:4px;">Row</th>';
+                                html +=
+                                    '<th style="background:var(--gray-100); border:1px solid var(--gray-300); text-align:center; font-size:10px; color:var(--gray-400); padding:4px;">Row</th>';
                                 for (let c = 0; c < colCount; c++) {
-                                    html += '<th style="vertical-align:top; padding:6px 4px; background:var(--gray-100); border:1px solid var(--gray-300); text-align:center;">';
-                                    html += '<select aria-label="Map column" class="form-input import-field-select" data-col-index="' + c + '" onchange="handlers.swapImportColumn(this)" style="width:100%; font-size:12px; padding:3px 4px; border-radius:4px;">';
+                                    html +=
+                                        '<th style="vertical-align:top; padding:6px 4px; background:var(--gray-100); border:1px solid var(--gray-300); text-align:center;">';
+                                    html +=
+                                        '<select aria-label="Map column" class="form-input import-field-select" data-col-index="' +
+                                        c +
+                                        '" onchange="handlers.swapImportColumn(this)" style="width:100%; font-size:12px; padding:3px 4px; border-radius:4px;">';
                                     for (let i = 0; i < colCount; i++) {
-                                        html += '<option value="' + i + '"' + (i === c ? ' selected' : '') + '>' + escapeHtml(cleanHdrs[i]) + '</option>';
+                                        html +=
+                                            '<option value="' +
+                                            i +
+                                            '"' +
+                                            (i === c ? ' selected' : '') +
+                                            '>' +
+                                            escapeHtml(cleanHdrs[i]) +
+                                            '</option>';
                                     }
                                     html += '</select></th>';
                                 }
@@ -13623,17 +16882,32 @@ Upload photos once, use them across all your listings.`
                                 for (let r = 0; r < displayRows; r++) {
                                     html += '<tr data-row="' + r + '">';
                                     // Row number cell
-                                    html += '<td style="position:relative; background:var(--gray-50); border:1px solid var(--gray-300); text-align:center; font-size:11px; font-weight:500; color:var(--gray-500); padding:4px 2px; user-select:none;">' + (r + 1);
-                                    html += '<div onmousedown="handlers.startRowResize(event,' + r + ')" ondblclick="handlers.autoFitRow(event,' + r + ')" style="position:absolute; left:0; right:0; bottom:-6px; height:12px; cursor:row-resize; z-index:3;"></div>';
+                                    html +=
+                                        '<td style="position:relative; background:var(--gray-50); border:1px solid var(--gray-300); text-align:center; font-size:11px; font-weight:500; color:var(--gray-500); padding:4px 2px; user-select:none;">' +
+                                        (r + 1);
+                                    html +=
+                                        '<div onmousedown="handlers.startRowResize(event,' +
+                                        r +
+                                        ')" ondblclick="handlers.autoFitRow(event,' +
+                                        r +
+                                        ')" style="position:absolute; left:0; right:0; bottom:-6px; height:12px; cursor:row-resize; z-index:3;"></div>';
                                     html += '</td>';
                                     for (let c = 0; c < colCount; c++) {
-                                        html += '<td style="padding:5px 6px; vertical-align:middle; text-align:center; overflow-wrap:break-word; word-wrap:break-word; border:1px solid var(--gray-300);">' + escapeHtml(String(getCell(r, c))) + '</td>';
+                                        html +=
+                                            '<td style="padding:5px 6px; vertical-align:middle; text-align:center; overflow-wrap:break-word; word-wrap:break-word; border:1px solid var(--gray-300);">' +
+                                            escapeHtml(String(getCell(r, c))) +
+                                            '</td>';
                                     }
                                     html += '</tr>';
                                 }
                                 html += '</tbody></table></div>';
                                 const totalRows = currentJob.preview?.total_rows || rowCount;
-                                html += '<p style="font-size:12px; color:var(--gray-500); margin-top:8px;">' + totalRows + ' rows total' + (rowCount > maxPreview ? ' (showing first ' + maxPreview + ')' : '') + '</p>';
+                                html +=
+                                    '<p style="font-size:12px; color:var(--gray-500); margin-top:8px;">' +
+                                    totalRows +
+                                    ' rows total' +
+                                    (rowCount > maxPreview ? ' (showing first ' + maxPreview + ')' : '') +
+                                    '</p>';
                                 return html;
                             })()}
                             <div class="mt-4" style="display:flex; gap:8px; justify-content:flex-end;">
@@ -13643,7 +16917,8 @@ Upload photos once, use them across all your listings.`
                             </div>
                         </div>
                     </div>
-                ` : `
+                `
+                        : `
                     <!-- Upload Step -->
                     <div class="card">
                         <div class="card-header" style="display:flex; align-items:center; justify-content:space-between;">
@@ -13687,28 +16962,39 @@ Upload photos once, use them across all your listings.`
                                 <label class="flex items-center gap-2 text-sm">
                                     <input type="checkbox" id="import-has-header" checked aria-label="Import Has Header"> Has header row
                                 </label>
-                                ${mappings.length > 0 ? `
+                                ${
+                                    mappings.length > 0
+                                        ? `
                                     <select class="form-input" id="import-saved-mapping" style="width:auto;" aria-label="Import Saved Mapping">
                                         <option value="">Use saved mapping...</option>
-                                        ${mappings.map(m => `<option value="${m.id}">${escapeHtml(m.name)}</option>`).join('')}
+                                        ${mappings.map((m) => `<option value="${m.id}">${escapeHtml(m.name)}</option>`).join('')}
                                     </select>
-                                ` : ''}
+                                `
+                                        : ''
+                                }
                                 <button type="button" class="btn btn-primary" onclick="handlers.startImportFromPaste()">
                                     Parse Data
                                 </button>
                             </div>
                         </div>
                     </div>
-                `}
-            ` : ''}
+                `
+                }
+            `
+                    : ''
+            }
 
-            ${activeTab === 'jobs' ? `
+            ${
+                activeTab === 'jobs'
+                    ? `
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Import History</h2>
                     </div>
                     <div class="card-body">
-                        ${jobs.length > 0 ? `
+                        ${
+                            jobs.length > 0
+                                ? `
                             <div class="table-container">
                                 <table class="table">
                                     <thead>
@@ -13724,7 +17010,9 @@ Upload photos once, use them across all your listings.`
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${jobs.map(job => `
+                                        ${jobs
+                                            .map(
+                                                (job) => `
                                             <tr>
                                                 <td>${escapeHtml(job.name || 'Unnamed')}</td>
                                                 <td><span class="badge">${(job.source_type || '').toUpperCase()}</span></td>
@@ -13739,28 +17027,40 @@ Upload photos once, use them across all your listings.`
                                                     </button>
                                                 </td>
                                             </tr>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </tbody>
                                 </table>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="text-center py-8 text-gray-500">
                                 <p>No import history.</p>
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
-            ${activeTab === 'mappings' ? `
+            ${
+                activeTab === 'mappings'
+                    ? `
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Saved Field Mappings</h2>
                     </div>
                     <div class="card-body">
-                        ${mappings.length > 0 ? `
+                        ${
+                            mappings.length > 0
+                                ? `
                             <div class="import-mappings-grid">
-                                ${mappings.map(mapping => `
+                                ${mappings
+                                    .map(
+                                        (mapping) => `
                                     <div class="import-mapping-card">
                                         <div class="import-mapping-card-header">
                                             <strong>${escapeHtml(mapping.name)}</strong>
@@ -13777,16 +17077,22 @@ Upload photos once, use them across all your listings.`
                                             </button>
                                         </div>
                                     </div>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="text-center py-8 text-gray-500">
                                 <p>No saved mappings. Mappings are saved during the import process.</p>
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             </div>
         `;
@@ -13812,15 +17118,19 @@ Upload photos once, use them across all your listings.`
 
         // Apply filters to sales
         if (txPlatformFilter !== 'all') {
-            salesTransactions = salesTransactions.filter(s => s.platform === txPlatformFilter);
+            salesTransactions = salesTransactions.filter((s) => s.platform === txPlatformFilter);
         }
         if (txSearchQuery) {
             const q = txSearchQuery.toLowerCase();
-            purchases = purchases.filter(p =>
-                (p.vendor || p.vendor_name || '').toLowerCase().includes(q) || (p.item || '').toLowerCase().includes(q)
+            purchases = purchases.filter(
+                (p) =>
+                    (p.vendor || p.vendor_name || '').toLowerCase().includes(q) ||
+                    (p.item || '').toLowerCase().includes(q),
             );
-            salesTransactions = salesTransactions.filter(s =>
-                (s.listing_title || s.inventory_title || '').toLowerCase().includes(q) || (s.platform || '').toLowerCase().includes(q)
+            salesTransactions = salesTransactions.filter(
+                (s) =>
+                    (s.listing_title || s.inventory_title || '').toLowerCase().includes(q) ||
+                    (s.platform || '').toLowerCase().includes(q),
             );
         }
         if (txDateFilter !== 'all') {
@@ -13832,43 +17142,42 @@ Upload photos once, use them across all your listings.`
             else if (txDateFilter === 'today') {
                 cutoff = new Date();
                 cutoff.setHours(0, 0, 0, 0);
-            }
-            else if (txDateFilter === 'week') cutoff = new Date(now - 7 * 86400000);
+            } else if (txDateFilter === 'week') cutoff = new Date(now - 7 * 86400000);
             else if (txDateFilter === 'month') cutoff = new Date(now - 30 * 86400000);
             else if (txDateFilter === 'quarter') cutoff = new Date(now - 90 * 86400000);
             if (cutoff) {
-                purchases = purchases.filter(p => new Date(p.date || p.purchase_date || p.created_at) >= cutoff);
-                salesTransactions = salesTransactions.filter(s => new Date(s.created_at) >= cutoff);
+                purchases = purchases.filter((p) => new Date(p.date || p.purchase_date || p.created_at) >= cutoff);
+                salesTransactions = salesTransactions.filter((s) => new Date(s.created_at) >= cutoff);
             }
         }
         // Status filter
         const txStatusFilter = store.state.txStatusFilter || 'all';
         if (txStatusFilter !== 'all') {
-            salesTransactions = salesTransactions.filter(s => (s.status || 'completed') === txStatusFilter);
+            salesTransactions = salesTransactions.filter((s) => (s.status || 'completed') === txStatusFilter);
         }
         // Buyer filter
         const txBuyerFilter = store.state.txBuyerFilter || '';
         if (txBuyerFilter) {
             const buyerQ = txBuyerFilter.toLowerCase();
-            salesTransactions = salesTransactions.filter(s =>
-                (s.buyer_username || s.buyer_name || '').toLowerCase().includes(buyerQ)
+            salesTransactions = salesTransactions.filter((s) =>
+                (s.buyer_username || s.buyer_name || '').toLowerCase().includes(buyerQ),
             );
         }
         // Amount range filter
         const txAmountMin = parseFloat(store.state.txAmountMin) || 0;
         const txAmountMax = parseFloat(store.state.txAmountMax) || 0;
         if (txAmountMin > 0) {
-            purchases = purchases.filter(p => (p.amount || p.total_amount || 0) >= txAmountMin);
-            salesTransactions = salesTransactions.filter(s => (s.sale_price || 0) >= txAmountMin);
+            purchases = purchases.filter((p) => (p.amount || p.total_amount || 0) >= txAmountMin);
+            salesTransactions = salesTransactions.filter((s) => (s.sale_price || 0) >= txAmountMin);
         }
         if (txAmountMax > 0) {
-            purchases = purchases.filter(p => (p.amount || p.total_amount || 0) <= txAmountMax);
-            salesTransactions = salesTransactions.filter(s => (s.sale_price || 0) <= txAmountMax);
+            purchases = purchases.filter((p) => (p.amount || p.total_amount || 0) <= txAmountMax);
+            salesTransactions = salesTransactions.filter((s) => (s.sale_price || 0) <= txAmountMax);
         }
         // Category filter
         const txCategoryFilter = store.state.txCategoryFilter || 'all';
         if (txCategoryFilter !== 'all') {
-            purchases = purchases.filter(p => (p.category || 'Other') === txCategoryFilter);
+            purchases = purchases.filter((p) => (p.category || 'Other') === txCategoryFilter);
         }
 
         // Count active filters (only count filters relevant to the active tab)
@@ -13891,8 +17200,11 @@ Upload photos once, use them across all your listings.`
         const purchaseStats = {
             total: purchases.length,
             totalAmount: purchases.reduce((sum, p) => sum + (p.amount || p.total_amount || 0), 0),
-            avgAmount: purchases.length > 0 ? purchases.reduce((sum, p) => sum + (p.amount || p.total_amount || 0), 0) / purchases.length : 0,
-            vendors: [...new Set(purchases.map(p => p.vendor || p.vendor_name).filter(Boolean))].length
+            avgAmount:
+                purchases.length > 0
+                    ? purchases.reduce((sum, p) => sum + (p.amount || p.total_amount || 0), 0) / purchases.length
+                    : 0,
+            vendors: [...new Set(purchases.map((p) => p.vendor || p.vendor_name).filter(Boolean))].length,
         };
 
         const salesStats = {
@@ -13900,7 +17212,10 @@ Upload photos once, use them across all your listings.`
             totalRevenue: salesTransactions.reduce((sum, s) => sum + (s.sale_price || 0), 0),
             totalFees: salesTransactions.reduce((sum, s) => sum + (s.platform_fee || 0), 0),
             totalProfit: salesTransactions.reduce((sum, s) => sum + (s.net_profit || 0), 0),
-            avgSale: salesTransactions.length > 0 ? salesTransactions.reduce((sum, s) => sum + (s.sale_price || 0), 0) / salesTransactions.length : 0
+            avgSale:
+                salesTransactions.length > 0
+                    ? salesTransactions.reduce((sum, s) => sum + (s.sale_price || 0), 0) / salesTransactions.length
+                    : 0,
         };
 
         // View mode for transactions
@@ -13908,7 +17223,7 @@ Upload photos once, use them across all your listings.`
 
         // Calculate expense categories for pie chart
         const expenseCategories = {};
-        purchases.forEach(p => {
+        purchases.forEach((p) => {
             const cat = p.category || 'Other';
             expenseCategories[cat] = (expenseCategories[cat] || 0) + (p.amount || p.total_amount || 0);
         });
@@ -13919,24 +17234,24 @@ Upload photos once, use them across all your listings.`
 
         // Calculate running balances for transactions
         // Sort by date (newest first for display, but calculate from oldest)
-        const sortedPurchases = [...purchases].sort((a, b) =>
-            new Date(a.date || a.purchase_date || a.created_at) - new Date(b.date || b.purchase_date || b.created_at)
+        const sortedPurchases = [...purchases].sort(
+            (a, b) =>
+                new Date(a.date || a.purchase_date || a.created_at) -
+                new Date(b.date || b.purchase_date || b.created_at),
         );
-        const sortedSales = [...salesTransactions].sort((a, b) =>
-            new Date(a.created_at) - new Date(b.created_at)
-        );
+        const sortedSales = [...salesTransactions].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
         // Calculate running balance starting from a base (using salesStats.totalRevenue as starting point)
         let purchaseRunningBalance = salesStats.totalRevenue;
-        const purchasesWithBalance = sortedPurchases.map(p => {
-            purchaseRunningBalance -= (p.amount || p.total_amount || 0);
+        const purchasesWithBalance = sortedPurchases.map((p) => {
+            purchaseRunningBalance -= p.amount || p.total_amount || 0;
             return { ...p, runningBalance: purchaseRunningBalance };
         });
         // Reverse so newest is first
         purchasesWithBalance.reverse();
 
         let salesRunningBalance = 0;
-        const salesWithBalance = sortedSales.map(s => {
+        const salesWithBalance = sortedSales.map((s) => {
             salesRunningBalance += (s.sale_price || 0) - (s.platform_fee || 0);
             return { ...s, runningBalance: salesRunningBalance };
         });
@@ -13947,15 +17262,17 @@ Upload photos once, use them across all your listings.`
         const monthlyData = [
             { month: 'Oct', revenue: 2400, expenses: 1800 },
             { month: 'Nov', revenue: 3200, expenses: 2100 },
-            { month: 'Dec', revenue: 4500, expenses: 2800 }
+            { month: 'Dec', revenue: 4500, expenses: 2800 },
         ];
 
         // Calculate month-over-month change
         const lastMonth = monthlyData[monthlyData.length - 1] || {};
         const prevMonth = monthlyData[monthlyData.length - 2] || {};
-        const revenueChange = prevMonth.revenue > 0 ? Math.round(((lastMonth.revenue - prevMonth.revenue) / prevMonth.revenue) * 100) : 0;
+        const revenueChange =
+            prevMonth.revenue > 0 ? Math.round(((lastMonth.revenue - prevMonth.revenue) / prevMonth.revenue) * 100) : 0;
         const netFlow = salesStats.totalRevenue - purchaseStats.totalAmount;
-        const profitMargin = salesStats.totalRevenue > 0 ? Math.round((salesStats.totalProfit / salesStats.totalRevenue) * 100) : 0;
+        const profitMargin =
+            salesStats.totalRevenue > 0 ? Math.round((salesStats.totalProfit / salesStats.totalRevenue) * 100) : 0;
 
         return `
             <div class="page-header">
@@ -13983,7 +17300,7 @@ Upload photos once, use them across all your listings.`
                         <button class="btn btn-secondary" onclick="this.parentElement.classList.toggle('open')">
                             ${components.icon('download', 16)} Export
                         </button>
-                        <div class="dropdown-menu">
+                        <div class="dropdown-menu" aria-hidden="true">
                             <button class="dropdown-item" onclick="handlers.exportTransactions('csv')">CSV</button>
                             <button class="dropdown-item" onclick="handlers.exportTransactions('pdf')">PDF</button>
                             <button class="dropdown-item" onclick="handlers.exportTransactions('xlsx')">Excel</button>
@@ -14086,48 +17403,81 @@ Upload photos once, use them across all your listings.`
                     <span style="font-size: 12px; color: var(--gray-500);">Last ${Math.min((activeTab === 'purchases' ? purchasesWithBalance : salesWithBalance).length, 15)} transactions</span>
                 </div>
                 ${(() => {
-                    const data = (activeTab === 'purchases' ? purchasesWithBalance : salesWithBalance).slice(0, 15).reverse();
+                    const data = (activeTab === 'purchases' ? purchasesWithBalance : salesWithBalance)
+                        .slice(0, 15)
+                        .reverse();
                     if (data.length < 2) {
                         return '<div style="text-align: center; color: var(--gray-400); font-size: 13px; padding: 20px;">Need at least 2 transactions for trend chart</div>';
                     }
-                    const balances = data.map(d => d.runningBalance);
+                    const balances = data.map((d) => d.runningBalance);
                     const maxB = Math.max(...balances);
                     const minB = Math.min(...balances);
                     const range = maxB - minB || 1;
                     const w = 100;
                     const h = 40;
-                    const points = balances.map((b, i) => {
-                        const x = (i / (balances.length - 1)) * w;
-                        const y = h - ((b - minB) / range) * (h - 4) - 2;
-                        return x.toFixed(1) + ',' + y.toFixed(1);
-                    }).join(' ');
+                    const points = balances
+                        .map((b, i) => {
+                            const x = (i / (balances.length - 1)) * w;
+                            const y = h - ((b - minB) / range) * (h - 4) - 2;
+                            return x.toFixed(1) + ',' + y.toFixed(1);
+                        })
+                        .join(' ');
                     const areaPoints = points + ' ' + w + ',' + h + ' 0,' + h;
                     const lastBalance = balances[balances.length - 1];
                     const firstBalance = balances[0];
-                    const trendColor = lastBalance >= firstBalance ? 'var(--success, #22c55e)' : 'var(--error, #ef4444)';
-                    return '<svg viewBox="0 0 ' + w + ' ' + h + '" style="width: 100%; height: 80px;" preserveAspectRatio="none"><defs><linearGradient id="balanceGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' + trendColor + '" stop-opacity="0.2"/><stop offset="100%" stop-color="' + trendColor + '" stop-opacity="0.02"/></linearGradient></defs><polygon points="' + areaPoints + '" fill="url(#balanceGrad)"/><polyline points="' + points + '" fill="none" stroke="' + trendColor + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--gray-500); margin-top: 4px;"><span>$' + firstBalance.toFixed(2) + '</span><span style="color: ' + trendColor + '; font-weight: 600;">$' + lastBalance.toFixed(2) + '</span></div>';
+                    const trendColor =
+                        lastBalance >= firstBalance ? 'var(--success, #22c55e)' : 'var(--error, #ef4444)';
+                    return (
+                        '<svg viewBox="0 0 ' +
+                        w +
+                        ' ' +
+                        h +
+                        '" style="width: 100%; height: 80px;" preserveAspectRatio="none"><defs><linearGradient id="balanceGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' +
+                        trendColor +
+                        '" stop-opacity="0.2"/><stop offset="100%" stop-color="' +
+                        trendColor +
+                        '" stop-opacity="0.02"/></linearGradient></defs><polygon points="' +
+                        areaPoints +
+                        '" fill="url(#balanceGrad)"/><polyline points="' +
+                        points +
+                        '" fill="none" stroke="' +
+                        trendColor +
+                        '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--gray-500); margin-top: 4px;"><span>$' +
+                        firstBalance.toFixed(2) +
+                        '</span><span style="color: ' +
+                        trendColor +
+                        '; font-weight: 600;">$' +
+                        lastBalance.toFixed(2) +
+                        '</span></div>'
+                    );
                 })()}
             </div>
 
             <!-- Summary Stats -->
-            ${activeTab === 'purchases' ? `
+            ${
+                activeTab === 'purchases'
+                    ? `
                 <div class="stats-grid mb-6">
                     ${components.statCard('Total Purchases', purchaseStats.total.toString(), 'download', 0)}
                     ${components.statCard('Total Spent', 'C$' + purchaseStats.totalAmount.toFixed(2), 'analytics', 0)}
                     ${components.statCard('Avg Purchase', 'C$' + purchaseStats.avgAmount.toFixed(2), 'activity', 0)}
                     ${components.statCard('Unique Vendors', purchaseStats.vendors.toString(), 'sales', 0)}
                 </div>
-            ` : `
+            `
+                    : `
                 <div class="stats-grid mb-6">
                     ${components.statCard('Total Sales', salesStats.total.toString(), 'upload', 0)}
                     ${components.statCard('Total Revenue', 'C$' + salesStats.totalRevenue.toFixed(2), 'analytics', 0)}
                     ${components.statCard('Platform Fees', 'C$' + salesStats.totalFees.toFixed(2), 'analytics', 0)}
                     ${components.statCard('Net Profit', 'C$' + salesStats.totalProfit.toFixed(2), 'activity', 0)}
                 </div>
-            `}
+            `
+            }
 
             <!-- Expense Breakdown & Monthly Comparison -->
-            ${activeTab === 'purchases' && expensePieData.length > 0 ? `
+            ${
+                activeTab === 'purchases' && expensePieData.length > 0
+                    ? `
                 <div class="grid grid-cols-2 gap-6 mb-6">
                     <div class="card">
                         <div class="card-header">
@@ -14146,7 +17496,9 @@ Upload photos once, use them across all your listings.`
                         </div>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Tabs -->
             <div class="flex justify-between items-center mb-6">
@@ -14177,13 +17529,15 @@ Upload photos once, use them across all your listings.`
                 <div class="card-body" style="padding: 12px 16px;">
                     <div class="flex gap-3 flex-wrap items-end">
                         <div role="search">
-                            <label class="form-label" style="font-size: 12px;">Search</label>
-                            <input type="text" class="form-input" style="width: 200px;" aria-label="Search transactions" placeholder="Search..." value="${escapeHtml(txSearchQuery)}" data-tx-filter="search" oninput="handlers.debouncedTxFilter('txSearchQuery', this.value)">
+                            <label class="form-label" for="pd-tx-search" style="font-size: 12px;">Search</label>
+                            <input id="pd-tx-search" type="text" class="form-input" style="width: 200px;" aria-label="Search transactions" placeholder="Search..." value="${escapeHtml(txSearchQuery)}" data-tx-filter="search" oninput="handlers.debouncedTxFilter('txSearchQuery', this.value)">
                         </div>
-                        ${activeTab === 'sales' ? `
+                        ${
+                            activeTab === 'sales'
+                                ? `
                         <div>
-                            <label class="form-label" style="font-size: 12px;">Platform</label>
-                            <select aria-label="Filter by platform" class="form-select" style="width: 150px;" onchange="store.setState({txPlatformFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <label class="form-label" for="pd-tx-platform" style="font-size: 12px;">Platform</label>
+                            <select id="pd-tx-platform" aria-label="Filter by platform" class="form-select" style="width: 150px;" onchange="store.setState({txPlatformFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                                 <option value="all" ${txPlatformFilter === 'all' ? 'selected' : ''}>All</option>
                                 <option value="poshmark" ${txPlatformFilter === 'poshmark' ? 'selected' : ''}>Poshmark</option>
                                 <option value="ebay" ${txPlatformFilter === 'ebay' ? 'selected' : ''}>eBay</option>
@@ -14191,11 +17545,13 @@ Upload photos once, use them across all your listings.`
                                 <option value="depop" ${txPlatformFilter === 'depop' ? 'selected' : ''}>Depop</option>
                             </select>
                         </div>
-                        ` : ''}
+                        `
+                                : ''
+                        }
                         <div style="display: flex; flex-direction: column; gap: 6px;">
-                            <label class="form-label" style="font-size: 12px;">Date Range</label>
+                            <label class="form-label" for="pd-tx-date" style="font-size: 12px;">Date Range</label>
                             <div style="display: flex; gap: 8px; align-items: flex-end;">
-                                <select aria-label="Filter by date" class="form-select" style="width: 140px;" onchange="store.setState({txDateFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                                <select id="pd-tx-date" aria-label="Filter by date" class="form-select" style="width: 140px;" onchange="store.setState({txDateFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                                     <option value="all" ${txDateFilter === 'all' ? 'selected' : ''}>All Time</option>
                                     <option value="7d" ${txDateFilter === '7d' ? 'selected' : ''}>Last 7 Days</option>
                                     <option value="30d" ${txDateFilter === '30d' ? 'selected' : ''}>Last 30 Days</option>
@@ -14209,10 +17565,12 @@ Upload photos once, use them across all your listings.`
                                 </div>
                             </div>
                         </div>
-                        ${activeTab === 'sales' ? `
+                        ${
+                            activeTab === 'sales'
+                                ? `
                         <div>
-                            <label class="form-label" style="font-size: 12px;">Status</label>
-                            <select aria-label="Filter by status" class="form-select" style="width: 130px;" onchange="store.setState({txStatusFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <label class="form-label" for="pd-tx-status" style="font-size: 12px;">Status</label>
+                            <select id="pd-tx-status" aria-label="Filter by status" class="form-select" style="width: 130px;" onchange="store.setState({txStatusFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                                 <option value="all" ${(store.state.txStatusFilter || 'all') === 'all' ? 'selected' : ''}>All Status</option>
                                 <option value="completed" ${store.state.txStatusFilter === 'completed' ? 'selected' : ''}>Completed</option>
                                 <option value="pending" ${store.state.txStatusFilter === 'pending' ? 'selected' : ''}>Pending</option>
@@ -14220,22 +17578,26 @@ Upload photos once, use them across all your listings.`
                             </select>
                         </div>
                         <div>
-                            <label class="form-label" style="font-size: 12px;">Buyer</label>
-                            <input type="text" class="form-input" style="width: 150px;" aria-label="Buyer name" placeholder="Buyer name..." value="${escapeHtml(store.state.txBuyerFilter || '')}" data-tx-filter="buyer" oninput="handlers.debouncedTxFilter('txBuyerFilter', this.value)">
+                            <label class="form-label" for="pd-tx-buyer" style="font-size: 12px;">Buyer</label>
+                            <input id="pd-tx-buyer" type="text" class="form-input" style="width: 150px;" aria-label="Buyer name" placeholder="Buyer name..." value="${escapeHtml(store.state.txBuyerFilter || '')}" data-tx-filter="buyer" oninput="handlers.debouncedTxFilter('txBuyerFilter', this.value)">
                         </div>
-                        ` : ''}
+                        `
+                                : ''
+                        }
                         <div>
-                            <label class="form-label" style="font-size: 12px;">Min Amount</label>
-                            <input type="number" class="form-input" style="width: 100px;" aria-label="Minimum amount" placeholder="C$0" step="0.01" value="${store.state.txAmountMin || ''}" onchange="store.setState({txAmountMin: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <label class="form-label" for="pd-tx-min-amount" style="font-size: 12px;">Min Amount</label>
+                            <input id="pd-tx-min-amount" type="number" class="form-input" style="width: 100px;" aria-label="Minimum amount" placeholder="C$0" step="0.01" value="${store.state.txAmountMin || ''}" onchange="store.setState({txAmountMin: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                         </div>
                         <div>
-                            <label class="form-label" style="font-size: 12px;">Max Amount</label>
-                            <input type="number" class="form-input" style="width: 100px;" aria-label="Maximum amount" placeholder="C$999" step="0.01" value="${store.state.txAmountMax || ''}" onchange="store.setState({txAmountMax: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <label class="form-label" for="pd-tx-max-amount" style="font-size: 12px;">Max Amount</label>
+                            <input id="pd-tx-max-amount" type="number" class="form-input" style="width: 100px;" aria-label="Maximum amount" placeholder="C$999" step="0.01" value="${store.state.txAmountMax || ''}" onchange="store.setState({txAmountMax: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                         </div>
-                        ${activeTab === 'purchases' ? `
+                        ${
+                            activeTab === 'purchases'
+                                ? `
                         <div>
-                            <label class="form-label" style="font-size: 12px;">Category</label>
-                            <select aria-label="Filter by category" class="form-select" style="width: 130px;" onchange="store.setState({txCategoryFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <label class="form-label" for="pd-tx-category" style="font-size: 12px;">Category</label>
+                            <select id="pd-tx-category" aria-label="Filter by category" class="form-select" style="width: 130px;" onchange="store.setState({txCategoryFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                                 <option value="all" ${txCategoryFilter === 'all' ? 'selected' : ''}>All Categories</option>
                                 <option value="shipping" ${txCategoryFilter === 'shipping' ? 'selected' : ''}>Shipping</option>
                                 <option value="supplies" ${txCategoryFilter === 'supplies' ? 'selected' : ''}>Supplies</option>
@@ -14244,29 +17606,43 @@ Upload photos once, use them across all your listings.`
                                 <option value="Other" ${txCategoryFilter === 'Other' ? 'selected' : ''}>Other</option>
                             </select>
                         </div>
-                        ` : ''}
-                        ${isFiltered ? `
+                        `
+                                : ''
+                        }
+                        ${
+                            isFiltered
+                                ? `
                         <div style="align-self: flex-end;">
                             <button class="btn btn-sm btn-secondary" onclick="store.setState({txSearchQuery:'',txPlatformFilter:'all',txDateFilter:'all',txStatusFilter:'all',txBuyerFilter:'',txAmountMin:'',txAmountMax:'',txCategoryFilter:'all'}); renderApp(pages.transactions());" style="white-space: nowrap;">
                                 ${components.icon('x', 14)} Clear All (${activeFilterCount})
                             </button>
                         </div>
-                        ` : ''}
+                        `
+                                : ''
+                        }
                     </div>
-                    ${isFiltered ? `
+                    ${
+                        isFiltered
+                            ? `
                     <div style="margin-top: 8px; font-size: 12px; color: var(--gray-500);">
                         Showing ${activeTab === 'purchases' ? purchases.length + ' of ' + allPurchases.length + ' purchases' : salesTransactions.length + ' of ' + allSales.length + ' sales'} (${activeFilterCount} filter${activeFilterCount > 1 ? 's' : ''} active)
                     </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                 </div>
             </div>
 
-            ${activeTab === 'purchases' ? `
+            ${
+                activeTab === 'purchases'
+                    ? `
                 <div class="card">
                     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                         <h2 class="card-title">Purchase Records</h2>
                         <div class="flex gap-2">
-                            ${(store.state.selectedPurchases || []).length > 0 ? `
+                            ${
+                                (store.state.selectedPurchases || []).length > 0
+                                    ? `
                                 <select class="form-select" style="width: auto; font-size: 12px;" aria-label="Bulk categorize as" onchange="handlers.bulkCategorizePurchases(this.value); this.value='';">
                                     <option value="">Categorize ${(store.state.selectedPurchases || []).length} selected...</option>
                                     <option value="shipping">Shipping</option>
@@ -14275,14 +17651,18 @@ Upload photos once, use them across all your listings.`
                                     <option value="COGS">COGS</option>
                                     <option value="Other">Other</option>
                                 </select>
-                            ` : ''}
+                            `
+                                    : ''
+                            }
                             <button class="btn btn-primary btn-sm" onclick="router.navigate('receipt-parser')">
                                 ${components.icon('upload', 14)} Parse Receipt
                             </button>
                         </div>
                     </div>
                     <div class="card-body">
-                        ${purchasesWithBalance.length > 0 ? `
+                        ${
+                            purchasesWithBalance.length > 0
+                                ? `
                             <div class="table-container">
                                 <table class="table">
                                     <thead>
@@ -14299,7 +17679,9 @@ Upload photos once, use them across all your listings.`
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${purchasesWithBalance.map(purchase => `
+                                        ${purchasesWithBalance
+                                            .map(
+                                                (purchase) => `
                                             <tr>
                                                 <td><input aria-label="Toggle ${escapeHtml(purchase.vendor || purchase.vendor_name || 'N/A')}" type="checkbox" onchange="handlers.togglePurchaseSelect('${purchase.id}')" ${(store.state.selectedPurchases || []).includes(purchase.id) ? 'checked' : ''}></td>
                                                 <td>${new Date(purchase.date || purchase.purchase_date || purchase.created_at).toLocaleDateString()}</td>
@@ -14329,61 +17711,83 @@ Upload photos once, use them across all your listings.`
                                                     </div>
                                                 </td>
                                             </tr>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </tbody>
                                 </table>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="empty-state" style="text-align: center; padding: 3rem;">
                                 ${components.icon('dollar', 48)}
                                 <h2 style="margin: 1rem 0 0.5rem;">No purchase records yet</h2>
                                 <p style="color: var(--gray-500); margin-bottom: 1rem;">Track your inventory purchases to calculate accurate COGS</p>
                                 <button class="btn btn-primary" onclick="handlers.showAddPurchaseModal()">Add First Purchase</button>
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
-            ` : `
+            `
+                    : `
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">${components.icon('trending-up', 18)} Sales Transactions</h2>
                     </div>
                     <div class="card-body">
-                        ${salesWithBalance.length > 0 ? (txViewMode === 'timeline' ? `
+                        ${
+                            salesWithBalance.length > 0
+                                ? txViewMode === 'timeline'
+                                    ? `
                             <!-- Timeline View -->
-                            ${transactionTimeline.render(salesWithBalance.map(s => ({
-                                id: s.id,
-                                type: 'sale',
-                                title: s.listing_title || s.inventory_title || 'Sale',
-                                amount: s.sale_price || 0,
-                                date: s.created_at,
-                                platform: s.platform,
-                                status: 'completed'
-                            })))}
-                        ` : (() => {
-                            // Get all unique tags from transactions
-                            const allTags = [...new Set(salesWithBalance.flatMap(s => s.tags || []))];
-                            const defaultTags = ['High Priority', 'Refund', 'Wholesale', 'Bundle', 'Custom'];
-                            const availableTags = [...new Set([...allTags, ...defaultTags])];
-                            const activeTagFilter = store.state.txTagFilter || null;
+                            ${transactionTimeline.render(
+                                salesWithBalance.map((s) => ({
+                                    id: s.id,
+                                    type: 'sale',
+                                    title: s.listing_title || s.inventory_title || 'Sale',
+                                    amount: s.sale_price || 0,
+                                    date: s.created_at,
+                                    platform: s.platform,
+                                    status: 'completed',
+                                })),
+                            )}
+                        `
+                                    : (() => {
+                                          // Get all unique tags from transactions
+                                          const allTags = [...new Set(salesWithBalance.flatMap((s) => s.tags || []))];
+                                          const defaultTags = [
+                                              'High Priority',
+                                              'Refund',
+                                              'Wholesale',
+                                              'Bundle',
+                                              'Custom',
+                                          ];
+                                          const availableTags = [...new Set([...allTags, ...defaultTags])];
+                                          const activeTagFilter = store.state.txTagFilter || null;
 
-                            // Filter by tag if selected
-                            const filteredSales = activeTagFilter
-                                ? salesWithBalance.filter(s => (s.tags || []).includes(activeTagFilter))
-                                : salesWithBalance;
+                                          // Filter by tag if selected
+                                          const filteredSales = activeTagFilter
+                                              ? salesWithBalance.filter((s) => (s.tags || []).includes(activeTagFilter))
+                                              : salesWithBalance;
 
-                            return `
+                                          return `
                             <!-- Tag Quick Filter Bar -->
                             <div class="transaction-tag-bar" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; padding: 10px; background: var(--gray-50); border-radius: 8px;">
                                 <span style="font-size: 11px; color: var(--gray-500); margin-right: 8px; align-self: center;">Filter by tag:</span>
                                 <button class="tag-filter-btn ${!activeTagFilter ? 'active' : ''}" onclick="store.setState({txTagFilter: null}); renderApp(pages.transactions());" style="font-size: 11px; padding: 4px 10px; border-radius: 12px; border: 1px solid var(--gray-300); background: ${!activeTagFilter ? 'var(--primary)' : 'white'}; color: ${!activeTagFilter ? 'white' : 'var(--gray-600)'}; cursor: pointer;">
                                     All
                                 </button>
-                                ${availableTags.slice(0, 6).map(tag => `
+                                ${availableTags
+                                    .slice(0, 6)
+                                    .map(
+                                        (tag) => `
                                     <button class="tag-filter-btn ${activeTagFilter === tag ? 'active' : ''}" onclick="store.setState({txTagFilter: '${tag}'}); renderApp(pages.transactions());" style="font-size: 11px; padding: 4px 10px; border-radius: 12px; border: 1px solid ${activeTagFilter === tag ? 'var(--primary)' : 'var(--gray-300)'}; background: ${activeTagFilter === tag ? 'var(--primary)' : 'white'}; color: ${activeTagFilter === tag ? 'white' : 'var(--gray-600)'}; cursor: pointer;">
                                         ${tag}
                                     </button>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </div>
 
                             <!-- Table View -->
@@ -14403,17 +17807,18 @@ Upload photos once, use them across all your listings.`
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${filteredSales.map(sale => {
-                                            const saleTags = sale.tags || [];
-                                            const tagColors = {
-                                                'High Priority': 'var(--error)',
-                                                'Refund': 'var(--warning)',
-                                                'Wholesale': 'var(--info)',
-                                                'Bundle': 'var(--primary)',
-                                                'Custom': 'var(--gray-500)'
-                                            };
+                                        ${filteredSales
+                                            .map((sale) => {
+                                                const saleTags = sale.tags || [];
+                                                const tagColors = {
+                                                    'High Priority': 'var(--error)',
+                                                    Refund: 'var(--warning)',
+                                                    Wholesale: 'var(--info)',
+                                                    Bundle: 'var(--primary)',
+                                                    Custom: 'var(--gray-500)',
+                                                };
 
-                                            return `
+                                                return `
                                             <tr>
                                                 <td>${new Date(sale.created_at).toLocaleDateString()}</td>
                                                 <td>${escapeHtml(sale.listing_title || sale.inventory_title || 'N/A')}</td>
@@ -14423,11 +17828,15 @@ Upload photos once, use them across all your listings.`
                                                 <td class="font-medium text-success">C$${(sale.net_profit || 0).toFixed(2)}</td>
                                                 <td>
                                                     <div class="transaction-tags" style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center;">
-                                                        ${saleTags.map(tag => `
+                                                        ${saleTags
+                                                            .map(
+                                                                (tag) => `
                                                             <span class="tx-tag" style="font-size: 9px; padding: 2px 6px; border-radius: 10px; background: ${tagColors[tag] || 'var(--gray-400)'}20; color: ${tagColors[tag] || 'var(--gray-600)'}; font-weight: 500;">
                                                                 ${tag}
                                                             </span>
-                                                        `).join('')}
+                                                        `,
+                                                            )
+                                                            .join('')}
                                                         <button class="add-tag-btn" onclick="handlers.showAddTagModal('${sale.id}')" style="width: 18px; height: 18px; border-radius: 50%; border: 1px dashed var(--gray-300); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--gray-400); font-size: 12px;" title="Add tag">+</button>
                                                     </div>
                                                 </td>
@@ -14447,18 +17856,23 @@ Upload photos once, use them across all your listings.`
                                                 </td>
                                             </tr>
                                             `;
-                                        }).join('')}
+                                            })
+                                            .join('')}
                                     </tbody>
                                 </table>
                             </div>
-                        `})()) : `
+                        `;
+                                      })()
+                                : `
                             <div class="text-gray-500 text-sm text-center py-8">
                                 No sales transactions yet
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
-            `}
+            `
+            }
 
             <!-- Business FAB -->
             ${businessFAB.render()}
@@ -14472,12 +17886,18 @@ Upload photos once, use them across all your listings.`
         const stats = store.state.whatnotStats || { total_events: 0, upcoming: 0, completed: 0, total_items_sold: 0 };
         const activeTab = store.state.whatnotTab || 'upcoming';
 
-        const upcomingEvents = events.filter(e => e.status === 'scheduled' && new Date(e.start_time) > new Date());
-        const pastEvents = events.filter(e => e.status === 'completed' || new Date(e.start_time) <= new Date());
+        const upcomingEvents = events.filter((e) => e.status === 'scheduled' && new Date(e.start_time) > new Date());
+        const pastEvents = events.filter((e) => e.status === 'completed' || new Date(e.start_time) <= new Date());
 
         const formatDate = (dateStr) => {
             const date = new Date(dateStr);
-            return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+            return date.toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+            });
         };
 
         return `
@@ -14509,10 +17929,16 @@ Upload photos once, use them across all your listings.`
 
             <div class="card">
                 <div class="card-body">
-                    ${activeTab === 'upcoming' ? `
-                        ${upcomingEvents.length > 0 ? `
+                    ${
+                        activeTab === 'upcoming'
+                            ? `
+                        ${
+                            upcomingEvents.length > 0
+                                ? `
                             <div class="space-y-4">
-                                ${upcomingEvents.map(event => `
+                                ${upcomingEvents
+                                    .map(
+                                        (event) => `
                                     <div class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer" role="button" tabindex="0" onclick="handlers.viewWhatnotEvent('${event.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.viewWhatnotEvent('${event.id}')}">
                                         <div class="flex items-center gap-4">
                                             <div class="w-12 h-12 rounded-lg bg-primary-100 flex items-center justify-center text-primary-600">
@@ -14529,18 +17955,25 @@ Upload photos once, use them across all your listings.`
                                             <button class="btn btn-sm btn-error" onclick="event.stopPropagation(); handlers.deleteWhatnotEvent('${event.id}')">Delete</button>
                                         </div>
                                     </div>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="empty-state text-center py-12">
                                 <div class="text-4xl mb-4">📺</div>
                                 <h2 class="font-semibold mb-2">No upcoming events</h2>
                                 <p class="text-gray-500 mb-4">Create your first live selling event to get started</p>
                                 <button class="btn btn-primary" onclick="modals.createWhatnotEvent()">Create Event</button>
                             </div>
-                        `}
-                    ` : `
-                        ${pastEvents.length > 0 ? `
+                        `
+                        }
+                    `
+                            : `
+                        ${
+                            pastEvents.length > 0
+                                ? `
                             <div class="table-container">
                                 <table class="table">
                                     <thead>
@@ -14554,7 +17987,9 @@ Upload photos once, use them across all your listings.`
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${pastEvents.map(event => `
+                                        ${pastEvents
+                                            .map(
+                                                (event) => `
                                             <tr class="cursor-pointer hover:bg-gray-50" onclick="handlers.viewWhatnotEvent('${event.id}')">
                                                 <td class="font-medium">${escapeHtml(event.title)}</td>
                                                 <td>${formatDate(event.start_time)}</td>
@@ -14563,14 +17998,19 @@ Upload photos once, use them across all your listings.`
                                                 <td>C$${(event.total_sales || 0).toFixed(2)}</td>
                                                 <td><span class="badge badge-${event.status === 'completed' ? 'success' : 'gray'}">${event.status}</span></td>
                                             </tr>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </tbody>
                                 </table>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="text-gray-500 text-center py-8">No past events yet</div>
-                        `}
-                    `}
+                        `
+                        }
+                    `
+                    }
                 </div>
             </div>
         `;
@@ -14583,7 +18023,7 @@ Upload photos once, use them across all your listings.`
         const availableWidgets = store.state.reportWidgets || [];
         const editingReport = store.state.editingReport || null;
         const inventory = store.state.inventory || [];
-        const activeItems = inventory.filter(i => i.status === 'active');
+        const activeItems = inventory.filter((i) => i.status === 'active');
         const periodLabel = 'last 30 days';
 
         if (editingReport) {
@@ -14593,22 +18033,32 @@ Upload photos once, use them across all your listings.`
         const subTab = store.state.analyticsReportsSubTab || 'errors';
         const reportSales = store.state.sales || [];
         const reportNow = new Date();
-        const rptDaysToSell = reportSales.filter(s => s.sale_date).map(s => {
-            const listed = new Date(s.created_at || s.date_listed || s.sale_date);
-            const sold = new Date(s.sale_date);
-            return Math.max(0, Math.floor((sold - listed) / (1000 * 60 * 60 * 24)));
-        }).filter(d => d > 0);
-        const rptAvgDaysToSell = rptDaysToSell.length > 0 ? (rptDaysToSell.reduce((a, b) => a + b, 0) / rptDaysToSell.length).toFixed(1) : '0';
-        const rptDeadStockItems = activeItems.filter(i => {
+        const rptDaysToSell = reportSales
+            .filter((s) => s.sale_date)
+            .map((s) => {
+                const listed = new Date(s.created_at || s.date_listed || s.sale_date);
+                const sold = new Date(s.sale_date);
+                return Math.max(0, Math.floor((sold - listed) / (1000 * 60 * 60 * 24)));
+            })
+            .filter((d) => d > 0);
+        const rptAvgDaysToSell =
+            rptDaysToSell.length > 0
+                ? (rptDaysToSell.reduce((a, b) => a + b, 0) / rptDaysToSell.length).toFixed(1)
+                : '0';
+        const rptDeadStockItems = activeItems.filter((i) => {
             const listed = new Date(i.created_at || i.date_listed || reportNow);
             return Math.floor((reportNow - listed) / (1000 * 60 * 60 * 24)) > 60;
         });
-        const rptTurnoverRate = activeItems.length > 0 ? ((reportSales.length / activeItems.length) * 100).toFixed(0) : '0';
-        const slowestMoving = activeItems.map(i => {
-            const listed = new Date(i.created_at || i.date_listed || reportNow);
-            return { ...i, daysListed: Math.floor((reportNow - listed) / (1000 * 60 * 60 * 24)) };
-        }).sort((a, b) => b.daysListed - a.daysListed).slice(0, 5);
-        const errorSales = reportSales.filter(s => s.status === 'failed' || s.status === 'error');
+        const rptTurnoverRate =
+            activeItems.length > 0 ? ((reportSales.length / activeItems.length) * 100).toFixed(0) : '0';
+        const slowestMoving = activeItems
+            .map((i) => {
+                const listed = new Date(i.created_at || i.date_listed || reportNow);
+                return { ...i, daysListed: Math.floor((reportNow - listed) / (1000 * 60 * 60 * 24)) };
+            })
+            .sort((a, b) => b.daysListed - a.daysListed)
+            .slice(0, 5);
+        const errorSales = reportSales.filter((s) => s.status === 'failed' || s.status === 'error');
         const totalErrorCount = errorSales.length;
         const errorRate = reportSales.length > 0 ? ((totalErrorCount / reportSales.length) * 100).toFixed(1) : '0';
 
@@ -14625,7 +18075,9 @@ Upload photos once, use them across all your listings.`
                     <button class="tab ${subTab === 'custom' ? 'active' : ''}" role="tab" onclick="store.setState({analyticsReportsSubTab:'custom'}); renderApp(window.pages.reports())">Custom Reports</button>
                 </div>
                 <div class="card-body">
-                    ${subTab === 'errors' ? `
+                    ${
+                        subTab === 'errors'
+                            ? `
                         <div class="grid grid-cols-3 gap-4 mb-6">
                             <div class="text-center p-3 bg-gray-50 rounded-lg">
                                 <div class="text-2xl font-bold text-error">${totalErrorCount}</div>
@@ -14640,25 +18092,37 @@ Upload photos once, use them across all your listings.`
                                 <div class="text-xs text-gray-500">Most Common Error</div>
                             </div>
                         </div>
-                        ${errorSales.length === 0 ? '<p class="text-gray-500 text-center py-4">No errors in the selected period</p>' : `
+                        ${
+                            errorSales.length === 0
+                                ? '<p class="text-gray-500 text-center py-4">No errors in the selected period</p>'
+                                : `
                             <div class="table-container">
                                 <table class="table">
                                     <thead><tr><th>Date</th><th>Platform</th><th>Item</th><th>Error Type</th><th>Status</th></tr></thead>
                                     <tbody>
-                                        ${errorSales.map(s => `<tr>
+                                        ${errorSales
+                                            .map(
+                                                (s) => `<tr>
                                             <td>${new Date(s.created_at).toLocaleDateString()}</td>
                                             <td><span class="badge badge-gray">${escapeHtml(s.platform || 'Unknown')}</span></td>
                                             <td>${escapeHtml(s.title || s.item_title || 'Unknown Item')}</td>
                                             <td>${escapeHtml(s.error_type || s.status || 'Error')}</td>
                                             <td><span class="badge ${s.resolved ? 'badge-success' : 'badge-warning'}">${s.resolved ? 'Resolved' : 'Pending'}</span></td>
-                                        </tr>`).join('')}
+                                        </tr>`,
+                                            )
+                                            .join('')}
                                     </tbody>
                                 </table>
                             </div>
-                        `}
-                    ` : subTab === 'supplier' ? `
+                        `
+                        }
+                    `
+                            : subTab === 'supplier'
+                              ? `
                         <p class="text-gray-500 text-center py-8">Connect suppliers to enable price monitoring.</p>
-                    ` : subTab === 'turnover' ? `
+                    `
+                              : subTab === 'turnover'
+                                ? `
                         <div class="grid grid-cols-3 gap-4 mb-4">
                             <div class="text-center p-3 bg-gray-50 rounded-lg">
                                 <div class="text-2xl font-bold text-primary">${rptTurnoverRate}%</div>
@@ -14673,30 +18137,43 @@ Upload photos once, use them across all your listings.`
                                 <div class="text-xs text-gray-500">Avg Days to Sell</div>
                             </div>
                         </div>
-                        ${slowestMoving.length === 0 ? '<p class="text-gray-500 text-center py-4">No inventory data available</p>' : `
+                        ${
+                            slowestMoving.length === 0
+                                ? '<p class="text-gray-500 text-center py-4">No inventory data available</p>'
+                                : `
                             <h3 class="font-semibold mb-3">Slowest Moving Items</h3>
                             <div class="table-container">
                                 <table class="table">
                                     <thead><tr><th>Item</th><th>Days Listed</th><th>Status</th></tr></thead>
                                     <tbody>
-                                        ${slowestMoving.map(i => `<tr>
+                                        ${slowestMoving
+                                            .map(
+                                                (i) => `<tr>
                                             <td>${escapeHtml(i.title || 'Unknown')}</td>
                                             <td>${i.daysListed}</td>
                                             <td><span class="badge ${i.daysListed > 60 ? 'badge-error' : 'badge-warning'}">${i.daysListed > 60 ? 'Dead Stock' : 'Slow'}</span></td>
-                                        </tr>`).join('')}
+                                        </tr>`,
+                                            )
+                                            .join('')}
                                     </tbody>
                                 </table>
                             </div>
-                        `}
-                    ` : `
+                        `
+                        }
+                    `
+                                : `
                         <div class="flex justify-end mb-4">
                             <button class="btn btn-primary" onclick="handlers.showCreateReportForm()">
                                 ${components.icon('plus', 16)} New Report
                             </button>
                         </div>
-                        ${reports.length > 0 ? `
+                        ${
+                            reports.length > 0
+                                ? `
                             <div class="grid grid-cols-3 gap-4">
-                                ${reports.map(report => `
+                                ${reports
+                                    .map(
+                                        (report) => `
                                     <div class="card hover:shadow-lg transition-shadow cursor-pointer" role="button" tabindex="0" onclick="handlers.viewReport('${report.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.viewReport('${report.id}')}">
                                         <div class="card-body">
                                             <div class="flex items-start justify-between mb-3">
@@ -14720,17 +18197,22 @@ Upload photos once, use them across all your listings.`
                                             </div>
                                         </div>
                                     </div>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="empty-state text-center py-12">
                                 <div class="text-4xl mb-4">📊</div>
                                 <h2 class="font-semibold mb-2">No custom reports yet</h2>
                                 <p class="text-gray-500 mb-4">Create your first report to track the metrics that matter to you.</p>
                                 <button class="btn btn-primary" onclick="handlers.showCreateReportForm()">New Report</button>
                             </div>
-                        `}
-                    `}
+                        `
+                        }
+                    `
+                    }
                 </div>
             </div>
         `;
@@ -14759,13 +18241,13 @@ Upload photos once, use them across all your listings.`
         // Calculate stats
         const totalDeleted = deletedItems.length;
         const typeBreakdown = {};
-        deletedItems.forEach(item => {
+        deletedItems.forEach((item) => {
             const type = item.item_type || 'unknown';
             typeBreakdown[type] = (typeBreakdown[type] || 0) + 1;
         });
 
         // Filter items
-        let filteredItems = deletedItems.filter(item => {
+        let filteredItems = deletedItems.filter((item) => {
             let match = true;
             if (itemTypeFilter) match = match && item.item_type === itemTypeFilter;
             if (deletionReasonFilter) match = match && item.deletion_reason === deletionReasonFilter;
@@ -14784,7 +18266,7 @@ Upload photos once, use them across all your listings.`
         });
 
         // Parse item data
-        const itemsWithData = filteredItems.map(item => {
+        const itemsWithData = filteredItems.map((item) => {
             let itemData = {};
             try {
                 itemData = item.original_data ? JSON.parse(item.original_data) : {};
@@ -14794,7 +18276,7 @@ Upload photos once, use them across all your listings.`
             return {
                 ...item,
                 itemName: itemData.title || 'Untitled Item',
-                itemPrice: itemData.price || 0
+                itemPrice: itemData.price || 0,
             };
         });
 
@@ -14805,7 +18287,9 @@ Upload photos once, use them across all your listings.`
                         <h1 class="page-title">Recently Deleted</h1>
                         <p class="text-gray-500">Manage deleted items. Permanently deleted items are removed after 30 days.</p>
                     </div>
-                    ${selectedDeletedIds.length > 0 ? `
+                    ${
+                        selectedDeletedIds.length > 0
+                            ? `
                         <div class="flex gap-2">
                             <button class="btn btn-secondary" onclick="handlers.bulkRestoreDeleted()">
                                 ${components.icon('undo', 16)} Restore Selected (${selectedDeletedIds.length})
@@ -14814,7 +18298,9 @@ Upload photos once, use them across all your listings.`
                                 ${components.icon('trash', 16)} Delete Permanently (${selectedDeletedIds.length})
                             </button>
                         </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                 </div>
 
                 <!-- Stats Cards -->
@@ -14824,38 +18310,50 @@ Upload photos once, use them across all your listings.`
                 </div>
 
                 <!-- Type Breakdown -->
-                ${Object.keys(typeBreakdown).length > 0 ? `
+                ${
+                    Object.keys(typeBreakdown).length > 0
+                        ? `
                     <div class="card mb-6">
                         <div class="card-body">
                             <h2 class="font-semibold mb-4">Items by Type</h2>
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                ${Object.entries(typeBreakdown).map(([type, count]) => `
+                                ${Object.entries(typeBreakdown)
+                                    .map(
+                                        ([type, count]) => `
                                     <div class="text-center p-3 bg-gray-50 rounded">
                                         <div class="text-2xl font-bold text-primary">${count}</div>
                                         <div class="text-sm text-gray-600 capitalize">${type}</div>
                                     </div>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </div>
                         </div>
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
 
                 <!-- Filters -->
                 <div class="card mb-6">
                     <div class="card-body">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div class="form-group">
-                                <label class="form-label">Item Type</label>
-                                <select class="form-select" aria-label="Item type filter" onchange="handlers.setDeletedItemTypeFilter(this.value)">
+                                <label class="form-label" for="pd-del-item-type">Item Type</label>
+                                <select id="pd-del-item-type" class="form-select" aria-label="Item type filter" onchange="handlers.setDeletedItemTypeFilter(this.value)">
                                     <option value="">All Types</option>
-                                    ${Object.keys(typeBreakdown).map(type => `
+                                    ${Object.keys(typeBreakdown)
+                                        .map(
+                                            (type) => `
                                         <option value="${type}" ${itemTypeFilter === type ? 'selected' : ''}>${type}</option>
-                                    `).join('')}
+                                    `,
+                                        )
+                                        .join('')}
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Deletion Reason</label>
-                                <select aria-label="Filter by deletion reason" class="form-select" onchange="handlers.setDeletedReasonFilter(this.value)">
+                                <label class="form-label" for="pd-del-reason">Deletion Reason</label>
+                                <select id="pd-del-reason" aria-label="Filter by deletion reason" class="form-select" onchange="handlers.setDeletedReasonFilter(this.value)">
                                     <option value="">All Reasons</option>
                                     <option value="user_deleted" ${deletionReasonFilter === 'user_deleted' ? 'selected' : ''}>User Deleted</option>
                                     <option value="expired" ${deletionReasonFilter === 'expired' ? 'selected' : ''}>Expired</option>
@@ -14864,8 +18362,8 @@ Upload photos once, use them across all your listings.`
                                 </select>
                             </div>
                             <div class="form-group" role="search">
-                                <label class="form-label">Search</label>
-                                <input type="text" class="form-input" aria-label="Search item name" placeholder="Search item name..."
+                                <label class="form-label" for="pd-del-search">Search</label>
+                                <input id="pd-del-search" type="text" class="form-input" aria-label="Search item name" placeholder="Search item name..."
                                        value="${searchTerm}"
                                        onchange="handlers.setDeletedSearchTerm(this.value)">
                             </div>
@@ -14874,7 +18372,9 @@ Upload photos once, use them across all your listings.`
                 </div>
 
                 <!-- Action Bar -->
-                ${selectedDeletedIds.length > 0 ? `
+                ${
+                    selectedDeletedIds.length > 0
+                        ? `
                     <div class="card mb-6 callout-info">
                         <div class="card-body flex justify-between items-center">
                             <span>${selectedDeletedIds.length} item(s) selected</span>
@@ -14891,18 +18391,23 @@ Upload photos once, use them across all your listings.`
                             </div>
                         </div>
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
 
                 <!-- Deleted Items Table -->
                 <div class="card">
                     <div class="card-body">
-                        ${itemsWithData.length === 0 ? `
+                        ${
+                            itemsWithData.length === 0
+                                ? `
                             <div class="empty-state">
                                 <div class="empty-state-icon">${components.icon('trash', 48)}</div>
                                 <h2 class="empty-state-title">No deleted items</h2>
                                 <p class="empty-state-description">Deleted items will appear here</p>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="overflow-x-auto">
                                 <table class="data-table">
                                     <thead>
@@ -14920,7 +18425,9 @@ Upload photos once, use them across all your listings.`
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${itemsWithData.map(item => `
+                                        ${itemsWithData
+                                            .map(
+                                                (item) => `
                                             <tr>
                                                 <td>
                                                     <input aria-label="Toggle ${escapeHtml(item.itemName)}" type="checkbox"
@@ -14946,11 +18453,14 @@ Upload photos once, use them across all your listings.`
                                                     </div>
                                                 </td>
                                             </tr>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </tbody>
                                 </table>
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
 
@@ -15033,7 +18543,9 @@ Upload photos once, use them across all your listings.`
                         <h2 class="card-title">Saved Reports (${savedReports.length})</h2>
                     </div>
                     <div class="card-body">
-                        ${savedReports.length === 0 ? `
+                        ${
+                            savedReports.length === 0
+                                ? `
                             <div class="empty-state">
                                 <div class="empty-state-icon">${components.icon('analytics', 48)}</div>
                                 <h2 class="empty-state-title">No saved reports yet</h2>
@@ -15042,9 +18554,12 @@ Upload photos once, use them across all your listings.`
                                     ${components.icon('plus', 16)} Create Report
                                 </button>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                ${savedReports.map(report => `
+                                ${savedReports
+                                    .map(
+                                        (report) => `
                                     <div class="card card-hover border">
                                         <div class="card-body">
                                             <div class="flex justify-between items-start mb-2">
@@ -15075,14 +18590,19 @@ Upload photos once, use them across all your listings.`
                                             </button>
                                         </div>
                                     </div>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
 
                 <!-- Report Results Modal (shown when results available) -->
-                ${reportResults ? `
+                ${
+                    reportResults
+                        ? `
                     <div class="card mt-6">
                         <div class="card-header">
                             <h2 class="card-title">Report Results</h2>
@@ -15095,30 +18615,45 @@ Upload photos once, use them across all your listings.`
                                 <table class="data-table">
                                     <thead>
                                         <tr>
-                                            ${reportResults.columns && reportResults.columns.length > 0 ?
-                                                reportResults.columns.map(col => `<th>${escapeHtml(col)}</th>`).join('')
-                                                : '<th>Data</th>'
+                                            ${
+                                                reportResults.columns && reportResults.columns.length > 0
+                                                    ? reportResults.columns
+                                                          .map((col) => `<th>${escapeHtml(col)}</th>`)
+                                                          .join('')
+                                                    : '<th>Data</th>'
                                             }
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${reportResults.rows && reportResults.rows.length > 0 ?
-                                            reportResults.rows.map(row => `
+                                        ${
+                                            reportResults.rows && reportResults.rows.length > 0
+                                                ? reportResults.rows
+                                                      .map(
+                                                          (row) => `
                                                 <tr>
-                                                    ${Array.isArray(row) ?
-                                                        row.map(cell => `<td>${escapeHtml(String(cell))}</td>`).join('')
-                                                        : Object.values(row).map(val => `<td>${escapeHtml(String(val))}</td>`).join('')
+                                                    ${
+                                                        Array.isArray(row)
+                                                            ? row
+                                                                  .map((cell) => `<td>${escapeHtml(String(cell))}</td>`)
+                                                                  .join('')
+                                                            : Object.values(row)
+                                                                  .map((val) => `<td>${escapeHtml(String(val))}</td>`)
+                                                                  .join('')
                                                     }
                                                 </tr>
-                                            `).join('')
-                                            : '<tr><td colspan="100%">No results</td></tr>'
+                                            `,
+                                                      )
+                                                      .join('')
+                                                : '<tr><td colspan="100%">No results</td></tr>'
                                         }
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
             </div>
         `;
     },
@@ -15130,13 +18665,20 @@ Upload photos once, use them across all your listings.`
         const platforms = healthData.platforms || [];
         const overallHealth = healthData.overall_health || 0;
         const platformColors = {
-            poshmark: '#d97706', ebay: '#0064d2', mercari: '#00b0a0', depop: '#ff2300',
-            grailed: '#000', etsy: '#f1641e', shopify: '#96bf48', facebook: '#1877f2', whatnot: '#ff4757'
+            poshmark: '#d97706',
+            ebay: '#0064d2',
+            mercari: '#00b0a0',
+            depop: '#ff2300',
+            grailed: '#000',
+            etsy: '#f1641e',
+            shopify: '#96bf48',
+            facebook: '#1877f2',
+            whatnot: '#ff4757',
         };
         const statusIcons = {
             healthy: { icon: 'check-circle', color: 'var(--success)' },
             warning: { icon: 'alert-triangle', color: 'var(--warning-600)' },
-            critical: { icon: 'x-circle', color: 'var(--error)' }
+            critical: { icon: 'x-circle', color: 'var(--error)' },
         };
         return `
             <div class="page-header flex justify-between items-start">
@@ -15158,27 +18700,91 @@ Upload photos once, use them across all your listings.`
                 </div>
                 <div><h2 class="text-lg font-semibold">Overall Health Score</h2><p class="text-sm text-gray-500">${platforms.length} platform${platforms.length !== 1 ? 's' : ''} connected</p></div>
                 <div style="margin-left:auto;" class="flex gap-4">
-                    <div class="text-center"><div class="text-xl font-bold" style="color:var(--success);">${platforms.filter(p => p.status === 'healthy').length}</div><div class="text-xs text-gray-500">Healthy</div></div>
-                    <div class="text-center"><div class="text-xl font-bold" style="color:var(--warning-600);">${platforms.filter(p => p.status === 'warning').length}</div><div class="text-xs text-gray-500">Warning</div></div>
-                    <div class="text-center"><div class="text-xl font-bold" style="color:var(--error);">${platforms.filter(p => p.status === 'critical').length}</div><div class="text-xs text-gray-500">Critical</div></div>
+                    <div class="text-center"><div class="text-xl font-bold" style="color:var(--success);">${platforms.filter((p) => p.status === 'healthy').length}</div><div class="text-xs text-gray-500">Healthy</div></div>
+                    <div class="text-center"><div class="text-xl font-bold" style="color:var(--warning-600);">${platforms.filter((p) => p.status === 'warning').length}</div><div class="text-xs text-gray-500">Warning</div></div>
+                    <div class="text-center"><div class="text-xl font-bold" style="color:var(--error);">${platforms.filter((p) => p.status === 'critical').length}</div><div class="text-xs text-gray-500">Critical</div></div>
                 </div>
             </div></div>
             <div class="grid grid-cols-2 gap-4">
-                ${platforms.length > 0 ? platforms.map(p => {
-                    const si = statusIcons[p.status] || statusIcons.warning;
-                    const color = platformColors[p.platform] || 'var(--gray-600)';
-                    const tokenExpiry = p.token_expires_at ? new Date(p.token_expires_at) : null;
-                    const tokenLabel = tokenExpiry ? (tokenExpiry < new Date() ? 'Expired' : 'Expires ' + tokenExpiry.toLocaleDateString()) : 'N/A';
-                    const lastSync = p.last_sync_at ? new Date(p.last_sync_at).toLocaleString() : 'Never';
-                    return '<div class="card" style="border-left:4px solid ' + color + ';"><div class="card-body"><div class="flex justify-between items-start mb-3"><div class="flex items-center gap-2">' + components.platformBadge(p.platform) + '<div><span class="font-semibold">' + (p.platform.charAt(0).toUpperCase() + p.platform.slice(1)) + '</span>' + (p.username ? '<span class="text-sm text-gray-500 ml-1">@' + escapeHtml(p.username) + '</span>' : '') + '</div></div><div class="flex items-center gap-1" style="color:' + si.color + ';">' + components.icon(si.icon, 18) + '<span class="text-sm font-medium">' + p.health_score + '/100</span></div></div><div class="grid grid-cols-2 gap-2 text-sm mb-3"><div><span class="text-gray-500">Status:</span> <span class="' + (p.is_connected ? 'text-success' : 'text-error') + '">' + (p.is_connected ? 'Connected' : 'Disconnected') + '</span></div><div><span class="text-gray-500">Type:</span> ' + (p.connection_type === 'oauth' ? 'OAuth' : 'Manual') + '</div><div><span class="text-gray-500">Last Sync:</span> ' + lastSync + '</div><div><span class="text-gray-500">Token:</span> <span style="color:' + (tokenExpiry && tokenExpiry < new Date() ? 'var(--error)' : 'inherit') + ';">' + tokenLabel + '</span></div><div><span class="text-gray-500">Active Listings:</span> ' + (p.listings?.active || 0) + '</div><div><span class="text-gray-500">Errors:</span> <span style="color:' + ((p.listings?.errors || 0) > 0 ? 'var(--error)' : 'inherit') + ';">' + (p.listings?.errors || 0) + '</span></div></div>' + (p.issues.length > 0 ? '<div class="text-xs" style="padding:8px;background:var(--error-50,var(--error-50));border-radius:var(--radius-sm);color:var(--error-700);">' + p.issues.map(i => components.icon('alert-circle', 12) + ' ' + escapeHtml(i)).join('<br>') + '</div>' : '<div class="text-xs" style="padding:8px;background:var(--success-50,var(--green-50));border-radius:var(--radius-sm);color:var(--success-700);">' + components.icon('check', 12) + ' All systems operational</div>') + '</div></div>';
-                }).join('') : '<div class="card" style="grid-column:1/-1;"><div class="card-body text-center py-8 text-gray-500"><p>No platforms connected yet.</p><button class="btn btn-primary mt-3" onclick="router.navigate(\'shops\')">Connect a Platform</button></div></div>'}
+                ${
+                    platforms.length > 0
+                        ? platforms
+                              .map((p) => {
+                                  const si = statusIcons[p.status] || statusIcons.warning;
+                                  const color = platformColors[p.platform] || 'var(--gray-600)';
+                                  const tokenExpiry = p.token_expires_at ? new Date(p.token_expires_at) : null;
+                                  const tokenLabel = tokenExpiry
+                                      ? tokenExpiry < new Date()
+                                          ? 'Expired'
+                                          : 'Expires ' + tokenExpiry.toLocaleDateString()
+                                      : 'N/A';
+                                  const lastSync = p.last_sync_at ? new Date(p.last_sync_at).toLocaleString() : 'Never';
+                                  return (
+                                      '<div class="card" style="border-left:4px solid ' +
+                                      color +
+                                      ';"><div class="card-body"><div class="flex justify-between items-start mb-3"><div class="flex items-center gap-2">' +
+                                      components.platformBadge(p.platform) +
+                                      '<div><span class="font-semibold">' +
+                                      (p.platform.charAt(0).toUpperCase() + p.platform.slice(1)) +
+                                      '</span>' +
+                                      (p.username
+                                          ? '<span class="text-sm text-gray-500 ml-1">@' +
+                                            escapeHtml(p.username) +
+                                            '</span>'
+                                          : '') +
+                                      '</div></div><div class="flex items-center gap-1" style="color:' +
+                                      si.color +
+                                      ';">' +
+                                      components.icon(si.icon, 18) +
+                                      '<span class="text-sm font-medium">' +
+                                      p.health_score +
+                                      '/100</span></div></div><div class="grid grid-cols-2 gap-2 text-sm mb-3"><div><span class="text-gray-500">Status:</span> <span class="' +
+                                      (p.is_connected ? 'text-success' : 'text-error') +
+                                      '">' +
+                                      (p.is_connected ? 'Connected' : 'Disconnected') +
+                                      '</span></div><div><span class="text-gray-500">Type:</span> ' +
+                                      (p.connection_type === 'oauth' ? 'OAuth' : 'Manual') +
+                                      '</div><div><span class="text-gray-500">Last Sync:</span> ' +
+                                      lastSync +
+                                      '</div><div><span class="text-gray-500">Token:</span> <span style="color:' +
+                                      (tokenExpiry && tokenExpiry < new Date() ? 'var(--error)' : 'inherit') +
+                                      ';">' +
+                                      tokenLabel +
+                                      '</span></div><div><span class="text-gray-500">Active Listings:</span> ' +
+                                      (p.listings?.active || 0) +
+                                      '</div><div><span class="text-gray-500">Errors:</span> <span style="color:' +
+                                      ((p.listings?.errors || 0) > 0 ? 'var(--error)' : 'inherit') +
+                                      ';">' +
+                                      (p.listings?.errors || 0) +
+                                      '</span></div></div>' +
+                                      (p.issues.length > 0
+                                          ? '<div class="text-xs" style="padding:8px;background:var(--error-50,var(--error-50));border-radius:var(--radius-sm);color:var(--error-700);">' +
+                                            p.issues
+                                                .map((i) => components.icon('alert-circle', 12) + ' ' + escapeHtml(i))
+                                                .join('<br>') +
+                                            '</div>'
+                                          : '<div class="text-xs" style="padding:8px;background:var(--success-50,var(--green-50));border-radius:var(--radius-sm);color:var(--success-700);">' +
+                                            components.icon('check', 12) +
+                                            ' All systems operational</div>') +
+                                      '</div></div>'
+                                  );
+                              })
+                              .join('')
+                        : '<div class="card" style="grid-column:1/-1;"><div class="card-body text-center py-8 text-gray-500"><p>No platforms connected yet.</p><button class="btn btn-primary mt-3" onclick="router.navigate(\'shops\')">Connect a Platform</button></div></div>'
+                }
             </div>
         `;
     },
 
     arPreview() {
-        const items = (store.state.inventory || []).filter(i => {
-            const imgs = (() => { try { return JSON.parse(i.images || '[]'); } catch { return []; } })();
+        const items = (store.state.inventory || []).filter((i) => {
+            const imgs = (() => {
+                try {
+                    return JSON.parse(i.images || '[]');
+                } catch {
+                    return [];
+                }
+            })();
             return imgs.length > 0 || i.primary_image;
         });
         const arSupported = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
@@ -15194,7 +18800,9 @@ Upload photos once, use them across all your listings.`
                 ${!arSupported ? `<span class="badge badge-warning" style="font-size:12px;">${components.icon('alert-triangle', 14)} Camera not available</span>` : ''}
             </div>
 
-            ${!arSupported ? `
+            ${
+                !arSupported
+                    ? `
             <div class="card mb-4" style="border-left:4px solid var(--warning-500);">
                 <div class="card-body" style="display:flex;align-items:center;gap:0.75rem;">
                     ${components.icon('camera-off', 20)}
@@ -15203,9 +18811,13 @@ Upload photos once, use them across all your listings.`
                         <p class="text-xs text-gray-500 mt-1">Your browser or device does not support camera access (getUserMedia). You can still view items in the static overlay mode.</p>
                     </div>
                 </div>
-            </div>` : ''}
+            </div>`
+                    : ''
+            }
 
-            ${items.length === 0 ? `
+            ${
+                items.length === 0
+                    ? `
             <div class="card">
                 <div class="card-body text-center py-12">
                     ${components.icon('image', 40)}
@@ -15213,12 +18825,23 @@ Upload photos once, use them across all your listings.`
                     <p class="text-sm text-gray-400 mt-1">Add images to your inventory items to use AR Preview.</p>
                     <button class="btn btn-primary mt-4" onclick="router.navigate('inventory')">Go to Inventory</button>
                 </div>
-            </div>` : `
+            </div>`
+                    : `
             <div class="grid grid-cols-3 gap-4" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
-                ${items.map(item => {
-                    const imgs = (() => { try { return JSON.parse(item.images || '[]'); } catch { return []; } })();
-                    const thumb = item.primary_image || (imgs[0] && (typeof imgs[0] === 'string' ? imgs[0] : imgs[0].url)) || '';
-                    return `
+                ${items
+                    .map((item) => {
+                        const imgs = (() => {
+                            try {
+                                return JSON.parse(item.images || '[]');
+                            } catch {
+                                return [];
+                            }
+                        })();
+                        const thumb =
+                            item.primary_image ||
+                            (imgs[0] && (typeof imgs[0] === 'string' ? imgs[0] : imgs[0].url)) ||
+                            '';
+                        return `
                     <div class="card" style="overflow:hidden;">
                         <div style="aspect-ratio:1;background:var(--gray-100);overflow:hidden;position:relative;">
                             ${thumb ? `<img src="${escapeHtml(thumb)}" alt="${escapeHtml(item.title || '')}" style="width:100%;height:100%;object-fit:cover;" loading="lazy">` : `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--gray-400);">${components.icon('image', 32)}</div>`}
@@ -15234,8 +18857,10 @@ Upload photos once, use them across all your listings.`
                             </button>
                         </div>
                     </div>`;
-                }).join('')}
-            </div>`}
+                    })
+                    .join('')}
+            </div>`
+            }
         `;
     },
 });

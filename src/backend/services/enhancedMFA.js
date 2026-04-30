@@ -47,47 +47,49 @@ const enhancedMFA = {
         if (!user) throw new Error('User not found');
 
         // Get existing credentials to exclude
-        const existingCredentials = await query.all(
-            'SELECT credential_id FROM webauthn_credentials WHERE user_id = ?',
-            [userId]
-        ) || [];
+        const existingCredentials =
+            (await query.all('SELECT credential_id FROM webauthn_credentials WHERE user_id = ?', [userId])) || [];
 
         const challenge = generateChallenge();
 
         // Store challenge temporarily
-        await redis.setJson('mfa:challenge:' + userId, {
-            challenge,
-            type: 'registration',
-            timestamp: Date.now()
-        }, 120);
+        await redis.setJson(
+            'mfa:challenge:' + userId,
+            {
+                challenge,
+                type: 'registration',
+                timestamp: Date.now(),
+            },
+            120,
+        );
 
         return {
             challenge,
             rp: {
                 name: RP_NAME,
-                id: RP_ID
+                id: RP_ID,
             },
             user: {
                 id: Buffer.from(userId).toString('base64url'),
                 name: user.email,
-                displayName: user.username || user.email.split('@')[0]
+                displayName: user.username || user.email.split('@')[0],
             },
             pubKeyCredParams: [
-                { alg: -7, type: 'public-key' },   // ES256
-                { alg: -257, type: 'public-key' }  // RS256
+                { alg: -7, type: 'public-key' }, // ES256
+                { alg: -257, type: 'public-key' }, // RS256
             ],
             timeout: 60000,
             attestation: 'none',
-            excludeCredentials: existingCredentials.map(c => ({
+            excludeCredentials: existingCredentials.map((c) => ({
                 id: c.credential_id,
                 type: 'public-key',
-                transports: ['usb', 'ble', 'nfc', 'internal']
+                transports: ['usb', 'ble', 'nfc', 'internal'],
             })),
             authenticatorSelection: {
                 authenticatorAttachment: 'cross-platform',
                 requireResidentKey: false,
-                userVerification: 'preferred'
-            }
+                userVerification: 'preferred',
+            },
         };
     },
 
@@ -109,35 +111,40 @@ const enhancedMFA = {
         // For now, store the credential
         const credentialId = uuidv4();
 
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO webauthn_credentials (
                 id, user_id, credential_id, public_key, sign_count,
                 device_name, created_at, last_used_at
             ) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
-        `, [
-            credentialId,
-            userId,
-            credential.id,
-            credential.response.publicKey || credential.response.attestationObject,
-            0,
-            deviceName || 'Security Key'
-        ]);
+        `,
+            [
+                credentialId,
+                userId,
+                credential.id,
+                credential.response.publicKey || credential.response.attestationObject,
+                0,
+                deviceName || 'Security Key',
+            ],
+        );
 
         // Enable MFA if not already
-        await query.run(`
+        await query.run(
+            `
             UPDATE users SET mfa_enabled = TRUE, mfa_method = 'webauthn', updated_at = NOW()
             WHERE id = ? AND mfa_enabled = FALSE
-        `, [userId]);
+        `,
+            [userId],
+        );
 
         return { credentialId, message: 'Security key registered successfully' };
     },
 
     // Start WebAuthn authentication
     async startAuthentication(userId) {
-        const credentials = await query.all(
-            'SELECT credential_id FROM webauthn_credentials WHERE user_id = ?',
-            [userId]
-        );
+        const credentials = await query.all('SELECT credential_id FROM webauthn_credentials WHERE user_id = ?', [
+            userId,
+        ]);
 
         if (!credentials || credentials.length === 0) {
             throw new Error('No security keys registered');
@@ -145,22 +152,26 @@ const enhancedMFA = {
 
         const challenge = generateChallenge();
 
-        await redis.setJson('mfa:challenge:' + userId, {
-            challenge,
-            type: 'authentication',
-            timestamp: Date.now()
-        }, 120);
+        await redis.setJson(
+            'mfa:challenge:' + userId,
+            {
+                challenge,
+                type: 'authentication',
+                timestamp: Date.now(),
+            },
+            120,
+        );
 
         return {
             challenge,
             timeout: 60000,
             rpId: RP_ID,
-            allowCredentials: credentials.map(c => ({
+            allowCredentials: credentials.map((c) => ({
                 id: c.credential_id,
                 type: 'public-key',
-                transports: ['usb', 'ble', 'nfc', 'internal']
+                transports: ['usb', 'ble', 'nfc', 'internal'],
             })),
-            userVerification: 'preferred'
+            userVerification: 'preferred',
         };
     },
 
@@ -181,7 +192,7 @@ const enhancedMFA = {
         // Verify the credential exists
         const credential = await query.get(
             'SELECT * FROM webauthn_credentials WHERE user_id = ? AND credential_id = ?',
-            [userId, assertion.id]
+            [userId, assertion.id],
         );
 
         if (!credential) {
@@ -190,40 +201,52 @@ const enhancedMFA = {
 
         // In production, verify signature properly
         // Update sign count and last used
-        await query.run(`
+        await query.run(
+            `
             UPDATE webauthn_credentials
             SET sign_count = sign_count + 1, last_used_at = NOW()
             WHERE id = ?
-        `, [credential.id]);
+        `,
+            [credential.id],
+        );
 
         return { success: true, message: 'Authentication successful' };
     },
 
     // List registered security keys
     async listSecurityKeys(userId) {
-        return await query.all(`
+        return (
+            (await query.all(
+                `
             SELECT id, device_name, created_at, last_used_at
             FROM webauthn_credentials
             WHERE user_id = ?
             ORDER BY created_at DESC
-        `, [userId]) || [];
+        `,
+                [userId],
+            )) || []
+        );
     },
 
     // Remove security key
     async removeSecurityKey(userId, credentialId) {
         const remaining = await query.get(
             'SELECT COUNT(*) as count FROM webauthn_credentials WHERE user_id = ? AND id != ?',
-            [userId, credentialId]
+            [userId, credentialId],
         );
 
         // Check if user has other MFA methods
         const user = await query.get('SELECT mfa_method FROM users WHERE id = ?', [userId]);
         const hasBackupCodes = await query.get(
             'SELECT COUNT(*) as count FROM backup_codes WHERE user_id = ? AND used_at IS NULL',
-            [userId]
+            [userId],
         );
 
-        if (remaining.count === 0 && user?.mfa_method === 'webauthn' && (!hasBackupCodes || hasBackupCodes.count === 0)) {
+        if (
+            remaining.count === 0 &&
+            user?.mfa_method === 'webauthn' &&
+            (!hasBackupCodes || hasBackupCodes.count === 0)
+        ) {
             throw new Error('Cannot remove last security key without other MFA methods');
         }
 
@@ -245,22 +268,28 @@ const enhancedMFA = {
         const batchId = uuidv4();
 
         for (const code of codes) {
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO backup_codes (id, user_id, code_hash, batch_id, created_at)
                 VALUES (?, ?, ?, ?, NOW())
-            `, [uuidv4(), userId, hashBackupCode(code), batchId]);
+            `,
+                [uuidv4(), userId, hashBackupCode(code), batchId],
+            );
         }
 
         // Enable MFA if not already
-        await query.run(`
+        await query.run(
+            `
             UPDATE users SET mfa_enabled = TRUE, updated_at = NOW()
             WHERE id = ? AND mfa_enabled = FALSE
-        `, [userId]);
+        `,
+            [userId],
+        );
 
         return {
             codes,
             message: 'Save these codes securely. They can only be shown once.',
-            warning: 'Each code can only be used once.'
+            warning: 'Each code can only be used once.',
         };
     },
 
@@ -268,48 +297,60 @@ const enhancedMFA = {
     async verifyBackupCode(userId, code) {
         const codeHash = hashBackupCode(code.replaceAll('-', '').replaceAll(' ', ''));
 
-        const backupCode = await query.get(`
+        const backupCode = await query.get(
+            `
             SELECT * FROM backup_codes
             WHERE user_id = ? AND code_hash = ? AND used_at IS NULL
-        `, [userId, codeHash]);
+        `,
+            [userId, codeHash],
+        );
 
         if (!backupCode) {
             return { success: false, message: 'Invalid or already used code' };
         }
 
         // Mark as used
-        await query.run(`
+        await query.run(
+            `
             UPDATE backup_codes SET used_at = NOW() WHERE id = ?
-        `, [backupCode.id]);
+        `,
+            [backupCode.id],
+        );
 
         // Count remaining codes
-        const remaining = await query.get(`
+        const remaining = await query.get(
+            `
             SELECT COUNT(*) as count FROM backup_codes
             WHERE user_id = ? AND used_at IS NULL
-        `, [userId]);
+        `,
+            [userId],
+        );
 
         return {
             success: true,
             remainingCodes: remaining.count,
-            warning: remaining.count < 3 ? 'Running low on backup codes. Generate new ones soon.' : null
+            warning: remaining.count < 3 ? 'Running low on backup codes. Generate new ones soon.' : null,
         };
     },
 
     // Get backup code status
     async getBackupCodeStatus(userId) {
-        const stats = await query.get(`
+        const stats = await query.get(
+            `
             SELECT
                 COUNT(*) as total,
                 COUNT(CASE WHEN used_at IS NULL THEN 1 END) as remaining,
                 COUNT(CASE WHEN used_at IS NOT NULL THEN 1 END) as used
             FROM backup_codes
             WHERE user_id = ?
-        `, [userId]);
+        `,
+            [userId],
+        );
 
         return {
             total: stats?.total || 0,
             remaining: stats?.remaining || 0,
-            used: stats?.used || 0
+            used: stats?.used || 0,
         };
     },
 
@@ -332,14 +373,17 @@ const enhancedMFA = {
         // Hash the code before storing
         const hashedCode = crypto.createHash('sha256').update(code).digest('hex');
 
-        await query.run(`
+        await query.run(
+            `
             UPDATE users SET
                 pending_phone = ?,
                 phone_verification_code = ?,
                 phone_verification_expires = ?,
                 updated_at = NOW()
             WHERE id = ?
-        `, [cleanPhone, hashedCode, expiresAt.toISOString(), userId]);
+        `,
+            [cleanPhone, hashedCode, expiresAt.toISOString(), userId],
+        );
 
         // In production, send via Twilio/SNS — never log codes in production
         if (process.env.NODE_ENV !== 'production') {
@@ -348,16 +392,19 @@ const enhancedMFA = {
 
         return {
             message: 'Verification code sent',
-            phoneLastFour: cleanPhone.slice(-4)
+            phoneLastFour: cleanPhone.slice(-4),
         };
     },
 
     // Verify phone number
     async verifyPhone(userId, code) {
-        const user = await query.get(`
+        const user = await query.get(
+            `
             SELECT pending_phone, phone_verification_code, phone_verification_expires
             FROM users WHERE id = ?
-        `, [userId]);
+        `,
+            [userId],
+        );
 
         if (!user?.pending_phone) {
             throw new Error('No phone verification pending');
@@ -368,11 +415,14 @@ const enhancedMFA = {
         }
 
         const hashedInput = crypto.createHash('sha256').update(code).digest('hex');
-        if (!crypto.timingSafeEqual(Buffer.from(user.phone_verification_code, 'hex'), Buffer.from(hashedInput, 'hex'))) {
+        if (
+            !crypto.timingSafeEqual(Buffer.from(user.phone_verification_code, 'hex'), Buffer.from(hashedInput, 'hex'))
+        ) {
             throw new Error('Invalid verification code');
         }
 
-        await query.run(`
+        await query.run(
+            `
             UPDATE users SET
                 phone_number = pending_phone,
                 pending_phone = NULL,
@@ -381,7 +431,9 @@ const enhancedMFA = {
                 phone_verified = 1,
                 updated_at = NOW()
             WHERE id = ?
-        `, [userId]);
+        `,
+            [userId],
+        );
 
         return { success: true, message: 'Phone number verified' };
     },
@@ -401,10 +453,13 @@ const enhancedMFA = {
         // Hash code before storing
         const hashedCode = crypto.createHash('sha256').update(code).digest('hex');
 
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO sms_codes (id, user_id, code, expires_at, created_at)
             VALUES (?, ?, ?, ?, NOW())
-        `, [uuidv4(), userId, hashedCode, expiresAt.toISOString()]);
+        `,
+            [uuidv4(), userId, hashedCode, expiresAt.toISOString()],
+        );
 
         // In production, send via Twilio/SNS — never log codes in production
         if (process.env.NODE_ENV !== 'production') {
@@ -413,7 +468,7 @@ const enhancedMFA = {
 
         return {
             message: 'Code sent',
-            phoneLastFour: user.phone_number.slice(-4)
+            phoneLastFour: user.phone_number.slice(-4),
         };
     },
 
@@ -421,11 +476,14 @@ const enhancedMFA = {
     async verifySMSCode(userId, code) {
         // Hash the input code to match stored hash
         const hashedInput = crypto.createHash('sha256').update(code).digest('hex');
-        const smsCode = await query.get(`
+        const smsCode = await query.get(
+            `
             SELECT * FROM sms_codes
             WHERE user_id = ? AND code = ? AND used_at IS NULL
             ORDER BY created_at DESC LIMIT 1
-        `, [userId, hashedInput]);
+        `,
+            [userId, hashedInput],
+        );
 
         if (!smsCode) {
             return { success: false, message: 'Invalid code' };
@@ -446,18 +504,18 @@ const enhancedMFA = {
 
     // Get MFA status for user
     async getMFAStatus(userId) {
-        const user = await query.get(`
+        const user = await query.get(
+            `
             SELECT mfa_enabled, mfa_method, phone_number, phone_verified
             FROM users WHERE id = ?
-        `, [userId]);
+        `,
+            [userId],
+        );
 
         const securityKeys = await this.listSecurityKeys(userId);
         const backupStatus = await this.getBackupCodeStatus(userId);
 
-        const hasTOTP = await query.get(
-            'SELECT 1 FROM totp_secrets WHERE user_id = ? AND verified = 1',
-            [userId]
-        );
+        const hasTOTP = await query.get('SELECT 1 FROM totp_secrets WHERE user_id = ? AND verified = 1', [userId]);
 
         return {
             enabled: user?.mfa_enabled === 1,
@@ -466,14 +524,16 @@ const enhancedMFA = {
                 totp: !!hasTOTP,
                 webauthn: securityKeys.length > 0,
                 sms: user?.phone_verified === 1,
-                backupCodes: backupStatus.remaining > 0
+                backupCodes: backupStatus.remaining > 0,
             },
             securityKeys,
             backupCodes: backupStatus,
-            phone: user?.phone_number ? {
-                verified: user.phone_verified === 1,
-                lastFour: user.phone_number.slice(-4)
-            } : null
+            phone: user?.phone_number
+                ? {
+                      verified: user.phone_verified === 1,
+                      lastFour: user.phone_number.slice(-4),
+                  }
+                : null,
         };
     },
 
@@ -495,7 +555,8 @@ const enhancedMFA = {
         await query.run('DELETE FROM totp_secrets WHERE user_id = ?', [userId]);
         await query.run('DELETE FROM sms_codes WHERE user_id = ?', [userId]);
 
-        await query.run(`
+        await query.run(
+            `
             UPDATE users SET
                 mfa_enabled = FALSE,
                 mfa_method = NULL,
@@ -503,11 +564,12 @@ const enhancedMFA = {
                 phone_verified = 0,
                 updated_at = NOW()
             WHERE id = ?
-        `, [userId]);
+        `,
+            [userId],
+        );
 
         return { message: 'MFA disabled' };
     },
-
 };
 
 // Router

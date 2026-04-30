@@ -41,7 +41,7 @@ export function validateBody(input, schema) {
     const result = schema.safeParse(input ?? {});
 
     if (!result.success) {
-        const errors = result.error.issues.map(issue => ({
+        const errors = result.error.issues.map((issue) => ({
             field: issue.path.length > 0 ? issue.path.join('.') : '_body',
             message: issue.message,
         }));
@@ -70,7 +70,7 @@ export function validateQuery(query, schema) {
     const result = schema.safeParse(query ?? {});
 
     if (!result.success) {
-        const errors = result.error.issues.map(issue => ({
+        const errors = result.error.issues.map((issue) => ({
             field: issue.path.length > 0 ? issue.path.join('.') : '_query',
             message: issue.message,
         }));

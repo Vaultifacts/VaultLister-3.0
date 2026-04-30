@@ -9,6 +9,8 @@ const OUTPUT_PATH = path.join(ROOT, 'docs', 'OPEN_ITEMS.md');
 const REGISTRY_PATH = path.join(ROOT, 'docs', 'open-items', 'items.json');
 const WALKTHROUGH_DIR = path.join(ROOT, 'docs', 'walkthrough');
 const DEEP_DIVE_BACKLOG_PATH = path.join(ROOT, 'docs', 'reference', 'deep-dive-backlog.md');
+const COMPETITOR_GAP_INVENTORY_PATH = path.join(ROOT, 'docs', 'COMPETITOR_GAP_INVENTORY_2026-04-19.md');
+const ANTI_DETECTION_SPEC_PATH = path.join(ROOT, 'docs', 'PERFECT_ANTI_DETECTION_SYSTEM.md');
 
 const args = new Set(process.argv.slice(2));
 const checkMode = args.has('--check');
@@ -58,6 +60,71 @@ const HISTORICAL_SOURCES = [
     'docs/audits/**',
     'qa/reports/**'
 ];
+
+const DOCUMENT_SCAN_TARGETS = [
+    'AGENTS.md',
+    'CLAUDE.md',
+    'README.md',
+    'RAILWAY_OPERATIONS.md',
+    'package.json',
+    'package-lock.json',
+    'bunfig.toml',
+    'docs',
+    'memory',
+    'design',
+    'qa',
+    'data',
+    'public',
+    'scripts',
+    'worker',
+    '.github',
+    'chrome-extension',
+    'mobile',
+    'nginx',
+    '.agents'
+];
+
+const DOCUMENT_SCAN_GLOBS = [
+    '--glob', '*.md',
+    '--glob', '*.mdx',
+    '--glob', '*.txt',
+    '--glob', '*.json',
+    '--glob', '*.yml',
+    '--glob', '*.yaml',
+    '--glob', '*.toml',
+    '--glob', 'Dockerfile*',
+    '--glob', '.env.example',
+    '--glob', '.dockerignore',
+    '--glob', '.gitignore',
+    '--glob', '.prettierignore',
+    '--glob', '.semgrepignore',
+    '--glob', 'sonar-project.properties',
+    '--glob', '!**/node_modules/**',
+    '--glob', '!**/dist/**',
+    '--glob', '!**/playwright-report/**',
+    '--glob', '!**/test-results/**',
+    '--glob', '!**/coverage/**',
+    '--glob', '!docs/OPEN_ITEMS.md'
+];
+
+const OPEN_MARKER_PATTERN = '(^|\\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS TRIAGE|BLOCKED|DEFERRED|PENDING|RECHECK|TODO|FIXME|TBD|BACKLOG|NOT VERIFIED)(\\b|\\s|:|—|-)';
+const COMPETITOR_CLOSABILITY = {
+    F: 'Free/public verification',
+    P: 'Paid/gated verification',
+    B: 'Behavioral/benchmark test',
+    I: 'Insider-only/opaque'
+};
+const ROOT_DOCUMENT_SCAN_PATTERN = /\.(mdx?|txt|json|ya?ml|toml)$/i;
+const ROOT_DOCUMENT_SPECIAL_FILES = new Set([
+    '.dockerignore',
+    '.env.example',
+    '.gitignore',
+    '.prettierignore',
+    '.semgrepignore',
+    'Dockerfile',
+    'Dockerfile.worker',
+    'sonar-project.properties'
+]);
 
 function rel(filePath) {
     return path.relative(ROOT, filePath).replace(/\\/g, '/');
@@ -192,6 +259,213 @@ function areaFromFile(fileName) {
 
 function sourceRef(source) {
     return `${source.path}:${source.line}`;
+}
+
+function normalizePath(value) {
+    return String(value || '').replace(/\\/g, '/');
+}
+
+function existingScanTargets(targets = DOCUMENT_SCAN_TARGETS) {
+    const rootFiles = readdirSync(ROOT, { withFileTypes: true })
+        .filter(entry => entry.isFile())
+        .map(entry => entry.name)
+        .filter(name => ROOT_DOCUMENT_SCAN_PATTERN.test(name) || ROOT_DOCUMENT_SPECIAL_FILES.has(name));
+    const targetSet = new Set([...targets, ...rootFiles]);
+    return [...targetSet].filter(target => existsSync(path.join(ROOT, target)));
+}
+
+function patternMatches(sourcePath, pattern) {
+    const normalizedSource = normalizePath(sourcePath);
+    const normalizedPattern = normalizePath(pattern);
+    if (normalizedPattern.endsWith('/**')) {
+        return normalizedSource.startsWith(normalizedPattern.slice(0, -3));
+    }
+    return normalizedSource === normalizedPattern;
+}
+
+function matchesHistoricalSource(sourcePath) {
+    return HISTORICAL_SOURCES.some(source => patternMatches(sourcePath, source));
+}
+
+function parseRgMatches(stdout) {
+    return (stdout || '')
+        .split(/\r?\n/)
+        .filter(Boolean)
+        .map(line => {
+            const match = line.match(/^(.+?):(\d+):(.*)$/);
+            if (!match) return null;
+            return {
+                path: normalizePath(match[1]),
+                line: Number(match[2]),
+                text: match[3].trim()
+            };
+        })
+        .filter(Boolean);
+}
+
+function summarizeMatchesByPath(matches, classifySource) {
+    const byPath = new Map();
+    for (const match of matches) {
+        if (!byPath.has(match.path)) {
+            byPath.set(match.path, {
+                path: match.path,
+                count: 0,
+                firstLine: match.line,
+                treatment: classifySource(match.path)
+            });
+        }
+        const entry = byPath.get(match.path);
+        entry.count += 1;
+        entry.firstLine = Math.min(entry.firstLine, match.line);
+    }
+    return [...byPath.values()].sort((a, b) => (
+        a.treatment.localeCompare(b.treatment)
+        || a.path.localeCompare(b.path, undefined, { numeric: true })
+    ));
+}
+
+function isIncludedChecklistSource(sourcePath) {
+    return sourcePath === 'docs/FACEBOOK_OAUTH_COMPLIANCE.md'
+        || sourcePath === 'memory/project_automation_roadmap.md'
+        || sourcePath === 'chrome-extension/README.md'
+        || sourcePath.startsWith('docs/superpowers/plans/');
+}
+
+function classifyUncheckedChecklistSource(sourcePath) {
+    if (isIncludedChecklistSource(sourcePath)) {
+        return 'Included as explicit checklist backlog';
+    }
+    if (sourcePath.startsWith('.agents/skills/')) {
+        return 'Excluded: agent skill runbook checklist, not persistent backlog';
+    }
+    if (sourcePath === '.github/PULL_REQUEST_TEMPLATE.md') {
+        return 'Excluded: pull request template checklist, not persistent backlog';
+    }
+    if (
+        sourcePath.startsWith('docs/commands/')
+        || sourcePath === 'docs/DEPLOYMENT.md'
+        || sourcePath === 'docs/SECURITY-GUIDE.md'
+        || sourcePath === 'docs/reference/security.md'
+    ) {
+        return 'Excluded: procedural runbook checklist, not persistent backlog';
+    }
+    if (sourcePath === 'docs/SNAPSHOT_CERTIFICATION_CHECKLIST.md') {
+        return 'Excluded: point-in-time certification runbook';
+    }
+    if (matchesHistoricalSource(sourcePath) || sourcePath.startsWith('docs/archive/')) {
+        return 'Excluded: historical evidence, verify before promotion';
+    }
+    return 'Excluded pending source-policy review';
+}
+
+function classifyOpenMarkerSource(sourcePath) {
+    if (sourcePath === 'docs/OPEN_ITEMS.md') {
+        return 'Generated canonical output; excluded from self-scan';
+    }
+    if (sourcePath === 'docs/open-items/source-policy.md' || sourcePath === 'docs/open-items/items.json') {
+        return 'Canonical open-items configuration';
+    }
+    if (sourcePath === 'docs/COMPETITOR_GAP_INVENTORY_2026-04-19.md') {
+        return 'Included as competitor intelligence gap source';
+    }
+    if (sourcePath.startsWith('docs/COMPETITOR_')) {
+        return 'Competitor research evidence; canonical gaps parsed from gap inventory';
+    }
+    if (sourcePath === 'docs/PERFECT_ANTI_DETECTION_SYSTEM.md') {
+        return 'Included as anti-detection design gap source';
+    }
+    if (sourcePath.startsWith('docs/walkthrough/')) {
+        return 'Included via walkthrough parser when table status is active';
+    }
+    if (sourcePath === 'docs/reference/deep-dive-backlog.md') {
+        return 'Included as structural/refactor backlog';
+    }
+    if (sourcePath.startsWith('docs/superpowers/plans/')) {
+        return 'Included when unchecked checklist rows exist';
+    }
+    if (
+        sourcePath === 'docs/FACEBOOK_OAUTH_COMPLIANCE.md'
+        || sourcePath === 'memory/project_automation_roadmap.md'
+        || sourcePath === 'chrome-extension/README.md'
+    ) {
+        return 'Included as explicit checklist source';
+    }
+    if (sourcePath === 'memory/STATUS.md' || sourcePath === 'memory/LAUNCH_PRIORITY.md' || sourcePath.startsWith('memory/')) {
+        return 'Excluded: session memory, promote only after current verification';
+    }
+    if (matchesHistoricalSource(sourcePath) || sourcePath.startsWith('docs/archive/') || sourcePath.startsWith('docs/audits/')) {
+        return 'Excluded: historical evidence, verify before promotion';
+    }
+    if (sourcePath.startsWith('qa/reports/') || sourcePath.startsWith('qa/audits/') || sourcePath.startsWith('data/qa-report')) {
+        return 'Excluded: timestamped QA evidence, not current truth';
+    }
+    if (sourcePath.startsWith('.agents/skills/')) {
+        return 'Excluded: agent skill runbook, not persistent backlog';
+    }
+    if (sourcePath === '.github/PULL_REQUEST_TEMPLATE.md') {
+        return 'Excluded: pull request template, not persistent backlog';
+    }
+    if (
+        sourcePath.startsWith('docs/commands/')
+        || sourcePath === 'docs/DEPLOYMENT.md'
+        || sourcePath === 'docs/SECURITY-GUIDE.md'
+        || sourcePath === 'docs/reference/security.md'
+        || sourcePath === 'docs/SNAPSHOT_CERTIFICATION_CHECKLIST.md'
+    ) {
+        return 'Excluded: runbook/checklist gate, not persistent backlog';
+    }
+    if (sourcePath.startsWith('docs/reference/') || sourcePath.startsWith('design/')) {
+        return 'Reference/design source; verify before promotion';
+    }
+    if (sourcePath.startsWith('docs/superpowers/specs/')) {
+        return 'Design spec; implementation tasks live in plans/checklists';
+    }
+    if (
+        sourcePath === 'AGENTS.md'
+        || sourcePath === 'CLAUDE.md'
+    ) {
+        return 'Project instructions; not backlog source';
+    }
+    if (
+        sourcePath === 'README.md'
+        || sourcePath === 'RAILWAY_OPERATIONS.md'
+        || sourcePath === 'CHANGELOG.md'
+        || sourcePath === 'CODE_OF_CONDUCT.md'
+        || sourcePath === 'CONTRIBUTING.md'
+        || sourcePath === 'Items to Add to list of Open Items.md'
+        || sourcePath === 'RELEASE.md'
+        || sourcePath === 'SECURITY.md'
+        || sourcePath === 'docs/CLOUDFLARE-AUDIT-2026-03-29.md'
+        || sourcePath === 'docs/FEATURE_INVENTORY.md'
+        || sourcePath === 'docs/FRONTEND_SOURCE_OF_TRUTH.md'
+        || sourcePath === 'docs/PRD.md'
+        || sourcePath === 'docs/SETUP.md'
+        || sourcePath === 'public/llms.txt'
+    ) {
+        return 'Reference/product documentation; not parsed as backlog unless promoted';
+    }
+    if (sourcePath === 'qa/coverage_matrix.md' || sourcePath === 'qa/full_testing_taxonomy.md') {
+        return 'QA coverage reference; individual gaps require current verification before promotion';
+    }
+    if (
+        sourcePath === 'package.json'
+        || sourcePath === 'package-lock.json'
+        || sourcePath === 'bunfig.toml'
+        || sourcePath === 'browserstack.yml'
+        || sourcePath === 'cspell.json'
+        || sourcePath === 'knip.json'
+        || sourcePath.startsWith('.')
+        || sourcePath.startsWith('Dockerfile')
+        || sourcePath.startsWith('docker-compose')
+        || sourcePath.startsWith('railway')
+        || sourcePath.endsWith('.json')
+        || sourcePath.endsWith('.toml')
+        || sourcePath.endsWith('.yml')
+        || sourcePath.endsWith('.yaml')
+    ) {
+        return 'Config/workflow text; parsed separately only if promoted';
+    }
+    return 'Candidate source; manual source-policy review required';
 }
 
 function loadRegistry() {
@@ -422,6 +696,147 @@ function parseDeepDiveBacklog() {
     return items.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
 }
 
+function parseCompetitorGapLine(line) {
+    const bullet = line.match(/^\s*-\s+(.+)$/);
+    if (!bullet) return null;
+
+    let body = bullet[1].trim();
+    const isStruck = body.startsWith('~~');
+    if (isStruck) body = body.slice(2);
+
+    const prefixMatch = body.match(/^\[([FPBI])\]\s+(.+)$/);
+    if (prefixMatch) {
+        return {
+            code: prefixMatch[1],
+            title: prefixMatch[2],
+            isStruck
+        };
+    }
+
+    const suffixMatch = body.match(/^(.+?)\s+\[([FPBI])\](?:\s+(.+))?\s*$/);
+    if (suffixMatch) {
+        return {
+            code: suffixMatch[2],
+            title: [suffixMatch[1], suffixMatch[3]].filter(Boolean).join(' '),
+            isStruck
+        };
+    }
+
+    return null;
+}
+
+function isOpenCompetitorGapLine(line, isStruck) {
+    if (!isStruck) return true;
+
+    const lower = line.toLowerCase();
+    return lower.includes('re-opened')
+        || lower.includes('gap remains open')
+        || lower.includes('partially closed')
+        || lower.includes('partially resolved');
+}
+
+function parseCompetitorGaps() {
+    if (!existsSync(COMPETITOR_GAP_INVENTORY_PATH)) return [];
+
+    const sourcePath = rel(COMPETITOR_GAP_INVENTORY_PATH);
+    const lines = readLines(COMPETITOR_GAP_INVENTORY_PATH);
+    const items = [];
+    const headings = [{ level: 1, title: 'Competitor Intelligence' }];
+
+    for (let index = 0; index < lines.length; index += 1) {
+        const line = lines[index];
+        const heading = line.match(/^(#{2,6})\s+(.+)$/);
+        if (heading) {
+            const level = heading[1].length;
+            while (headings.length && headings[headings.length - 1].level >= level) {
+                headings.pop();
+            }
+            headings.push({ level, title: stripMarkdown(heading[2]) });
+            continue;
+        }
+
+        const gap = parseCompetitorGapLine(line);
+        if (!gap || !isOpenCompetitorGapLine(line, gap.isStruck)) continue;
+
+        const title = stripMarkdown(gap.title.replace(/~~/g, ''));
+        items.push({
+            id: `COMP-GAP-${index + 1}`,
+            area: headings.map(headingItem => headingItem.title).join(' / '),
+            closability: COMPETITOR_CLOSABILITY[gap.code] || gap.code,
+            title,
+            source: { path: sourcePath, line: index + 1 }
+        });
+    }
+
+    return items;
+}
+
+function findUnparsedCompetitorGapMarkers() {
+    if (!existsSync(COMPETITOR_GAP_INVENTORY_PATH)) return [];
+
+    const sourcePath = rel(COMPETITOR_GAP_INVENTORY_PATH);
+    const lines = readLines(COMPETITOR_GAP_INVENTORY_PATH);
+    const unparsed = [];
+
+    for (let index = 0; index < lines.length; index += 1) {
+        const line = lines[index];
+        if (!/^\s*-\s+/.test(line) || !/\[[FPBI]\]/.test(line)) continue;
+
+        const isStruck = /^\s*-\s*~~/.test(line);
+        if (isStruck && !isOpenCompetitorGapLine(line, true)) continue;
+        if (parseCompetitorGapLine(line)) continue;
+
+        unparsed.push({ path: sourcePath, line: index + 1, text: line.trim() });
+    }
+
+    return unparsed;
+}
+
+function parseAntiDetectionGaps() {
+    if (!existsSync(ANTI_DETECTION_SPEC_PATH)) return [];
+
+    const sourcePath = rel(ANTI_DETECTION_SPEC_PATH);
+    const lines = readLines(ANTI_DETECTION_SPEC_PATH);
+    const items = [];
+    let inSummary = false;
+
+    for (let index = 0; index < lines.length; index += 1) {
+        const line = lines[index];
+        if (/^###\s+Summary of the Biggest Gaps/.test(line)) {
+            inSummary = true;
+            continue;
+        }
+        if (inSummary && /^###\s+/.test(line)) break;
+        if (!inSummary) continue;
+
+        const match = line.match(/^(\d+)\.\s+(.+)$/);
+        if (!match) continue;
+
+        const lower = line.toLowerCase();
+        if (lower.includes('~~') && lower.includes('resolved') && !lower.includes('partially resolved')) {
+            continue;
+        }
+
+        let status = 'OPEN';
+        if (lower.includes('partially resolved')) {
+            status = 'PARTIALLY RESOLVED — remaining gap open';
+        } else if (lower.includes('tooling built')) {
+            status = 'VERIFICATION REQUIRED';
+        } else if (lower.includes('no code fix')) {
+            status = 'OPERATIONAL / NO CODE FIX';
+        }
+
+        items.push({
+            id: `ANTI-${match[1].padStart(2, '0')}`,
+            status,
+            title: stripMarkdown(match[2].replace(/~~/g, '')),
+            source: { path: sourcePath, line: index + 1 }
+        });
+    }
+
+    return items;
+}
+
 function parseUncheckedFile(filePath, group) {
     if (!existsSync(filePath)) return [];
     const sourcePath = rel(filePath);
@@ -451,6 +866,30 @@ function parseChecklists() {
         ...parseUncheckedFile(path.join(ROOT, 'chrome-extension', 'README.md'), 'Chrome Extension Future Features'),
         ...parsePlanBacklog()
     ];
+}
+
+function scanUncheckedChecklistSources(warnings) {
+    const targets = existingScanTargets();
+    if (!targets.length) return [];
+
+    const result = run('rg', [
+        '-n',
+        '^\\s*[-*]\\s+\\[ \\]',
+        ...targets,
+        '--glob', '*.md',
+        '--glob', '!**/node_modules/**',
+        '--glob', '!**/dist/**',
+        '--glob', '!**/playwright-report/**',
+        '--glob', '!**/test-results/**',
+        '--glob', '!**/coverage/**'
+    ]);
+
+    if (!result.ok && result.status !== 1) {
+        warnings.push(`Unchecked checklist scan failed: ${result.stderr || result.stdout || `exit ${result.status}`}`);
+        return [];
+    }
+
+    return summarizeMatchesByPath(parseRgMatches(result.stdout), classifyUncheckedChecklistSource);
 }
 
 function fetchGithubIssues(warnings) {
@@ -525,6 +964,26 @@ function scanTodos(warnings) {
         ));
 }
 
+function scanOpenMarkerSources(warnings) {
+    const targets = existingScanTargets();
+    if (!targets.length) return [];
+
+    const result = run('rg', [
+        '-n',
+        '-i',
+        OPEN_MARKER_PATTERN,
+        ...targets,
+        ...DOCUMENT_SCAN_GLOBS
+    ]);
+
+    if (!result.ok && result.status !== 1) {
+        warnings.push(`Open-marker source scan failed: ${result.stderr || result.stdout || `exit ${result.status}`}`);
+        return [];
+    }
+
+    return summarizeMatchesByPath(parseRgMatches(result.stdout), classifyOpenMarkerSource);
+}
+
 function readCommit() {
     const result = run('git', ['rev-parse', '--short', 'HEAD']);
     return result.ok && result.stdout ? result.stdout : 'unknown';
@@ -588,6 +1047,41 @@ function renderStructuralBacklogTable(items) {
     return `${rows.join('\n')}\n`;
 }
 
+function renderCompetitorGapTable(items) {
+    if (!items.length) return '_No competitor intelligence gaps found._\n';
+    const rows = [
+        '| ID | Closability | Area | Gap | Source |',
+        '|---|---|---|---|---|'
+    ];
+    for (const item of items) {
+        rows.push([
+            escapeCell(item.id),
+            escapeCell(item.closability),
+            escapeCell(item.area),
+            escapeCell(item.title),
+            escapeCell(sourceRef(item.source))
+        ].join(' | ').replace(/^/, '| ').replace(/$/, ' |'));
+    }
+    return `${rows.join('\n')}\n`;
+}
+
+function renderAntiDetectionGapTable(items) {
+    if (!items.length) return '_No anti-detection design gaps found._\n';
+    const rows = [
+        '| ID | Status | Gap | Source |',
+        '|---|---|---|---|'
+    ];
+    for (const item of items) {
+        rows.push([
+            escapeCell(item.id),
+            escapeCell(item.status),
+            escapeCell(item.title),
+            escapeCell(sourceRef(item.source))
+        ].join(' | ').replace(/^/, '| ').replace(/$/, ' |'));
+    }
+    return `${rows.join('\n')}\n`;
+}
+
 function groupBy(items, keyFn) {
     const groups = new Map();
     for (const item of items) {
@@ -628,6 +1122,22 @@ function renderTodoTable(todos) {
     return `${rows.join('\n')}\n`;
 }
 
+function renderSourceCoverageTable(entries) {
+    if (!entries.length) return '_No matching sources found._\n';
+    const rows = [
+        '| Source | Matches | First Match | Treatment |',
+        '|---|---:|---:|---|'
+    ];
+    for (const entry of entries) {
+        rows.push(`| ${escapeCell(entry.path)} | ${entry.count} | ${entry.firstLine} | ${escapeCell(entry.treatment)} |`);
+    }
+    return `${rows.join('\n')}\n`;
+}
+
+function countEntries(entries, predicate) {
+    return entries.reduce((sum, entry) => sum + (predicate(entry) ? entry.count : 0), 0);
+}
+
 function renderReport(data) {
     const {
         generatedAt,
@@ -635,10 +1145,14 @@ function renderReport(data) {
         warnings,
         items,
         structuralBacklog,
+        competitorGaps,
+        antiDetectionGaps,
         githubIssues,
         githubIssuesAvailable,
         checklistItems,
-        todos
+        todos,
+        uncheckedSourceCoverage,
+        openMarkerCoverage
     } = data;
 
     const launchBlockers = items.filter(item => item.priority === 'launch-blocker' && item.status !== 'fixed-pending-live-verification');
@@ -659,7 +1173,7 @@ function renderReport(data) {
     lines.push('Generator: `bun scripts/generate-open-items.mjs`');
     lines.push('Check: `bun run open-items:check`');
     lines.push('');
-    lines.push('Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrough/` status > structural/refactor backlog > live GitHub issues > explicit checklists > source scans.');
+    lines.push('Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrough/` status > structural/refactor backlog > live GitHub issues > explicit checklists > specialized research/design backlogs > source scans.');
     lines.push('');
     lines.push('## Summary');
     lines.push('');
@@ -670,8 +1184,14 @@ function renderReport(data) {
     lines.push(`| Fixed pending live/manual verification | ${fixedPending.length} |`);
     lines.push(`| Deferred/post-launch items | ${deferred.length} |`);
     lines.push(`| Structural/refactor backlog items | ${structuralBacklog.length} |`);
+    lines.push(`| Competitor intelligence gaps | ${competitorGaps.length} |`);
+    lines.push(`| Anti-detection/design gaps | ${antiDetectionGaps.length} |`);
     lines.push(`| Open GitHub issues | ${githubIssuesAvailable ? githubIssues.length : 'unknown'} |`);
     lines.push(`| Explicit unchecked checklist items | ${checklistItems.length} |`);
+    lines.push(`| Repo-wide unchecked checkbox hits | ${uncheckedSourceCoverage.reduce((sum, entry) => sum + entry.count, 0)} |`);
+    lines.push(`| Repo-wide unchecked checkbox hits included | ${countEntries(uncheckedSourceCoverage, entry => entry.treatment.startsWith('Included'))} |`);
+    lines.push(`| Repo-wide unchecked checkbox hits excluded or review-only | ${countEntries(uncheckedSourceCoverage, entry => !entry.treatment.startsWith('Included'))} |`);
+    lines.push(`| Open-marker source files discovered | ${openMarkerCoverage.length} |`);
     lines.push(`| Source TODO/FIXME hits | ${todos.length} |`);
     lines.push('');
 
@@ -682,6 +1202,20 @@ function renderReport(data) {
         lines.push('');
     }
 
+    lines.push('## Source Coverage Audit');
+    lines.push('');
+    lines.push('This section proves the consolidation boundary. It lists every source with unchecked Markdown task boxes and every text/config source with open-style markers found by the generator. Sources marked excluded are not treated as active backlog unless a current source promotes them.');
+    lines.push('');
+    lines.push('### Unchecked Checklist Source Coverage');
+    lines.push('');
+    lines.push('Command: `rg -n "^\\s*[-*]\\s+\\[ \\]" <document targets> --glob "*.md"`');
+    lines.push('');
+    lines.push(renderSourceCoverageTable(uncheckedSourceCoverage));
+    lines.push('### Open-Marker Source Coverage');
+    lines.push('');
+    lines.push(`Command: \`rg -n -i "${OPEN_MARKER_PATTERN}" <document targets>\``);
+    lines.push('');
+    lines.push(renderSourceCoverageTable(openMarkerCoverage));
     lines.push('## Launch Blockers');
     lines.push('');
     lines.push(renderItemsTable(launchBlockers));
@@ -699,6 +1233,16 @@ function renderReport(data) {
     lines.push('These are read-only refactor risk items from `docs/reference/deep-dive-backlog.md`. They are not launch blockers unless separately promoted in `docs/open-items/items.json`.');
     lines.push('');
     lines.push(renderStructuralBacklogTable(structuralBacklog));
+    lines.push('## Competitor Intelligence Gaps');
+    lines.push('');
+    lines.push('These are research backlog items from `docs/COMPETITOR_GAP_INVENTORY_2026-04-19.md`. They are not VaultLister launch blockers unless separately promoted.');
+    lines.push('');
+    lines.push(renderCompetitorGapTable(competitorGaps));
+    lines.push('## Anti-Detection / Facebook Automation Design Gaps');
+    lines.push('');
+    lines.push('These are design and operational gaps from `docs/PERFECT_ANTI_DETECTION_SYSTEM.md`. They are not launch blockers unless separately promoted.');
+    lines.push('');
+    lines.push(renderAntiDetectionGapTable(antiDetectionGaps));
     lines.push('## GitHub Open Issues');
     lines.push('');
     lines.push('Command: `gh issue list --state open --limit 200 --json number,title,labels,updatedAt,url`');
@@ -731,19 +1275,36 @@ const warnings = [...registry.warnings];
 const walkthroughItems = mergeWalkthroughItems(parseWalkthroughItems());
 const items = applyRegistryMetadata(walkthroughItems, registry.items);
 const structuralBacklog = parseDeepDiveBacklog();
+const competitorGaps = parseCompetitorGaps();
+const unparsedCompetitorGapMarkers = findUnparsedCompetitorGapMarkers();
+if (unparsedCompetitorGapMarkers.length) {
+    const examples = unparsedCompetitorGapMarkers
+        .slice(0, 5)
+        .map(source => `${source.path}:${source.line} ${source.text}`)
+        .join('; ');
+    console.error(`Unparsed open competitor gap markers: ${examples}`);
+    process.exit(1);
+}
+const antiDetectionGaps = parseAntiDetectionGaps();
 const githubResult = fetchGithubIssues(warnings);
 const checklistItems = parseChecklists();
 const todos = scanTodos(warnings);
+const uncheckedSourceCoverage = scanUncheckedChecklistSources(warnings);
+const openMarkerCoverage = scanOpenMarkerSources(warnings);
 const report = renderReport({
     generatedAt: new Date().toISOString(),
     commit: readCommit(),
     warnings,
     items,
     structuralBacklog,
+    competitorGaps,
+    antiDetectionGaps,
     githubIssues: githubResult.issues,
     githubIssuesAvailable: githubResult.available,
     checklistItems,
-    todos
+    todos,
+    uncheckedSourceCoverage,
+    openMarkerCoverage
 });
 
 if (checkMode) {

@@ -31,12 +31,12 @@ export async function contactRouter(ctx) {
             const hourAgo = new Date(now - windowMs).toISOString();
             const recent = await query.get(
                 `SELECT COUNT(*) AS cnt FROM contact_submissions WHERE ip = $1 AND created_at > $2`,
-                [ip, hourAgo]
+                [ip, hourAgo],
             );
             if (recent && Number(recent.cnt) >= 3) {
                 return {
                     status: 429,
-                    data: { error: 'Too many submissions. Please wait before sending another message.' }
+                    data: { error: 'Too many submissions. Please wait before sending another message.' },
                 };
             }
         } catch (err) {
@@ -59,22 +59,22 @@ export async function contactRouter(ctx) {
             return { status: 400, data: { error: 'Message is required.' } };
         }
 
-        const safeName    = escapeHtml(String(name).trim());
-        const safeEmail   = escapeHtml(String(email).trim());
+        const safeName = escapeHtml(String(name).trim());
+        const safeEmail = escapeHtml(String(email).trim());
         const safeMessage = escapeHtml(String(message).trim());
 
         try {
             const id = nanoid();
             await query.run(
                 `INSERT INTO contact_submissions (id, name, email, message, ip) VALUES ($1, $2, $3, $4, $5)`,
-                [id, safeName, safeEmail, safeMessage, ip || null]
+                [id, safeName, safeEmail, safeMessage, ip || null],
             );
 
             logger.info('[Contact] submission stored', null, { id, email: safeEmail });
 
             return {
                 status: 200,
-                data: { message: "Thank you for your message. We'll get back to you soon." }
+                data: { message: "Thank you for your message. We'll get back to you soon." },
             };
         } catch (err) {
             logger.error('[Contact] failed to store submission', null, { detail: err?.message });

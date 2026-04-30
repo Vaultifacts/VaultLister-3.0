@@ -71,10 +71,26 @@ export function sanitizeBody(body) {
     if (!body || typeof body !== 'object') return body;
 
     const sensitiveFields = [
-        'password', 'newPassword', 'currentPassword', 'confirmPassword',
-        'token', 'accessToken', 'refreshToken', 'refresh_token', 'apiKey', 'secret',
-        'creditCard', 'cardNumber', 'cvv', 'ssn', 'imageBase64',
-        'code', 'state', 'client_secret', 'code_verifier', 'authorization_code'
+        'password',
+        'newPassword',
+        'currentPassword',
+        'confirmPassword',
+        'token',
+        'accessToken',
+        'refreshToken',
+        'refresh_token',
+        'apiKey',
+        'secret',
+        'creditCard',
+        'cardNumber',
+        'cvv',
+        'ssn',
+        'imageBase64',
+        'code',
+        'state',
+        'client_secret',
+        'code_verifier',
+        'authorization_code',
     ];
 
     const sanitized = { ...body };
@@ -95,7 +111,17 @@ export function sanitizeBody(body) {
     return sanitized;
 }
 
-const SENSITIVE_QUERY_PARAMS = new Set(['token', 'password', 'key', 'secret', 'access_token', 'refresh_token', 'api_key', 'apikey', 'auth']);
+const SENSITIVE_QUERY_PARAMS = new Set([
+    'token',
+    'password',
+    'key',
+    'secret',
+    'access_token',
+    'refresh_token',
+    'api_key',
+    'apikey',
+    'auth',
+]);
 const MAX_USER_AGENT_LENGTH = 200;
 const AUTH_PATH_PREFIXES = ['/api/auth', '/api/oauth'];
 
@@ -117,7 +143,7 @@ function redactQueryParams(params) {
  * its request body logged.
  */
 function isAuthPath(path) {
-    return AUTH_PATH_PREFIXES.some(prefix => path.startsWith(prefix));
+    return AUTH_PATH_PREFIXES.some((prefix) => path.startsWith(prefix));
 }
 
 /**
@@ -138,7 +164,7 @@ export function createRequestContext(request) {
         referer: headers['referer'] || null,
         timestamp: now(),
         startTime: performance.now(),
-        isAuthPath: isAuthPath(url.pathname)
+        isAuthPath: isAuthPath(url.pathname),
     };
 }
 
@@ -154,7 +180,7 @@ export function logRequestStart(ctx) {
         path: ctx.path,
         ip: ctx.ip,
         userAgent: ctx.userAgent,
-        ...(ctx.isAuthPath ? {} : { query: ctx.query })
+        ...(ctx.isAuthPath ? {} : { query: ctx.query }),
     });
 }
 
@@ -168,7 +194,7 @@ export function logRequestComplete(ctx, response, error = null) {
     const status = response?.status || (error ? 500 : 200);
 
     // Prometheus metrics — low-cardinality route label (API prefix only)
-    const routePrefix = ctx.path ? ('/' + ctx.path.split('/').slice(1, 3).join('/')) : 'other';
+    const routePrefix = ctx.path ? '/' + ctx.path.split('/').slice(1, 3).join('/') : 'other';
     recordHttpRequest(ctx.method, routePrefix, status, duration / 1000);
 
     const logData = {
@@ -178,7 +204,7 @@ export function logRequestComplete(ctx, response, error = null) {
         status,
         duration: `${duration}ms`,
         userId: ctx.user?.id || null,
-        ip: ctx.ip
+        ip: ctx.ip,
     };
 
     if (error) {
@@ -186,7 +212,7 @@ export function logRequestComplete(ctx, response, error = null) {
     } else if (status >= 400) {
         logInfo('Request completed with error', {
             ...logData,
-            error: response?.data?.error
+            error: response?.data?.error,
         });
     } else {
         logInfo('Request completed', logData);
@@ -197,7 +223,7 @@ export function logRequestComplete(ctx, response, error = null) {
             method: ctx.method,
             path: ctx.path,
             duration: `${duration}ms`,
-            status
+            status,
         });
     }
 
@@ -209,16 +235,9 @@ export function logRequestComplete(ctx, response, error = null) {
  * Skip logging for certain paths
  */
 function shouldSkipLogging(path) {
-    const skipPaths = [
-        '/api/health',
-        '/api/geo',
-        '/api/status',
-        '/favicon.ico',
-        '/robots.txt'
-    ];
+    const skipPaths = ['/api/health', '/api/geo', '/api/status', '/favicon.ico', '/robots.txt'];
 
-    return skipPaths.some(p => path.startsWith(p)) ||
-           path.match(/\.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2)$/);
+    return skipPaths.some((p) => path.startsWith(p)) || path.match(/\.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2)$/);
 }
 
 /**
@@ -226,25 +245,28 @@ function shouldSkipLogging(path) {
  */
 async function storeRequestLog(ctx, status, duration, error = null) {
     try {
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO request_logs (
                 id, request_id, method, path, status_code,
                 duration_ms, user_id, ip_address, user_agent,
                 error_message, created_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, [
-            generateId(),
-            ctx.requestId || generateId(),
-            ctx.method,
-            ctx.path,
-            status,
-            Number.isFinite(duration) ? Math.trunc(duration) : null,
-            ctx.user?.id || null,
-            anonymizeIP(ctx.ip) || null,
-            ctx.userAgent?.substring(0, MAX_USER_AGENT_LENGTH) || null,
-            error?.message || null,
-            ctx.timestamp || now()
-        ]);
+        `,
+            [
+                generateId(),
+                ctx.requestId || generateId(),
+                ctx.method,
+                ctx.path,
+                status,
+                Number.isFinite(duration) ? Math.trunc(duration) : null,
+                ctx.user?.id || null,
+                anonymizeIP(ctx.ip) || null,
+                ctx.userAgent?.substring(0, MAX_USER_AGENT_LENGTH) || null,
+                error?.message || null,
+                ctx.timestamp || now(),
+            ],
+        );
     } catch (dbError) {
         logger.warn('[RequestLogger] Failed to store request log', { detail: dbError?.message });
     }
@@ -255,28 +277,31 @@ async function storeRequestLog(ctx, status, duration, error = null) {
  */
 export async function logAuditEvent(ctx, action, resourceType, resourceId, details = {}) {
     try {
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO audit_logs (
                 id, user_id, action, resource_type, resource_id,
                 details, ip_address, user_agent, created_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, [
-            generateId(),
-            ctx.user?.id || null,
-            action,
-            resourceType,
-            resourceId,
-            JSON.stringify(details),
-            anonymizeIP(ctx.ip),
-            ctx.userAgent?.substring(0, MAX_USER_AGENT_LENGTH) || null,
-            now()
-        ]);
+        `,
+            [
+                generateId(),
+                ctx.user?.id || null,
+                action,
+                resourceType,
+                resourceId,
+                JSON.stringify(details),
+                anonymizeIP(ctx.ip),
+                ctx.userAgent?.substring(0, MAX_USER_AGENT_LENGTH) || null,
+                now(),
+            ],
+        );
 
         logInfo('Audit event', {
             action,
             resourceType,
             resourceId,
-            userId: ctx.user?.id
+            userId: ctx.user?.id,
         });
     } catch (error) {
         logger.error('[RequestLogger] Failed to log audit event', null, { detail: error.message });
@@ -319,7 +344,7 @@ export const AuditActions = {
 
     // Admin
     ADMIN_ACTION: 'ADMIN_ACTION',
-    USER_IMPERSONATION: 'USER_IMPERSONATION'
+    USER_IMPERSONATION: 'USER_IMPERSONATION',
 };
 
 /**
@@ -334,6 +359,6 @@ export function createRequestLogger() {
         },
         after: (ctx, response, error) => {
             logRequestComplete(ctx, response, error);
-        }
+        },
     };
 }

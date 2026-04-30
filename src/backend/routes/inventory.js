@@ -10,7 +10,13 @@ import { safeJsonParse } from '../shared/utils.js';
 import { cacheForUser } from '../middleware/cache.js';
 
 function detectMarketplace(url) {
-    const host = (() => { try { return new URL(url).hostname; } catch { return ''; } })();
+    const host = (() => {
+        try {
+            return new URL(url).hostname;
+        } catch {
+            return '';
+        }
+    })();
     if (host.includes('ebay.')) return 'ebay';
     if (host.includes('poshmark.')) return 'poshmark';
     if (host.includes('mercari.')) return 'mercari';
@@ -18,7 +24,8 @@ function detectMarketplace(url) {
     if (host === 'grailed.com' || host.endsWith('.grailed.com')) return 'grailed';
     if (host === 'etsy.com' || host.endsWith('.etsy.com')) return 'etsy';
     if (host.endsWith('.shopify.com') || host.endsWith('.myshopify.com') || host === 'myshopify.com') return 'shopify';
-    if (host === 'facebook.com' || host.endsWith('.facebook.com') || host === 'fb.com' || host.endsWith('.fb.com')) return 'facebook';
+    if (host === 'facebook.com' || host.endsWith('.facebook.com') || host === 'fb.com' || host.endsWith('.fb.com'))
+        return 'facebook';
     if (host === 'whatnot.com' || host.endsWith('.whatnot.com')) return 'whatnot';
     return 'other';
 }
@@ -34,9 +41,18 @@ function generateSkuFromRule(rule, itemData) {
 
     // Category abbreviations
     const categoryAbbreviations = {
-        'Tops': 'TOP', 'Bottoms': 'BTM', 'Dresses': 'DRS', 'Outerwear': 'OTW',
-        'Footwear': 'FTW', 'Shoes': 'SHO', 'Bags': 'BAG', 'Accessories': 'ACC',
-        'Jewelry': 'JWL', 'Electronics': 'ELC', 'Home': 'HOM', 'Vintage': 'VTG'
+        Tops: 'TOP',
+        Bottoms: 'BTM',
+        Dresses: 'DRS',
+        Outerwear: 'OTW',
+        Footwear: 'FTW',
+        Shoes: 'SHO',
+        Bags: 'BAG',
+        Accessories: 'ACC',
+        Jewelry: 'JWL',
+        Electronics: 'ELC',
+        Home: 'HOM',
+        Vintage: 'VTG',
     };
 
     const getCategoryCode = (category) => {
@@ -64,7 +80,7 @@ function generateSkuFromRule(rule, itemData) {
         '{month}': String(now.getMonth() + 1).padStart(2, '0'),
         '{day}': String(now.getDate()).padStart(2, '0'),
         '{counter}': String((rule.counter_current || 0) + 1).padStart(rule.counter_padding || 4, '0'),
-        '{random}': generateRandomCode(4)
+        '{random}': generateRandomCode(4),
     };
 
     for (const [token, value] of Object.entries(replacements)) {
@@ -105,7 +121,10 @@ export async function inventoryRouter(ctx) {
 
         if (search) {
             if (search.length > 500) {
-                return { status: 400, data: { error: { message: 'Search query too long (max 500 characters)', code: 'BAD_REQUEST' } } };
+                return {
+                    status: 400,
+                    data: { error: { message: 'Search query too long (max 500 characters)', code: 'BAD_REQUEST' } },
+                };
             }
             sql += ` AND search_vector @@ plainto_tsquery('english', ?)`;
             params.push(search);
@@ -191,7 +210,7 @@ export async function inventoryRouter(ctx) {
         const total = Number((await query.get(countSql, countParams))?.total) || 0;
 
         // Parse JSON fields
-        items.forEach(item => {
+        items.forEach((item) => {
             item.tags = safeJsonParse(item.tags, []);
             item.images = safeJsonParse(item.images, []);
             item.ai_generated_data = safeJsonParse(item.ai_generated_data, {});
@@ -200,8 +219,13 @@ export async function inventoryRouter(ctx) {
 
         return {
             status: 200,
-            data: { items, total, limit: cappedLimit, offset: !isNaN(parsedOffset) && parsedOffset >= 0 ? parsedOffset : 0 },
-            cacheControl: cacheForUser(60)
+            data: {
+                items,
+                total,
+                limit: cappedLimit,
+                offset: !isNaN(parsedOffset) && parsedOffset >= 0 ? parsedOffset : 0,
+            },
+            cacheControl: cacheForUser(60),
         };
     }
 
@@ -216,33 +240,42 @@ export async function inventoryRouter(ctx) {
         }
 
         // Get purchases associated with this item
-        const purchases = await query.all(`
+        const purchases = await query.all(
+            `
             SELECT pi.*, p.vendor_name, p.purchase_date, p.payment_method
             FROM purchase_items pi
             JOIN purchases p ON pi.purchase_id = p.id
             WHERE pi.inventory_id = ? AND p.user_id = ?
             ORDER BY p.purchase_date DESC
-        `, [id, user.id]);
+        `,
+            [id, user.id],
+        );
 
         // Get sales associated with this item
-        const sales = await query.all(`
+        const sales = await query.all(
+            `
             SELECT * FROM sales
             WHERE inventory_id = ? AND user_id = ?
             ORDER BY created_at DESC
-        `, [id, user.id]);
+        `,
+            [id, user.id],
+        );
 
         // Get price history if table exists (check first to avoid prepared statement cache errors)
         let priceHistory = [];
         const priceHistoryTableExists = await query.get(
-            `SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'price_history'`
+            `SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'price_history'`,
         );
         if (priceHistoryTableExists) {
-            priceHistory = await query.all(`
+            priceHistory = await query.all(
+                `
                 SELECT * FROM price_history
                 WHERE inventory_id = ? AND user_id = ?
                 ORDER BY changed_at DESC
                 LIMIT 20
-            `, [id, user.id]);
+            `,
+                [id, user.id],
+            );
         }
 
         return {
@@ -250,8 +283,8 @@ export async function inventoryRouter(ctx) {
             data: {
                 purchases,
                 sales,
-                priceHistory
-            }
+                priceHistory,
+            },
         };
     }
 
@@ -270,12 +303,12 @@ export async function inventoryRouter(ctx) {
         item.custom_fields = safeJsonParse(item.custom_fields, {});
 
         // Get associated listings
-        const listings = await query.all(
-            'SELECT * FROM listings WHERE inventory_id = ? AND user_id = ?',
-            [id, user.id]
-        );
+        const listings = await query.all('SELECT * FROM listings WHERE inventory_id = ? AND user_id = ?', [
+            id,
+            user.id,
+        ]);
 
-        listings.forEach(listing => {
+        listings.forEach((listing) => {
             listing.images = safeJsonParse(listing.images, []);
             listing.platform_specific_data = safeJsonParse(listing.platform_specific_data, {});
         });
@@ -293,8 +326,8 @@ export async function inventoryRouter(ctx) {
                 data: {
                     error: 'Listing limit reached',
                     limit: permission.limit,
-                    current: permission.current
-                }
+                    current: permission.current,
+                },
             };
         }
 
@@ -305,41 +338,92 @@ export async function inventoryRouter(ctx) {
                 status: 400,
                 data: {
                     error: 'Validation failed',
-                    errors: validation.errors
-                }
+                    errors: validation.errors,
+                },
             };
         }
 
         const {
-            sku, title, description, brand, category, subcategory,
-            size, color, condition, costPrice, listPrice, quantity,
-            lowStockThreshold, weight, dimensions, material, tags, images, location, binLocation, notes,
-            customFields, purchaseDate, supplier
+            sku,
+            title,
+            description,
+            brand,
+            category,
+            subcategory,
+            size,
+            color,
+            condition,
+            costPrice,
+            listPrice,
+            quantity,
+            lowStockThreshold,
+            weight,
+            dimensions,
+            material,
+            tags,
+            images,
+            location,
+            binLocation,
+            notes,
+            customFields,
+            purchaseDate,
+            supplier,
         } = validation.sanitized;
 
         // Validate condition enum
         const validConditions = ['new', 'like_new', 'good', 'fair', 'poor'];
         if (condition && !validConditions.includes(condition)) {
-            return { status: 400, data: { error: { message: `Invalid condition. Must be one of: ${validConditions.join(', ')}`, code: 'BAD_REQUEST' } } };
+            return {
+                status: 400,
+                data: {
+                    error: {
+                        message: `Invalid condition. Must be one of: ${validConditions.join(', ')}`,
+                        code: 'BAD_REQUEST',
+                    },
+                },
+            };
         }
 
         // Validate customFields
         if (customFields !== undefined && customFields !== null) {
             if (typeof customFields !== 'object' || Array.isArray(customFields)) {
-                return { status: 400, data: { error: { message: 'Custom fields must be an object', code: 'BAD_REQUEST' } } };
+                return {
+                    status: 400,
+                    data: { error: { message: 'Custom fields must be an object', code: 'BAD_REQUEST' } },
+                };
             }
             const cfKeys = Object.keys(customFields);
             if (cfKeys.length > 20) {
-                return { status: 400, data: { error: { message: 'Custom fields limited to 20 keys', code: 'BAD_REQUEST' } } };
+                return {
+                    status: 400,
+                    data: { error: { message: 'Custom fields limited to 20 keys', code: 'BAD_REQUEST' } },
+                };
             }
             const validKeyPattern = /^[a-zA-Z0-9_]+$/;
             for (const key of cfKeys) {
                 if (key.length > 50 || !validKeyPattern.test(key)) {
-                    return { status: 400, data: { error: { message: 'Custom field keys must be alphanumeric with underscores only, max 50 characters', code: 'BAD_REQUEST' } } };
+                    return {
+                        status: 400,
+                        data: {
+                            error: {
+                                message:
+                                    'Custom field keys must be alphanumeric with underscores only, max 50 characters',
+                                code: 'BAD_REQUEST',
+                            },
+                        },
+                    };
                 }
                 const value = customFields[key];
                 if (typeof value !== 'string' || value.length > 500) {
-                    return { status: 400, data: { error: { message: 'Custom field values must be strings, max 500 characters', code: 'BAD_REQUEST' } } };
+                    return {
+                        status: 400,
+                        data: {
+                            error: {
+                                message: 'Custom field values must be strings, max 500 characters',
+                                code: 'BAD_REQUEST',
+                            },
+                        },
+                    };
                 }
             }
         }
@@ -363,7 +447,10 @@ export async function inventoryRouter(ctx) {
         // Validate quantity (default to 1 if not provided)
         const qty = parseInt(quantity ?? 1);
         if (isNaN(qty) || qty < 0 || qty > 999999 || !Number.isInteger(Number(quantity ?? 1))) {
-            return { status: 400, data: { error: { message: 'Quantity must be a positive integer (max 999999)', code: 'BAD_REQUEST' } } };
+            return {
+                status: 400,
+                data: { error: { message: 'Quantity must be a positive integer (max 999999)', code: 'BAD_REQUEST' } },
+            };
         }
 
         const id = uuidv4();
@@ -376,14 +463,14 @@ export async function inventoryRouter(ctx) {
             // Check for default SKU rule
             const defaultRule = await query.get(
                 'SELECT * FROM sku_rules WHERE user_id = ? AND is_default = TRUE AND is_active = TRUE',
-                [user.id]
+                [user.id],
             );
 
             if (defaultRule) {
                 // Atomically increment counter using UPDATE...RETURNING to prevent TOCTOU race condition
                 const updatedRule = await query.get(
                     'UPDATE sku_rules SET counter_current = counter_current + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ? RETURNING *',
-                    [defaultRule.id]
+                    [defaultRule.id],
                 );
                 finalSku = generateSkuFromRule(updatedRule || defaultRule, { brand, category, color, size });
             } else {
@@ -392,33 +479,65 @@ export async function inventoryRouter(ctx) {
             }
         }
 
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO inventory (
                 id, user_id, sku, title, description, brand, category, subcategory,
                 size, color, condition, cost_price, list_price, quantity, low_stock_threshold,
                 weight, dimensions, material, tags, images, location, bin_location, notes,
                 blockchain_hash, sustainability_score, custom_fields, purchase_date, supplier
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, [
-            id, user.id, finalSku, title, description || null, brand || null, category || null, subcategory || null,
-            size || null, color || null, condition || 'good', costPrice || 0, listPrice, qty, lowStockThreshold || 5,
-            weight || null, dimensions || null, material || null, JSON.stringify(tags || []), JSON.stringify(images || []),
-            location || null, binLocation || null, notes || null, blockchainHash, JSON.stringify(sustainabilityScore || {}), JSON.stringify(customFields || {}),
-            purchaseDate || null, supplier || null
-        ]);
+        `,
+            [
+                id,
+                user.id,
+                finalSku,
+                title,
+                description || null,
+                brand || null,
+                category || null,
+                subcategory || null,
+                size || null,
+                color || null,
+                condition || 'good',
+                costPrice || 0,
+                listPrice,
+                qty,
+                lowStockThreshold || 5,
+                weight || null,
+                dimensions || null,
+                material || null,
+                JSON.stringify(tags || []),
+                JSON.stringify(images || []),
+                location || null,
+                binLocation || null,
+                notes || null,
+                blockchainHash,
+                JSON.stringify(sustainabilityScore || {}),
+                JSON.stringify(customFields || {}),
+                purchaseDate || null,
+                supplier || null,
+            ],
+        );
         logger.info('[Inventory] Item created', { userId: user.id, itemId: id, title: title || '' });
 
         // Log sustainability impact
         if (sustainabilityScore) {
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO sustainability_log (id, user_id, inventory_id, category, water_saved_liters, co2_saved_kg, waste_prevented_kg)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
-            `, [
-                uuidv4(), user.id, id, category || null,
-                sustainabilityScore.waterSaved || 0,
-                sustainabilityScore.co2Saved || 0,
-                sustainabilityScore.wastePrevented || 0
-            ]);
+            `,
+                [
+                    uuidv4(),
+                    user.id,
+                    id,
+                    category || null,
+                    sustainabilityScore.waterSaved || 0,
+                    sustainabilityScore.co2Saved || 0,
+                    sustainabilityScore.wastePrevented || 0,
+                ],
+            );
         }
 
         const item = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [id, user.id]);
@@ -444,8 +563,8 @@ export async function inventoryRouter(ctx) {
                 status: 400,
                 data: {
                     error: 'Validation failed',
-                    errors: validation.errors
-                }
+                    errors: validation.errors,
+                },
             };
         }
 
@@ -465,41 +584,102 @@ export async function inventoryRouter(ctx) {
         }
 
         const {
-            sku, title, description, brand, category, subcategory,
-            size, color, condition, costPrice, listPrice, quantity,
-            lowStockThreshold, weight, dimensions, material, tags, images, thumbnailUrl,
-            status, location, binLocation, notes, customFields, purchaseDate, supplier
+            sku,
+            title,
+            description,
+            brand,
+            category,
+            subcategory,
+            size,
+            color,
+            condition,
+            costPrice,
+            listPrice,
+            quantity,
+            lowStockThreshold,
+            weight,
+            dimensions,
+            material,
+            tags,
+            images,
+            thumbnailUrl,
+            status,
+            location,
+            binLocation,
+            notes,
+            customFields,
+            purchaseDate,
+            supplier,
         } = validation.sanitized;
 
         // Validate condition enum
         const validConditions = ['new', 'like_new', 'good', 'fair', 'poor'];
         if (condition && !validConditions.includes(condition)) {
-            return { status: 400, data: { error: { message: `Invalid condition. Must be one of: ${validConditions.join(', ')}`, code: 'BAD_REQUEST' } } };
+            return {
+                status: 400,
+                data: {
+                    error: {
+                        message: `Invalid condition. Must be one of: ${validConditions.join(', ')}`,
+                        code: 'BAD_REQUEST',
+                    },
+                },
+            };
         }
 
         // Validate status enum
         const validStatuses = ['draft', 'active', 'sold', 'archived', 'deleted'];
         if (status && !validStatuses.includes(status)) {
-            return { status: 400, data: { error: { message: `Invalid status. Must be one of: ${validStatuses.join(', ')}`, code: 'BAD_REQUEST' } } };
+            return {
+                status: 400,
+                data: {
+                    error: {
+                        message: `Invalid status. Must be one of: ${validStatuses.join(', ')}`,
+                        code: 'BAD_REQUEST',
+                    },
+                },
+            };
         }
 
         // Validate customFields
         if (customFields !== undefined && customFields !== null) {
             if (typeof customFields !== 'object' || Array.isArray(customFields)) {
-                return { status: 400, data: { error: { message: 'Custom fields must be an object', code: 'BAD_REQUEST' } } };
+                return {
+                    status: 400,
+                    data: { error: { message: 'Custom fields must be an object', code: 'BAD_REQUEST' } },
+                };
             }
             const cfKeysUpdate = Object.keys(customFields);
             if (cfKeysUpdate.length > 20) {
-                return { status: 400, data: { error: { message: 'Custom fields limited to 20 keys', code: 'BAD_REQUEST' } } };
+                return {
+                    status: 400,
+                    data: { error: { message: 'Custom fields limited to 20 keys', code: 'BAD_REQUEST' } },
+                };
             }
             const validKeyPatternUpdate = /^[a-zA-Z0-9_]+$/;
             for (const key of cfKeysUpdate) {
                 if (key.length > 50 || !validKeyPatternUpdate.test(key)) {
-                    return { status: 400, data: { error: { message: 'Custom field keys must be alphanumeric with underscores only, max 50 characters', code: 'BAD_REQUEST' } } };
+                    return {
+                        status: 400,
+                        data: {
+                            error: {
+                                message:
+                                    'Custom field keys must be alphanumeric with underscores only, max 50 characters',
+                                code: 'BAD_REQUEST',
+                            },
+                        },
+                    };
                 }
                 const value = customFields[key];
                 if (typeof value !== 'string' || value.length > 500) {
-                    return { status: 400, data: { error: { message: 'Custom field values must be strings, max 500 characters', code: 'BAD_REQUEST' } } };
+                    return {
+                        status: 400,
+                        data: {
+                            error: {
+                                message: 'Custom field values must be strings, max 500 characters',
+                                code: 'BAD_REQUEST',
+                            },
+                        },
+                    };
                 }
             }
         }
@@ -508,11 +688,29 @@ export async function inventoryRouter(ctx) {
         const values = [];
 
         const fields = {
-            sku, title, description, brand, category, subcategory,
-            size, color, condition, cost_price: costPrice, list_price: listPrice,
-            quantity, low_stock_threshold: lowStockThreshold, weight, dimensions, material, thumbnail_url: thumbnailUrl,
-            status, location, bin_location: binLocation, notes,
-            purchase_date: purchaseDate, supplier
+            sku,
+            title,
+            description,
+            brand,
+            category,
+            subcategory,
+            size,
+            color,
+            condition,
+            cost_price: costPrice,
+            list_price: listPrice,
+            quantity,
+            low_stock_threshold: lowStockThreshold,
+            weight,
+            dimensions,
+            material,
+            thumbnail_url: thumbnailUrl,
+            status,
+            location,
+            bin_location: binLocation,
+            notes,
+            purchase_date: purchaseDate,
+            supplier,
         };
 
         for (const [key, value] of Object.entries(fields)) {
@@ -541,7 +739,7 @@ export async function inventoryRouter(ctx) {
             values.push(id, user.id);
             await query.run(
                 `UPDATE inventory SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
-                values
+                values,
             );
         }
 
@@ -565,7 +763,7 @@ export async function inventoryRouter(ctx) {
         // Soft delete by setting status and deleted_at timestamp
         await query.run(
             'UPDATE inventory SET status = ?, deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
-            ['deleted', id, user.id]
+            ['deleted', id, user.id],
         );
 
         return { status: 200, data: { message: 'Item moved to Recently Deleted' } };
@@ -575,7 +773,10 @@ export async function inventoryRouter(ctx) {
     if (method === 'POST' && path === '/bulk') {
         const permission = await checkTierPermission(user, 'bulkActions');
         if (!permission.allowed) {
-            return { status: 403, data: { error: { message: 'Bulk actions not available on your plan', code: 'FORBIDDEN' } } };
+            return {
+                status: 403,
+                data: { error: { message: 'Bulk actions not available on your plan', code: 'FORBIDDEN' } },
+            };
         }
 
         const { action, ids, data } = body;
@@ -585,7 +786,10 @@ export async function inventoryRouter(ctx) {
         }
 
         if (ids.length > 500) {
-            return { status: 400, data: { error: { message: 'Too many items (max 500 per bulk operation)', code: 'BAD_REQUEST' } } };
+            return {
+                status: 400,
+                data: { error: { message: 'Too many items (max 500 per bulk operation)', code: 'BAD_REQUEST' } },
+            };
         }
 
         let affected = 0;
@@ -595,7 +799,7 @@ export async function inventoryRouter(ctx) {
                 await query.run(
                     `UPDATE inventory SET status = 'deleted', deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
                      WHERE id IN (${ids.map(() => '?').join(',')}) AND user_id = ?`,
-                    [...ids, user.id]
+                    [...ids, user.id],
                 );
                 affected = ids.length;
                 break;
@@ -610,27 +814,30 @@ export async function inventoryRouter(ctx) {
                 await query.run(
                     `UPDATE inventory SET status = ?, updated_at = CURRENT_TIMESTAMP
                      WHERE id IN (${ids.map(() => '?').join(',')}) AND user_id = ?`,
-                    [data.status, ...ids, user.id]
+                    [data.status, ...ids, user.id],
                 );
                 affected = ids.length;
                 break;
 
             case 'updatePrice':
                 if (!data?.adjustment) {
-                    return { status: 400, data: { error: { message: 'Price adjustment required', code: 'BAD_REQUEST' } } };
+                    return {
+                        status: 400,
+                        data: { error: { message: 'Price adjustment required', code: 'BAD_REQUEST' } },
+                    };
                 }
                 const { type, value } = data.adjustment;
                 if (type === 'percentage') {
                     await query.run(
                         `UPDATE inventory SET list_price = ROUND(list_price * (1 + ? / 100), 2), updated_at = CURRENT_TIMESTAMP
                          WHERE id IN (${ids.map(() => '?').join(',')}) AND user_id = ?`,
-                        [value, ...ids, user.id]
+                        [value, ...ids, user.id],
                     );
                 } else {
                     await query.run(
                         `UPDATE inventory SET list_price = ROUND(list_price + ?, 2), updated_at = CURRENT_TIMESTAMP
                          WHERE id IN (${ids.map(() => '?').join(',')}) AND user_id = ?`,
-                        [value, ...ids, user.id]
+                        [value, ...ids, user.id],
                     );
                 }
                 affected = ids.length;
@@ -650,7 +857,7 @@ export async function inventoryRouter(ctx) {
                     cost_price, list_price, status, quantity
              FROM inventory WHERE user_id = ? AND status != 'deleted'
              ORDER BY created_at DESC`,
-            [user.id]
+            [user.id],
         );
 
         const escapeCsvField = (value) => {
@@ -662,20 +869,34 @@ export async function inventoryRouter(ctx) {
             return str;
         };
 
-        const headers = ['title', 'sku', 'category', 'brand', 'size', 'color', 'condition', 'cost', 'price', 'status', 'quantity'];
-        const rows = items.map(item => [
-            escapeCsvField(item.title),
-            escapeCsvField(item.sku),
-            escapeCsvField(item.category),
-            escapeCsvField(item.brand),
-            escapeCsvField(item.size),
-            escapeCsvField(item.color),
-            escapeCsvField(item.condition),
-            escapeCsvField(item.cost_price),
-            escapeCsvField(item.list_price),
-            escapeCsvField(item.status),
-            escapeCsvField(item.quantity)
-        ].join(','));
+        const headers = [
+            'title',
+            'sku',
+            'category',
+            'brand',
+            'size',
+            'color',
+            'condition',
+            'cost',
+            'price',
+            'status',
+            'quantity',
+        ];
+        const rows = items.map((item) =>
+            [
+                escapeCsvField(item.title),
+                escapeCsvField(item.sku),
+                escapeCsvField(item.category),
+                escapeCsvField(item.brand),
+                escapeCsvField(item.size),
+                escapeCsvField(item.color),
+                escapeCsvField(item.condition),
+                escapeCsvField(item.cost_price),
+                escapeCsvField(item.list_price),
+                escapeCsvField(item.status),
+                escapeCsvField(item.quantity),
+            ].join(','),
+        );
 
         const csv = [headers.join(','), ...rows].join('\r\n');
         const filename = `inventory-export-${new Date().toISOString().split('T')[0]}.csv`;
@@ -684,31 +905,80 @@ export async function inventoryRouter(ctx) {
             status: 200,
             headers: {
                 'Content-Type': 'text/csv',
-                'Content-Disposition': `attachment; filename="${filename}"`
+                'Content-Disposition': `attachment; filename="${filename}"`,
             },
-            data: csv
+            data: csv,
         };
     }
 
     // GET /api/inventory/stats - Get inventory statistics
     if (method === 'GET' && path === '/stats') {
         const stats = {
-            total: Number((await query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ?', [user.id]))?.count) || 0,
-            active: Number((await query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ? AND status = ?', [user.id, 'active']))?.count) || 0,
-            draft: Number((await query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ? AND status = ?', [user.id, 'draft']))?.count) || 0,
-            sold: Number((await query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ? AND status = ?', [user.id, 'sold']))?.count) || 0,
-            totalValue: Number((await query.get('SELECT SUM(list_price * quantity) as value FROM inventory WHERE user_id = ? AND status = ?', [user.id, 'active']))?.value) || 0,
-            avgPrice: Number((await query.get('SELECT AVG(list_price) as avg FROM inventory WHERE user_id = ? AND status = ?', [user.id, 'active']))?.avg) || 0,
-            topCategories: await query.all(`
+            total:
+                Number(
+                    (await query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ?', [user.id]))?.count,
+                ) || 0,
+            active:
+                Number(
+                    (
+                        await query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ? AND status = ?', [
+                            user.id,
+                            'active',
+                        ])
+                    )?.count,
+                ) || 0,
+            draft:
+                Number(
+                    (
+                        await query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ? AND status = ?', [
+                            user.id,
+                            'draft',
+                        ])
+                    )?.count,
+                ) || 0,
+            sold:
+                Number(
+                    (
+                        await query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ? AND status = ?', [
+                            user.id,
+                            'sold',
+                        ])
+                    )?.count,
+                ) || 0,
+            totalValue:
+                Number(
+                    (
+                        await query.get(
+                            'SELECT SUM(list_price * quantity) as value FROM inventory WHERE user_id = ? AND status = ?',
+                            [user.id, 'active'],
+                        )
+                    )?.value,
+                ) || 0,
+            avgPrice:
+                Number(
+                    (
+                        await query.get(
+                            'SELECT AVG(list_price) as avg FROM inventory WHERE user_id = ? AND status = ?',
+                            [user.id, 'active'],
+                        )
+                    )?.avg,
+                ) || 0,
+            topCategories: await query.all(
+                `
                 SELECT category, COUNT(*) as count
                 FROM inventory WHERE user_id = ? AND status != 'deleted'
                 GROUP BY category ORDER BY count DESC LIMIT 5
-            `, [user.id]),
-            topBrands: await query.all(`
+            `,
+                [user.id],
+            ),
+            topBrands: await query.all(
+                `
                 SELECT brand, COUNT(*) as count
                 FROM inventory WHERE user_id = ? AND status != 'deleted' AND brand IS NOT NULL
                 GROUP BY brand ORDER BY count DESC LIMIT 5
-            `, [user.id])
+            `,
+                [user.id],
+            ),
         };
 
         return { status: 200, data: { stats } };
@@ -726,15 +996,15 @@ export async function inventoryRouter(ctx) {
              AND deleted_at >= ?
              ORDER BY deleted_at DESC
              LIMIT 500`,
-            [user.id, thirtyDaysAgo]
+            [user.id, thirtyDaysAgo],
         );
 
-        items = items.map(item => ({
+        items = items.map((item) => ({
             ...item,
             tags: safeJsonParse(item.tags, []),
             images: safeJsonParse(item.images, []),
             custom_fields: safeJsonParse(item.custom_fields, {}),
-            ai_generated_data: safeJsonParse(item.ai_generated_data, {})
+            ai_generated_data: safeJsonParse(item.ai_generated_data, {}),
         }));
 
         return { status: 200, data: { items } };
@@ -744,10 +1014,11 @@ export async function inventoryRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[\w-]+\/duplicate$/)) {
         const sourceId = path.split('/')[1];
 
-        const source = await query.get(
-            'SELECT * FROM inventory WHERE id = ? AND user_id = ? AND status != ?',
-            [sourceId, user.id, 'deleted']
-        );
+        const source = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ? AND status != ?', [
+            sourceId,
+            user.id,
+            'deleted',
+        ]);
 
         if (!source) {
             return { status: 404, data: { error: 'Item not found' } };
@@ -757,7 +1028,8 @@ export async function inventoryRouter(ctx) {
         const newSku = `VL-${Date.now()}`;
         const now = new Date().toISOString();
 
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO inventory (
                 id, user_id, sku, title, description, brand, category, subcategory,
                 size, color, condition, cost_price, list_price, quantity, low_stock_threshold,
@@ -765,17 +1037,41 @@ export async function inventoryRouter(ctx) {
                 blockchain_hash, sustainability_score, custom_fields, purchase_date, supplier,
                 status, created_at, updated_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, [
-            newId, user.id, newSku,
-            'Copy of ' + (source.title || ''),
-            source.description, source.brand, source.category, source.subcategory,
-            source.size, source.color, source.condition, source.cost_price, source.list_price,
-            source.quantity, source.low_stock_threshold, source.weight, source.dimensions,
-            source.material, source.tags, source.images, source.location, source.bin_location,
-            source.notes, source.blockchain_hash, source.sustainability_score, source.custom_fields,
-            source.purchase_date, source.supplier,
-            'draft', now, now
-        ]);
+        `,
+            [
+                newId,
+                user.id,
+                newSku,
+                'Copy of ' + (source.title || ''),
+                source.description,
+                source.brand,
+                source.category,
+                source.subcategory,
+                source.size,
+                source.color,
+                source.condition,
+                source.cost_price,
+                source.list_price,
+                source.quantity,
+                source.low_stock_threshold,
+                source.weight,
+                source.dimensions,
+                source.material,
+                source.tags,
+                source.images,
+                source.location,
+                source.bin_location,
+                source.notes,
+                source.blockchain_hash,
+                source.sustainability_score,
+                source.custom_fields,
+                source.purchase_date,
+                source.supplier,
+                'draft',
+                now,
+                now,
+            ],
+        );
 
         const newItem = await query.get('SELECT * FROM inventory WHERE id = ?', [newId]);
         newItem.tags = safeJsonParse(newItem.tags, []);
@@ -790,10 +1086,11 @@ export async function inventoryRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[\w-]+\/restore$/)) {
         const id = path.split('/')[1];
 
-        const existing = await query.get(
-            'SELECT * FROM inventory WHERE id = ? AND user_id = ? AND status = ?',
-            [id, user.id, 'deleted']
-        );
+        const existing = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ? AND status = ?', [
+            id,
+            user.id,
+            'deleted',
+        ]);
 
         if (!existing) {
             return { status: 404, data: { error: { message: 'Deleted item not found', code: 'NOT_FOUND' } } };
@@ -802,7 +1099,7 @@ export async function inventoryRouter(ctx) {
         // Restore item by setting status back to draft and clearing deleted_at
         await query.run(
             'UPDATE inventory SET status = ?, deleted_at = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
-            ['draft', id, user.id]
+            ['draft', id, user.id],
         );
 
         const item = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [id, user.id]);
@@ -817,10 +1114,11 @@ export async function inventoryRouter(ctx) {
     if (method === 'DELETE' && path.match(/^\/[\w-]+\/permanent$/)) {
         const id = path.split('/')[1];
 
-        const existing = await query.get(
-            'SELECT * FROM inventory WHERE id = ? AND user_id = ? AND status = ?',
-            [id, user.id, 'deleted']
-        );
+        const existing = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ? AND status = ?', [
+            id,
+            user.id,
+            'deleted',
+        ]);
 
         if (!existing) {
             return { status: 404, data: { error: { message: 'Deleted item not found', code: 'NOT_FOUND' } } };
@@ -842,10 +1140,13 @@ export async function inventoryRouter(ctx) {
              AND status = 'deleted'
              AND deleted_at IS NOT NULL
              AND deleted_at < ?`,
-            [user.id, thirtyDaysAgo]
+            [user.id, thirtyDaysAgo],
         );
 
-        return { status: 200, data: { message: `Cleaned up ${result.changes || 0} expired items`, count: result.changes || 0 } };
+        return {
+            status: 200,
+            data: { message: `Cleaned up ${result.changes || 0} expired items`, count: result.changes || 0 },
+        };
     }
 
     // POST /api/inventory/import/platform - Import items from a connected marketplace
@@ -858,7 +1159,15 @@ export async function inventoryRouter(ctx) {
         }
 
         if (!allowedPlatforms.includes(platform)) {
-            return { status: 400, data: { error: { message: `Import from ${platform} requires manual CSV export. Use Import → CSV.`, code: 'BAD_REQUEST' } } };
+            return {
+                status: 400,
+                data: {
+                    error: {
+                        message: `Import from ${platform} requires manual CSV export. Use Import → CSV.`,
+                        code: 'BAD_REQUEST',
+                    },
+                },
+            };
         }
 
         const cap = Math.min(parseInt(maxItems) || 100, 500);
@@ -871,12 +1180,20 @@ export async function inventoryRouter(ctx) {
             // Resolve username: connected shop first, then env fallback
             const shop = await query.get(
                 'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE',
-                [user.id, 'poshmark']
+                [user.id, 'poshmark'],
             );
             const username = shop?.platform_username || process.env.POSHMARK_USERNAME;
 
             if (!username) {
-                return { status: 400, data: { error: { message: 'No connected Poshmark account. Connect your shop under Settings → Marketplaces.', code: 'BAD_REQUEST' } } };
+                return {
+                    status: 400,
+                    data: {
+                        error: {
+                            message: 'No connected Poshmark account. Connect your shop under Settings → Marketplaces.',
+                            code: 'BAD_REQUEST',
+                        },
+                    },
+                };
             }
 
             let bot;
@@ -895,37 +1212,58 @@ export async function inventoryRouter(ctx) {
                         // Deduplicate: same pattern as poshmark_inventory_sync task
                         const existing = await query.get(
                             'SELECT id FROM inventory WHERE user_id = ? AND title = ? AND notes ILIKE ?',
-                            [user.id, item.title || '', '%poshmark.com%']
+                            [user.id, item.title || '', '%poshmark.com%'],
                         );
-                        if (existing) { skipped++; continue; }
+                        if (existing) {
+                            skipped++;
+                            continue;
+                        }
 
                         // Parse price string ($25.00 → 25.00)
                         const listPrice = parseFloat(String(item.price || '0').replace(/[^0-9.]/g, '')) || 0;
                         const images = item.imageUrl ? JSON.stringify([item.imageUrl]) : '[]';
-                        const notes = item.listingUrl ? `Imported from Poshmark: ${item.listingUrl}` : 'Imported from Poshmark';
+                        const notes = item.listingUrl
+                            ? `Imported from Poshmark: ${item.listingUrl}`
+                            : 'Imported from Poshmark';
 
-                        await query.run(`
+                        await query.run(
+                            `
                             INSERT INTO inventory (
                                 id, user_id, title, list_price, images, notes,
                                 status, source, condition, created_at, updated_at
                             ) VALUES (?, ?, ?, ?, ?, ?, 'active', 'poshmark', 'good', ?, ?)
-                        `, [uuidv4(), user.id, item.title || 'Imported Item', listPrice, images, notes, now, now]);
+                        `,
+                            [uuidv4(), user.id, item.title || 'Imported Item', listPrice, images, notes, now, now],
+                        );
 
                         imported++;
                     } catch (itemErr) {
-                        logger.error('[Inventory] Poshmark platform import item error', user.id, { detail: itemErr?.message });
+                        logger.error('[Inventory] Poshmark platform import item error', user.id, {
+                            detail: itemErr?.message,
+                        });
                         skipped++;
                     }
                 }
 
-                auditLog('poshmark', 'platform_import_complete', { userId: user.id, imported, skipped, total: listings.length });
-                logger.info('[Inventory] Poshmark platform import complete', user.id, { imported, skipped, total: listings.length });
+                auditLog('poshmark', 'platform_import_complete', {
+                    userId: user.id,
+                    imported,
+                    skipped,
+                    total: listings.length,
+                });
+                logger.info('[Inventory] Poshmark platform import complete', user.id, {
+                    imported,
+                    skipped,
+                    total: listings.length,
+                });
 
                 return { status: 200, data: { imported, skipped, total: listings.length } };
-
             } catch (err) {
                 logger.error('[Inventory] Poshmark platform import failed', user.id, { detail: err?.message });
-                return { status: 500, data: { error: { message: `Poshmark import failed: ${err.message}`, code: 'INTERNAL_ERROR' } } };
+                return {
+                    status: 500,
+                    data: { error: { message: `Poshmark import failed: ${err.message}`, code: 'INTERNAL_ERROR' } },
+                };
             } finally {
                 if (bot) await closePoshmarkBot();
             }
@@ -939,38 +1277,59 @@ export async function inventoryRouter(ctx) {
 
             const shop = await query.get(
                 'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE',
-                [user.id, 'ebay']
+                [user.id, 'ebay'],
             );
             if (!shop || !shop.oauth_token) {
-                return { status: 400, data: { error: { message: 'No connected eBay account. Connect your shop under Settings → Marketplaces.', code: 'BAD_REQUEST' } } };
+                return {
+                    status: 400,
+                    data: {
+                        error: {
+                            message: 'No connected eBay account. Connect your shop under Settings → Marketplaces.',
+                            code: 'BAD_REQUEST',
+                        },
+                    },
+                };
             }
 
             try {
                 const accessToken = decryptToken(shop.oauth_token);
                 const oauthMode = process.env.OAUTH_MODE || 'mock';
                 const ebayEnvironment = process.env.EBAY_ENVIRONMENT || 'production';
-                const apiBase = ebayEnvironment === 'production'
-                    ? 'https://api.ebay.com'
-                    : 'https://api.sandbox.ebay.com';
+                const apiBase =
+                    ebayEnvironment === 'production' ? 'https://api.ebay.com' : 'https://api.sandbox.ebay.com';
 
                 auditLog('ebay', 'platform_import_start', { userId: user.id, shopId: shop.id });
 
                 let ebayItems = [];
                 if (oauthMode === 'mock') {
                     ebayItems = [
-                        { sku: 'MOCK-SKU-001', title: 'Mock eBay Item 1', price: { value: '29.99' }, quantity: 1, condition: 'USED_EXCELLENT', product: { imageUrls: [] } },
-                        { sku: 'MOCK-SKU-002', title: 'Mock eBay Item 2', price: { value: '49.99' }, quantity: 3, condition: 'NEW', product: { imageUrls: [] } }
+                        {
+                            sku: 'MOCK-SKU-001',
+                            title: 'Mock eBay Item 1',
+                            price: { value: '29.99' },
+                            quantity: 1,
+                            condition: 'USED_EXCELLENT',
+                            product: { imageUrls: [] },
+                        },
+                        {
+                            sku: 'MOCK-SKU-002',
+                            title: 'Mock eBay Item 2',
+                            price: { value: '49.99' },
+                            quantity: 3,
+                            condition: 'NEW',
+                            product: { imageUrls: [] },
+                        },
                     ];
                 } else {
                     const response = await fetchWithTimeout(
                         `${apiBase}/sell/inventory/v1/inventory_item?limit=${cap}`,
                         {
                             headers: {
-                                'Authorization': `Bearer ${accessToken}`,
-                                'Accept': 'application/json',
-                                'Content-Type': 'application/json'
-                            }
-                        }
+                                Authorization: `Bearer ${accessToken}`,
+                                Accept: 'application/json',
+                                'Content-Type': 'application/json',
+                            },
+                        },
                     );
                     if (!response.ok) {
                         const errorText = await response.text();
@@ -981,13 +1340,13 @@ export async function inventoryRouter(ctx) {
                 }
 
                 const ebayConditionMap = {
-                    'NEW': 'new',
-                    'LIKE_NEW': 'like_new',
-                    'USED_EXCELLENT': 'like_new',
-                    'USED_VERY_GOOD': 'good',
-                    'USED_GOOD': 'good',
-                    'USED_ACCEPTABLE': 'fair',
-                    'FOR_PARTS_OR_NOT_WORKING': 'poor'
+                    NEW: 'new',
+                    LIKE_NEW: 'like_new',
+                    USED_EXCELLENT: 'like_new',
+                    USED_VERY_GOOD: 'good',
+                    USED_GOOD: 'good',
+                    USED_ACCEPTABLE: 'fair',
+                    FOR_PARTS_OR_NOT_WORKING: 'poor',
                 };
 
                 let imported = 0;
@@ -1000,51 +1359,77 @@ export async function inventoryRouter(ctx) {
 
                         // Deduplicate by SKU
                         if (sku) {
-                            const existing = await query.get(
-                                'SELECT id FROM inventory WHERE user_id = ? AND sku = ?',
-                                [user.id, sku]
-                            );
-                            if (existing) { skipped++; continue; }
+                            const existing = await query.get('SELECT id FROM inventory WHERE user_id = ? AND sku = ?', [
+                                user.id,
+                                sku,
+                            ]);
+                            if (existing) {
+                                skipped++;
+                                continue;
+                            }
                         }
 
                         const title = ebayItem.title || ebayItem.product?.title || 'Imported eBay Item';
-                        const listPrice = parseFloat(
-                            ebayItem.price?.value ||
-                            ebayItem.offers?.[0]?.price?.value ||
-                            0
-                        ) || 0;
+                        const listPrice =
+                            parseFloat(ebayItem.price?.value || ebayItem.offers?.[0]?.price?.value || 0) || 0;
                         const quantity = parseInt(
-                            ebayItem.availability?.shipToLocationAvailability?.quantity ||
-                            ebayItem.quantity ||
-                            1
+                            ebayItem.availability?.shipToLocationAvailability?.quantity || ebayItem.quantity || 1,
                         );
                         const condition = ebayConditionMap[ebayItem.condition] || 'good';
                         const imageUrls = ebayItem.product?.imageUrls || [];
                         const images = JSON.stringify(imageUrls);
                         const description = ebayItem.product?.description || null;
 
-                        await query.run(`
+                        await query.run(
+                            `
                             INSERT INTO inventory (
                                 id, user_id, sku, title, description, list_price, quantity,
                                 condition, images, status, source, created_at, updated_at
                             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'ebay', ?, ?)
-                        `, [uuidv4(), user.id, sku, title, description, listPrice, quantity, condition, images, now, now]);
+                        `,
+                            [
+                                uuidv4(),
+                                user.id,
+                                sku,
+                                title,
+                                description,
+                                listPrice,
+                                quantity,
+                                condition,
+                                images,
+                                now,
+                                now,
+                            ],
+                        );
 
                         imported++;
                     } catch (itemErr) {
-                        logger.error('[Inventory] eBay platform import item error', user.id, { detail: itemErr?.message });
+                        logger.error('[Inventory] eBay platform import item error', user.id, {
+                            detail: itemErr?.message,
+                        });
                         skipped++;
                     }
                 }
 
-                auditLog('ebay', 'platform_import_complete', { userId: user.id, imported, skipped, total: ebayItems.length });
-                logger.info('[Inventory] eBay platform import complete', user.id, { imported, skipped, total: ebayItems.length });
+                auditLog('ebay', 'platform_import_complete', {
+                    userId: user.id,
+                    imported,
+                    skipped,
+                    total: ebayItems.length,
+                });
+                logger.info('[Inventory] eBay platform import complete', user.id, {
+                    imported,
+                    skipped,
+                    total: ebayItems.length,
+                });
 
                 return { status: 200, data: { imported, skipped, total: ebayItems.length } };
-
             } catch (err) {
                 logger.error('[Inventory] eBay platform import failed', user.id, { detail: err?.message });
-                return { status: 500, data: { error: { message: `eBay import failed: ${err.message}`, code: 'INTERNAL_ERROR' } } };
+                return {
+                    status: 500,
+                    data: { error: { message: `eBay import failed: ${err.message}`, code: 'INTERNAL_ERROR' } },
+                };
             }
         }
     }
@@ -1123,22 +1508,39 @@ export async function inventoryRouter(ctx) {
                     status: 'active',
                     source: 'csv',
                     created_at: now,
-                    updated_at: now
+                    updated_at: now,
                 };
 
                 // Insert into database
-                await query.run(`
+                await query.run(
+                    `
                     INSERT INTO inventory (
                         id, user_id, title, brand, category, size, color, condition,
                         cost_price, list_price, quantity, low_stock_threshold,
                         description, images, status, source, created_at, updated_at
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                `, [
-                    item.id, item.user_id, item.title, item.brand, item.category,
-                    item.size, item.color, item.condition, item.cost_price, item.list_price,
-                    item.quantity, item.low_stock_threshold, item.description, item.images,
-                    item.status, item.source, item.created_at, item.updated_at
-                ]);
+                `,
+                    [
+                        item.id,
+                        item.user_id,
+                        item.title,
+                        item.brand,
+                        item.category,
+                        item.size,
+                        item.color,
+                        item.condition,
+                        item.cost_price,
+                        item.list_price,
+                        item.quantity,
+                        item.low_stock_threshold,
+                        item.description,
+                        item.images,
+                        item.status,
+                        item.source,
+                        item.created_at,
+                        item.updated_at,
+                    ],
+                );
 
                 imported++;
             } catch (error) {
@@ -1153,8 +1555,8 @@ export async function inventoryRouter(ctx) {
                 message: `Imported ${imported} of ${items.length} items`,
                 imported,
                 total: items.length,
-                errors: errors.length > 0 ? errors : undefined
-            }
+                errors: errors.length > 0 ? errors : undefined,
+            },
         };
     }
 
@@ -1178,9 +1580,14 @@ export async function inventoryRouter(ctx) {
         }
         const importHostname = parsedImportUrl.hostname.toLowerCase();
         const isPrivateImportHostname = (h) =>
-            h === 'localhost' || h === '127.0.0.1' || h === '::1' || h === '0.0.0.0' ||
+            h === 'localhost' ||
+            h === '127.0.0.1' ||
+            h === '::1' ||
+            h === '0.0.0.0' ||
             /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.|127\.)/.test(h) ||
-            h.startsWith('fe80:') || h.startsWith('fc00:') || h.startsWith('fd00:') ||
+            h.startsWith('fe80:') ||
+            h.startsWith('fc00:') ||
+            h.startsWith('fd00:') ||
             h.startsWith('::ffff:');
         if (isPrivateImportHostname(importHostname)) {
             return { status: 400, data: { error: { message: 'URL not allowed', code: 'BAD_REQUEST' } } };
@@ -1193,7 +1600,10 @@ export async function inventoryRouter(ctx) {
                 if (result.status === 'fulfilled') {
                     for (const ip of result.value) {
                         if (isPrivateImportHostname(ip)) {
-                            return { status: 400, data: { error: { message: 'URL resolves to a private address', code: 'BAD_REQUEST' } } };
+                            return {
+                                status: 400,
+                                data: { error: { message: 'URL resolves to a private address', code: 'BAD_REQUEST' } },
+                            };
                         }
                     }
                 }
@@ -1207,10 +1617,10 @@ export async function inventoryRouter(ctx) {
             const response = await fetch(url, {
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (compatible; VaultLister/3.0)',
-                    'Accept': 'text/html,application/xhtml+xml'
+                    Accept: 'text/html,application/xhtml+xml',
                 },
                 redirect: 'manual',
-                signal: AbortSignal.timeout(10000)
+                signal: AbortSignal.timeout(10000),
             });
             // Parse whatever HTML we get (including 4xx pages) — they often contain OG tags
             html = await response.text();
@@ -1222,8 +1632,9 @@ export async function inventoryRouter(ctx) {
         // Extract Open Graph metadata (present on all major marketplaces)
         const og = (prop) => {
             const esc = prop.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const m = html.match(new RegExp(`<meta[^>]+property=["']og:${esc}["'][^>]+content=["']([^"']+)["']`, 'i')) // nosemgrep: javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp
-                      || html.match(new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:${esc}["']`, 'i')); // nosemgrep: javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp
+            const m =
+                html.match(new RegExp(`<meta[^>]+property=["']og:${esc}["'][^>]+content=["']([^"']+)["']`, 'i')) || // nosemgrep: javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp
+                html.match(new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:${esc}["']`, 'i')); // nosemgrep: javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp
             return m ? m[1].trim() : null;
         };
 
@@ -1234,8 +1645,10 @@ export async function inventoryRouter(ctx) {
             try {
                 const parsed = JSON.parse(jsonLdMatch[1]);
                 const candidates = Array.isArray(parsed) ? parsed : [parsed];
-                jsonLd = candidates.find(d => d['@type'] === 'Product') || null;
-            } catch { /* ignore malformed JSON-LD */ }
+                jsonLd = candidates.find((d) => d['@type'] === 'Product') || null;
+            } catch {
+                /* ignore malformed JSON-LD */
+            }
         }
 
         // Build item from best available data (JSON-LD preferred, og fallback)
@@ -1246,9 +1659,7 @@ export async function inventoryRouter(ctx) {
 
         // Price: JSON-LD offers > og:price:amount
         let listPrice = 0;
-        const priceStr = jsonLd?.offers?.price
-            || jsonLd?.offers?.[0]?.price
-            || og('price:amount');
+        const priceStr = jsonLd?.offers?.price || jsonLd?.offers?.[0]?.price || og('price:amount');
         if (priceStr) {
             listPrice = parseFloat(String(priceStr).replace(/[^0-9.]/g, '')) || 0;
         }
@@ -1258,10 +1669,10 @@ export async function inventoryRouter(ctx) {
 
         // Condition mapping from JSON-LD
         const conditionMap = {
-            'NewCondition': 'new',
-            'UsedCondition': 'good',
-            'RefurbishedCondition': 'fair',
-            'DamagedCondition': 'poor'
+            NewCondition: 'new',
+            UsedCondition: 'good',
+            RefurbishedCondition: 'fair',
+            DamagedCondition: 'poor',
         };
         const rawCondition = jsonLd?.offers?.itemCondition || jsonLd?.offers?.[0]?.itemCondition || '';
         const conditionKey = rawCondition.replace(/.*\//, '');
@@ -1280,13 +1691,13 @@ export async function inventoryRouter(ctx) {
             condition,
             images,
             marketplace: detectedMarketplace,
-            sourceUrl: url
+            sourceUrl: url,
         };
 
         logger.info('[Inventory] URL import complete', user.id, { url, title: item.title });
         return {
             status: 200,
-            data: { item, message: 'Item data fetched successfully.' }
+            data: { item, message: 'Item data fetched successfully.' },
         };
     }
 
@@ -1296,9 +1707,15 @@ export async function inventoryRouter(ctx) {
 
     // GET /api/inventory/categories - List user categories
     if (method === 'GET' && path === '/categories') {
-        const categories = await query.all('SELECT id, name, color, sort_order, created_at, updated_at FROM inventory_categories WHERE user_id = ? ORDER BY sort_order, name LIMIT 200', [user.id]);
+        const categories = await query.all(
+            'SELECT id, name, color, sort_order, created_at, updated_at FROM inventory_categories WHERE user_id = ? ORDER BY sort_order, name LIMIT 200',
+            [user.id],
+        );
         // Also get counts per category from inventory
-        const counts = await query.all(`SELECT category, COUNT(*) as count FROM inventory WHERE user_id = ? AND status = 'active' GROUP BY category`, [user.id]);
+        const counts = await query.all(
+            `SELECT category, COUNT(*) as count FROM inventory WHERE user_id = ? AND status = 'active' GROUP BY category`,
+            [user.id],
+        );
         const countMap = {};
         for (const c of counts) countMap[c.category || 'Uncategorized'] = c.count;
         for (const cat of categories) cat.item_count = countMap[cat.name] || 0;
@@ -1308,34 +1725,61 @@ export async function inventoryRouter(ctx) {
     // POST /api/inventory/categories - Create category
     if (method === 'POST' && path === '/categories') {
         const { name, color } = body;
-        if (!name || !name.trim()) return { status: 400, data: { error: { message: 'Category name required', code: 'BAD_REQUEST' } } };
-        const existing = await query.get('SELECT id FROM inventory_categories WHERE user_id = ? AND name = ?', [user.id, name.trim()]);
+        if (!name || !name.trim())
+            return { status: 400, data: { error: { message: 'Category name required', code: 'BAD_REQUEST' } } };
+        const existing = await query.get('SELECT id FROM inventory_categories WHERE user_id = ? AND name = ?', [
+            user.id,
+            name.trim(),
+        ]);
         if (existing) return { status: 409, data: { error: { message: 'Category already exists', code: 'CONFLICT' } } };
-        const maxOrder = await query.get('SELECT MAX(sort_order) as m FROM inventory_categories WHERE user_id = ?', [user.id]);
+        const maxOrder = await query.get('SELECT MAX(sort_order) as m FROM inventory_categories WHERE user_id = ?', [
+            user.id,
+        ]);
         const id = uuidv4();
-        await query.run('INSERT INTO inventory_categories (id, user_id, name, color, sort_order) VALUES (?, ?, ?, ?, ?)',
-            [id, user.id, name.trim(), color || '#f59e0b', (maxOrder?.m || 0) + 1]);
+        await query.run(
+            'INSERT INTO inventory_categories (id, user_id, name, color, sort_order) VALUES (?, ?, ?, ?, ?)',
+            [id, user.id, name.trim(), color || '#f59e0b', (maxOrder?.m || 0) + 1],
+        );
         return { status: 201, data: { category: { id, name: name.trim(), color: color || '#f59e0b' } } };
     }
 
     // PUT /api/inventory/categories/:id - Update category
     if (method === 'PUT' && path.match(/^\/categories\/[a-f0-9-]+$/)) {
         const catId = path.split('/')[2];
-        const cat = await query.get('SELECT * FROM inventory_categories WHERE id = ? AND user_id = ?', [catId, user.id]);
+        const cat = await query.get('SELECT * FROM inventory_categories WHERE id = ? AND user_id = ?', [
+            catId,
+            user.id,
+        ]);
         if (!cat) return { status: 404, data: { error: { message: 'Category not found', code: 'NOT_FOUND' } } };
         const { name, color, sort_order } = body;
         const updates = [];
         const vals = [];
-        if (name !== undefined) { updates.push('name = ?'); vals.push(name.trim()); }
-        if (color !== undefined) { updates.push('color = ?'); vals.push(color); }
-        if (sort_order !== undefined) { updates.push('sort_order = ?'); vals.push(sort_order); }
+        if (name !== undefined) {
+            updates.push('name = ?');
+            vals.push(name.trim());
+        }
+        if (color !== undefined) {
+            updates.push('color = ?');
+            vals.push(color);
+        }
+        if (sort_order !== undefined) {
+            updates.push('sort_order = ?');
+            vals.push(sort_order);
+        }
         if (updates.length > 0) {
             vals.push(catId);
             vals.push(user.id);
-            await query.run(`UPDATE inventory_categories SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`, vals);
+            await query.run(
+                `UPDATE inventory_categories SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
+                vals,
+            );
             // If name changed, update inventory items
             if (name !== undefined && name.trim() !== cat.name) {
-                await query.run('UPDATE inventory SET category = ? WHERE user_id = ? AND category = ?', [name.trim(), user.id, cat.name]);
+                await query.run('UPDATE inventory SET category = ? WHERE user_id = ? AND category = ?', [
+                    name.trim(),
+                    user.id,
+                    cat.name,
+                ]);
             }
         }
         return { status: 200, data: { message: 'Category updated' } };
@@ -1344,7 +1788,10 @@ export async function inventoryRouter(ctx) {
     // DELETE /api/inventory/categories/:id - Delete category
     if (method === 'DELETE' && path.match(/^\/categories\/[a-f0-9-]+$/)) {
         const catId = path.split('/')[2];
-        const cat = await query.get('SELECT * FROM inventory_categories WHERE id = ? AND user_id = ?', [catId, user.id]);
+        const cat = await query.get('SELECT * FROM inventory_categories WHERE id = ? AND user_id = ?', [
+            catId,
+            user.id,
+        ]);
         if (!cat) return { status: 404, data: { error: { message: 'Category not found', code: 'NOT_FOUND' } } };
         await query.run('DELETE FROM inventory_categories WHERE id = ? AND user_id = ?', [catId, user.id]);
         // Clear category on items (set to null)
@@ -1358,24 +1805,40 @@ export async function inventoryRouter(ctx) {
 
     // GET /api/inventory/suppliers - List suppliers
     if (method === 'GET' && path === '/suppliers') {
-        const suppliers = await query.all(`
+        const suppliers = await query.all(
+            `
             SELECT s.*,
                 (SELECT COUNT(*) FROM supplier_items WHERE supplier_id = s.id) as item_count,
                 (SELECT AVG(current_price) FROM supplier_items WHERE supplier_id = s.id) as avg_price
             FROM suppliers s WHERE s.user_id = ? ORDER BY s.name
-        `, [user.id]);
+        `,
+            [user.id],
+        );
         return { status: 200, data: { suppliers } };
     }
 
     // POST /api/inventory/suppliers - Create supplier
     if (method === 'POST' && path === '/suppliers') {
         const { name, type, website, contact_email, contact_phone, address, notes, rating } = body;
-        if (!name?.trim()) return { status: 400, data: { error: { message: 'Supplier name required', code: 'BAD_REQUEST' } } };
+        if (!name?.trim())
+            return { status: 400, data: { error: { message: 'Supplier name required', code: 'BAD_REQUEST' } } };
         const id = uuidv4();
-        await query.run(`INSERT INTO suppliers (id, user_id, name, type, website, contact_email, contact_phone, address, notes, rating)
+        await query.run(
+            `INSERT INTO suppliers (id, user_id, name, type, website, contact_email, contact_phone, address, notes, rating)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [id, user.id, name.trim(), type || 'other', website || null, contact_email || null,
-             contact_phone || null, address || null, notes || null, rating || null]);
+            [
+                id,
+                user.id,
+                name.trim(),
+                type || 'other',
+                website || null,
+                contact_email || null,
+                contact_phone || null,
+                address || null,
+                notes || null,
+                rating || null,
+            ],
+        );
         return { status: 201, data: { supplier: { id, name: name.trim() } } };
     }
 
@@ -1384,15 +1847,31 @@ export async function inventoryRouter(ctx) {
         const supId = path.split('/')[2];
         const sup = await query.get('SELECT id FROM suppliers WHERE id = ? AND user_id = ?', [supId, user.id]);
         if (!sup) return { status: 404, data: { error: { message: 'Supplier not found', code: 'NOT_FOUND' } } };
-        const fields = ['name', 'type', 'website', 'contact_email', 'contact_phone', 'address', 'notes', 'rating', 'is_active'];
+        const fields = [
+            'name',
+            'type',
+            'website',
+            'contact_email',
+            'contact_phone',
+            'address',
+            'notes',
+            'rating',
+            'is_active',
+        ];
         const updates = [];
         const vals = [];
         for (const f of fields) {
-            if (body[f] !== undefined) { updates.push(f + ' = ?'); vals.push(body[f]); }
+            if (body[f] !== undefined) {
+                updates.push(f + ' = ?');
+                vals.push(body[f]);
+            }
         }
         if (updates.length > 0) {
             vals.push(supId, user.id);
-            await query.run(`UPDATE suppliers SET ${updates.join(', ')}, updated_at = NOW() WHERE id = ? AND user_id = ?`, vals);
+            await query.run(
+                `UPDATE suppliers SET ${updates.join(', ')}, updated_at = NOW() WHERE id = ? AND user_id = ?`,
+                vals,
+            );
         }
         return { status: 200, data: { message: 'Supplier updated' } };
     }
@@ -1404,7 +1883,8 @@ export async function inventoryRouter(ctx) {
         if (!sup) return { status: 404, data: { error: { message: 'Supplier not found', code: 'NOT_FOUND' } } };
 
         // Items from this supplier
-        const items = await query.all(`
+        const items = await query.all(
+            `
             SELECT i.id, i.title, i.cost_price, i.list_price, i.status, i.created_at,
                 CAST(EXTRACT(EPOCH FROM (NOW() - i.created_at)) / 86400 AS INTEGER) as days_old,
                 (SELECT COUNT(*) FROM sales WHERE inventory_id = i.id) as sale_count,
@@ -1413,22 +1893,27 @@ export async function inventoryRouter(ctx) {
             WHERE i.user_id = ? AND i.supplier = ?
             ORDER BY i.created_at DESC
             LIMIT 500
-        `, [user.id, sup.name]);
+        `,
+            [user.id, sup.name],
+        );
 
         const totalItems = items.length;
-        const activeItems = items.filter(i => i.status === 'active').length;
-        const soldItems = items.filter(i => i.sale_count > 0).length;
+        const activeItems = items.filter((i) => i.status === 'active').length;
+        const soldItems = items.filter((i) => i.sale_count > 0).length;
         const totalCost = items.reduce((s, i) => s + (i.cost_price || 0), 0);
-        const totalRevenue = items.reduce((s, i) => s + ((i.avg_sale_price || 0) * (i.sale_count || 0)), 0);
+        const totalRevenue = items.reduce((s, i) => s + (i.avg_sale_price || 0) * (i.sale_count || 0), 0);
         const totalProfit = totalRevenue - totalCost;
         const avgMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
         const sellThrough = totalItems > 0 ? (soldItems / totalItems) * 100 : 0;
-        const avgDaysToSell = items.filter(i => i.sale_count > 0).length > 0
-            ? items.filter(i => i.sale_count > 0).reduce((s, i) => s + (i.days_old || 0), 0) / items.filter(i => i.sale_count > 0).length
-            : 0;
+        const avgDaysToSell =
+            items.filter((i) => i.sale_count > 0).length > 0
+                ? items.filter((i) => i.sale_count > 0).reduce((s, i) => s + (i.days_old || 0), 0) /
+                  items.filter((i) => i.sale_count > 0).length
+                : 0;
 
         // Monthly cost trends (last 6 months)
-        const costTrends = await query.all(`
+        const costTrends = await query.all(
+            `
             SELECT TO_CHAR(i.created_at, 'YYYY-MM') as month,
                 COUNT(*) as items_sourced,
                 SUM(i.cost_price) as total_cost,
@@ -1436,14 +1921,29 @@ export async function inventoryRouter(ctx) {
             FROM inventory i
             WHERE i.user_id = ? AND i.supplier = ? AND i.created_at >= NOW() - INTERVAL '6 months'
             GROUP BY month ORDER BY month
-        `, [user.id, sup.name]);
+        `,
+            [user.id, sup.name],
+        );
 
-        return { status: 200, data: {
-            supplier: sup,
-            stats: { totalItems, activeItems, soldItems, totalCost, totalRevenue, totalProfit, avgMargin, sellThrough, avgDaysToSell },
-            costTrends,
-            recentItems: items.slice(0, 10)
-        }};
+        return {
+            status: 200,
+            data: {
+                supplier: sup,
+                stats: {
+                    totalItems,
+                    activeItems,
+                    soldItems,
+                    totalCost,
+                    totalRevenue,
+                    totalProfit,
+                    avgMargin,
+                    sellThrough,
+                    avgDaysToSell,
+                },
+                costTrends,
+                recentItems: items.slice(0, 10),
+            },
+        };
     }
 
     // DELETE /api/inventory/suppliers/:id - Delete supplier
@@ -1455,14 +1955,11 @@ export async function inventoryRouter(ctx) {
         return { status: 200, data: { message: 'Supplier deleted' } };
     }
 
-// POST /api/inventory/:id/duplicate - Duplicate an inventory item
+    // POST /api/inventory/:id/duplicate - Duplicate an inventory item
     if (method === 'POST' && path.match(/^\/[\w-]+\/duplicate$/)) {
         const sourceId = path.split('/')[1];
 
-        const source = await query.get(
-            'SELECT * FROM inventory WHERE id = ? AND user_id = ?',
-            [sourceId, user.id]
-        );
+        const source = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [sourceId, user.id]);
         if (!source) {
             return { status: 404, data: { error: { message: 'Item not found', code: 'NOT_FOUND' } } };
         }
@@ -1473,12 +1970,15 @@ export async function inventoryRouter(ctx) {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         const randomValues = new Uint32Array(4);
         crypto.getRandomValues(randomValues);
-        const suffix = Array.from(randomValues).map(v => chars[v % chars.length]).join('');
+        const suffix = Array.from(randomValues)
+            .map((v) => chars[v % chars.length])
+            .join('');
         const newSku = source.sku ? `${source.sku}-COPY-${suffix}` : `COPY-${suffix}`;
 
         const newTitle = `${source.title} (Copy)`;
 
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO inventory (
                 id, user_id, sku, title, description, brand, category, subcategory,
                 size, color, condition, cost_price, list_price, quantity,
@@ -1492,16 +1992,37 @@ export async function inventoryRouter(ctx) {
                 ?, ?, ?, ?, ?,
                 ?, ?, 'draft', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
             )
-        `, [
-            newId, user.id, newSku, newTitle,
-            source.description, source.brand, source.category, source.subcategory,
-            source.size, source.color, source.condition,
-            source.cost_price, source.list_price, source.quantity,
-            source.low_stock_threshold, source.weight, source.dimensions, source.material,
-            source.tags, source.images, source.location, source.bin_location, source.notes,
-            source.custom_fields, source.ai_generated_data,
-            source.blockchain_hash, source.sustainability_score
-        ]);
+        `,
+            [
+                newId,
+                user.id,
+                newSku,
+                newTitle,
+                source.description,
+                source.brand,
+                source.category,
+                source.subcategory,
+                source.size,
+                source.color,
+                source.condition,
+                source.cost_price,
+                source.list_price,
+                source.quantity,
+                source.low_stock_threshold,
+                source.weight,
+                source.dimensions,
+                source.material,
+                source.tags,
+                source.images,
+                source.location,
+                source.bin_location,
+                source.notes,
+                source.custom_fields,
+                source.ai_generated_data,
+                source.blockchain_hash,
+                source.sustainability_score,
+            ],
+        );
 
         const newItem = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [newId, user.id]);
         newItem.tags = safeJsonParse(newItem.tags, []);
@@ -1512,7 +2033,7 @@ export async function inventoryRouter(ctx) {
         return { status: 201, data: { item: newItem } };
     }
 
-// PUT /api/inventory/bulk/update - Bulk update status, category, or price for multiple items
+    // PUT /api/inventory/bulk/update - Bulk update status, category, or price for multiple items
 
     // POST /api/inventory/purge-deleted - Permanently purge items soft-deleted 30+ days ago
     if (method === 'POST' && path === '/purge-deleted') {
@@ -1522,9 +2043,16 @@ export async function inventoryRouter(ctx) {
             await query.run(
                 `INSERT INTO task_queue (id, type, payload, priority, max_attempts, created_at, scheduled_at)
                  VALUES (?, 'purge_deleted_inventory', ?, 1, 1, NOW(), NOW())`,
-                [taskId, JSON.stringify({ userId: user.id })]
+                [taskId, JSON.stringify({ userId: user.id })],
             );
-            return { status: 202, data: { taskId, status: 'queued', message: 'Purge of deleted items older than 30 days has been queued' } };
+            return {
+                status: 202,
+                data: {
+                    taskId,
+                    status: 'queued',
+                    message: 'Purge of deleted items older than 30 days has been queued',
+                },
+            };
         } catch (error) {
             logger.error('[Inventory] purge-deleted queue error', user?.id, { detail: error.message });
             return { status: 500, data: { error: { message: 'Internal server error', code: 'INTERNAL_ERROR' } } };
@@ -1556,11 +2084,11 @@ export async function inventoryRouter(ctx) {
 
             // Verify ownership of all IDs in one query
             const placeholders = ids.map(() => '?').join(',');
-            const owned = await query.all(
-                `SELECT id FROM inventory WHERE id IN (${placeholders}) AND user_id = ?`,
-                [...ids, user.id]
-            );
-            const ownedIds = owned.map(r => r.id);
+            const owned = await query.all(`SELECT id FROM inventory WHERE id IN (${placeholders}) AND user_id = ?`, [
+                ...ids,
+                user.id,
+            ]);
+            const ownedIds = owned.map((r) => r.id);
 
             if (ownedIds.length === 0) {
                 return { status: 404, data: { error: 'No matching items found' } };
@@ -1568,15 +2096,24 @@ export async function inventoryRouter(ctx) {
 
             const setParts = [];
             const params = [];
-            if (newStatus) { setParts.push('status = ?'); params.push(newStatus); }
-            if (category) { setParts.push('category = ?'); params.push(category); }
-            if (listPrice !== undefined) { setParts.push('list_price = ?'); params.push(listPrice); }
+            if (newStatus) {
+                setParts.push('status = ?');
+                params.push(newStatus);
+            }
+            if (category) {
+                setParts.push('category = ?');
+                params.push(category);
+            }
+            if (listPrice !== undefined) {
+                setParts.push('list_price = ?');
+                params.push(listPrice);
+            }
             setParts.push('updated_at = NOW()');
 
             const ownedPlaceholders = ownedIds.map(() => '?').join(',');
             await query.run(
                 `UPDATE inventory SET ${setParts.join(', ')} WHERE id IN (${ownedPlaceholders}) AND user_id = ?`,
-                [...params, ...ownedIds, user.id]
+                [...params, ...ownedIds, user.id],
             );
 
             return {
@@ -1584,8 +2121,8 @@ export async function inventoryRouter(ctx) {
                 data: {
                     updated: ownedIds.length,
                     skipped: ids.length - ownedIds.length,
-                    ids: ownedIds
-                }
+                    ids: ownedIds,
+                },
             };
         } catch (error) {
             logger.error('[Inventory] bulk/update error', user?.id, { detail: error.message });
@@ -1608,9 +2145,9 @@ export async function inventoryRouter(ctx) {
             const placeholders = ids.map(() => '?').join(',');
             const owned = await query.all(
                 `SELECT id FROM inventory WHERE id IN (${placeholders}) AND user_id = ? AND status != 'deleted'`,
-                [...ids, user.id]
+                [...ids, user.id],
             );
-            const ownedIds = owned.map(r => r.id);
+            const ownedIds = owned.map((r) => r.id);
 
             if (ownedIds.length === 0) {
                 return { status: 404, data: { error: 'No matching items found' } };
@@ -1619,7 +2156,7 @@ export async function inventoryRouter(ctx) {
             const ownedPlaceholders = ownedIds.map(() => '?').join(',');
             await query.run(
                 `UPDATE inventory SET status = 'deleted', updated_at = NOW() WHERE id IN (${ownedPlaceholders}) AND user_id = ?`,
-                [...ownedIds, user.id]
+                [...ownedIds, user.id],
             );
 
             return {
@@ -1627,8 +2164,8 @@ export async function inventoryRouter(ctx) {
                 data: {
                     deleted: ownedIds.length,
                     skipped: ids.length - ownedIds.length,
-                    ids: ownedIds
-                }
+                    ids: ownedIds,
+                },
             };
         } catch (error) {
             logger.error('[Inventory] bulk/delete error', user?.id, { detail: error.message });
@@ -1651,8 +2188,18 @@ export async function inventoryRouter(ctx) {
                 return { status: 400, data: { error: 'Maximum 100 items per bulk cross-list operation' } };
             }
 
-            const VALID_PLATFORMS = new Set(['poshmark', 'ebay', 'mercari', 'depop', 'grailed', 'etsy', 'shopify', 'facebook', 'whatnot']);
-            const invalidPlatforms = platforms.filter(p => !VALID_PLATFORMS.has(p));
+            const VALID_PLATFORMS = new Set([
+                'poshmark',
+                'ebay',
+                'mercari',
+                'depop',
+                'grailed',
+                'etsy',
+                'shopify',
+                'facebook',
+                'whatnot',
+            ]);
+            const invalidPlatforms = platforms.filter((p) => !VALID_PLATFORMS.has(p));
             if (invalidPlatforms.length > 0) {
                 return { status: 400, data: { error: `Invalid platforms: ${invalidPlatforms.join(', ')}` } };
             }
@@ -1661,7 +2208,7 @@ export async function inventoryRouter(ctx) {
             const placeholders = ids.map(() => '?').join(',');
             const items = await query.all(
                 `SELECT id, title, list_price FROM inventory WHERE id IN (${placeholders}) AND user_id = ? AND status != 'deleted'`,
-                [...ids, user.id]
+                [...ids, user.id],
             );
 
             if (items.length === 0) {
@@ -1676,17 +2223,22 @@ export async function inventoryRouter(ctx) {
                     try {
                         const existing = await query.get(
                             `SELECT id FROM listings WHERE inventory_id = ? AND platform = ? AND user_id = ? AND status NOT IN ('deleted','ended')`,
-                            [item.id, platform, user.id]
+                            [item.id, platform, user.id],
                         );
                         if (existing) {
-                            results.skipped.push({ inventoryId: item.id, platform, reason: 'Already listed', existingId: existing.id });
+                            results.skipped.push({
+                                inventoryId: item.id,
+                                platform,
+                                reason: 'Already listed',
+                                existingId: existing.id,
+                            });
                             continue;
                         }
                         const listingId = uuidv4();
                         await query.run(
                             `INSERT INTO listings (id, inventory_id, user_id, platform, title, price, status, created_at, updated_at)
                              VALUES (?, ?, ?, ?, ?, ?, 'draft', NOW(), NOW())`,
-                            [listingId, item.id, user.id, platform, item.title, item.list_price]
+                            [listingId, item.id, user.id, platform, item.title, item.list_price],
                         );
                         results.created.push({ inventoryId: item.id, platform, listingId });
                     } catch (err) {
@@ -1703,5 +2255,4 @@ export async function inventoryRouter(ctx) {
     }
 
     return { status: 404, data: { error: { message: 'Route not found', code: 'NOT_FOUND' } } };
-
 }
