@@ -1865,13 +1865,13 @@ Object.assign(pages, {
                         <!-- Start Time -->
                         <div>
                             <label class="form-label" for="automation-start-time">Start Time</label>
-                            <input type="time" id="automation-start-time" class="form-input" value="${scheduleSettings.startTime}"
+                            <input type="time" id="automation-start-time" class="form-input" autocomplete="off" value="${scheduleSettings.startTime}"
                                 onchange="handlers.updateAutomationSchedule('startTime', this.value)" aria-label="Automation Start Time">
                         </div>
                         <!-- End Time -->
                         <div>
                             <label class="form-label" for="automation-end-time">End Time</label>
-                            <input type="time" id="automation-end-time" class="form-input" value="${scheduleSettings.endTime}"
+                            <input type="time" id="automation-end-time" class="form-input" autocomplete="off" value="${scheduleSettings.endTime}"
                                 onchange="handlers.updateAutomationSchedule('endTime', this.value)" aria-label="Automation End Time">
                         </div>
                         <!-- Timezone -->
@@ -3295,7 +3295,7 @@ Object.assign(pages, {
                     <div style="display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 16px; align-items: end; margin-bottom: 20px;">
                         <div class="form-group" style="margin: 0;">
                             <label class="form-label" for="currency-amount">Amount</label>
-                            <input aria-label="Currency Amount" type="number" id="currency-amount" class="form-input" value="100" min="0" step="0.01" onchange="handlers.convertCurrency()">
+                            <input aria-label="Currency Amount" type="number" id="currency-amount" class="form-input" autocomplete="off" value="100" min="0" step="0.01" onchange="handlers.convertCurrency()">
                         </div>
                         <div class="form-group" style="margin: 0;">
                             <label class="form-label" for="currency-from">From</label>
