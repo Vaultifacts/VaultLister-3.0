@@ -11,7 +11,7 @@ import {
     authCookies,
     isValidEmail,
     validatePassword,
-    enforceSessionLimit
+    enforceSessionLimit,
 } from './helpers.js';
 
 export async function handleRegister(ctx) {
@@ -35,10 +35,10 @@ export async function handleRegister(ctx) {
         }
 
         // Check if user exists
-        const existing = await query.get(
-            'SELECT id FROM users WHERE email = ? OR username = ?',
-            [email.toLowerCase(), username.toLowerCase()]
-        );
+        const existing = await query.get('SELECT id FROM users WHERE email = ? OR username = ?', [
+            email.toLowerCase(),
+            username.toLowerCase(),
+        ]);
 
         // SECURITY: Generic error to prevent user enumeration
         if (existing) {
@@ -61,7 +61,7 @@ export async function handleRegister(ctx) {
             { name: 'Inventory', type: 'Other Current Asset' },
             { name: 'Accounts Payable', type: 'AP' },
             { name: 'Business Credit Card', type: 'Credit Card' },
-            { name: 'Owner\'s Equity', type: 'Equity' },
+            { name: "Owner's Equity", type: 'Equity' },
             { name: 'Retained Earnings', type: 'Equity' },
             { name: 'Product Sales', type: 'Income' },
             { name: 'Shipping Revenue', type: 'Income' },
@@ -71,7 +71,7 @@ export async function handleRegister(ctx) {
             { name: 'Shipping Expense', type: 'Expense' },
             { name: 'Packaging Supplies', type: 'Expense' },
             { name: 'Office Supplies', type: 'Expense' },
-            { name: 'Marketing', type: 'Expense' }
+            { name: 'Marketing', type: 'Expense' },
         ];
 
         let user;
@@ -79,36 +79,60 @@ export async function handleRegister(ctx) {
         let verificationToken;
 
         await query.transaction(async (tx) => {
-            await tx.run(`
+            await tx.run(
+                `
                 INSERT INTO users (id, email, password_hash, username, full_name, referral_code)
                 VALUES (?, ?, ?, ?, ?, ?)
-            `, [userId, email.toLowerCase(), passwordHash, username.toLowerCase(), fullName || username, newReferralCode]);
+            `,
+                [
+                    userId,
+                    email.toLowerCase(),
+                    passwordHash,
+                    username.toLowerCase(),
+                    fullName || username,
+                    newReferralCode,
+                ],
+            );
 
             if (referralCode) {
-                const referrer = await tx.get('SELECT id FROM users WHERE referral_code = ?', [referralCode.toUpperCase()]);
+                const referrer = await tx.get('SELECT id FROM users WHERE referral_code = ?', [
+                    referralCode.toUpperCase(),
+                ]);
                 if (referrer && referrer.id !== userId) {
-                    await tx.run(`
+                    await tx.run(
+                        `
                         INSERT INTO affiliate_commissions (id, affiliate_user_id, referred_user_id, amount, status)
                         VALUES (?, ?, ?, 0, 'pending')
-                    `, [uuidv4(), referrer.id, userId]);
+                    `,
+                        [uuidv4(), referrer.id, userId],
+                    );
                 }
             }
 
             for (const account of defaultAccounts) {
-                await tx.run(`
+                await tx.run(
+                    `
                     INSERT INTO accounts (id, user_id, account_name, account_type, is_active)
                     VALUES (?, ?, ?, ?, 1)
                     ON CONFLICT DO NOTHING
-                `, [uuidv4(), userId, account.name, account.type]);
+                `,
+                    [uuidv4(), userId, account.name, account.type],
+                );
             }
 
-            user = await tx.get('SELECT id, email, username, full_name, is_active, email_verified, created_at, referral_code FROM users WHERE id = ?', [userId]);
+            user = await tx.get(
+                'SELECT id, email, username, full_name, is_active, email_verified, created_at, referral_code FROM users WHERE id = ?',
+                [userId],
+            );
 
             refreshToken = generateRefreshToken(user);
-            await tx.run(`
+            await tx.run(
+                `
                 INSERT INTO sessions (id, user_id, refresh_token, expires_at)
                 VALUES (?, ?, ?, NOW() + INTERVAL '7 days')
-            `, [uuidv4(), userId, refreshToken]);
+            `,
+                [uuidv4(), userId, refreshToken],
+            );
 
             if (!IS_TEST_RUNTIME) {
                 verificationToken = crypto.randomBytes(32).toString('hex');
@@ -116,7 +140,7 @@ export async function handleRegister(ctx) {
                 await tx.run(
                     `INSERT INTO email_verifications (user_id, token, expires_at, created_at)
                      VALUES (?, ?, ?, NOW())`,
-                    [userId, verificationToken, expiresAt]
+                    [userId, verificationToken, expiresAt],
                 );
             }
         });
@@ -127,15 +151,17 @@ export async function handleRegister(ctx) {
 
         // Send verification email (non-blocking — registration succeeds even if email fails)
         if (!IS_TEST_RUNTIME && verificationToken) {
-            emailService.sendVerificationEmail(user, verificationToken).catch(err =>
-                logger.error('[Auth] Failed to send verification email', userId, { detail: err.message })
-            );
+            emailService
+                .sendVerificationEmail(user, verificationToken)
+                .catch((err) =>
+                    logger.error('[Auth] Failed to send verification email', userId, { detail: err.message }),
+                );
         }
 
         return {
             status: 201,
             data: { user, token, refreshToken },
-            cookies: authCookies(token, refreshToken)
+            cookies: authCookies(token, refreshToken),
         };
     } catch (error) {
         logger.error('[Auth] Error during registration', null, { detail: error.message });
@@ -155,7 +181,7 @@ export async function handleVerifyEmail(ctx) {
              FROM email_verifications ev
              JOIN users u ON u.id = ev.user_id
              WHERE ev.token = ?`,
-            [token]
+            [token],
         );
 
         if (!record) {
@@ -189,21 +215,29 @@ export async function handleResendVerification(ctx) {
 
     // Validate email format
     if (!email || !isValidEmail(email)) {
-        return { status: 200, data: { message: 'If an account exists with that email, a verification email has been sent.' } };
+        return {
+            status: 200,
+            data: { message: 'If an account exists with that email, a verification email has been sent.' },
+        };
     }
 
     try {
-        const user = await query.get('SELECT id, email, email_verified FROM users WHERE LOWER(email) = LOWER(?)', [email]);
+        const user = await query.get('SELECT id, email, email_verified FROM users WHERE LOWER(email) = LOWER(?)', [
+            email,
+        ]);
 
         if (user && !user.email_verified) {
             // Generate a verification token
             const verificationToken = crypto.randomBytes(32).toString('hex');
             const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24 hours
 
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO email_verifications (user_id, token, expires_at, created_at)
                 VALUES (?, ?, ?, NOW())
-            `, [user.id, verificationToken, expiresAt]);
+            `,
+                [user.id, verificationToken, expiresAt],
+            );
 
             await emailService.sendVerificationEmail(user, verificationToken);
         }
@@ -212,5 +246,8 @@ export async function handleResendVerification(ctx) {
     }
 
     // Always return success to prevent email enumeration
-    return { status: 200, data: { message: 'If an account exists with that email, a verification email has been sent.' } };
+    return {
+        status: 200,
+        data: { message: 'If an account exists with that email, a verification email has been sent.' },
+    };
 }

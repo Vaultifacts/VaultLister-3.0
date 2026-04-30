@@ -1,0 +1,254 @@
+file,prefix,label_line,rule,label_text,input_line,existing_id,new_id
+src/frontend/handlers/handlers-sales-orders.js,hso,143,1,Custom Response (optional),144,decline-custom-message,
+src/frontend/handlers/handlers-sales-orders.js,hso,579,2,Type,580,,hso-type
+src/frontend/handlers/handlers-sales-orders.js,hso,588,2,Amount,589,,hso-amount
+src/frontend/handlers/handlers-sales-orders.js,hso,593,2,Description,594,,hso-description
+src/frontend/handlers/handlers-sales-orders.js,hso,597,2,Date,598,,hso-date
+src/frontend/handlers/handlers-sales-orders.js,hso,601,2,Category,602,,hso-category
+src/frontend/handlers/handlers-sales-orders.js,hso,1094,1,Description,1095,recurring-desc,
+src/frontend/handlers/handlers-sales-orders.js,hso,1098,1,Amount,1099,recurring-amount,
+src/frontend/handlers/handlers-sales-orders.js,hso,1102,1,Account,1103,recurring-account,
+src/frontend/handlers/handlers-sales-orders.js,hso,1108,1,Category,1109,recurring-category,
+src/frontend/handlers/handlers-sales-orders.js,hso,1118,1,Frequency,1119,recurring-frequency,
+src/frontend/handlers/handlers-sales-orders.js,hso,1194,1,Select receipt image (max 2MB),1195,receipt-file-input,
+src/frontend/handlers/handlers-sales-orders.js,hso,1211,1,Or enter receipt URL,1212,receipt-url-input,
+src/frontend/handlers/handlers-sales-orders.js,hso,1409,1,Monthly Expense Budget,1410,monthly-budget-input,
+src/frontend/handlers/handlers-sales-orders.js,hso,1413,1,Budget Alert Threshold,1414,budget-alert-threshold,
+src/frontend/handlers/handlers-sales-orders.js,hso,1460,2,Monthly Revenue Goal,1461,,hso-monthly-revenue-goal
+src/frontend/handlers/handlers-sales-orders.js,hso,1464,2,Monthly Sales Goal,1465,,hso-monthly-sales-goal
+src/frontend/handlers/handlers-sales-orders.js,hso,1468,2,Target Profit Margin (%),1469,,hso-target-profit-margin
+src/frontend/handlers/handlers-sales-orders.js,hso,1990,3,Reminder Type,,,
+src/frontend/handlers/handlers-sales-orders.js,hso,2007,1,Reminder Date,2014,followup-date,
+src/frontend/handlers/handlers-sales-orders.js,hso,2019,1,Message Template (optional),2020,followup-message,
+src/frontend/handlers/handlers-sales-orders.js,hso,2207,1,Description,2208,expense-description,
+src/frontend/handlers/handlers-sales-orders.js,hso,2211,1,Amount ($),2212,expense-amount,
+src/frontend/handlers/handlers-sales-orders.js,hso,2217,1,Category,2218,expense-category,
+src/frontend/handlers/handlers-sales-orders.js,hso,2223,1,Date,2224,expense-date,
+src/frontend/handlers/handlers-sales-orders.js,hso,2857,2,Return Reason *,2858,,hso-return-reason
+src/frontend/handlers/handlers-sales-orders.js,hso,2868,2,Refund Amount,2869,,hso-refund-amount
+src/frontend/handlers/handlers-sales-orders.js,hso,2872,2,Return Tracking # (optional),2873,,hso-return-tracking-optional
+src/frontend/handlers/handlers-sales-orders.js,hso,2958,1,Priority Note (optional),2959,priority-note,
+src/frontend/handlers/handlers-sales-orders.js,hso,3005,1,Number of shipments,3006,split-count,
+src/frontend/handlers/handlers-sales-orders.js,hso,4247,1,Carrier,4248,bulk-label-carrier,
+src/frontend/handlers/handlers-sales-orders.js,hso,4257,1,Service Level,4258,bulk-label-service,
+src/frontend/handlers/handlers-sales-orders.js,hso,4267,1,Package Type,4268,bulk-label-package,
+src/frontend/handlers/handlers-sales-orders.js,hso,4387,2,Goal Name *,4388,,hso-goal-name
+src/frontend/handlers/handlers-sales-orders.js,hso,4391,2,Category,4392,,hso-category-2
+src/frontend/handlers/handlers-sales-orders.js,hso,4402,2,Target Amount ($) *,4403,,hso-target-amount
+src/frontend/handlers/handlers-sales-orders.js,hso,4406,2,Current Amount ($),4407,,hso-current-amount
+src/frontend/handlers/handlers-sales-orders.js,hso,4411,2,Deadline,4412,,hso-deadline
+src/frontend/handlers/handlers-sales-orders.js,hso,4449,1,Bank Statement Balance ($),4450,reconcile-bank-balance,
+src/frontend/handlers/handlers-sales-orders.js,hso,4453,1,Statement Date,4454,reconcile-date,
+src/frontend/handlers/handlers-sales-orders.js,hso,4589,1,Select CSV File,4590,purchase-csv-input,
+src/frontend/handlers/handlers-sales-orders.js,hso,4609,1,Select Excel File,4610,purchase-excel-input,
+src/frontend/handlers/handlers-sales-orders.js,hso,4724,2,Vendor Name *,4725,,hso-vendor-name
+src/frontend/handlers/handlers-sales-orders.js,hso,4728,2,Purchase Date *,4729,,hso-purchase-date
+src/frontend/handlers/handlers-sales-orders.js,hso,4733,2,Payment Method,4734,,hso-payment-method
+src/frontend/handlers/handlers-sales-orders.js,hso,4748,2,Description *,4749,,hso-description-2
+src/frontend/handlers/handlers-sales-orders.js,hso,4752,2,Link to Inventory,4753,,hso-link-to-inventory
+src/frontend/handlers/handlers-sales-orders.js,hso,4759,2,Qty *,4760,,hso-qty
+src/frontend/handlers/handlers-sales-orders.js,hso,4763,2,Unit Cost *,4764,,hso-unit-cost
+src/frontend/handlers/handlers-sales-orders.js,hso,4771,2,Shipping Cost,4772,,hso-shipping-cost
+src/frontend/handlers/handlers-sales-orders.js,hso,4775,2,Notes,4776,,hso-notes
+src/frontend/handlers/handlers-sales-orders.js,hso,4966,2,Pattern *,4967,,hso-pattern
+src/frontend/handlers/handlers-sales-orders.js,hso,4971,2,Assign to Account *,4972,,hso-assign-to-account
+src/frontend/handlers/handlers-sales-orders.js,hso,4979,2,Description,4980,,hso-description-3
+src/frontend/handlers/handlers-sales-orders.js,hso,5106,2,Account Type *,5107,,hso-account-type
+src/frontend/handlers/handlers-sales-orders.js,hso,5112,2,Account Name *,5113,,hso-account-name
+src/frontend/handlers/handlers-sales-orders.js,hso,5116,2,Description,5117,,hso-description-4
+src/frontend/handlers/handlers-sales-orders.js,hso,5121,2,Initial Balance,5122,,hso-initial-balance
+src/frontend/handlers/handlers-sales-orders.js,hso,5125,2,As of Date,5126,,hso-as-of-date
+src/frontend/handlers/handlers-sales-orders.js,hso,5886,1,Select CSV File,5887,bank-csv-file,
+src/frontend/handlers/handlers-sales-orders.js,hso,5894,1,Date Column,5895,bank-col-date,
+src/frontend/handlers/handlers-sales-orders.js,hso,5898,1,Description Column,5899,bank-col-desc,
+src/frontend/handlers/handlers-sales-orders.js,hso,5902,1,Amount Column,5903,bank-col-amount,
+src/frontend/handlers/handlers-sales-orders.js,hso,6050,2,Vendor/Store *,6051,,hso-vendorstore
+src/frontend/handlers/handlers-sales-orders.js,hso,6054,2,Purchase Date *,6055,,hso-purchase-date-2
+src/frontend/handlers/handlers-sales-orders.js,hso,6060,2,Item Description,6061,,hso-item-description
+src/frontend/handlers/handlers-sales-orders.js,hso,6066,2,Amount *,6067,,hso-amount-2
+src/frontend/handlers/handlers-sales-orders.js,hso,6070,2,Quantity,6071,,hso-quantity
+src/frontend/handlers/handlers-sales-orders.js,hso,6077,2,Category,6078,,hso-category-3
+src/frontend/handlers/handlers-sales-orders.js,hso,6088,2,Payment Method,6089,,hso-payment-method-2
+src/frontend/handlers/handlers-sales-orders.js,hso,6100,2,Notes,6101,,hso-notes-2
+src/frontend/handlers/handlers-sales-orders.js,hso,6152,3,Select Tags,,,
+src/frontend/handlers/handlers-sales-orders.js,hso,6171,1,Add Custom Tag,6173,new-custom-tag,
+src/frontend/handlers/handlers-sales-orders.js,hso,6284,1,Carrier *,6285,sl-carrier,
+src/frontend/handlers/handlers-sales-orders.js,hso,6293,1,Service,6294,sl-service,
+src/frontend/handlers/handlers-sales-orders.js,hso,6299,1,Weight (oz),6299,sl-weight,
+src/frontend/handlers/handlers-sales-orders.js,hso,6300,1,Length (in),6300,sl-length,
+src/frontend/handlers/handlers-sales-orders.js,hso,6301,1,Width (in),6301,sl-width,
+src/frontend/handlers/handlers-sales-orders.js,hso,6302,1,Height (in),6302,sl-height,
+src/frontend/handlers/handlers-sales-orders.js,hso,6317,1,Name *,6317,sl-from-name,
+src/frontend/handlers/handlers-sales-orders.js,hso,6318,1,Street *,6318,sl-from-street1,
+src/frontend/handlers/handlers-sales-orders.js,hso,6319,1,City *,6319,sl-from-city,
+src/frontend/handlers/handlers-sales-orders.js,hso,6321,1,State *,6321,sl-from-state,
+src/frontend/handlers/handlers-sales-orders.js,hso,6323,1,ZIP *,6323,sl-from-zip,
+src/frontend/handlers/handlers-sales-orders.js,hso,6329,1,Name *,6329,sl-to-name,
+src/frontend/handlers/handlers-sales-orders.js,hso,6330,1,Street *,6330,sl-to-street1,
+src/frontend/handlers/handlers-sales-orders.js,hso,6331,1,City *,6331,sl-to-city,
+src/frontend/handlers/handlers-sales-orders.js,hso,6332,1,State *,6332,sl-to-state,
+src/frontend/handlers/handlers-sales-orders.js,hso,6333,1,ZIP *,6333,sl-to-zip,
+src/frontend/handlers/handlers-sales-orders.js,hso,6334,1,Email,6334,sl-to-email,
+src/frontend/handlers/handlers-sales-orders.js,hso,6396,1,Weight (oz) *,6396,rs-weight,
+src/frontend/handlers/handlers-sales-orders.js,hso,6397,1,From ZIP *,6397,rs-from-zip,
+src/frontend/handlers/handlers-sales-orders.js,hso,6398,1,To ZIP *,6398,rs-to-zip,
+src/frontend/handlers/handlers-sales-orders.js,hso,6555,1,Name *,6555,ra-name,
+src/frontend/handlers/handlers-sales-orders.js,hso,6556,1,Company,6556,ra-company,
+src/frontend/handlers/handlers-sales-orders.js,hso,6557,1,Street *,6557,ra-street1,
+src/frontend/handlers/handlers-sales-orders.js,hso,6558,1,Street 2,6558,ra-street2,
+src/frontend/handlers/handlers-sales-orders.js,hso,6560,1,City *,6560,ra-city,
+src/frontend/handlers/handlers-sales-orders.js,hso,6561,1,State *,6561,ra-state,
+src/frontend/handlers/handlers-sales-orders.js,hso,6562,1,ZIP *,6562,ra-zip,
+src/frontend/handlers/handlers-sales-orders.js,hso,6564,1,Phone,6564,ra-phone,
+src/frontend/handlers/handlers-sales-orders.js,hso,6828,2,Goal Name,6829,,hso-goal-name-2
+src/frontend/handlers/handlers-sales-orders.js,hso,6832,2,Target Value,6833,,hso-target-value
+src/frontend/handlers/handlers-sales-orders.js,hso,6836,2,Current Progress,6837,,hso-current-progress
+src/frontend/handlers/handlers-sales-orders.js,hso,6930,2,Report Name *,6931,,hso-report-name
+src/frontend/handlers/handlers-sales-orders.js,hso,6934,2,Description,6935,,hso-description-5
+src/frontend/handlers/handlers-sales-orders.js,hso,6938,2,Report Type *,6939,,hso-report-type
+src/frontend/handlers/handlers-sales-orders.js,hso,7037,2,Start Date,7038,,hso-start-date
+src/frontend/handlers/handlers-sales-orders.js,hso,7041,2,End Date,7042,,hso-end-date
+src/frontend/handlers/handlers-sales-orders.js,hso,7046,2,Group By,7047,,hso-group-by
+src/frontend/handlers/handlers-sales-orders.js,hso,7156,2,SQL Query *,7157,,hso-sql-query
+src/frontend/handlers/handlers-sales-orders.js,hso,7288,2,Item *,7289,,hso-item
+src/frontend/handlers/handlers-sales-orders.js,hso,7296,2,Platform *,7297,,hso-platform
+src/frontend/handlers/handlers-sales-orders.js,hso,7309,2,Sale Date *,7310,,hso-sale-date
+src/frontend/handlers/handlers-sales-orders.js,hso,7315,2,Sale Price (C$) *,7316,,hso-sale-price-c
+src/frontend/handlers/handlers-sales-orders.js,hso,7319,2,Buyer Username,7320,,hso-buyer-username
+src/frontend/handlers/handlers-settings-account.js,hsa,34,2,Auto-sync interval,35,,hsa-auto-sync-interval
+src/frontend/handlers/handlers-settings-account.js,hsa,43,3,Sync options,,,
+src/frontend/handlers/handlers-settings-account.js,hsa,776,2,Enter the 6-digit code from your app,777,,hsa-enter-the-6-digit-code-from-your-app
+src/frontend/handlers/handlers-settings-account.js,hsa,798,2,Phone Number,799,,hsa-phone-number
+src/frontend/handlers/handlers-settings-account.js,hsa,1277,2,Profile Name *,1278,,hsa-profile-name
+src/frontend/handlers/handlers-settings-account.js,hsa,1283,2,Carrier,1284,,hsa-carrier
+src/frontend/handlers/handlers-settings-account.js,hsa,1290,1,Service Type,1291,add-service-type,
+src/frontend/handlers/handlers-settings-account.js,hsa,1299,2,Package Type,1300,,hsa-package-type
+src/frontend/handlers/handlers-settings-account.js,hsa,1306,2,Handling Time,1307,,hsa-handling-time
+src/frontend/handlers/handlers-settings-account.js,hsa,1318,2,Weight (oz),1319,,hsa-weight-oz
+src/frontend/handlers/handlers-settings-account.js,hsa,1322,2,Length,1323,,hsa-length
+src/frontend/handlers/handlers-settings-account.js,hsa,1326,2,Width,1327,,hsa-width
+src/frontend/handlers/handlers-settings-account.js,hsa,1330,2,Height,1331,,hsa-height
+src/frontend/handlers/handlers-settings-account.js,hsa,1337,2,Domestic Cost ($),1338,,hsa-domestic-cost
+src/frontend/handlers/handlers-settings-account.js,hsa,1341,2,International Cost ($),1342,,hsa-international-cost
+src/frontend/handlers/handlers-settings-account.js,hsa,1345,2,Free Shipping Over ($),1346,,hsa-free-shipping-over
+src/frontend/handlers/handlers-settings-account.js,hsa,1351,3,Platforms,,,
+src/frontend/handlers/handlers-settings-account.js,hsa,1367,2,Notes,1368,,hsa-notes
+src/frontend/handlers/handlers-settings-account.js,hsa,1478,2,Profile Name *,1479,,hsa-profile-name-2
+src/frontend/handlers/handlers-settings-account.js,hsa,1484,2,Carrier,1485,,hsa-carrier-2
+src/frontend/handlers/handlers-settings-account.js,hsa,1491,1,Service Type,1492,edit-service-type,
+src/frontend/handlers/handlers-settings-account.js,hsa,1510,2,Package Type,1511,,hsa-package-type-2
+src/frontend/handlers/handlers-settings-account.js,hsa,1517,2,Handling Time,1518,,hsa-handling-time-2
+src/frontend/handlers/handlers-settings-account.js,hsa,1529,2,Weight (oz),1530,,hsa-weight-oz-2
+src/frontend/handlers/handlers-settings-account.js,hsa,1533,2,Length,1534,,hsa-length-2
+src/frontend/handlers/handlers-settings-account.js,hsa,1537,2,Width,1538,,hsa-width-2
+src/frontend/handlers/handlers-settings-account.js,hsa,1541,2,Height,1542,,hsa-height-2
+src/frontend/handlers/handlers-settings-account.js,hsa,1548,2,Domestic Cost ($),1549,,hsa-domestic-cost-2
+src/frontend/handlers/handlers-settings-account.js,hsa,1552,2,International Cost ($),1553,,hsa-international-cost-2
+src/frontend/handlers/handlers-settings-account.js,hsa,1556,2,Free Shipping Over ($),1557,,hsa-free-shipping-over-2
+src/frontend/handlers/handlers-settings-account.js,hsa,1562,3,Platforms,,,
+src/frontend/handlers/handlers-settings-account.js,hsa,1578,2,Notes,1579,,hsa-notes-2
+src/frontend/handlers/handlers-settings-account.js,hsa,1792,1,Apply schedule to all ${selected.length} selected automations:,1793,bulk-schedule-select,
+src/frontend/handlers/handlers-settings-account.js,hsa,1857,1,Frequency,1858,schedule-preset,
+src/frontend/handlers/handlers-settings-account.js,hsa,1863,1,Cron Expression,1864,schedule-cron-custom,
+src/frontend/handlers/handlers-settings-account.js,hsa,2141,2,Username,2142,,hsa-username
+src/frontend/handlers/handlers-settings-account.js,hsa,2145,2,Password,2146,,hsa-password
+src/frontend/handlers/handlers-settings-account.js,hsa,2166,1,Shopify Store URL,2167,shopify-domain-input,
+src/frontend/handlers/handlers-settings-account.js,hsa,2180,2,Access Token (manual),2181,,hsa-access-token-manual
+src/frontend/handlers/handlers-settings-account.js,hsa,2220,2,Username,2221,,hsa-username-2
+src/frontend/handlers/handlers-settings-account.js,hsa,2224,2,API Key (optional),2225,,hsa-api-key-optional
+src/frontend/handlers/handlers-settings-account.js,hsa,2459,2,Username,2460,,hsa-username-3
+src/frontend/handlers/handlers-settings-account.js,hsa,2463,2,Email,2464,,hsa-email
+src/frontend/handlers/handlers-settings-account.js,hsa,2467,2,Account Created,2468,,hsa-account-created
+src/frontend/handlers/handlers-settings-account.js,hsa,2473,1,Current Password,2474,account-current-password,
+src/frontend/handlers/handlers-settings-account.js,hsa,2477,1,New Password,2478,account-new-password,
+src/frontend/handlers/handlers-settings-account.js,hsa,2481,1,Confirm New Password,2482,account-confirm-password,
+src/frontend/handlers/handlers-settings-account.js,hsa,2758,1,Password,2759,deletion-password,
+src/frontend/handlers/handlers-settings-account.js,hsa,2762,1,Reason (optional),2763,deletion-reason,
+src/frontend/handlers/handlers-settings-account.js,hsa,4862,1,Page Slug,4863,edit-landing-slug,
+src/frontend/handlers/handlers-settings-account.js,hsa,4867,1,Page Title,4868,edit-landing-title,
+src/frontend/handlers/handlers-settings-account.js,hsa,4871,1,Description,4872,edit-landing-desc,
+src/frontend/handlers/handlers-settings-account.js,hsa,5196,1,Automation Name,5196,custom-auto-name,
+src/frontend/handlers/handlers-settings-account.js,hsa,5197,1,Platform,5197,custom-auto-platform,
+src/frontend/handlers/handlers-settings-account.js,hsa,5197,1,Category,5197,custom-auto-category,
+src/frontend/handlers/handlers-settings-account.js,hsa,5198,1,Description,5198,custom-auto-desc,
+src/frontend/handlers/handlers-settings-account.js,hsa,5199,1,Schedule,5199,custom-auto-schedule,
+src/frontend/handlers/handlers-settings-account.js,hsa,5821,1,Base Rule (A),5821,exp-base-rule,
+src/frontend/handlers/handlers-settings-account.js,hsa,5823,1,Experiment Name (optional),5823,exp-name,
+src/frontend/handlers/handlers-settings-account.js,hsa,5823,1,Notes,5823,exp-notes,
+src/frontend/handlers/handlers-settings-account.js,hsa,6556,1,Category,6557,bulk-cat-select,
+src/frontend/handlers/handlers-settings-account.js,hsa,7148,1,JSON URL,7149,import-url-input,
+src/frontend/handlers/handlers-settings-account.js,hsa,7605,1,New Email Address,7606,new-email-input,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,2242,2,New Status,2243,,hic-new-status
+src/frontend/handlers/handlers-inventory-catalog.js,hic,2255,2,Price Adjustment,2256,,hic-price-adjustment
+src/frontend/handlers/handlers-inventory-catalog.js,hic,2262,2,Amount,2263,,hic-amount
+src/frontend/handlers/handlers-inventory-catalog.js,hic,2565,3,Select Marketplace,,,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,2973,2,Title,2974,,hic-title
+src/frontend/handlers/handlers-inventory-catalog.js,hic,2977,2,Description,2978,,hic-description
+src/frontend/handlers/handlers-inventory-catalog.js,hic,2982,2,Price ($),2983,,hic-price
+src/frontend/handlers/handlers-inventory-catalog.js,hic,2986,2,Shipping Price ($),2987,,hic-shipping-price
+src/frontend/handlers/handlers-inventory-catalog.js,hic,2992,2,Platform,2993,,hic-platform
+src/frontend/handlers/handlers-inventory-catalog.js,hic,2996,2,Status,2997,,hic-status
+src/frontend/handlers/handlers-inventory-catalog.js,hic,3009,2,Category,3010,,hic-category
+src/frontend/handlers/handlers-inventory-catalog.js,hic,3013,2,Condition,3014,,hic-condition
+src/frontend/handlers/handlers-inventory-catalog.js,hic,3018,2,Notes,3019,,hic-notes
+src/frontend/handlers/handlers-inventory-catalog.js,hic,3201,1,Custom Drop Amount,3205,price-drop-amount,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,3216,3,New Price After Drop,,,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,3225,1,When to Drop,3226,price-drop-timing,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,3236,1,Custom Date,3237,price-drop-date,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,3248,1,Minimum Price (won't drop below),3251,price-drop-floor,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,3489,1,Purchase Cost ($),3490,profit-purchase-cost,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,3495,1,Selling Price ($),3496,profit-selling-price,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,3501,1,Platform Fee (%),3502,profit-platform-fee,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,3512,1,Custom Fee (%),3513,profit-custom-fee,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,3517,1,Shipping Cost ($),3518,profit-shipping-cost,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,3523,1,Other Costs ($),3524,profit-other-costs,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5466,1,Name,5467,edit-auto-name,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5470,1,Schedule,5471,edit-auto-schedule,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5479,1,Status,5480,edit-auto-enabled,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5583,3,Name,,,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5587,3,Platform,,,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5591,3,Description,,,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5657,1,Discount Percentage,5659,offer-discount,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5665,1,Minimum Price,5668,offer-min-price,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5674,3,Target Audience,,,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5688,2,Offer Timing,5689,,hic-offer-timing
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5701,1,Share Delay,5703,automation-share-delay,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5708,1,Max Shares Per Session,5709,automation-max-shares,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5713,1,Share Order,5714,automation-share-order,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5727,2,Price Drop Amount,5729,,hic-price-drop-amount
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5734,2,Minimum Floor Price,5737,,hic-minimum-floor-price
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5742,2,Apply to items older than,5744,,hic-apply-to-items-older-than
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5753,2,Bundle Discount,5755,,hic-bundle-discount
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5761,2,Minimum Items for Bundle,5762,,hic-minimum-items-for-bundle
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5767,2,Bundle Message Template,5768,,hic-bundle-message-template
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5771,2,Send After Likes,5772,,hic-send-after-likes
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5783,2,Daily Follow Limit,5784,,hic-daily-follow-limit
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5788,2,Follow Delay,5790,,hic-follow-delay
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5796,2,Unfollow After,5798,,hic-unfollow-after
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5803,3,Target Users,,,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5821,2,Relist After,5823,,hic-relist-after
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5828,2,Price Adjustment on Relist,5830,,hic-price-adjustment-on-relist
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5841,3,Additional Actions on Relist,,,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5918,1,On Failure,5919,automation-on-failure,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5927,1,Max Retries,5928,automation-max-retries,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5933,1,Retry Delay,5934,automation-retry-delay,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,5942,1,Failure Notification,5943,automation-failure-notify,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,6736,1,Title,6737,ai-result-title,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,6742,1,Description,6743,ai-result-description,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,6748,1,Brand,6749,ai-result-brand,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,6753,1,Category,6754,ai-result-category,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,6760,1,Color,6761,ai-result-color,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,6765,1,Condition,6766,ai-result-condition,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,6775,1,Size,6776,ai-result-size,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,6781,1,Tags,6782,ai-result-tags,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,6787,1,Suggested Price,6789,ai-result-price,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,7820,1,Rule Name *,7821,rr-name,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,7824,1,Stale After (days),7825,rr-stale-days,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,7828,1,Price Strategy,7829,rr-strategy,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,7837,1,Reduction Amount,7838,rr-reduction,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,7841,1,Price Floor (%),7842,rr-floor,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,8552,2,Optimization Type,8553,,hic-optimization-type
+src/frontend/handlers/handlers-inventory-catalog.js,hic,8561,2,Apply To,8562,,hic-apply-to
+src/frontend/handlers/handlers-inventory-catalog.js,hic,9010,1,Page Slug,9011,landing-slug,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,9015,1,Page Title,9016,landing-title,
+src/frontend/handlers/handlers-inventory-catalog.js,hic,9019,1,Description,9020,landing-desc,

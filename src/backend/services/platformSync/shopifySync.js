@@ -19,7 +19,7 @@ export async function syncShopifyShop(shop) {
         listings: { synced: 0, created: 0, updated: 0, errors: [] },
         orders: { synced: 0, created: 0, errors: [] },
         startedAt: new Date().toISOString(),
-        completedAt: null
+        completedAt: null,
     };
 
     try {
@@ -28,7 +28,8 @@ export async function syncShopifyShop(shop) {
 
         if (oauthMode === 'mock') {
             logger.warn('[PlatformSync] Shopify sync in mock mode — returning empty data');
-            results.message = 'Shopify sync requires connected account with valid credentials. Use Automations to sync via browser automation.';
+            results.message =
+                'Shopify sync requires connected account with valid credentials. Use Automations to sync via browser automation.';
             results.completedAt = new Date().toISOString();
             return results;
         }
@@ -42,29 +43,32 @@ export async function syncShopifyShop(shop) {
         results.completedAt = new Date().toISOString();
 
         try {
-            await query.run(`
+            await query.run(
+                `
                 UPDATE shops SET last_sync_at = ?, sync_error = NULL, updated_at = ?
                 WHERE id = ?
-            `, [results.completedAt, results.completedAt, shop.id]);
+            `,
+                [results.completedAt, results.completedAt, shop.id],
+            );
         } catch (err) {
             if (err.message.includes('no such column')) {
-                await query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`,
-                    [results.completedAt, shop.id]);
+                await query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`, [results.completedAt, shop.id]);
             }
         }
 
         return results;
-
     } catch (error) {
         results.error = error.message;
         results.completedAt = new Date().toISOString();
 
         try {
-            await query.run(`UPDATE shops SET sync_error = ?, updated_at = ? WHERE id = ?`,
-                [error.message, new Date().toISOString(), shop.id]);
+            await query.run(`UPDATE shops SET sync_error = ?, updated_at = ? WHERE id = ?`, [
+                error.message,
+                new Date().toISOString(),
+                shop.id,
+            ]);
         } catch (err) {
-            await query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`,
-                [new Date().toISOString(), shop.id]);
+            await query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`, [new Date().toISOString(), shop.id]);
         }
 
         throw error;
@@ -81,27 +85,51 @@ async function syncShopifyListings(shop, accessToken, mode) {
             try {
                 const mapped = mapShopifyProductToVaultLister(product, shop);
 
-                const existing = await query.get(`
+                const existing = await query.get(
+                    `
                     SELECT id FROM listings
                     WHERE user_id = ? AND platform = 'shopify' AND platform_listing_id = ?
-                `, [shop.user_id, String(product.id)]);
+                `,
+                    [shop.user_id, String(product.id)],
+                );
 
                 if (existing) {
-                    await query.run(`
+                    await query.run(
+                        `
                         UPDATE listings SET title = ?, price = ?, status = ?,
                             platform_specific_data = ?, updated_at = ?
                         WHERE id = ?
-                    `, [mapped.title, mapped.price, mapped.status,
-                        JSON.stringify(mapped.externalData), new Date().toISOString(), existing.id]);
+                    `,
+                        [
+                            mapped.title,
+                            mapped.price,
+                            mapped.status,
+                            JSON.stringify(mapped.externalData),
+                            new Date().toISOString(),
+                            existing.id,
+                        ],
+                    );
                     result.updated++;
                 } else {
-                    await query.run(`
+                    await query.run(
+                        `
                         INSERT INTO listings (id, user_id, inventory_id, platform, title, price,
                             status, platform_listing_id, platform_specific_data, created_at, updated_at)
                         VALUES (?, ?, ?, 'shopify', ?, ?, ?, ?, ?, ?, ?)
-                    `, [uuidv4(), shop.user_id, null, mapped.title, mapped.price,
-                        mapped.status, mapped.externalListingId,
-                        JSON.stringify(mapped.externalData), new Date().toISOString(), new Date().toISOString()]);
+                    `,
+                        [
+                            uuidv4(),
+                            shop.user_id,
+                            null,
+                            mapped.title,
+                            mapped.price,
+                            mapped.status,
+                            mapped.externalListingId,
+                            JSON.stringify(mapped.externalData),
+                            new Date().toISOString(),
+                            new Date().toISOString(),
+                        ],
+                    );
                     result.created++;
                 }
                 result.synced++;
@@ -127,21 +155,37 @@ async function syncShopifyOrders(shop, accessToken, mode) {
             try {
                 const mapped = mapShopifyOrderToSale(order, shop);
 
-                const existing = await query.get(`
+                const existing = await query.get(
+                    `
                     SELECT id FROM sales WHERE user_id = ? AND platform_order_id = ? AND platform = 'shopify'
-                `, [shop.user_id, String(order.id)]);
+                `,
+                    [shop.user_id, String(order.id)],
+                );
 
                 if (!existing) {
-                    await query.run(`
+                    await query.run(
+                        `
                         INSERT INTO sales (id, user_id, listing_id, platform, platform_order_id, buyer_username,
                             sale_price, platform_fee, shipping_cost, net_profit,
                             status, notes, created_at, updated_at)
                         VALUES (?, ?, ?, 'shopify', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    `, [uuidv4(), shop.user_id, null, mapped.externalOrderId, mapped.buyerUsername,
-                        mapped.salePrice, mapped.platformFees, mapped.shippingCost,
-                        mapped.netProfit, mapped.status,
-                        mapped.externalData ? JSON.stringify(mapped.externalData) : null,
-                        new Date().toISOString(), new Date().toISOString()]);
+                    `,
+                        [
+                            uuidv4(),
+                            shop.user_id,
+                            null,
+                            mapped.externalOrderId,
+                            mapped.buyerUsername,
+                            mapped.salePrice,
+                            mapped.platformFees,
+                            mapped.shippingCost,
+                            mapped.netProfit,
+                            mapped.status,
+                            mapped.externalData ? JSON.stringify(mapped.externalData) : null,
+                            new Date().toISOString(),
+                            new Date().toISOString(),
+                        ],
+                    );
                     result.created++;
                 }
                 result.synced++;
@@ -165,7 +209,7 @@ async function fetchShopifyProducts(shop, accessToken, mode) {
     try {
         const resp = await _fetchWithLatency(`${storeUrl}/admin/api/2024-01/products.json?limit=250`, {
             signal: AbortSignal.timeout(30000),
-            headers: { 'X-Shopify-Access-Token': accessToken }
+            headers: { 'X-Shopify-Access-Token': accessToken },
         });
         if (!resp.ok) return [];
         const data = await resp.json();
@@ -182,7 +226,7 @@ async function fetchShopifyOrders(shop, accessToken, mode) {
     try {
         const resp = await _fetchWithLatency(`${storeUrl}/admin/api/2024-01/orders.json?status=any&limit=250`, {
             signal: AbortSignal.timeout(30000),
-            headers: { 'X-Shopify-Access-Token': accessToken }
+            headers: { 'X-Shopify-Access-Token': accessToken },
         });
         if (!resp.ok) return [];
         const data = await resp.json();
@@ -210,15 +254,15 @@ function mapShopifyProductToVaultLister(product, shop) {
             vendor: product.vendor,
             tags: product.tags,
             variantCount: product.variants?.length || 1,
-            syncedAt: new Date().toISOString()
-        }
+            syncedAt: new Date().toISOString(),
+        },
     };
 }
 
 // Shopify fees: 2.9% + $0.30 per transaction (Shopify Payments)
 function mapShopifyOrderToSale(order, shop) {
     const price = parseFloat(order.total_price || '0');
-    const platformFee = (price * 0.029) + 0.30;
+    const platformFee = price * 0.029 + 0.3;
     const shippingCost = parseFloat(order.total_shipping_price_set?.shop_money?.amount || '0');
 
     return {
@@ -235,26 +279,26 @@ function mapShopifyOrderToSale(order, shop) {
             orderId: order.id,
             orderName: order.name,
             financialStatus: order.financial_status,
-            syncedAt: new Date().toISOString()
-        }
+            syncedAt: new Date().toISOString(),
+        },
     };
 }
 
 function mapShopifyStatus(status) {
     const statusMap = {
-        'active': 'active',
-        'archived': 'archived',
-        'draft': 'draft'
+        active: 'active',
+        archived: 'archived',
+        draft: 'draft',
     };
     return statusMap[status] || 'draft';
 }
 
 function mapShopifyOrderStatus(status) {
     const statusMap = {
-        'fulfilled': 'delivered',
-        'partial': 'shipped',
+        fulfilled: 'delivered',
+        partial: 'shipped',
         null: 'pending',
-        'restocked': 'cancelled'
+        restocked: 'cancelled',
     };
     return statusMap[status] || 'pending';
 }

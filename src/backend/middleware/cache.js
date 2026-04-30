@@ -54,7 +54,10 @@ export function etagMatches(request, etag) {
     if (!ifNoneMatch) return false;
     // Support comma-separated ETags and wildcard
     if (ifNoneMatch === '*') return true;
-    return ifNoneMatch.split(',').map(t => t.trim()).includes(etag);
+    return ifNoneMatch
+        .split(',')
+        .map((t) => t.trim())
+        .includes(etag);
 }
 
 // ── Cache-Control helpers ────────────────────────────────────────────────────

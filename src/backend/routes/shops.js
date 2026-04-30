@@ -7,20 +7,19 @@ import { encryptToken, decryptToken } from '../utils/encryption.js';
 import { cacheForUser } from '../middleware/cache.js';
 import { safeJsonParse } from '../shared/utils.js';
 
-
 export async function shopsRouter(ctx) {
     const { method, path, body, user } = ctx;
-// TECH-DEBT: Migrate error responses to AppError classes (errorHandler.js)
+    // TECH-DEBT: Migrate error responses to AppError classes (errorHandler.js)
 
     // GET /api/shops - List connected shops
     if (method === 'GET' && (path === '/' || path === '')) {
         try {
             const shops = await query.all(
                 'SELECT id, platform, platform_username, platform_user_id, is_connected, last_sync_at, sync_status, settings, stats, created_at, updated_at, oauth_provider, connection_type, auto_sync_enabled, auto_sync_interval_minutes, sync_error FROM shops WHERE user_id = ? LIMIT 100',
-                [user.id]
+                [user.id],
             );
 
-            shops.forEach(shop => {
+            shops.forEach((shop) => {
                 shop.settings = safeJsonParse(shop.settings, {});
                 shop.stats = safeJsonParse(shop.stats, {});
                 // Don't expose credentials
@@ -38,10 +37,7 @@ export async function shopsRouter(ctx) {
     if (method === 'GET' && path.match(/^\/[a-z]+$/)) {
         try {
             const platform = path.slice(1);
-            const shop = await query.get(
-                'SELECT * FROM shops WHERE user_id = ? AND platform = ?',
-                [user.id, platform]
-            );
+            const shop = await query.get('SELECT * FROM shops WHERE user_id = ? AND platform = ?', [user.id, platform]);
 
             if (!shop) {
                 return { status: 404, data: { error: 'Shop not found' } };
@@ -75,16 +71,16 @@ export async function shopsRouter(ctx) {
                     data: {
                         error: 'Platform limit reached',
                         limit: permission.limit,
-                        current: permission.current
-                    }
+                        current: permission.current,
+                    },
                 };
             }
 
             // Check if already connected
-            const existing = await query.get(
-                'SELECT id FROM shops WHERE user_id = ? AND platform = ?',
-                [user.id, platform]
-            );
+            const existing = await query.get('SELECT id FROM shops WHERE user_id = ? AND platform = ?', [
+                user.id,
+                platform,
+            ]);
 
             if (existing) {
                 return { status: 409, data: { error: 'Platform already connected' } };
@@ -96,14 +92,20 @@ export async function shopsRouter(ctx) {
 
             const id = uuidv4();
 
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO shops (id, user_id, platform, platform_username, credentials, is_connected)
                 VALUES (?, ?, ?, ?, ?, ?)
-            `, [
-                id, user.id, platform, username || null,
-                credentials ? encryptToken(JSON.stringify(credentials)) : null,
-                1
-            ]);
+            `,
+                [
+                    id,
+                    user.id,
+                    platform,
+                    username || null,
+                    credentials ? encryptToken(JSON.stringify(credentials)) : null,
+                    1,
+                ],
+            );
 
             const shop = await query.get('SELECT * FROM shops WHERE id = ?', [id]);
             delete shop.credentials;
@@ -120,16 +122,17 @@ export async function shopsRouter(ctx) {
         try {
             const platform = path.slice(1);
 
-            const existing = await query.get(
-                'SELECT * FROM shops WHERE user_id = ? AND platform = ?',
-                [user.id, platform]
-            );
+            const existing = await query.get('SELECT * FROM shops WHERE user_id = ? AND platform = ?', [
+                user.id,
+                platform,
+            ]);
 
             if (!existing) {
                 return { status: 404, data: { error: 'Shop not found' } };
             }
 
-            const { username, credentials, settings, isConnected, auto_sync_enabled, auto_sync_interval_minutes } = body;
+            const { username, credentials, settings, isConnected, auto_sync_enabled, auto_sync_interval_minutes } =
+                body;
 
             const updates = [];
             const values = [];
@@ -173,7 +176,7 @@ export async function shopsRouter(ctx) {
                 await query.run(
                     `UPDATE shops SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP
                      WHERE platform = ? AND user_id = ?`,
-                    values
+                    values,
                 );
             }
 
@@ -194,10 +197,10 @@ export async function shopsRouter(ctx) {
         try {
             const platform = path.slice(1);
 
-            const existing = await query.get(
-                'SELECT * FROM shops WHERE user_id = ? AND platform = ?',
-                [user.id, platform]
-            );
+            const existing = await query.get('SELECT * FROM shops WHERE user_id = ? AND platform = ?', [
+                user.id,
+                platform,
+            ]);
 
             if (!existing) {
                 return { status: 404, data: { error: 'Shop not found' } };
@@ -206,7 +209,7 @@ export async function shopsRouter(ctx) {
             // Soft disconnect
             await query.run(
                 'UPDATE shops SET is_connected = FALSE, credentials = NULL, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND platform = ?',
-                [user.id, platform]
+                [user.id, platform],
             );
 
             return { status: 200, data: { message: 'Shop disconnected' } };
@@ -223,7 +226,7 @@ export async function shopsRouter(ctx) {
 
             const shop = await query.get(
                 'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE',
-                [user.id, platform]
+                [user.id, platform],
             );
 
             if (!shop) {
@@ -232,16 +235,20 @@ export async function shopsRouter(ctx) {
 
             // Queue sync task
             const taskId = uuidv4();
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO tasks (id, user_id, type, payload, status)
                 VALUES (?, ?, ?, ?, ?)
-            `, [taskId, user.id, 'sync_shop', JSON.stringify({ platform, shopId: shop.id }), 'pending']);
+            `,
+                [taskId, user.id, 'sync_shop', JSON.stringify({ platform, shopId: shop.id }), 'pending'],
+            );
 
             // Update sync status
-            await query.run(
-                'UPDATE shops SET sync_status = ? WHERE id = ? AND user_id = ?',
-                ['syncing', shop.id, user.id]
-            );
+            await query.run('UPDATE shops SET sync_status = ? WHERE id = ? AND user_id = ?', [
+                'syncing',
+                shop.id,
+                user.id,
+            ]);
 
             return { status: 200, data: { message: 'Sync started', taskId } };
         } catch (error) {
@@ -255,10 +262,7 @@ export async function shopsRouter(ctx) {
         try {
             const platform = path.split('/')[1];
 
-            const shop = await query.get(
-                'SELECT * FROM shops WHERE user_id = ? AND platform = ?',
-                [user.id, platform]
-            );
+            const shop = await query.get('SELECT * FROM shops WHERE user_id = ? AND platform = ?', [user.id, platform]);
 
             if (!shop) {
                 return { status: 404, data: { error: 'Shop not found' } };
@@ -267,16 +271,16 @@ export async function shopsRouter(ctx) {
             const stats = {
                 listings: await query.get(
                     'SELECT COUNT(*) as total, SUM(CASE WHEN status = "active" THEN 1 ELSE 0 END) as active FROM listings WHERE user_id = ? AND platform = ?',
-                    [user.id, platform]
+                    [user.id, platform],
                 ),
                 sales: await query.get(
                     'SELECT COUNT(*) as count, SUM(sale_price) as revenue FROM sales WHERE user_id = ? AND platform = ?',
-                    [user.id, platform]
+                    [user.id, platform],
                 ),
                 offers: await query.get(
                     'SELECT COUNT(*) as total, SUM(CASE WHEN status = "pending" THEN 1 ELSE 0 END) as pending FROM offers WHERE user_id = ? AND platform = ?',
-                    [user.id, platform]
-                )
+                    [user.id, platform],
+                ),
             };
 
             return { status: 200, data: { stats } };
@@ -289,10 +293,7 @@ export async function shopsRouter(ctx) {
     // POST /api/shops/sync-all - Sync all connected shops
     if (method === 'POST' && path === '/sync-all') {
         try {
-            const shops = await query.all(
-                'SELECT * FROM shops WHERE user_id = ? AND is_connected = TRUE',
-                [user.id]
-            );
+            const shops = await query.all('SELECT * FROM shops WHERE user_id = ? AND is_connected = TRUE', [user.id]);
 
             if (shops.length === 0) {
                 return { status: 404, data: { error: 'No connected shops found' } };
@@ -305,16 +306,26 @@ export async function shopsRouter(ctx) {
                 try {
                     // Queue sync task for each platform
                     const taskId = uuidv4();
-                    await query.run(`
+                    await query.run(
+                        `
                         INSERT INTO tasks (id, user_id, type, payload, status)
                         VALUES (?, ?, ?, ?, ?)
-                    `, [taskId, user.id, 'sync_shop', JSON.stringify({ platform: shop.platform, shopId: shop.id }), 'pending']);
+                    `,
+                        [
+                            taskId,
+                            user.id,
+                            'sync_shop',
+                            JSON.stringify({ platform: shop.platform, shopId: shop.id }),
+                            'pending',
+                        ],
+                    );
 
                     // Update sync status
-                    await query.run(
-                        'UPDATE shops SET sync_status = ? WHERE id = ? AND user_id = ?',
-                        ['syncing', shop.id, user.id]
-                    );
+                    await query.run('UPDATE shops SET sync_status = ? WHERE id = ? AND user_id = ?', [
+                        'syncing',
+                        shop.id,
+                        user.id,
+                    ]);
 
                     platformsSynced.push(shop.platform);
                     taskIds.push(taskId);
@@ -329,8 +340,8 @@ export async function shopsRouter(ctx) {
                     platforms_synced: platformsSynced,
                     total: platformsSynced.length,
                     status: 'completed',
-                    taskIds
-                }
+                    taskIds,
+                },
             };
         } catch (error) {
             logger.error('[Shops] Error syncing all shops', user?.id, { detail: error.message });
@@ -346,95 +357,98 @@ export async function shopsRouter(ctx) {
                     oauth_token_expires_at, consecutive_refresh_failures, last_token_refresh_at,
                     token_refresh_error, connection_type, created_at, updated_at
                 FROM shops WHERE user_id = ?`,
-                [user.id]
+                [user.id],
             );
 
-            const health = await Promise.all(shops.map(async shop => {
-                const now = Date.now();
-                const tokenExpiry = shop.oauth_token_expires_at ? new Date(shop.oauth_token_expires_at).getTime() : null;
-                const lastSync = shop.last_sync_at ? new Date(shop.last_sync_at).getTime() : null;
-                const refreshFailures = shop.consecutive_refresh_failures || 0;
+            const health = await Promise.all(
+                shops.map(async (shop) => {
+                    const now = Date.now();
+                    const tokenExpiry = shop.oauth_token_expires_at
+                        ? new Date(shop.oauth_token_expires_at).getTime()
+                        : null;
+                    const lastSync = shop.last_sync_at ? new Date(shop.last_sync_at).getTime() : null;
+                    const refreshFailures = shop.consecutive_refresh_failures || 0;
 
-                // Calculate health score (0-100)
-                let score = 100;
-                let issues = [];
+                    // Calculate health score (0-100)
+                    let score = 100;
+                    let issues = [];
 
-                // Token health
-                if (shop.connection_type === 'oauth') {
-                    if (!tokenExpiry) {
-                        score -= 30;
-                        issues.push('No OAuth token');
-                    } else if (tokenExpiry < now) {
-                        score -= 40;
-                        issues.push('Token expired');
-                    } else if (tokenExpiry - now < 3600000) {
-                        score -= 15;
-                        issues.push('Token expiring soon');
+                    // Token health
+                    if (shop.connection_type === 'oauth') {
+                        if (!tokenExpiry) {
+                            score -= 30;
+                            issues.push('No OAuth token');
+                        } else if (tokenExpiry < now) {
+                            score -= 40;
+                            issues.push('Token expired');
+                        } else if (tokenExpiry - now < 3600000) {
+                            score -= 15;
+                            issues.push('Token expiring soon');
+                        }
                     }
-                }
 
-                // Refresh failures
-                if (refreshFailures >= 5) {
-                    score -= 30;
-                    issues.push('Auto-disconnected (5+ failures)');
-                } else if (refreshFailures >= 3) {
-                    score -= 15;
-                    issues.push(`${refreshFailures} consecutive refresh failures`);
-                }
+                    // Refresh failures
+                    if (refreshFailures >= 5) {
+                        score -= 30;
+                        issues.push('Auto-disconnected (5+ failures)');
+                    } else if (refreshFailures >= 3) {
+                        score -= 15;
+                        issues.push(`${refreshFailures} consecutive refresh failures`);
+                    }
 
-                // Sync freshness
-                if (!lastSync) {
-                    score -= 10;
-                    issues.push('Never synced');
-                } else if (now - lastSync > 86400000 * 7) {
-                    score -= 15;
-                    issues.push('Last sync > 7 days ago');
-                } else if (now - lastSync > 86400000) {
-                    score -= 5;
-                    issues.push('Last sync > 24h ago');
-                }
+                    // Sync freshness
+                    if (!lastSync) {
+                        score -= 10;
+                        issues.push('Never synced');
+                    } else if (now - lastSync > 86400000 * 7) {
+                        score -= 15;
+                        issues.push('Last sync > 7 days ago');
+                    } else if (now - lastSync > 86400000) {
+                        score -= 5;
+                        issues.push('Last sync > 24h ago');
+                    }
 
-                // Connection status
-                if (!shop.is_connected) {
-                    score = Math.min(score, 20);
-                    issues.push('Disconnected');
-                }
+                    // Connection status
+                    if (!shop.is_connected) {
+                        score = Math.min(score, 20);
+                        issues.push('Disconnected');
+                    }
 
-                // Get listing/error counts for this platform
-                const listingStats = await query.get(
-                    `SELECT COUNT(*) as total,
+                    // Get listing/error counts for this platform
+                    const listingStats = (await query.get(
+                        `SELECT COUNT(*) as total,
                         SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active,
                         SUM(CASE WHEN status = 'error' THEN 1 ELSE 0 END) as errors
                     FROM listings WHERE user_id = ? AND platform = ?`,
-                    [user.id, shop.platform]
-                ) || { total: 0, active: 0, errors: 0 };
+                        [user.id, shop.platform],
+                    )) || { total: 0, active: 0, errors: 0 };
 
-                if (listingStats.errors > 0) {
-                    score -= Math.min(10, listingStats.errors * 2);
-                    issues.push(`${listingStats.errors} listing errors`);
-                }
+                    if (listingStats.errors > 0) {
+                        score -= Math.min(10, listingStats.errors * 2);
+                        issues.push(`${listingStats.errors} listing errors`);
+                    }
 
-                return {
-                    platform: shop.platform,
-                    username: shop.platform_username,
-                    is_connected: !!shop.is_connected,
-                    connection_type: shop.connection_type || 'manual',
-                    health_score: Math.max(0, score),
-                    status: score >= 80 ? 'healthy' : score >= 50 ? 'warning' : 'critical',
-                    issues,
-                    token_expires_at: shop.oauth_token_expires_at,
-                    last_sync_at: shop.last_sync_at,
-                    sync_status: shop.sync_status || 'idle',
-                    refresh_failures: refreshFailures,
-                    last_refresh_error: shop.token_refresh_error,
-                    listings: listingStats,
-                    connected_since: shop.created_at
-                };
-            }));
+                    return {
+                        platform: shop.platform,
+                        username: shop.platform_username,
+                        is_connected: !!shop.is_connected,
+                        connection_type: shop.connection_type || 'manual',
+                        health_score: Math.max(0, score),
+                        status: score >= 80 ? 'healthy' : score >= 50 ? 'warning' : 'critical',
+                        issues,
+                        token_expires_at: shop.oauth_token_expires_at,
+                        last_sync_at: shop.last_sync_at,
+                        sync_status: shop.sync_status || 'idle',
+                        refresh_failures: refreshFailures,
+                        last_refresh_error: shop.token_refresh_error,
+                        listings: listingStats,
+                        connected_since: shop.created_at,
+                    };
+                }),
+            );
 
-            const overall = health.length > 0
-                ? Math.round(health.reduce((sum, h) => sum + h.health_score, 0) / health.length)
-                : 0;
+            const overall =
+                health.length > 0 ? Math.round(health.reduce((sum, h) => sum + h.health_score, 0) / health.length) : 0;
 
             return { status: 200, data: { platforms: health, overall_health: overall } };
         } catch (error) {
@@ -446,15 +460,14 @@ export async function shopsRouter(ctx) {
     // GET /api/shops/sync-status - Get sync status for all shops
     if (method === 'GET' && path === '/sync-status') {
         try {
-            const shops = await query.all(
-                'SELECT platform, sync_status, last_sync_at FROM shops WHERE user_id = ?',
-                [user.id]
-            );
+            const shops = await query.all('SELECT platform, sync_status, last_sync_at FROM shops WHERE user_id = ?', [
+                user.id,
+            ]);
 
-            const syncStatus = shops.map(shop => ({
+            const syncStatus = shops.map((shop) => ({
                 platform: shop.platform,
                 status: shop.sync_status || 'never_synced',
-                last_synced: shop.last_sync_at
+                last_synced: shop.last_sync_at,
             }));
 
             return { status: 200, data: { shops: syncStatus } };

@@ -24,7 +24,7 @@ const CSRF_SKIP_PATHS = [
     '/api/incidents/subscribe',
     '/api/affiliate-apply',
     '/api/health',
-    '/api/status'
+    '/api/status',
 ];
 
 /**
@@ -39,20 +39,18 @@ class CSRFManager {
 
     async generateToken(sessionId = null) {
         const token = crypto.randomBytes(32).toString('hex');
-        const expiresAt = Date.now() + (4 * 60 * 60 * 1000);
-        await query.run(
-            'INSERT INTO csrf_tokens (token, session_id, expires_at) VALUES (?, ?, ?)',
-            [token, sessionId ?? '', expiresAt]
-        );
+        const expiresAt = Date.now() + 4 * 60 * 60 * 1000;
+        await query.run('INSERT INTO csrf_tokens (token, session_id, expires_at) VALUES (?, ?, ?)', [
+            token,
+            sessionId ?? '',
+            expiresAt,
+        ]);
         return token;
     }
 
     async validateToken(token, sessionId = null) {
         if (!token) return false;
-        const row = await query.get(
-            'SELECT session_id, expires_at FROM csrf_tokens WHERE token = ?',
-            [token]
-        );
+        const row = await query.get('SELECT session_id, expires_at FROM csrf_tokens WHERE token = ?', [token]);
         if (!row) return false;
         if (Date.now() > row.expires_at) {
             await query.run('DELETE FROM csrf_tokens WHERE token = ?', [token]);
@@ -91,7 +89,7 @@ class CSRFManager {
         const row = await query.get('SELECT COUNT(*) as total, MIN(created_at) as oldest FROM csrf_tokens', []);
         return {
             totalTokens: row?.total ?? 0,
-            oldestToken: row?.oldest ? Date.now() - row.oldest : 0
+            oldestToken: row?.oldest ? Date.now() - row.oldest : 0,
         };
     }
 }
@@ -101,7 +99,9 @@ const csrfManager = new CSRFManager();
 
 // Startup guard: warn if DISABLE_CSRF is set outside test mode
 if (process.env.DISABLE_CSRF === 'true' && process.env.NODE_ENV !== 'test') {
-    logger.warn('[SECURITY] DISABLE_CSRF is set but NODE_ENV is not "test" — CSRF protection remains ENABLED. DISABLE_CSRF only takes effect when NODE_ENV=test.');
+    logger.warn(
+        '[SECURITY] DISABLE_CSRF is set but NODE_ENV is not "test" — CSRF protection remains ENABLED. DISABLE_CSRF only takes effect when NODE_ENV=test.',
+    );
 }
 
 /**
@@ -142,20 +142,18 @@ export async function validateCSRF(ctx) {
     // Skip CSRF for certain paths (public auth endpoints only — profile/password need CSRF)
     // Incoming webhooks from external services (Stripe, marketplace callbacks) never have CSRF tokens.
     const skipPaths = CSRF_SKIP_PATHS;
-    if (skipPaths.some(path => ctx.path.startsWith(path) || ctx.path === path.replace('/api', ''))) {
+    if (skipPaths.some((path) => ctx.path.startsWith(path) || ctx.path === path.replace('/api', ''))) {
         return { valid: true };
     }
 
     // Get token from header or body
-    const token = headers['x-csrf-token'] ||
-                  headers['csrf-token'] ||
-                  ctx.body?.csrfToken;
+    const token = headers['x-csrf-token'] || headers['csrf-token'] || ctx.body?.csrfToken;
 
     if (!token) {
         return {
             valid: false,
             error: 'CSRF token missing',
-            status: 403
+            status: 403,
         };
     }
 
@@ -167,7 +165,7 @@ export async function validateCSRF(ctx) {
         return {
             valid: false,
             error: 'Invalid or expired CSRF token',
-            status: 403
+            status: 403,
         };
     }
 
@@ -188,8 +186,8 @@ export async function applyCSRFProtection(ctx) {
             status: validation.status || 403,
             data: {
                 error: validation.error,
-                code: 'CSRF_TOKEN_INVALID'
-            }
+                code: 'CSRF_TOKEN_INVALID',
+            },
         };
     }
 
@@ -208,11 +206,11 @@ export const csrfConfig = {
         name: 'XSRF-TOKEN',
         httpOnly: false, // Allow JavaScript to read (for AJAX)
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict'
+        sameSite: 'strict',
     },
 
     // Paths that don't require CSRF protection
-    skipPaths: CSRF_SKIP_PATHS
+    skipPaths: CSRF_SKIP_PATHS,
 };
 
 /**

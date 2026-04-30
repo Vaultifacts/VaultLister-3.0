@@ -64,9 +64,7 @@ const analyticsService = {
             userId: user?.id || null,
             sessionId: properties.sessionId || null,
             timestamp: new Date().toISOString(),
-            ip: ANALYTICS_CONFIG.anonymizeIp
-                ? this.anonymizeIp(request?.ip)
-                : request?.ip,
+            ip: ANALYTICS_CONFIG.anonymizeIp ? this.anonymizeIp(request?.ip) : request?.ip,
             userAgent: request?.headers?.['user-agent'] || null,
         };
 
@@ -97,20 +95,28 @@ const analyticsService = {
 
     // Track error
     trackError(error, context = {}, user = null) {
-        this.track('error', {
-            message: error.message,
-            stack: error.stack?.substring(0, 500),
-            ...context
-        }, user);
+        this.track(
+            'error',
+            {
+                message: error.message,
+                stack: error.stack?.substring(0, 500),
+                ...context,
+            },
+            user,
+        );
     },
 
     // Track conversion (purchase, signup, etc.)
     trackConversion(type, value, properties = {}, user = null) {
-        this.track('conversion', {
-            type,
-            value,
-            ...properties
-        }, user);
+        this.track(
+            'conversion',
+            {
+                type,
+                value,
+                ...properties,
+            },
+            user,
+        );
     },
 
     // Anonymize IP address
@@ -149,8 +155,8 @@ const analyticsService = {
                             event.sessionId,
                             event.timestamp,
                             event.ip,
-                            event.userAgent
-                        ]
+                            event.userAgent,
+                        ],
                     );
                 }
             });
@@ -182,7 +188,8 @@ const analyticsService = {
 
     // Get event counts by name
     async getEventCounts(startDate, endDate = new Date()) {
-        return await query.all(`
+        return await query.all(
+            `
             SELECT
                 name,
                 COUNT(*) as count,
@@ -192,14 +199,17 @@ const analyticsService = {
             WHERE timestamp BETWEEN ? AND ?
             GROUP BY name
             ORDER BY count DESC
-        `, [startDate.toISOString(), endDate.toISOString()]);
+        `,
+            [startDate.toISOString(), endDate.toISOString()],
+        );
     },
 
     // Get page views
     async getPageViews(startDate, endDate = new Date(), groupBy = 'day') {
         const groupFormat = groupBy === 'hour' ? 'YYYY-MM-DD HH24:00' : 'YYYY-MM-DD';
 
-        return await query.all(`
+        return await query.all(
+            `
             SELECT
                 TO_CHAR(timestamp, ?) as period,
                 properties::jsonb->>'page' as page,
@@ -210,12 +220,15 @@ const analyticsService = {
             AND timestamp BETWEEN ? AND ?
             GROUP BY period, page
             ORDER BY period DESC, views DESC
-        `, [groupFormat, startDate.toISOString(), endDate.toISOString()]);
+        `,
+            [groupFormat, startDate.toISOString(), endDate.toISOString()],
+        );
     },
 
     // Get user sessions
     async getUserSessions(userId, limit = 10) {
-        return await query.all(`
+        return await query.all(
+            `
             SELECT
                 session_id,
                 MIN(timestamp) as start_time,
@@ -227,7 +240,9 @@ const analyticsService = {
             GROUP BY session_id
             ORDER BY start_time DESC
             LIMIT ?
-        `, [userId, limit]);
+        `,
+            [userId, limit],
+        );
     },
 
     // Funnel analysis
@@ -265,18 +280,18 @@ const analyticsService = {
             // Get user IDs for next iteration
             const userIdsSql = sql.replace('COUNT(DISTINCT user_id) as users', 'DISTINCT user_id');
             const userRows = await query.all(userIdsSql, params);
-            const userIds = userRows.map(r => r.user_id).filter(Boolean);
+            const userIds = userRows.map((r) => r.user_id).filter(Boolean);
 
             const result = await query.get(sql, params);
             const prevCount = i > 0 ? results[i - 1].users : result.users;
-            const dropoff = prevCount > 0 ? ((prevCount - result.users) / prevCount * 100).toFixed(1) : 0;
+            const dropoff = prevCount > 0 ? (((prevCount - result.users) / prevCount) * 100).toFixed(1) : 0;
 
             results.push({
                 step: steps[i],
                 users: result.users,
                 dropoff: parseFloat(dropoff),
                 conversionRate: prevCount > 0 ? parseFloat(((result.users / prevCount) * 100).toFixed(1)) : 0,
-                userIds
+                userIds,
             });
         }
 
@@ -286,7 +301,8 @@ const analyticsService = {
 
     // Get conversion metrics
     async getConversionMetrics(type, startDate, endDate = new Date()) {
-        return await query.get(`
+        return await query.get(
+            `
             SELECT
                 COUNT(*) as total_conversions,
                 COUNT(DISTINCT user_id) as unique_users,
@@ -296,13 +312,16 @@ const analyticsService = {
             WHERE name = 'conversion'
             AND properties::jsonb->>'type' = ?
             AND timestamp BETWEEN ? AND ?
-        `, [type, startDate.toISOString(), endDate.toISOString()]);
+        `,
+            [type, startDate.toISOString(), endDate.toISOString()],
+        );
     },
 
     // Get user retention cohorts
     async getRetentionCohorts(startDate, endDate = new Date()) {
         // Get weekly cohorts
-        return await query.all(`
+        return await query.all(
+            `
             WITH cohorts AS (
                 SELECT
                     user_id,
@@ -330,7 +349,9 @@ const analyticsService = {
             WHERE weeks_since_first >= 0 AND weeks_since_first <= 8
             GROUP BY cohort_week, weeks_since_first
             ORDER BY cohort_week, weeks_since_first
-        `, [startDate.toISOString(), endDate.toISOString(), startDate.toISOString(), endDate.toISOString()]);
+        `,
+            [startDate.toISOString(), endDate.toISOString(), startDate.toISOString(), endDate.toISOString()],
+        );
     },
 
     // Clean up old data (privacy compliance)
@@ -338,14 +359,17 @@ const analyticsService = {
         const cutoffDate = new Date();
         cutoffDate.setDate(cutoffDate.getDate() - ANALYTICS_CONFIG.dataRetentionDays);
 
-        const result = await query.run(`
+        const result = await query.run(
+            `
             DELETE FROM analytics_events
             WHERE timestamp < ?
-        `, [cutoffDate.toISOString()]);
+        `,
+            [cutoffDate.toISOString()],
+        );
 
         logger.info(`[Analytics] Cleaned up ${result.changes} old events`);
         return result.changes;
-    }
+    },
 };
 
 // Table created by pg-schema.sql (managed by migration system)

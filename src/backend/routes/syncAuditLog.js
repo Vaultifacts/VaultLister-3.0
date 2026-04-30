@@ -23,7 +23,7 @@ const SYNC_ACTION_PATTERNS = [
     'listing_sold_sync',
     'listing_ended_sync',
     'sku_sync',
-    'inventory_sync'
+    'inventory_sync',
 ];
 
 /**
@@ -108,7 +108,7 @@ export async function syncAuditLogRouter(ctx) {
 
             const [dbRows, countRow] = await Promise.all([
                 query.all(dbSql, dbParams),
-                query.get(countSql, countParams)
+                query.get(countSql, countParams),
             ]);
 
             // ── File: read automation-audit.log entries (publish events) ─────
@@ -117,55 +117,60 @@ export async function syncAuditLogRouter(ctx) {
             if (offsetNum === 0 && source !== 'db') {
                 const rawFileEntries = await readAutomationAuditLog(user.id, 100);
                 fileEntries = rawFileEntries
-                    .filter(e => {
+                    .filter((e) => {
                         if (platform && e.platform !== platform) return false;
                         if (status) {
                             // Map file event names to status: *_success -> success, *_failure -> error
-                            const entryStatus = e.event?.includes('success') ? 'success'
-                                : e.event?.includes('fail') ? 'error'
-                                : 'info';
+                            const entryStatus = e.event?.includes('success')
+                                ? 'success'
+                                : e.event?.includes('fail')
+                                  ? 'error'
+                                  : 'info';
                             if (entryStatus !== status) return false;
                         }
                         return true;
                     })
-                    .map(e => ({
+                    .map((e) => ({
                         id: null,
                         source: 'automation_log',
                         platform: e.platform || null,
                         action: e.event || 'unknown',
-                        status: e.event?.includes('success') ? 'success'
-                            : e.event?.includes('fail') ? 'error'
-                            : 'info',
+                        status: e.event?.includes('success') ? 'success' : e.event?.includes('fail') ? 'error' : 'info',
                         details: e,
                         error: e.error || null,
-                        timestamp: e.ts || null
+                        timestamp: e.ts || null,
                     }));
             }
 
             // ── Normalise DB rows ─────────────────────────────────────────────
-            const dbEntries = dbRows.map(row => {
+            const dbEntries = dbRows.map((row) => {
                 let details = null;
-                try { details = row.details ? JSON.parse(row.details) : null; } catch { details = row.details; }
+                try {
+                    details = row.details ? JSON.parse(row.details) : null;
+                } catch {
+                    details = row.details;
+                }
                 let metadata = null;
-                try { metadata = row.metadata ? JSON.parse(row.metadata) : null; } catch { metadata = row.metadata; }
+                try {
+                    metadata = row.metadata ? JSON.parse(row.metadata) : null;
+                } catch {
+                    metadata = row.metadata;
+                }
 
                 return {
                     id: row.id,
                     source: 'audit_log',
                     platform: details?.platform || metadata?.platform || null,
                     action: row.action,
-                    status: row.severity === 'error' ? 'error'
-                        : row.severity === 'warning' ? 'warning'
-                        : 'success',
+                    status: row.severity === 'error' ? 'error' : row.severity === 'warning' ? 'warning' : 'success',
                     details,
                     error: details?.error || metadata?.error || null,
-                    timestamp: row.created_at
+                    timestamp: row.created_at,
                 };
             });
 
-            const entries = source === 'file' ? fileEntries
-                : source === 'db' ? dbEntries
-                : [...dbEntries, ...fileEntries];
+            const entries =
+                source === 'file' ? fileEntries : source === 'db' ? dbEntries : [...dbEntries, ...fileEntries];
 
             return {
                 status: 200,
@@ -174,8 +179,8 @@ export async function syncAuditLogRouter(ctx) {
                     total: parseInt(countRow?.count || 0),
                     limit: limitNum,
                     offset: offsetNum,
-                    hasMore: offsetNum + dbEntries.length < parseInt(countRow?.count || 0)
-                }
+                    hasMore: offsetNum + dbEntries.length < parseInt(countRow?.count || 0),
+                },
             };
         } catch (error) {
             logger.error('[SyncAuditLog] Error fetching sync audit log', user?.id, { detail: error.message });

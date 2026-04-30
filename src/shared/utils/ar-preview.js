@@ -1,4 +1,3 @@
-
 // AR Preview Utility - WebAR Lite
 // Provides simple AR preview capabilities using WebXR/camera overlay
 
@@ -23,10 +22,7 @@ export class ARPreview {
      * Check if AR is supported
      */
     static isSupported() {
-        return !!(
-            navigator.mediaDevices &&
-            navigator.mediaDevices.getUserMedia
-        );
+        return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
     }
 
     /**
@@ -56,7 +52,7 @@ export class ARPreview {
         // Add to container
         container.style.position = 'relative';
         container.style.overflow = 'hidden';
-        container.innerHTML = '';  // nosemgrep: javascript.browser.security.insecure-document-method
+        container.innerHTML = ''; // nosemgrep: javascript.browser.security.insecure-document-method
         container.appendChild(this.video);
         container.appendChild(this.canvas);
 
@@ -75,8 +71,8 @@ export class ARPreview {
                 video: {
                     facingMode: 'environment', // Back camera
                     width: { ideal: 1280 },
-                    height: { ideal: 720 }
-                }
+                    height: { ideal: 720 },
+                },
             });
 
             this.video.srcObject = this.stream;
@@ -95,7 +91,9 @@ export class ARPreview {
         } catch (error) {
             console.error('[AR] Failed to start camera:', error);
             if (error.name === 'NotAllowedError') {
-                const e = new Error('Camera permission was denied. Please allow camera access in your browser settings and try again.');
+                const e = new Error(
+                    'Camera permission was denied. Please allow camera access in your browser settings and try again.',
+                );
                 e.name = 'NotAllowedError';
                 throw e;
             }
@@ -115,7 +113,7 @@ export class ARPreview {
         this.isActive = false;
 
         if (this.stream) {
-            this.stream.getTracks().forEach(track => track.stop());
+            this.stream.getTracks().forEach((track) => track.stop());
             this.stream = null;
         }
 
@@ -199,7 +197,7 @@ export class ARPreview {
             const centerX = x + imgWidth / 2;
             const centerY = y + imgHeight / 2;
             this.ctx.translate(centerX, centerY);
-            this.ctx.rotate(this.imageRotation * Math.PI / 180);
+            this.ctx.rotate((this.imageRotation * Math.PI) / 180);
             this.ctx.translate(-centerX, -centerY);
         }
 
@@ -483,7 +481,7 @@ export class SimpleAROverlay {
      */
     clear() {
         const overlays = this.container.querySelectorAll('img');
-        overlays.forEach(img => img.remove());
+        overlays.forEach((img) => img.remove());
     }
 }
 

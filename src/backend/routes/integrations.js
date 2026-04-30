@@ -15,7 +15,7 @@ import {
     exchangeGoogleCode,
     getAccessToken,
     revokeGoogleToken,
-    getConnectionStatus
+    getConnectionStatus,
 } from '../services/googleOAuth.js';
 import { query } from '../db/database.js';
 import { validateCSRF } from '../middleware/csrf.js';
@@ -54,8 +54,8 @@ export async function integrationsRouter(ctx) {
                 status: 400,
                 data: {
                     error: 'Google Drive not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in environment.',
-                    configured: false
-                }
+                    configured: false,
+                },
             };
         }
 
@@ -77,7 +77,7 @@ export async function integrationsRouter(ctx) {
             return {
                 status: 400,
                 headers: { 'Content-Type': 'text/html' },
-                data: buildCallbackHtml('error', null, 'Authorization denied or failed.')
+                data: buildCallbackHtml('error', null, 'Authorization denied or failed.'),
             };
         }
 
@@ -85,7 +85,7 @@ export async function integrationsRouter(ctx) {
             return {
                 status: 400,
                 headers: { 'Content-Type': 'text/html' },
-                data: buildCallbackHtml('error', null, 'Missing authorization code or state.')
+                data: buildCallbackHtml('error', null, 'Missing authorization code or state.'),
             };
         }
 
@@ -95,14 +95,14 @@ export async function integrationsRouter(ctx) {
             return {
                 status: 200,
                 headers: { 'Content-Type': 'text/html' },
-                data: buildCallbackHtml('success', escapeHtml(email), null, scope)
+                data: buildCallbackHtml('success', escapeHtml(email), null, scope),
             };
         } catch (err) {
             logger.error('[Integrations] Google OAuth callback error', null, { detail: err.message });
             return {
                 status: err.status === 400 ? 400 : 500,
                 headers: { 'Content-Type': 'text/html' },
-                data: buildCallbackHtml('error', null, 'Authentication failed. Please try again.')
+                data: buildCallbackHtml('error', null, 'Authentication failed. Please try again.'),
             };
         }
     }
@@ -120,8 +120,8 @@ export async function integrationsRouter(ctx) {
             data: {
                 ...status,
                 configured: isGoogleConfigured(),
-                featureEnabled: driveEnabled
-            }
+                featureEnabled: driveEnabled,
+            },
         };
     }
 
@@ -139,7 +139,10 @@ export async function integrationsRouter(ctx) {
 
         const accessToken = await getAccessToken(user.id, 'drive');
         if (!accessToken) {
-            return { status: 401, data: { error: 'Google Drive not connected. Authorize first via /google/drive/authorize.' } };
+            return {
+                status: 401,
+                data: { error: 'Google Drive not connected. Authorize first via /google/drive/authorize.' },
+            };
         }
 
         try {
@@ -150,13 +153,13 @@ export async function integrationsRouter(ctx) {
                 q: "name contains 'VaultLister' and trashed = false",
                 fields: 'nextPageToken,files(id,name,mimeType,size,createdTime,modifiedTime,webViewLink)',
                 pageSize: String(pageSize),
-                orderBy: 'modifiedTime desc'
+                orderBy: 'modifiedTime desc',
             });
             if (pageToken) params.set('pageToken', pageToken);
 
             const resp = await fetch(`${DRIVE_API}/files?${params}`, {
                 headers: { Authorization: `Bearer ${accessToken}` },
-                signal: AbortSignal.timeout(15000)
+                signal: AbortSignal.timeout(15000),
             });
 
             if (!resp.ok) {
@@ -169,8 +172,8 @@ export async function integrationsRouter(ctx) {
                 status: 200,
                 data: {
                     files: data.files || [],
-                    nextPageToken: data.nextPageToken || null
-                }
+                    nextPageToken: data.nextPageToken || null,
+                },
             };
         } catch (err) {
             logger.error('[Integrations] Drive files list error', user.id, { detail: err.message });
@@ -205,7 +208,7 @@ export async function integrationsRouter(ctx) {
                  FROM inventory_items
                  WHERE user_id = ? AND deleted_at IS NULL
                  ORDER BY updated_at DESC`,
-                [user.id]
+                [user.id],
             );
 
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
@@ -213,7 +216,7 @@ export async function integrationsRouter(ctx) {
             const fileContent = JSON.stringify(
                 { exportedAt: new Date().toISOString(), itemCount: items.length, items },
                 null,
-                2
+                2,
             );
 
             const metadata = { name: fileName, mimeType: 'application/json' };
@@ -227,17 +230,17 @@ export async function integrationsRouter(ctx) {
                 'Content-Type: application/json',
                 '',
                 fileContent,
-                `--${boundary}--`
+                `--${boundary}--`,
             ].join('\r\n');
 
             const uploadResp = await fetch(`${DRIVE_UPLOAD_API}/files?uploadType=multipart`, {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
-                    'Content-Type': `multipart/related; boundary=${boundary}`
+                    'Content-Type': `multipart/related; boundary=${boundary}`,
                 },
                 body,
-                signal: AbortSignal.timeout(60000)
+                signal: AbortSignal.timeout(60000),
             });
 
             if (!uploadResp.ok) {
@@ -255,8 +258,8 @@ export async function integrationsRouter(ctx) {
                     fileId: file.id,
                     fileName,
                     itemCount: items.length,
-                    webViewLink: file.webViewLink || null
-                }
+                    webViewLink: file.webViewLink || null,
+                },
             };
         } catch (err) {
             logger.error('[Integrations] Drive backup error', user.id, { detail: err.message });

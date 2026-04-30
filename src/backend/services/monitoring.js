@@ -13,8 +13,8 @@ import Sentry from '../instrument.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const DB_WARN_BYTES  = 500 * 1024 * 1024; // 500 MB
-const DB_CRIT_BYTES  =   1 * 1024 * 1024 * 1024; // 1 GB
+const DB_WARN_BYTES = 500 * 1024 * 1024; // 500 MB
+const DB_CRIT_BYTES = 1 * 1024 * 1024 * 1024; // 1 GB
 
 // Configuration
 const SENTRY_DSN = process.env.SENTRY_DSN;
@@ -23,7 +23,7 @@ const SLACK_WEBHOOK = process.env.SLACK_WEBHOOK;
 const SENTRY_ENVIRONMENT = process.env.NODE_ENV || 'development';
 const SENTRY_ALLOW_NON_PROD = process.env.SENTRY_ALLOW_NON_PROD === 'true';
 const SHOULD_REPORT_TO_SENTRY = Boolean(
-    SENTRY_DSN && (SENTRY_ENVIRONMENT === 'production' || SENTRY_ENVIRONMENT === 'staging' || SENTRY_ALLOW_NON_PROD)
+    SENTRY_DSN && (SENTRY_ENVIRONMENT === 'production' || SENTRY_ENVIRONMENT === 'staging' || SENTRY_ALLOW_NON_PROD),
 );
 
 // Metrics storage (in-memory for demo, use Redis in production)
@@ -32,7 +32,7 @@ const metrics = {
     errors: [],
     uptime: { startTime: Date.now(), checks: [] },
     performance: { cpu: [], memory: [], responseTime: [] },
-    database: { sizeBytes: 0, lastChecked: null }
+    database: { sizeBytes: 0, lastChecked: null },
 };
 
 // Thresholds for alerts
@@ -40,7 +40,7 @@ const THRESHOLDS = {
     errorRate: 0.05, // 5% error rate
     responseTime: 2000, // 2 seconds
     memoryUsage: 0.95, // 95% memory usage (increased from 0.85 to reduce noise with dynamic heap sizing)
-    cpuUsage: 0.80 // 80% CPU usage
+    cpuUsage: 0.8, // 80% CPU usage
 };
 
 const monitoring = {
@@ -74,7 +74,7 @@ const monitoring = {
             this.alert('slow_response', {
                 path: req.url,
                 method: req.method,
-                duration
+                duration,
             });
         }
     },
@@ -87,7 +87,7 @@ const monitoring = {
             message: error.message,
             stack: error.stack,
             context,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         };
 
         metrics.errors.push(errorRecord);
@@ -99,15 +99,13 @@ const monitoring = {
 
         // Log to database
         try {
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO error_logs (id, message, stack, context, created_at)
                 VALUES (?, ?, ?, ?, NOW())
-            `, [
-                crypto.randomUUID(),
-                error.message,
-                error.stack,
-                JSON.stringify(context)
-            ]);
+            `,
+                [crypto.randomUUID(), error.message, error.stack, JSON.stringify(context)],
+            );
         } catch (e) {
             // Silently fail if table doesn't exist
         }
@@ -144,11 +142,15 @@ const monitoring = {
             metrics.database.lastChecked = new Date().toISOString();
 
             if (sizeBytes >= DB_CRIT_BYTES) {
-                logger.error(`[Monitoring] CRITICAL: database is ${(sizeBytes / (1024 ** 3)).toFixed(2)} GB (>= 1 GB threshold)`);
-                this.alert('db_size_critical', { sizeBytes, sizeMB: Math.round(sizeBytes / (1024 ** 2)) });
+                logger.error(
+                    `[Monitoring] CRITICAL: database is ${(sizeBytes / 1024 ** 3).toFixed(2)} GB (>= 1 GB threshold)`,
+                );
+                this.alert('db_size_critical', { sizeBytes, sizeMB: Math.round(sizeBytes / 1024 ** 2) });
             } else if (sizeBytes >= DB_WARN_BYTES) {
-                logger.warn(`[Monitoring] WARNING: database is ${Math.round(sizeBytes / (1024 ** 2))} MB (>= 500 MB threshold)`);
-                this.alert('db_size_warning', { sizeBytes, sizeMB: Math.round(sizeBytes / (1024 ** 2)) });
+                logger.warn(
+                    `[Monitoring] WARNING: database is ${Math.round(sizeBytes / 1024 ** 2)} MB (>= 500 MB threshold)`,
+                );
+                this.alert('db_size_warning', { sizeBytes, sizeMB: Math.round(sizeBytes / 1024 ** 2) });
             }
         } catch (e) {
             logger.warn('[Monitoring] Could not query database size:', e.message);
@@ -158,8 +160,11 @@ const monitoring = {
     // Start metrics collection
     startMetricsCollection() {
         // Check DB size immediately on init, then every hour
-        this.checkDatabaseSize().catch(err => logger.error('DB size check failed:', err.message));
-        this._dbSizeInterval = setInterval(() => this.checkDatabaseSize().catch(err => logger.error('DB size check failed:', err.message)), INTERVALS.DB_SIZE_CHECK_MS);
+        this.checkDatabaseSize().catch((err) => logger.error('DB size check failed:', err.message));
+        this._dbSizeInterval = setInterval(
+            () => this.checkDatabaseSize().catch((err) => logger.error('DB size check failed:', err.message)),
+            INTERVALS.DB_SIZE_CHECK_MS,
+        );
 
         // Collect metrics every 30 seconds
         this._metricsInterval = setInterval(() => {
@@ -170,7 +175,7 @@ const monitoring = {
                 heapUsed: memUsage.heapUsed,
                 heapTotal: memUsage.heapTotal,
                 rss: memUsage.rss,
-                timestamp: Date.now()
+                timestamp: Date.now(),
             });
 
             // Keep only last 100 data points
@@ -186,7 +191,7 @@ const monitoring = {
                 this.alert('high_memory', {
                     memoryRatio: memoryRatio.toFixed(3),
                     heapUsedMB: Math.round(memUsage.heapUsed / 1024 / 1024),
-                    heapSizeLimitMB: Math.round(heapSizeLimit / 1024 / 1024)
+                    heapSizeLimitMB: Math.round(heapSizeLimit / 1024 / 1024),
                 });
             }
         }, INTERVALS.METRICS_COLLECTION_MS);
@@ -207,21 +212,20 @@ const monitoring = {
         const alert = {
             type,
             data,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         };
 
         logger.warn('[ALERT]', type, data);
 
         // Store alert
         try {
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO alerts (id, type, data, created_at)
                 VALUES (?, ?, ?, NOW())
-            `, [
-                crypto.randomUUID(),
-                type,
-                JSON.stringify(data)
-            ]);
+            `,
+                [crypto.randomUUID(), type, JSON.stringify(data)],
+            );
         } catch (e) {}
 
         // Send to Slack if configured
@@ -234,15 +238,17 @@ const monitoring = {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         text: `🚨 *VaultLister Alert*: ${type}`,
-                        attachments: [{
-                            color: 'danger',
-                            fields: Object.entries(data).map(([k, v]) => ({
-                                title: k,
-                                value: String(v),
-                                short: true
-                            }))
-                        }]
-                    })
+                        attachments: [
+                            {
+                                color: 'danger',
+                                fields: Object.entries(data).map(([k, v]) => ({
+                                    title: k,
+                                    value: String(v),
+                                    short: true,
+                                })),
+                            },
+                        ],
+                    }),
                 });
             } catch (e) {
                 logger.error('[Monitoring] Slack alert failed:', e.message);
@@ -254,7 +260,10 @@ const monitoring = {
             try {
                 const { sendEmail } = await import('./email.js');
                 const detailRows = Object.entries(data)
-                    .map(([k, v]) => `<tr><td style="padding:4px 8px;font-weight:600;">${k}</td><td style="padding:4px 8px;">${String(v)}</td></tr>`)
+                    .map(
+                        ([k, v]) =>
+                            `<tr><td style="padding:4px 8px;font-weight:600;">${k}</td><td style="padding:4px 8px;">${String(v)}</td></tr>`,
+                    )
                     .join('');
                 const html = `
                     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -280,7 +289,7 @@ const monitoring = {
             database: false,
             redis: false,
             memory: false,
-            uptime: 0
+            uptime: 0,
         };
 
         // Database check
@@ -297,7 +306,7 @@ const monitoring = {
                 if (client) {
                     const pong = await Promise.race([
                         client.ping(),
-                        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1000))
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1000)),
                     ]);
                     checks.redis = pong === 'PONG';
                 }
@@ -306,7 +315,7 @@ const monitoring = {
 
         // Memory check
         const memUsage = process.memoryUsage();
-        checks.memory = (memUsage.heapUsed / memUsage.heapTotal) < THRESHOLDS.memoryUsage;
+        checks.memory = memUsage.heapUsed / memUsage.heapTotal < THRESHOLDS.memoryUsage;
 
         // Uptime
         checks.uptime = Date.now() - metrics.uptime.startTime;
@@ -314,7 +323,7 @@ const monitoring = {
         // Store check result
         metrics.uptime.checks.push({
             ...checks,
-            timestamp: Date.now()
+            timestamp: Date.now(),
         });
 
         // Keep only last 100 checks
@@ -333,7 +342,7 @@ const monitoring = {
             summary: {
                 totalRequests: m.requests.total,
                 totalErrors: m.requests.errors,
-                avgResponseTime: m.latency.avg
+                avgResponseTime: m.latency.avg,
             },
             endpoints: [],
             system: {
@@ -341,8 +350,8 @@ const monitoring = {
                 memoryTotal: mem.heapTotal,
                 memoryRss: mem.rss,
                 uptime: m.uptime.seconds,
-                startedAt: new Date(Date.now() - m.uptime.seconds * 1000).toISOString()
-            }
+                startedAt: new Date(Date.now() - m.uptime.seconds * 1000).toISOString(),
+            },
         };
     },
 
@@ -355,35 +364,28 @@ const monitoring = {
             requests: {
                 total: metrics.requests.total,
                 errors: metrics.requests.errors,
-                errorRate: metrics.requests.total > 0
-                    ? (metrics.requests.errors / metrics.requests.total * 100).toFixed(2) + '%'
-                    : '0%'
+                errorRate:
+                    metrics.requests.total > 0
+                        ? ((metrics.requests.errors / metrics.requests.total) * 100).toFixed(2) + '%'
+                        : '0%',
             },
             latency: {
-                avg: latencies.length > 0
-                    ? (latencies.reduce((a, b) => a + b, 0) / latencies.length).toFixed(2)
-                    : 0,
-                p50: latencies.length > 0
-                    ? sortedLatencies[Math.floor(latencies.length * 0.5)]?.toFixed(2)
-                    : 0,
-                p95: latencies.length > 0
-                    ? sortedLatencies[Math.floor(latencies.length * 0.95)]?.toFixed(2)
-                    : 0,
-                p99: latencies.length > 0
-                    ? sortedLatencies[Math.floor(latencies.length * 0.99)]?.toFixed(2)
-                    : 0
+                avg: latencies.length > 0 ? (latencies.reduce((a, b) => a + b, 0) / latencies.length).toFixed(2) : 0,
+                p50: latencies.length > 0 ? sortedLatencies[Math.floor(latencies.length * 0.5)]?.toFixed(2) : 0,
+                p95: latencies.length > 0 ? sortedLatencies[Math.floor(latencies.length * 0.95)]?.toFixed(2) : 0,
+                p99: latencies.length > 0 ? sortedLatencies[Math.floor(latencies.length * 0.99)]?.toFixed(2) : 0,
             },
             memory: process.memoryUsage(),
             uptime: {
                 seconds: Math.floor((Date.now() - metrics.uptime.startTime) / 1000),
-                formatted: this.formatUptime(Date.now() - metrics.uptime.startTime)
+                formatted: this.formatUptime(Date.now() - metrics.uptime.startTime),
             },
             recentErrors: metrics.errors.slice(-10),
             database: {
                 sizeBytes: metrics.database.sizeBytes,
-                sizeMB: Math.round(metrics.database.sizeBytes / (1024 ** 2)),
-                lastChecked: metrics.database.lastChecked
-            }
+                sizeMB: Math.round(metrics.database.sizeBytes / 1024 ** 2),
+                lastChecked: metrics.database.lastChecked,
+            },
         };
     },
 
@@ -404,16 +406,21 @@ const monitoring = {
     async getAlerts(hours = 24) {
         try {
             const h = Math.max(1, Math.min(Number(hours) || 24, 8760));
-            return await query.all(`
+            return (
+                (await query.all(
+                    `
                 SELECT * FROM alerts
                 WHERE created_at > NOW() - (?::text || ' hours')::interval
                 ORDER BY created_at DESC
                 LIMIT 100
-            `, [h]) || [];
+            `,
+                    [h],
+                )) || []
+            );
         } catch (e) {
             return [];
         }
-    }
+    },
 };
 
 // Tables created by pg-schema.sql (managed by migration system)
@@ -430,29 +437,35 @@ export const healthChecker = {
             status: health.database && health.memory ? 'healthy' : 'unhealthy',
             checks: {
                 database: { status: health.database ? 'healthy' : 'unhealthy' },
-                memory: { status: health.memory ? 'healthy' : 'unhealthy' }
+                memory: { status: health.memory ? 'healthy' : 'unhealthy' },
             },
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         };
-    }
+    },
 };
 
 // Security monitor used by monitoring route
 export const securityMonitor = {
     async getSummary() {
         try {
-            const failedLogins = await query.get("SELECT COUNT(*) as count FROM security_logs WHERE event_type = 'LOGIN_FAILURE' AND created_at > NOW() - INTERVAL '24 hours'");
-            const suspicious = await query.get("SELECT COUNT(*) as count FROM security_logs WHERE event_type = 'SUSPICIOUS' AND created_at > NOW() - INTERVAL '24 hours'");
-            const blocked = await query.get("SELECT COUNT(DISTINCT ip_or_user) as count FROM security_logs WHERE event_type = 'RATE_LIMIT_BLOCK' AND created_at > NOW() - INTERVAL '24 hours'");
+            const failedLogins = await query.get(
+                "SELECT COUNT(*) as count FROM security_logs WHERE event_type = 'LOGIN_FAILURE' AND created_at > NOW() - INTERVAL '24 hours'",
+            );
+            const suspicious = await query.get(
+                "SELECT COUNT(*) as count FROM security_logs WHERE event_type = 'SUSPICIOUS' AND created_at > NOW() - INTERVAL '24 hours'",
+            );
+            const blocked = await query.get(
+                "SELECT COUNT(DISTINCT ip_or_user) as count FROM security_logs WHERE event_type = 'RATE_LIMIT_BLOCK' AND created_at > NOW() - INTERVAL '24 hours'",
+            );
             return {
                 failedLogins: failedLogins?.count || 0,
                 suspiciousActivity: suspicious?.count || 0,
-                blockedIPs: blocked?.count || 0
+                blockedIPs: blocked?.count || 0,
             };
         } catch (e) {
             return { failedLogins: 0, suspiciousActivity: 0, blockedIPs: 0 };
         }
-    }
+    },
 };
 
 export { monitoring };

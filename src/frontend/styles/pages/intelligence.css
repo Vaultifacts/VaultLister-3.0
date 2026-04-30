@@ -37,7 +37,9 @@
     background: var(--gray-50);
     border-radius: 8px;
     padding: 16px;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition:
+        transform 0.2s,
+        box-shadow 0.2s;
 }
 
 .recommendation-card:hover {
@@ -217,8 +219,12 @@
     font-weight: 700;
 }
 
-.forecast-value.positive { color: var(--success); }
-.forecast-value.negative { color: var(--error); }
+.forecast-value.positive {
+    color: var(--success);
+}
+.forecast-value.negative {
+    color: var(--error);
+}
 
 .forecast-category {
     font-size: 13px;
@@ -317,7 +323,9 @@
     border: 1px solid var(--gray-200);
     border-radius: 12px;
     overflow: hidden;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition:
+        transform 0.2s,
+        box-shadow 0.2s;
 }
 
 .supplier-card-enhanced:hover {
@@ -428,7 +436,9 @@
     color: var(--gray-300);
     cursor: pointer;
     font-size: 16px;
-    transition: color 0.2s, transform 0.2s;
+    transition:
+        color 0.2s,
+        transform 0.2s;
 }
 
 .rating-star.active {
@@ -476,8 +486,13 @@
 }
 
 @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
 }
 
 .activity-feed-list {
@@ -533,7 +548,9 @@
     border: 1px solid var(--gray-200);
     border-radius: 12px;
     padding: 20px;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition:
+        transform 0.2s,
+        box-shadow 0.2s;
 }
 
 .opportunity-card:hover {
@@ -559,9 +576,15 @@
     line-height: 1;
 }
 
-.opportunity-score.high { color: var(--success); }
-.opportunity-score.medium { color: var(--warning); }
-.opportunity-score.low { color: var(--error); }
+.opportunity-score.high {
+    color: var(--success);
+}
+.opportunity-score.medium {
+    color: var(--warning);
+}
+.opportunity-score.low {
+    color: var(--error);
+}
 
 .opportunity-body {
     margin-bottom: 16px;
@@ -575,9 +598,15 @@
     margin-bottom: 12px;
 }
 
-.opportunity-trend.up { color: var(--success); }
-.opportunity-trend.down { color: var(--error); }
-.opportunity-trend.stable { color: var(--gray-500); }
+.opportunity-trend.up {
+    color: var(--success);
+}
+.opportunity-trend.down {
+    color: var(--error);
+}
+.opportunity-trend.stable {
+    color: var(--gray-500);
+}
 
 .opportunity-potential {
     display: flex;
@@ -684,9 +713,15 @@
     font-weight: 600;
 }
 
-.competition-value.competition-low { color: var(--success); }
-.competition-value.competition-medium { color: var(--warning); }
-.competition-value.competition-high { color: var(--error); }
+.competition-value.competition-low {
+    color: var(--success);
+}
+.competition-value.competition-medium {
+    color: var(--warning);
+}
+.competition-value.competition-high {
+    color: var(--error);
+}
 
 /* Category Demand Index */
 .demand-index-list {
@@ -782,9 +817,15 @@
     font-weight: 700;
 }
 
-.demand-score.demand-hot { color: #ff6b6b; }
-.demand-score.demand-warm { color: #ffa502; }
-.demand-score.demand-cool { color: #0984e3; }
+.demand-score.demand-hot {
+    color: #ff6b6b;
+}
+.demand-score.demand-warm {
+    color: #ffa502;
+}
+.demand-score.demand-cool {
+    color: #0984e3;
+}
 
 /* Supplier Reliability Score */
 .supplier-reliability {
@@ -875,8 +916,12 @@
     text-align: right;
 }
 
-.trending-change.positive { color: var(--success); }
-.trending-change.negative { color: var(--error); }
+.trending-change.positive {
+    color: var(--success);
+}
+.trending-change.negative {
+    color: var(--error);
+}
 
 /* Price Position Chart */
 .price-position-chart {
@@ -995,4 +1040,3 @@ body.dark-mode .intel-filter-btn.active {
     background: var(--primary);
     color: white;
 }
-

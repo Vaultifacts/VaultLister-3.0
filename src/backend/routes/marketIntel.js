@@ -8,12 +8,11 @@ import {
     getMarketInsight,
     findOpportunities,
     comparePricesWithCompetitors,
-    getTrendingCategories
+    getTrendingCategories,
 } from '../services/marketDataService.js';
 import { queueTask } from '../workers/taskWorker.js';
 import { logger } from '../shared/logger.js';
 import { safeJsonParse } from '../shared/utils.js';
-
 
 export async function marketIntelRouter(ctx) {
     const { method, path, body, query: queryParams, user } = ctx;
@@ -69,14 +68,19 @@ export async function marketIntelRouter(ctx) {
         const competitorId = uuidv4();
 
         try {
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO competitors (id, user_id, platform, username, profile_url,
                     category_focus, notes, is_active, created_at, updated_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())
-            `, [competitorId, user.id, platform, username, profile_url || null,
-                category_focus || null, notes || null]);
+            `,
+                [competitorId, user.id, platform, username, profile_url || null, category_focus || null, notes || null],
+            );
 
-            const competitor = await query.get('SELECT * FROM competitors WHERE id = ? AND user_id = ?', [competitorId, user.id]);
+            const competitor = await query.get('SELECT * FROM competitors WHERE id = ? AND user_id = ?', [
+                competitorId,
+                user.id,
+            ]);
             return { status: 201, data: competitor };
         } catch (error) {
             if (error.message.includes('UNIQUE')) {
@@ -95,21 +99,27 @@ export async function marketIntelRouter(ctx) {
         const competitorId = competitorIdMatch[1];
 
         try {
-            const competitor = await query.get(`
+            const competitor = await query.get(
+                `
                 SELECT * FROM competitors WHERE id = ? AND user_id = ?
-            `, [competitorId, user.id]);
+            `,
+                [competitorId, user.id],
+            );
 
             if (!competitor) {
                 return { status: 404, data: { error: 'Competitor not found' } };
             }
 
             // Get their listings
-            const listings = await query.all(`
+            const listings = await query.all(
+                `
                 SELECT * FROM competitor_listings
                 WHERE competitor_id = ?
                 ORDER BY listed_at DESC
                 LIMIT 50
-            `, [competitorId]);
+            `,
+                [competitorId],
+            );
 
             competitor.listings = listings;
 
@@ -126,7 +136,10 @@ export async function marketIntelRouter(ctx) {
 
         const competitorId = competitorIdMatch[1];
 
-        const competitor = await query.get('SELECT id FROM competitors WHERE id = ? AND user_id = ?', [competitorId, user.id]);
+        const competitor = await query.get('SELECT id FROM competitors WHERE id = ? AND user_id = ?', [
+            competitorId,
+            user.id,
+        ]);
         if (!competitor) return { status: 404, data: { error: 'Competitor not found' } };
 
         await query.transaction(async () => {
@@ -147,10 +160,10 @@ export async function marketIntelRouter(ctx) {
         const sold = queryParams.sold === 'true';
 
         // Verify ownership of competitor before listing their data
-        const ownerCheck = await query.get(
-            'SELECT id FROM competitors WHERE id = ? AND user_id = ?',
-            [competitorId, user.id]
-        );
+        const ownerCheck = await query.get('SELECT id FROM competitors WHERE id = ? AND user_id = ?', [
+            competitorId,
+            user.id,
+        ]);
         if (!ownerCheck) {
             return { status: 404, data: { error: 'Competitor not found' } };
         }
@@ -173,7 +186,9 @@ export async function marketIntelRouter(ctx) {
             const listings = await query.all(sql, params);
             return { status: 200, data: listings };
         } catch (error) {
-            logger.error('[MarketIntel] Error fetching competitor listings', user?.id || null, { detail: error.message });
+            logger.error('[MarketIntel] Error fetching competitor listings', user?.id || null, {
+                detail: error.message,
+            });
             return { status: 500, data: { error: 'Failed to fetch competitor listings' } };
         }
     }
@@ -188,7 +203,7 @@ export async function marketIntelRouter(ctx) {
 
         const competitor = await query.get(
             'SELECT id, platform, username FROM competitors WHERE id = ? AND user_id = ?',
-            [competitorId, user.id]
+            [competitorId, user.id],
         );
         if (!competitor) {
             return { status: 404, data: { error: 'Competitor not found' } };
@@ -199,8 +214,8 @@ export async function marketIntelRouter(ctx) {
                 status: 200,
                 data: {
                     queued: false,
-                    message: `Scraping is not yet supported for ${competitor.platform}. Only Poshmark closets can be refreshed automatically.`
-                }
+                    message: `Scraping is not yet supported for ${competitor.platform}. Only Poshmark closets can be refreshed automatically.`,
+                },
             };
         }
 
@@ -209,22 +224,25 @@ export async function marketIntelRouter(ctx) {
             competitorId,
             userId: user.id,
             platform: competitor.platform,
-            username: competitor.username
+            username: competitor.username,
         });
 
         // Stamp last_checked_at so the UI knows a refresh was triggered
-        await query.run(`
+        await query.run(
+            `
             UPDATE competitors SET last_checked_at = NOW(), updated_at = NOW()
             WHERE id = ? AND user_id = ?
-        `, [competitorId, user.id]);
+        `,
+            [competitorId, user.id],
+        );
 
         return {
             status: 200,
             data: {
                 queued: true,
                 task_id: task.id,
-                message: `Closet scrape queued for @${competitor.username}. Results will appear in listings within a few minutes.`
-            }
+                message: `Closet scrape queued for @${competitor.username}. Results will appear in listings within a few minutes.`,
+            },
         };
     }
 
@@ -262,10 +280,10 @@ export async function marketIntelRouter(ctx) {
                 // Parse JSON fields
                 return {
                     status: 200,
-                    data: insights.map(i => ({
+                    data: insights.map((i) => ({
                         ...i,
-                        insights_json: safeJsonParse(i.insights_json, null)
-                    }))
+                        insights_json: safeJsonParse(i.insights_json, null),
+                    })),
                 };
             }
         } catch (error) {
@@ -274,7 +292,7 @@ export async function marketIntelRouter(ctx) {
 
         // Generate insights on the fly
         const categories = category ? [category] : ['Clothing', 'Shoes', 'Bags', 'Accessories', 'Vintage'];
-        const generatedInsights = categories.map(cat => getMarketInsight(cat, { platform }));
+        const generatedInsights = categories.map((cat) => getMarketInsight(cat, { platform }));
 
         return { status: 200, data: generatedInsights };
     }
@@ -292,22 +310,40 @@ export async function marketIntelRouter(ctx) {
 
         // Store insight
         try {
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO market_insights (id, user_id, category, subcategory, brand, platform,
                     saturation_score, opportunity_score, avg_price, price_range_low, price_range_high,
                     avg_days_to_sell, listing_count, demand_trend, competition_level,
                     recommended_price_range, insights_json, valid_until, created_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
-            `, [
-                insight.id, user.id, insight.category, insight.subcategory, insight.brand,
-                insight.platform, insight.saturation_score, insight.opportunity_score,
-                insight.avg_price, insight.price_range_low, insight.price_range_high,
-                insight.avg_days_to_sell, insight.listing_count, insight.demand_trend,
-                insight.competition_level, insight.recommended_price_range,
-                insight.insights_json, insight.valid_until
-            ]);
+            `,
+                [
+                    insight.id,
+                    user.id,
+                    insight.category,
+                    insight.subcategory,
+                    insight.brand,
+                    insight.platform,
+                    insight.saturation_score,
+                    insight.opportunity_score,
+                    insight.avg_price,
+                    insight.price_range_low,
+                    insight.price_range_high,
+                    insight.avg_days_to_sell,
+                    insight.listing_count,
+                    insight.demand_trend,
+                    insight.competition_level,
+                    insight.recommended_price_range,
+                    insight.insights_json,
+                    insight.valid_until,
+                ],
+            );
         } catch (error) {
-            logger.error('[MarketIntel] Market insight insert failed', user?.id, { category: insight?.category, detail: error?.message });
+            logger.error('[MarketIntel] Market insight insert failed', user?.id, {
+                category: insight?.category,
+                detail: error?.message,
+            });
         }
 
         return { status: 200, data: insight };
@@ -335,10 +371,7 @@ export async function marketIntelRouter(ctx) {
             return { status: 400, data: { error: 'inventory_id required' } };
         }
 
-        const item = await query.get(
-            'SELECT * FROM inventory WHERE id = ? AND user_id = ?',
-            [inventory_id, user.id]
-        );
+        const item = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [inventory_id, user.id]);
 
         if (!item) {
             return { status: 404, data: { error: 'Item not found' } };
@@ -353,8 +386,8 @@ export async function marketIntelRouter(ctx) {
                 ...comparison,
                 avg_competitor_price: comparison.avg_comparable_price,
                 min_competitor_price: comparison.min_comparable_price,
-                max_competitor_price: comparison.max_comparable_price
-            }
+                max_competitor_price: comparison.max_comparable_price,
+            },
         };
     }
 
@@ -379,8 +412,8 @@ export async function marketIntelRouter(ctx) {
                 { id: 'mercari', name: 'Mercari', color: '#4dc7ec' },
                 { id: 'depop', name: 'Depop', color: '#ff2300' },
                 { id: 'grailed', name: 'Grailed', color: '#000000' },
-                { id: 'facebook', name: 'Facebook Marketplace', color: '#1877f2' }
-            ]
+                { id: 'facebook', name: 'Facebook Marketplace', color: '#1877f2' },
+            ],
         };
     }
 
@@ -390,27 +423,36 @@ export async function marketIntelRouter(ctx) {
         if (authError) return authError;
 
         try {
-            const competitorStats = await query.get(`
+            const competitorStats = await query.get(
+                `
                 SELECT COUNT(*) as count FROM competitors WHERE user_id = ? AND is_active = TRUE
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
-            const listingStats = await query.get(`
+            const listingStats = await query.get(
+                `
                 SELECT
                     COUNT(*) as total,
                     COUNT(CASE WHEN sold_at IS NOT NULL THEN 1 END) as sold
                 FROM competitor_listings cl
                 JOIN competitors c ON cl.competitor_id = c.id
                 WHERE c.user_id = ?
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
-            const insightStats = await query.get(`
+            const insightStats = await query.get(
+                `
                 SELECT
                     AVG(opportunity_score) as avg_opportunity,
                     AVG(saturation_score) as avg_saturation
                 FROM market_insights
                 WHERE user_id = ?
                 AND (valid_until IS NULL OR valid_until > NOW())
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             return {
                 status: 200,
@@ -419,11 +461,13 @@ export async function marketIntelRouter(ctx) {
                     listings_tracked: listingStats?.total || 0,
                     listings_sold: listingStats?.sold || 0,
                     avg_opportunity_score: Math.round((insightStats?.avg_opportunity || 55) * 10) / 10,
-                    avg_saturation_score: Math.round((insightStats?.avg_saturation || 60) * 10) / 10
-                }
+                    avg_saturation_score: Math.round((insightStats?.avg_saturation || 60) * 10) / 10,
+                },
             };
         } catch (error) {
-            logger.error('[MarketIntel] Error fetching market intel stats', user?.id || null, { detail: error.message });
+            logger.error('[MarketIntel] Error fetching market intel stats', user?.id || null, {
+                detail: error.message,
+            });
             return { status: 500, data: { error: 'Failed to fetch market intel stats' } };
         }
     }

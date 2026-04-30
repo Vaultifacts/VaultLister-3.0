@@ -119,14 +119,16 @@ export function scanImages(filePaths, accountId) {
         if (!fs.existsSync(fp)) continue;
         const hash = computeFileHash(fp);
         if (hashes.has(hash)) {
-            issues.push(`WARN: ${path.basename(fp)} is identical to ${path.basename(hashes.get(hash))} in this submission`);
+            issues.push(
+                `WARN: ${path.basename(fp)} is identical to ${path.basename(hashes.get(hash))} in this submission`,
+            );
         } else {
             hashes.set(hash, fp);
         }
     }
 
-    const hasBlock = issues.some(i => i.startsWith('BLOCK'));
-    const hasWarn = issues.some(i => i.startsWith('WARN'));
+    const hasBlock = issues.some((i) => i.startsWith('BLOCK'));
+    const hasWarn = issues.some((i) => i.startsWith('WARN'));
     const status = hasBlock ? 'BLOCK' : hasWarn ? 'WARN' : 'PASS';
 
     return { status, issues };

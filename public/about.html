@@ -1,441 +1,861 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="About VaultLister — Built by resellers, for resellers. Multi-channel listing platform for 9+ marketplaces.">
-    <meta name="theme-color" content="#18181B">
-    <title>About VaultLister — Our Mission and Story</title>
-    <!-- Google Analytics (GA4) with Consent Mode -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('consent', 'default', {
-        analytics_storage: localStorage.getItem('cookie_consent') === 'accepted' ? 'granted' : 'denied'
-      });
-      gtag('js', new Date());
-      gtag('config', 'G-LXETN4PYRM');
-    </script>
-    <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png">
-    <style>
-main { flex: 1; }
-.about-hero { padding: 5rem 2rem; text-align: center; background: linear-gradient(160deg, var(--white) 0%, var(--amber-50) 60%, var(--white) 100%); }
-.about-hero h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1.15; color: var(--gray-900); margin-bottom: 0.75rem; }
-.about-hero p { font-size: 1.0625rem; color: var(--gray-500); max-width: 520px; margin: 0 auto; line-height: 1.7; }
-.about-body { max-width: 780px; margin: 0 auto; padding: 3rem 2rem 5rem; }
-.about-section { margin-bottom: 3rem; }
-.about-section h2 { font-size: 1.375rem; font-weight: 800; color: var(--gray-900); margin-bottom: 1rem; letter-spacing: -0.02em; }
-.about-section p { font-size: 1.0625rem; color: var(--gray-600); line-height: 1.75; margin-bottom: 1rem; }
-.values-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
-.value-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: 12px; padding: 1.5rem; }
-.value-card h3 { font-size: 1rem; font-weight: 700; color: var(--gray-900); margin-bottom: 0.5rem; }
-.value-card p { font-size: 0.9375rem; color: var(--gray-500); line-height: 1.6; margin: 0; }
-.value-icon { width: 36px; height: 36px; background: var(--amber-50); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.75rem; font-size: 1.125rem; }
-.about-cta { text-align: center; padding: 2.5rem; background: var(--gray-900); border-radius: 14px; }
-.about-cta p { color: var(--gray-400); margin-bottom: 1.25rem; font-size: 1.0625rem; }
-.about-cta .btn { display: inline-block; padding: 0.75rem 2rem; background: linear-gradient(135deg, #b45309, #92400e); color: #fff; border-radius: 0.5rem; font-weight: 600; font-size: 0.9375rem; text-decoration: none; }
-/* Lang selector */
-.lang-selector { position: relative; }
-.lang-btn { background: transparent; color: #fff; display: flex; align-items: center; gap: 0.25rem; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); border-radius: 0.5rem; padding: 0.4rem 0.75rem; font-size: 0.875rem; font-weight: 500; transition: border-color 0.15s, background 0.15s; }
-.lang-btn:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.08); }
-.lang-dropdown { display: none; position: absolute; top: calc(100% + 6px); right: 0; background: #27272a; border: 1px solid #3f3f46; border-radius: 0.5rem; box-shadow: 0 8px 24px rgba(0,0,0,0.35); z-index: 100; min-width: 160px; padding: 0.25rem; }
-.lang-dropdown.open { display: flex; flex-direction: column; }
-.lang-option { text-align: left; padding: 0.5rem 1rem; background: transparent; border: none; color: #fff; cursor: pointer; font-size: 0.875rem; border-radius: 0.375rem; white-space: nowrap; }
-.lang-option:hover { background: #3f3f46; }
-.lang-option.active { color: #f59e0b; }
-    </style>
-    <link rel="stylesheet" href="/styles/public-base.css">
-</head>
-<body>
-<a href="#main-content" class="skip-link">Skip to main content</a>
-
-<!-- Navigation -->
-<nav class="nav" aria-label="Main navigation">
-    <a class="nav-logo" href="/"><img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" width="348" height="87" style="display:block;"></a>
-    <div class="nav-links">
-        <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-features" aria-haspopup="menu" aria-expanded="false">Features &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-features" role="menu" aria-hidden="true">
-                <a href="/#cross-listing" role="menuitem">Cross-Listing</a>
-                <a href="/#inventory-management" role="menuitem">Inventory Management</a>
-                <a href="/#sale-purchase-sync" role="menuitem">Sale &amp; Purchase Sync</a>
-                <a href="/#analytics" role="menuitem">Analytics</a>
-                <a href="/#offer-management" role="menuitem">Offer Management</a>
-                <a href="/#marketplace-sharing" role="menuitem">Marketplace Sharing</a>
-                <a href="/#bulk-actions" role="menuitem">Bulk Actions</a>
-                <a href="/#photo-tools" role="menuitem">Photo Tools</a>
-                <a href="/#ai-listing-generation" role="menuitem">AI Listing Generation</a>
-                <a href="/#financial-management" role="menuitem">Financial Management</a>
-                <a href="/#productivity-tools" role="menuitem">Productivity Tools</a>
-            </div>
-        </div>
-        <a class="nav-link" href="/platforms.html">Marketplaces</a>
-        <a class="nav-link" href="/pricing.html">Pricing</a>
-        <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="menu" aria-expanded="false">Resources &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-resources" role="menu" aria-hidden="true">
-                <a href="/learning.html" role="menuitem">Learning</a>
-                <a href="/documentation.html" role="menuitem">Documentation</a>
-                <a href="/blog/index.html" role="menuitem">Blog</a>
-                <a href="/affiliate.html" role="menuitem">Affiliate Program</a>
-            </div>
-        </div>
-        <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-feedback" aria-haspopup="menu" aria-expanded="false">Feedback &amp; Support &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-feedback" role="menu" aria-hidden="true">
-                <a href="/help.html" role="menuitem">Help Center</a>
-                <a href="/faq.html" role="menuitem">FAQs</a>
-                <a href="/request-feature.html" role="menuitem">Request a Feature</a>
-                <a href="/contact.html#contact-form" role="menuitem">Report a Bug</a>
-                <a href="/contact.html" role="menuitem">Contact Us</a>
-            </div>
-        </div>
-        <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-product-updates" aria-haspopup="menu" aria-expanded="false">Status &amp; Updates &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu" aria-hidden="true">
-                <a href="/changelog.html" role="menuitem">Changelog</a>
-                <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
-                <a href="/status.html" role="menuitem">Status Page</a>
-            </div>
-        </div>
-    </div>
-    <div class="nav-actions">
-        <div class="currency-selector">
-            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false" aria-haspopup="listbox"><span id="current-currency-code">CAD</span>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-            </button>
-            <div class="currency-dropdown" id="currency-dropdown">
-                <div style="padding:0.375rem 0.75rem;font-size:0.7rem;color:#a1a1aa;text-align:center;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:0.25rem;">Coming Soon</div>
-                <button type="button" class="currency-option" data-currency="CAD" data-symbol="$">$ CAD</button>
-                <button type="button" class="currency-option" data-currency="USD" data-symbol="$">$ USD</button>
-                <button type="button" class="currency-option" data-currency="GBP" data-symbol="£">£ GBP</button>
-                <button type="button" class="currency-option" data-currency="EUR" data-symbol="€">€ EUR</button>
-                <button type="button" class="currency-option" data-currency="AUD" data-symbol="$">$ AUD</button>
-            </div>
-        </div>
-        <div class="lang-selector">
-        <button type="button" class="lang-btn" title="Change language" aria-expanded="false" aria-haspopup="listbox">
-            <span class="lang-code" id="current-lang-code">EN</span>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-        </button>
-        <div class="lang-dropdown" id="lang-dropdown">
-                <div style="padding:0.375rem 0.75rem;font-size:0.7rem;color:#a1a1aa;text-align:center;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:0.25rem;">Coming Soon</div>
-            <button type="button" class="lang-option" data-lang="en">English (U.S)</button>
-            <button type="button" class="lang-option" data-lang="en-ca">English (CA)</button>
-            <button type="button" class="lang-option" data-lang="es">Español</button>
-            <button type="button" class="lang-option" data-lang="fr">Français</button>
-            <button type="button" class="lang-option" data-lang="de">Deutsch</button>
-            <button type="button" class="lang-option" data-lang="it">Italiano</button>
-            <button type="button" class="lang-option" data-lang="pt">Português</button>
-            <button type="button" class="lang-option" data-lang="ja">日本語</button>
-            <button type="button" class="lang-option" data-lang="zh">中文</button>
-            <button type="button" class="lang-option" data-lang="ko">한국어</button>
-            <button type="button" class="lang-option" data-lang="ar">العربية</button>
-        </div>
-    </div>
-
-        <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
-        <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
-    </div>
-</nav>
-
-<main id="main-content">
-<section class="about-hero" aria-label="About VaultLister">
-    <h1>About VaultLister</h1>
-    <p>Built by resellers, for resellers.</p>
-</section>
-
-<div class="about-body">
-    <div class="about-section">
-        <h2>Our Mission</h2>
-        <p>VaultLister is a multi-channel reselling platform that helps sellers list to 9+ marketplaces from one dashboard. We believe reselling should be simple, affordable, and accessible to everyone.</p>
-        <p>Founded in 2026 in Calgary, Alberta, Canada, we set out to build the tool we wished existed when we started reselling. No hidden fees, no per-listing charges, no bait-and-switch pricing.</p>
-    </div>
-
-    <div class="about-section">
-        <h2>What We Believe</h2>
-        <div class="values-grid">
-            <div class="value-card">
-                <div class="value-icon">&#128176;</div>
-                <h3>Zero-Cost First</h3>
-                <p>A generous free tier that stays free forever. Premium features earn their price.</p>
-            </div>
-            <div class="value-card">
-                <div class="value-icon">&#128722;</div>
-                <h3>Reseller-First Design</h3>
-                <p>Built by actual resellers who understand the daily grind of cross-listing, closet sharing, and offer management.</p>
-            </div>
-            <div class="value-card">
-                <div class="value-icon">&#128274;</div>
-                <h3>Privacy by Default</h3>
-                <p>Your data stays yours. No selling user data, no advertising cookies, no tracking beyond what you opt into.</p>
-            </div>
-            <div class="value-card">
-                <div class="value-icon">&#9889;</div>
-                <h3>AI That Actually Helps</h3>
-                <p>Smart listing generation, intelligent price suggestions, and photo tools that save real time — not gimmicks.</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="about-section">
-        <h2>Our Team</h2>
-        <p>A small team building big tools for resellers everywhere. We ship fast, listen to feedback, and obsess over the details that make reselling easier.</p>
-    </div>
-
-    <div class="about-cta">
-        <p>Ready to simplify your reselling?</p>
-        <a class="btn" href="/?app=1#register">Start Free Trial</a>
-    </div>
-</div>
-</main>
-
-<!-- Footer -->
-<footer class="footer" aria-label="Footer">
-    <div class="footer-social-bar">
-        <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" width="144" height="36" style="display:block;"></a>
-        <div class="footer-social-links">
-            <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg></a>
-            <a href="https://www.facebook.com/profile.php?id=61570865723233" aria-label="Facebook"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
-            <a href="https://x.com/VaultListerCo" aria-label="X"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
-            <a href="https://www.tiktok.com/@vaultlister.co" aria-label="TikTok"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.92a8.24 8.24 0 0 0 4.83 1.56v-3.5a4.84 4.84 0 0 1-1.07-.29z"/></svg></a>
-            <a href="https://www.reddit.com/user/VaultLister/" aria-label="Reddit"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg></a>
-            <a href="https://www.youtube.com/@VaultLister" aria-label="YouTube"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
-        </div>
-    </div>
-    <div class="footer-inner">
-                <div class="footer-cols">
-            <div class="footer-col">
-                <h3 class="footer-col-label">Resources</h3>
-                <a href="/blog/index.html">Blog</a>
-                <a href="/changelog.html">Changelog</a>
-                <a href="/documentation.html">Documentation</a>
-                <a href="/faq.html">FAQs</a>
-                <a href="/help.html">Help Center</a>
-            </div>
-            <div class="footer-col">
-                <h3 class="footer-col-label">Company</h3>
-                <a href="/about.html">About Us</a>
-                <a href="/careers.html">Careers</a>
-                <a href="/documentation.html#media-kit">Media Kit</a>
-                <a href="/affiliate.html">Affiliate Program</a>
-            </div>
-            <div class="footer-col">
-                <h3 class="footer-col-label">Legal</h3>
-                <a href="/privacy.html">Privacy Policy</a>
-                <a href="/terms.html">Terms of Service</a>
-                <a href="/cookies.html">Cookie Policy</a>
-            </div>
-            <div class="footer-col">
-                <h3 class="footer-col-label">Compare</h3>
-                <a href="/compare/crosslist.html">Crosslist</a>
-                <a href="/compare/crosslist-magic.html">Crosslist Magic</a>
-                <a href="/compare/flyp.html">Flyp</a>
-                <a href="/compare/list-perfectly.html">List Perfectly</a>
-                <a href="/compare/nifty.html">Nifty</a>
-                <a href="/compare/oneshop.html">OneShop</a>
-                <a href="/compare/primelister.html">Primelister</a>
-                <a href="/compare/vendoo.html">Vendoo</a>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2026 VaultLister, Inc. All rights reserved.</p>
-            </div>
-    </div>
-</footer>
-
-<script>
-(function() {
-    document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            var targetId = this.dataset.target;
-            var menu = document.getElementById(targetId);
-            if (!menu) return;
-            var isOpen = menu.classList.contains('open');
-            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
-            document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
-            if (!isOpen) {
-                menu.classList.add('open');
-                menu.setAttribute('aria-hidden', 'false');
-                btn.setAttribute('aria-expanded', 'true');
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="description"
+            content="About VaultLister — Built by resellers, for resellers. Multi-channel listing platform for 9+ marketplaces."
+        />
+        <meta name="theme-color" content="#18181B" />
+        <title>About VaultLister — Our Mission and Story</title>
+        <!-- Google Analytics (GA4) with Consent Mode -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+                dataLayer.push(arguments);
             }
-        });
-    });
-    document.addEventListener('click', function() {
-        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
-        document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
-    });
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
-            document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
-        }
-    });
-})();
-</script>
-
-<div id="cookie-banner" role="region" aria-label="Cookie consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#18181B;color:#fef3c7;padding:1rem 1.5rem;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;">
-    <p style="margin:0;flex:1;min-width:200px;">We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are used.</p>
-    <div style="display:flex;gap:0.625rem;flex-shrink:0;">
-        <button type="button" id="cookie-decline" style="min-height:44px;padding:0.5rem 1.125rem;border-radius:0.5rem;border:1.5px solid rgba(224,231,255,0.4);background:transparent;color:#fef3c7;font-size:0.875rem;font-weight:600;cursor:pointer;">Decline</button>
-        <button type="button" id="cookie-accept" style="min-height:44px;padding:0.5rem 1.25rem;border-radius:0.5rem;border:none;background:linear-gradient(135deg,#b45309,#92400e);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;">Accept</button>
-    </div>
-</div>
-<script>
-(function() {
-    var banner = document.getElementById('cookie-banner');
-    if (!banner) return;
-    if (localStorage.getItem('cookie_consent')) { banner.style.display = 'none'; return; }
-    banner.style.display = 'flex';
-    document.getElementById('cookie-accept').addEventListener('click', function() {
-        localStorage.setItem('cookie_consent', 'accepted');
-        if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'granted' });
-        banner.style.display = 'none';
-    });
-    document.getElementById('cookie-decline').addEventListener('click', function() {
-        localStorage.setItem('cookie_consent', 'declined');
-        if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'denied' });
-        banner.style.display = 'none';
-    });
-})();
-
-// Lang selector
-(function() {
-    var LANGS = {
-        en: { code: "EN" },
-        'en-ca': { code: "EN" },
-        es: { code: "ES" },
-        fr: { code: "FR" },
-        de: { code: "DE" },
-        it: { code: "IT" },
-        pt: { code: "PT" },
-        ja: { code: "JA" },
-        zh: { code: "ZH" },
-        ko: { code: "KO" },
-        ar: { code: "AR" }
-    };
-    function setLang(lang) {
-        var info = LANGS[lang] || LANGS["en"];
-        var codeEl = document.getElementById("current-lang-code");
-        if (codeEl) codeEl.textContent = info.code;
-        document.querySelectorAll(".lang-option").forEach(function(btn) {
-            btn.classList.toggle("active", btn.getAttribute("data-lang") === lang);
-        });
-        try { localStorage.setItem("vaultlister_locale", lang); } catch(e) {}
-    }
-    function detectLang() {
-        try {
-            var stored = localStorage.getItem("vaultlister_locale");
-            if (stored && LANGS[stored]) return stored;
-        } catch(e) {}
-        var nav = (navigator.language || "").toLowerCase();
-        if (nav === "en-ca" || nav.startsWith("en-ca")) return "en-ca";
-        var base = nav.split("-")[0];
-        return LANGS[base] ? base : "en";
-    }
-    document.addEventListener("DOMContentLoaded", function() {
-        var btn = document.querySelector(".lang-btn");
-        var dropdown = document.getElementById("lang-dropdown");
-        if (!btn || !dropdown) return;
-        setLang(detectLang());
-        btn.addEventListener("click", function(e) {
-            e.stopPropagation();
-            var open = dropdown.classList.toggle("open");
-            btn.setAttribute("aria-expanded", open ? "true" : "false");
-        });
-        document.addEventListener("click", function(e) {
-            if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
-                dropdown.classList.remove("open");
-                btn.setAttribute("aria-expanded", "false");
-            }
-        });
-        dropdown.querySelectorAll(".lang-option").forEach(function(opt) {
-            opt.addEventListener("click", function() {
-                setLang(opt.getAttribute("data-lang"));
-                dropdown.classList.remove("open");
-                btn.setAttribute("aria-expanded", "false");
+            gtag('consent', 'default', {
+                analytics_storage: localStorage.getItem('cookie_consent') === 'accepted' ? 'granted' : 'denied',
             });
-        });
-    });
-})();
+            gtag('js', new Date());
+            gtag('config', 'G-LXETN4PYRM');
+        </script>
+        <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png" />
+        <style>
+            main {
+                flex: 1;
+            }
+            .about-hero {
+                padding: 5rem 2rem;
+                text-align: center;
+                background: linear-gradient(160deg, var(--white) 0%, var(--amber-50) 60%, var(--white) 100%);
+            }
+            .about-hero h1 {
+                font-size: clamp(2rem, 5vw, 3rem);
+                font-weight: 800;
+                letter-spacing: -0.04em;
+                line-height: 1.15;
+                color: var(--gray-900);
+                margin-bottom: 0.75rem;
+            }
+            .about-hero p {
+                font-size: 1.0625rem;
+                color: var(--gray-500);
+                max-width: 520px;
+                margin: 0 auto;
+                line-height: 1.7;
+            }
+            .about-body {
+                max-width: 780px;
+                margin: 0 auto;
+                padding: 3rem 2rem 5rem;
+            }
+            .about-section {
+                margin-bottom: 3rem;
+            }
+            .about-section h2 {
+                font-size: 1.375rem;
+                font-weight: 800;
+                color: var(--gray-900);
+                margin-bottom: 1rem;
+                letter-spacing: -0.02em;
+            }
+            .about-section p {
+                font-size: 1.0625rem;
+                color: var(--gray-600);
+                line-height: 1.75;
+                margin-bottom: 1rem;
+            }
+            .values-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 1.5rem;
+                margin-top: 1.5rem;
+            }
+            .value-card {
+                background: var(--white);
+                border: 1px solid var(--gray-200);
+                border-radius: 12px;
+                padding: 1.5rem;
+            }
+            .value-card h3 {
+                font-size: 1rem;
+                font-weight: 700;
+                color: var(--gray-900);
+                margin-bottom: 0.5rem;
+            }
+            .value-card p {
+                font-size: 0.9375rem;
+                color: var(--gray-500);
+                line-height: 1.6;
+                margin: 0;
+            }
+            .value-icon {
+                width: 36px;
+                height: 36px;
+                background: var(--amber-50);
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 0.75rem;
+                font-size: 1.125rem;
+            }
+            .about-cta {
+                text-align: center;
+                padding: 2.5rem;
+                background: var(--gray-900);
+                border-radius: 14px;
+            }
+            .about-cta p {
+                color: var(--gray-400);
+                margin-bottom: 1.25rem;
+                font-size: 1.0625rem;
+            }
+            .about-cta .btn {
+                display: inline-block;
+                padding: 0.75rem 2rem;
+                background: linear-gradient(135deg, #b45309, #92400e);
+                color: #fff;
+                border-radius: 0.5rem;
+                font-weight: 600;
+                font-size: 0.9375rem;
+                text-decoration: none;
+            }
+            /* Lang selector */
+            .lang-selector {
+                position: relative;
+            }
+            .lang-btn {
+                background: transparent;
+                color: #fff;
+                display: flex;
+                align-items: center;
+                gap: 0.25rem;
+                cursor: pointer;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 0.5rem;
+                padding: 0.4rem 0.75rem;
+                font-size: 0.875rem;
+                font-weight: 500;
+                transition:
+                    border-color 0.15s,
+                    background 0.15s;
+            }
+            .lang-btn:hover {
+                border-color: rgba(255, 255, 255, 0.4);
+                background: rgba(255, 255, 255, 0.08);
+            }
+            .lang-dropdown {
+                display: none;
+                position: absolute;
+                top: calc(100% + 6px);
+                right: 0;
+                background: #27272a;
+                border: 1px solid #3f3f46;
+                border-radius: 0.5rem;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+                z-index: 100;
+                min-width: 160px;
+                padding: 0.25rem;
+            }
+            .lang-dropdown.open {
+                display: flex;
+                flex-direction: column;
+            }
+            .lang-option {
+                text-align: left;
+                padding: 0.5rem 1rem;
+                background: transparent;
+                border: none;
+                color: #fff;
+                cursor: pointer;
+                font-size: 0.875rem;
+                border-radius: 0.375rem;
+                white-space: nowrap;
+            }
+            .lang-option:hover {
+                background: #3f3f46;
+            }
+            .lang-option.active {
+                color: #f59e0b;
+            }
+        </style>
+        <link rel="stylesheet" href="/styles/public-base.css" />
+    </head>
+    <body>
+        <a href="#main-content" class="skip-link">Skip to main content</a>
 
-// Currency selector
-(function() {
-    var saved = localStorage.getItem('vl_currency') || 'CAD';
-    var el = document.getElementById('current-currency-code');
-    if (el) el.textContent = saved;
-    document.querySelectorAll('.currency-option').forEach(function(btn) {
-        if (btn.dataset.currency === saved) btn.classList.add('active');
-        btn.addEventListener('click', function() {
-            var c = this.dataset.currency;
-            localStorage.setItem('vl_currency', c);
-            document.querySelectorAll('.currency-option').forEach(function(b){ b.classList.remove('active'); });
-            this.classList.add('active');
-            var codeEl = document.getElementById('current-currency-code');
-            if (codeEl) codeEl.textContent = c;
-            var dd = document.getElementById('currency-dropdown');
-            if (dd) dd.classList.remove('open');
-        });
-    });
-    var btn = document.querySelector('.currency-btn');
-    if (btn) {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            var dd = document.getElementById('currency-dropdown');
-            dd.classList.toggle('open');
-            btn.setAttribute('aria-expanded', dd.classList.contains('open'));
-        });
-    }
-    document.addEventListener('click', function() {
-        var dd = document.getElementById('currency-dropdown');
-        if (dd) { dd.classList.remove('open'); }
-        if (btn) btn.setAttribute('aria-expanded', 'false');
-    });
-})();
-</script>
-<script>
-(function() {
-    var hasCurrency = !!localStorage.getItem('vl_currency');
-    var hasLang = !!localStorage.getItem('vaultlister_locale');
-    if (hasCurrency && hasLang) return;
-    fetch('/api/geo')
-        .then(function(r) { return r.json(); })
-        .then(function(d) {
-            var cc = d.country_code || '';
-            if (!hasCurrency) {
-                var CURR = {CA:'CAD',US:'USD',GB:'GBP',AU:'AUD',NZ:'AUD',
-                    FR:'EUR',DE:'EUR',IT:'EUR',ES:'EUR',NL:'EUR',BE:'EUR',
-                    AT:'EUR',FI:'EUR',IE:'EUR',PT:'EUR',GR:'EUR',LU:'EUR',
-                    SK:'EUR',SI:'EUR',EE:'EUR',LV:'EUR',LT:'EUR',CY:'EUR',MT:'EUR'};
-                var curr = CURR[cc];
-                if (curr) {
-                    var btn = document.querySelector('.currency-option[data-currency="' + curr + '"]');
-                    if (btn) btn.click();
+        <!-- Navigation -->
+        <nav class="nav" aria-label="Main navigation">
+            <a class="nav-logo" href="/"
+                ><img
+                    src="/assets/logo/lockups/horizontal-2048.svg"
+                    alt="VaultLister"
+                    width="348"
+                    height="87"
+                    style="display: block"
+            /></a>
+            <div class="nav-links">
+                <div class="nav-dropdown">
+                    <button
+                        type="button"
+                        class="nav-link nav-dropdown-btn"
+                        data-target="dropdown-features"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                    >
+                        Features &#9662;
+                    </button>
+                    <div class="nav-dropdown-menu" id="dropdown-features" role="menu" inert>
+                        <a href="/#cross-listing" role="menuitem">Cross-Listing</a>
+                        <a href="/#inventory-management" role="menuitem">Inventory Management</a>
+                        <a href="/#sale-purchase-sync" role="menuitem">Sale &amp; Purchase Sync</a>
+                        <a href="/#analytics" role="menuitem">Analytics</a>
+                        <a href="/#offer-management" role="menuitem">Offer Management</a>
+                        <a href="/#marketplace-sharing" role="menuitem">Marketplace Sharing</a>
+                        <a href="/#bulk-actions" role="menuitem">Bulk Actions</a>
+                        <a href="/#photo-tools" role="menuitem">Photo Tools</a>
+                        <a href="/#ai-listing-generation" role="menuitem">AI Listing Generation</a>
+                        <a href="/#financial-management" role="menuitem">Financial Management</a>
+                        <a href="/#productivity-tools" role="menuitem">Productivity Tools</a>
+                    </div>
+                </div>
+                <a class="nav-link" href="/platforms.html">Marketplaces</a>
+                <a class="nav-link" href="/pricing.html">Pricing</a>
+                <div class="nav-dropdown">
+                    <button
+                        type="button"
+                        class="nav-link nav-dropdown-btn"
+                        data-target="dropdown-resources"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                    >
+                        Resources &#9662;
+                    </button>
+                    <div class="nav-dropdown-menu" id="dropdown-resources" role="menu" inert>
+                        <a href="/learning.html" role="menuitem">Learning</a>
+                        <a href="/documentation.html" role="menuitem">Documentation</a>
+                        <a href="/blog/index.html" role="menuitem">Blog</a>
+                        <a href="/affiliate.html" role="menuitem">Affiliate Program</a>
+                    </div>
+                </div>
+                <div class="nav-dropdown">
+                    <button
+                        type="button"
+                        class="nav-link nav-dropdown-btn"
+                        data-target="dropdown-feedback"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                    >
+                        Feedback &amp; Support &#9662;
+                    </button>
+                    <div class="nav-dropdown-menu" id="dropdown-feedback" role="menu" inert>
+                        <a href="/help.html" role="menuitem">Help Center</a>
+                        <a href="/faq.html" role="menuitem">FAQs</a>
+                        <a href="/request-feature.html" role="menuitem">Request a Feature</a>
+                        <a href="/contact.html#contact-form" role="menuitem">Report a Bug</a>
+                        <a href="/contact.html" role="menuitem">Contact Us</a>
+                    </div>
+                </div>
+                <div class="nav-dropdown">
+                    <button
+                        type="button"
+                        class="nav-link nav-dropdown-btn"
+                        data-target="dropdown-product-updates"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                    >
+                        Status &amp; Updates &#9662;
+                    </button>
+                    <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu" inert>
+                        <a href="/changelog.html" role="menuitem">Changelog</a>
+                        <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
+                        <a href="/status.html" role="menuitem">Status Page</a>
+                    </div>
+                </div>
+            </div>
+            <div class="nav-actions">
+                <div class="currency-selector">
+                    <button
+                        type="button"
+                        class="currency-btn"
+                        title="Change currency"
+                        aria-expanded="false"
+                        aria-haspopup="listbox"
+                    >
+                        <span id="current-currency-code">CAD</span>
+                        <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path d="M6 9l6 6 6-6" />
+                        </svg>
+                    </button>
+                    <div class="currency-dropdown" id="currency-dropdown">
+                        <div
+                            style="
+                                padding: 0.375rem 0.75rem;
+                                font-size: 0.7rem;
+                                color: #a1a1aa;
+                                text-align: center;
+                                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                                margin-bottom: 0.25rem;
+                            "
+                        >
+                            Coming Soon
+                        </div>
+                        <button type="button" class="currency-option" data-currency="CAD" data-symbol="$">$ CAD</button>
+                        <button type="button" class="currency-option" data-currency="USD" data-symbol="$">$ USD</button>
+                        <button type="button" class="currency-option" data-currency="GBP" data-symbol="£">£ GBP</button>
+                        <button type="button" class="currency-option" data-currency="EUR" data-symbol="€">€ EUR</button>
+                        <button type="button" class="currency-option" data-currency="AUD" data-symbol="$">$ AUD</button>
+                    </div>
+                </div>
+                <div class="lang-selector">
+                    <button
+                        type="button"
+                        class="lang-btn"
+                        title="Change language"
+                        aria-expanded="false"
+                        aria-haspopup="listbox"
+                    >
+                        <span class="lang-code" id="current-lang-code">EN</span>
+                        <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path d="M6 9l6 6 6-6" />
+                        </svg>
+                    </button>
+                    <div class="lang-dropdown" id="lang-dropdown">
+                        <div
+                            style="
+                                padding: 0.375rem 0.75rem;
+                                font-size: 0.7rem;
+                                color: #a1a1aa;
+                                text-align: center;
+                                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                                margin-bottom: 0.25rem;
+                            "
+                        >
+                            Coming Soon
+                        </div>
+                        <button type="button" class="lang-option" data-lang="en">English (U.S)</button>
+                        <button type="button" class="lang-option" data-lang="en-ca">English (CA)</button>
+                        <button type="button" class="lang-option" data-lang="es">Español</button>
+                        <button type="button" class="lang-option" data-lang="fr">Français</button>
+                        <button type="button" class="lang-option" data-lang="de">Deutsch</button>
+                        <button type="button" class="lang-option" data-lang="it">Italiano</button>
+                        <button type="button" class="lang-option" data-lang="pt">Português</button>
+                        <button type="button" class="lang-option" data-lang="ja">日本語</button>
+                        <button type="button" class="lang-option" data-lang="zh">中文</button>
+                        <button type="button" class="lang-option" data-lang="ko">한국어</button>
+                        <button type="button" class="lang-option" data-lang="ar">العربية</button>
+                    </div>
+                </div>
+
+                <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
+                <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
+            </div>
+        </nav>
+
+        <main id="main-content">
+            <section class="about-hero" aria-label="About VaultLister">
+                <h1>About VaultLister</h1>
+                <p>Built by resellers, for resellers.</p>
+            </section>
+
+            <div class="about-body">
+                <div class="about-section">
+                    <h2>Our Mission</h2>
+                    <p>
+                        VaultLister is a multi-channel reselling platform that helps sellers list to 9+ marketplaces
+                        from one dashboard. We believe reselling should be simple, affordable, and accessible to
+                        everyone.
+                    </p>
+                    <p>
+                        Founded in 2026 in Calgary, Alberta, Canada, we set out to build the tool we wished existed when
+                        we started reselling. No hidden fees, no per-listing charges, no bait-and-switch pricing.
+                    </p>
+                </div>
+
+                <div class="about-section">
+                    <h2>What We Believe</h2>
+                    <div class="values-grid">
+                        <div class="value-card">
+                            <div class="value-icon">&#128176;</div>
+                            <h3>Zero-Cost First</h3>
+                            <p>A generous free tier that stays free forever. Premium features earn their price.</p>
+                        </div>
+                        <div class="value-card">
+                            <div class="value-icon">&#128722;</div>
+                            <h3>Reseller-First Design</h3>
+                            <p>
+                                Built by actual resellers who understand the daily grind of cross-listing, closet
+                                sharing, and offer management.
+                            </p>
+                        </div>
+                        <div class="value-card">
+                            <div class="value-icon">&#128274;</div>
+                            <h3>Privacy by Default</h3>
+                            <p>
+                                Your data stays yours. No selling user data, no advertising cookies, no tracking beyond
+                                what you opt into.
+                            </p>
+                        </div>
+                        <div class="value-card">
+                            <div class="value-icon">&#9889;</div>
+                            <h3>AI That Actually Helps</h3>
+                            <p>
+                                Smart listing generation, intelligent price suggestions, and photo tools that save real
+                                time — not gimmicks.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="about-section">
+                    <h2>Our Team</h2>
+                    <p>
+                        A small team building big tools for resellers everywhere. We ship fast, listen to feedback, and
+                        obsess over the details that make reselling easier.
+                    </p>
+                </div>
+
+                <div class="about-cta">
+                    <p>Ready to simplify your reselling?</p>
+                    <a class="btn" href="/?app=1#register">Start Free Trial</a>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer" aria-label="Footer">
+            <div class="footer-social-bar">
+                <a href="/" class="footer-logo"
+                    ><img
+                        src="/assets/logo/lockups/horizontal-512.svg"
+                        alt="VaultLister"
+                        width="144"
+                        height="36"
+                        style="display: block"
+                /></a>
+                <div class="footer-social-links">
+                    <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"
+                        ><svg
+                            width="22"
+                            height="22"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <rect x="2" y="2" width="20" height="20" rx="5" />
+                            <circle cx="12" cy="12" r="5" />
+                            <circle cx="17.5" cy="6.5" r="1.5" /></svg
+                    ></a>
+                    <a href="https://www.facebook.com/profile.php?id=61570865723233" aria-label="Facebook"
+                        ><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></svg
+                    ></a>
+                    <a href="https://x.com/VaultListerCo" aria-label="X"
+                        ><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+                            /></svg
+                    ></a>
+                    <a href="https://www.tiktok.com/@vaultlister.co" aria-label="TikTok"
+                        ><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.92a8.24 8.24 0 0 0 4.83 1.56v-3.5a4.84 4.84 0 0 1-1.07-.29z"
+                            /></svg
+                    ></a>
+                    <a href="https://www.reddit.com/user/VaultLister/" aria-label="Reddit"
+                        ><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"
+                            /></svg
+                    ></a>
+                    <a href="https://www.youtube.com/@VaultLister" aria-label="YouTube"
+                        ><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"
+                            /></svg
+                    ></a>
+                </div>
+            </div>
+            <div class="footer-inner">
+                <div class="footer-cols">
+                    <div class="footer-col">
+                        <h3 class="footer-col-label">Resources</h3>
+                        <a href="/blog/index.html">Blog</a>
+                        <a href="/changelog.html">Changelog</a>
+                        <a href="/documentation.html">Documentation</a>
+                        <a href="/faq.html">FAQs</a>
+                        <a href="/help.html">Help Center</a>
+                    </div>
+                    <div class="footer-col">
+                        <h3 class="footer-col-label">Company</h3>
+                        <a href="/about.html">About Us</a>
+                        <a href="/careers.html">Careers</a>
+                        <a href="/documentation.html#media-kit">Media Kit</a>
+                        <a href="/affiliate.html">Affiliate Program</a>
+                    </div>
+                    <div class="footer-col">
+                        <h3 class="footer-col-label">Legal</h3>
+                        <a href="/privacy.html">Privacy Policy</a>
+                        <a href="/terms.html">Terms of Service</a>
+                        <a href="/cookies.html">Cookie Policy</a>
+                    </div>
+                    <div class="footer-col">
+                        <h3 class="footer-col-label">Compare</h3>
+                        <a href="/compare/crosslist.html">Crosslist</a>
+                        <a href="/compare/crosslist-magic.html">Crosslist Magic</a>
+                        <a href="/compare/flyp.html">Flyp</a>
+                        <a href="/compare/list-perfectly.html">List Perfectly</a>
+                        <a href="/compare/nifty.html">Nifty</a>
+                        <a href="/compare/oneshop.html">OneShop</a>
+                        <a href="/compare/primelister.html">Primelister</a>
+                        <a href="/compare/vendoo.html">Vendoo</a>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>&copy; 2026 VaultLister, Inc. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+
+        <script>
+            (function () {
+                document.querySelectorAll('.nav-dropdown-btn').forEach(function (btn) {
+                    btn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        var targetId = this.dataset.target;
+                        var menu = document.getElementById(targetId);
+                        if (!menu) return;
+                        var isOpen = menu.classList.contains('open');
+                        document.querySelectorAll('.nav-dropdown-menu').forEach(function (m) {
+                            m.classList.remove('open');
+                            m.setAttribute('inert', '');
+                        });
+                        document.querySelectorAll('.nav-dropdown-btn').forEach(function (b) {
+                            b.setAttribute('aria-expanded', 'false');
+                        });
+                        if (!isOpen) {
+                            menu.classList.add('open');
+                            menu.removeAttribute('inert');
+                            btn.setAttribute('aria-expanded', 'true');
+                        }
+                    });
+                });
+                document.addEventListener('click', function () {
+                    document.querySelectorAll('.nav-dropdown-menu').forEach(function (m) {
+                        m.classList.remove('open');
+                        m.setAttribute('inert', '');
+                    });
+                    document.querySelectorAll('.nav-dropdown-btn').forEach(function (b) {
+                        b.setAttribute('aria-expanded', 'false');
+                    });
+                });
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape') {
+                        document.querySelectorAll('.nav-dropdown-menu').forEach(function (m) {
+                            m.classList.remove('open');
+                            m.setAttribute('inert', '');
+                        });
+                        document.querySelectorAll('.nav-dropdown-btn').forEach(function (b) {
+                            b.setAttribute('aria-expanded', 'false');
+                        });
+                    }
+                });
+            })();
+        </script>
+
+        <div
+            id="cookie-banner"
+            role="region"
+            aria-label="Cookie consent"
+            style="
+                display: none;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 9999;
+                background: #18181b;
+                color: #fef3c7;
+                padding: 1rem 1.5rem;
+                align-items: center;
+                justify-content: space-between;
+                gap: 1rem;
+                flex-wrap: wrap;
+                box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.18);
+                font-family: Inter, system-ui, sans-serif;
+                font-size: 0.9rem;
+            "
+        >
+            <p style="margin: 0; flex: 1; min-width: 200px">
+                We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are
+                used.
+            </p>
+            <div style="display: flex; gap: 0.625rem; flex-shrink: 0">
+                <button
+                    type="button"
+                    id="cookie-decline"
+                    style="
+                        min-height: 44px;
+                        padding: 0.5rem 1.125rem;
+                        border-radius: 0.5rem;
+                        border: 1.5px solid rgba(224, 231, 255, 0.4);
+                        background: transparent;
+                        color: #fef3c7;
+                        font-size: 0.875rem;
+                        font-weight: 600;
+                        cursor: pointer;
+                    "
+                >
+                    Decline
+                </button>
+                <button
+                    type="button"
+                    id="cookie-accept"
+                    style="
+                        min-height: 44px;
+                        padding: 0.5rem 1.25rem;
+                        border-radius: 0.5rem;
+                        border: none;
+                        background: linear-gradient(135deg, #b45309, #92400e);
+                        color: #fff;
+                        font-size: 0.875rem;
+                        font-weight: 600;
+                        cursor: pointer;
+                    "
+                >
+                    Accept
+                </button>
+            </div>
+        </div>
+        <script>
+            (function () {
+                var banner = document.getElementById('cookie-banner');
+                if (!banner) return;
+                if (localStorage.getItem('cookie_consent')) {
+                    banner.style.display = 'none';
+                    return;
                 }
-            }
-            if (!hasLang) {
-                var LANG = {
-                    CA:'en-ca', US:'en', GB:'en', AU:'en', NZ:'en', IE:'en',
-                    FR:'fr', BE:'fr', CH:'fr', LU:'fr',
-                    DE:'de', AT:'de',
-                    IT:'it', ES:'es', MX:'es', AR:'es', CO:'es', CL:'es',
-                    PT:'pt', BR:'pt',
-                    JP:'ja', CN:'zh', TW:'zh', HK:'zh',
-                    KR:'ko', SA:'ar', AE:'ar', EG:'ar', MA:'ar'
+                banner.style.display = 'flex';
+                document.getElementById('cookie-accept').addEventListener('click', function () {
+                    localStorage.setItem('cookie_consent', 'accepted');
+                    if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'granted' });
+                    banner.style.display = 'none';
+                });
+                document.getElementById('cookie-decline').addEventListener('click', function () {
+                    localStorage.setItem('cookie_consent', 'declined');
+                    if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'denied' });
+                    banner.style.display = 'none';
+                });
+            })();
+
+            // Lang selector
+            (function () {
+                var LANGS = {
+                    en: { code: 'EN' },
+                    'en-ca': { code: 'EN' },
+                    es: { code: 'ES' },
+                    fr: { code: 'FR' },
+                    de: { code: 'DE' },
+                    it: { code: 'IT' },
+                    pt: { code: 'PT' },
+                    ja: { code: 'JA' },
+                    zh: { code: 'ZH' },
+                    ko: { code: 'KO' },
+                    ar: { code: 'AR' },
                 };
-                var nav = (navigator.language || '').toLowerCase();
-                var lang = (cc === 'CA' && nav.startsWith('fr')) ? 'fr' : LANG[cc];
-                if (lang) {
-                    var btn = document.querySelector('.lang-option[data-lang="' + lang + '"]');
-                    if (btn) btn.click();
+                function setLang(lang) {
+                    var info = LANGS[lang] || LANGS['en'];
+                    var codeEl = document.getElementById('current-lang-code');
+                    if (codeEl) codeEl.textContent = info.code;
+                    document.querySelectorAll('.lang-option').forEach(function (btn) {
+                        btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+                    });
+                    try {
+                        localStorage.setItem('vaultlister_locale', lang);
+                    } catch (e) {}
                 }
-            }
-        })
-        .catch(function() {});
-})();
-</script>
-<script src="/public-auth-nav.js" defer></script>
-</body>
+                function detectLang() {
+                    try {
+                        var stored = localStorage.getItem('vaultlister_locale');
+                        if (stored && LANGS[stored]) return stored;
+                    } catch (e) {}
+                    var nav = (navigator.language || '').toLowerCase();
+                    if (nav === 'en-ca' || nav.startsWith('en-ca')) return 'en-ca';
+                    var base = nav.split('-')[0];
+                    return LANGS[base] ? base : 'en';
+                }
+                document.addEventListener('DOMContentLoaded', function () {
+                    var btn = document.querySelector('.lang-btn');
+                    var dropdown = document.getElementById('lang-dropdown');
+                    if (!btn || !dropdown) return;
+                    setLang(detectLang());
+                    btn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        var open = dropdown.classList.toggle('open');
+                        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                    });
+                    document.addEventListener('click', function (e) {
+                        if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
+                            dropdown.classList.remove('open');
+                            btn.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+                    dropdown.querySelectorAll('.lang-option').forEach(function (opt) {
+                        opt.addEventListener('click', function () {
+                            setLang(opt.getAttribute('data-lang'));
+                            dropdown.classList.remove('open');
+                            btn.setAttribute('aria-expanded', 'false');
+                        });
+                    });
+                });
+            })();
+
+            // Currency selector
+            (function () {
+                var saved = localStorage.getItem('vl_currency') || 'CAD';
+                var el = document.getElementById('current-currency-code');
+                if (el) el.textContent = saved;
+                document.querySelectorAll('.currency-option').forEach(function (btn) {
+                    if (btn.dataset.currency === saved) btn.classList.add('active');
+                    btn.addEventListener('click', function () {
+                        var c = this.dataset.currency;
+                        localStorage.setItem('vl_currency', c);
+                        document.querySelectorAll('.currency-option').forEach(function (b) {
+                            b.classList.remove('active');
+                        });
+                        this.classList.add('active');
+                        var codeEl = document.getElementById('current-currency-code');
+                        if (codeEl) codeEl.textContent = c;
+                        var dd = document.getElementById('currency-dropdown');
+                        if (dd) dd.classList.remove('open');
+                    });
+                });
+                var btn = document.querySelector('.currency-btn');
+                if (btn) {
+                    btn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        var dd = document.getElementById('currency-dropdown');
+                        dd.classList.toggle('open');
+                        btn.setAttribute('aria-expanded', dd.classList.contains('open'));
+                    });
+                }
+                document.addEventListener('click', function () {
+                    var dd = document.getElementById('currency-dropdown');
+                    if (dd) {
+                        dd.classList.remove('open');
+                    }
+                    if (btn) btn.setAttribute('aria-expanded', 'false');
+                });
+            })();
+        </script>
+        <script>
+            (function () {
+                var hasCurrency = !!localStorage.getItem('vl_currency');
+                var hasLang = !!localStorage.getItem('vaultlister_locale');
+                if (hasCurrency && hasLang) return;
+                fetch('/api/geo')
+                    .then(function (r) {
+                        return r.json();
+                    })
+                    .then(function (d) {
+                        var cc = d.country_code || '';
+                        if (!hasCurrency) {
+                            var CURR = {
+                                CA: 'CAD',
+                                US: 'USD',
+                                GB: 'GBP',
+                                AU: 'AUD',
+                                NZ: 'AUD',
+                                FR: 'EUR',
+                                DE: 'EUR',
+                                IT: 'EUR',
+                                ES: 'EUR',
+                                NL: 'EUR',
+                                BE: 'EUR',
+                                AT: 'EUR',
+                                FI: 'EUR',
+                                IE: 'EUR',
+                                PT: 'EUR',
+                                GR: 'EUR',
+                                LU: 'EUR',
+                                SK: 'EUR',
+                                SI: 'EUR',
+                                EE: 'EUR',
+                                LV: 'EUR',
+                                LT: 'EUR',
+                                CY: 'EUR',
+                                MT: 'EUR',
+                            };
+                            var curr = CURR[cc];
+                            if (curr) {
+                                var btn = document.querySelector('.currency-option[data-currency="' + curr + '"]');
+                                if (btn) btn.click();
+                            }
+                        }
+                        if (!hasLang) {
+                            var LANG = {
+                                CA: 'en-ca',
+                                US: 'en',
+                                GB: 'en',
+                                AU: 'en',
+                                NZ: 'en',
+                                IE: 'en',
+                                FR: 'fr',
+                                BE: 'fr',
+                                CH: 'fr',
+                                LU: 'fr',
+                                DE: 'de',
+                                AT: 'de',
+                                IT: 'it',
+                                ES: 'es',
+                                MX: 'es',
+                                AR: 'es',
+                                CO: 'es',
+                                CL: 'es',
+                                PT: 'pt',
+                                BR: 'pt',
+                                JP: 'ja',
+                                CN: 'zh',
+                                TW: 'zh',
+                                HK: 'zh',
+                                KR: 'ko',
+                                SA: 'ar',
+                                AE: 'ar',
+                                EG: 'ar',
+                                MA: 'ar',
+                            };
+                            var nav = (navigator.language || '').toLowerCase();
+                            var lang = cc === 'CA' && nav.startsWith('fr') ? 'fr' : LANG[cc];
+                            if (lang) {
+                                var btn = document.querySelector('.lang-option[data-lang="' + lang + '"]');
+                                if (btn) btn.click();
+                            }
+                        }
+                    })
+                    .catch(function () {});
+            })();
+        </script>
+        <script src="/public-auth-nav.js" defer></script>
+    </body>
 </html>

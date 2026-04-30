@@ -12,16 +12,16 @@ Object.assign(pages, {
 
         let offers = allOffers;
         if (platformFilter !== 'all') {
-            offers = offers.filter(o => o.platform === platformFilter);
+            offers = offers.filter((o) => o.platform === platformFilter);
         }
         if (statusFilter !== 'all') {
-            offers = offers.filter(o => o.status === statusFilter);
+            offers = offers.filter((o) => o.status === statusFilter);
         }
 
-        const pendingOffers = offers.filter(o => o.status === 'pending');
-        const acceptedOffers = offers.filter(o => o.status === 'accepted');
-        const declinedOffers = offers.filter(o => o.status === 'declined');
-        const counteredOffers = offers.filter(o => o.status === 'countered');
+        const pendingOffers = offers.filter((o) => o.status === 'pending');
+        const acceptedOffers = offers.filter((o) => o.status === 'accepted');
+        const declinedOffers = offers.filter((o) => o.status === 'declined');
+        const counteredOffers = offers.filter((o) => o.status === 'countered');
 
         // Track selected offers for bulk actions
         const selectedOffers = store.state.selectedOffers || [];
@@ -29,7 +29,7 @@ Object.assign(pages, {
         // Find the best pending offer (highest percentage of listing price)
         let bestOfferId = null;
         let bestOfferPercent = 0;
-        pendingOffers.forEach(o => {
+        pendingOffers.forEach((o) => {
             const offerAmt = o.amount || o.offer_amount || 0;
             const listPrice = o.listing_price || offerAmt * 1.2;
             const percent = (offerAmt / (listPrice || 1)) * 100;
@@ -40,15 +40,17 @@ Object.assign(pages, {
         });
 
         // Calculate average offer percentage
-        const avgOfferPercent = offers.length > 0
-            ? Math.round(offers.reduce((sum, o) => sum + ((o.amount / (o.listing_price || o.amount || 1)) * 100), 0) / offers.length)
-            : null;
+        const avgOfferPercent =
+            offers.length > 0
+                ? Math.round(
+                      offers.reduce((sum, o) => sum + (o.amount / (o.listing_price || o.amount || 1)) * 100, 0) /
+                          offers.length,
+                  )
+                : null;
 
         // Calculate acceptance rate
         const totalResolved = acceptedOffers.length + declinedOffers.length;
-        const acceptanceRate = totalResolved > 0
-            ? Math.round((acceptedOffers.length / totalResolved) * 100)
-            : 0;
+        const acceptanceRate = totalResolved > 0 ? Math.round((acceptedOffers.length / totalResolved) * 100) : 0;
 
         // Calculate total offer value
         const totalOfferValue = offers.reduce((sum, o) => sum + (o.amount || 0), 0);
@@ -56,7 +58,7 @@ Object.assign(pages, {
 
         // Get today's offers
         const today = toLocalDate(new Date());
-        const todayOffers = offers.filter(o => o.created_at?.startsWith(today)).length;
+        const todayOffers = offers.filter((o) => o.created_at?.startsWith(today)).length;
 
         // Get smart counter suggestion (average of listing price and offer)
         const getSmartCounter = (offer) => {
@@ -72,12 +74,16 @@ Object.assign(pages, {
                         <h1 class="offers-hero-title">Offers</h1>
                         <p class="offers-hero-subtitle">Manage incoming offers from buyers</p>
                     </div>
-                    ${pendingOffers.length > 0 ? `
+                    ${
+                        pendingOffers.length > 0
+                            ? `
                     <div class="offers-hero-badge pending">
                         <span class="badge-pulse"></span>
                         <span>${pendingOffers.length} pending</span>
                     </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                     <button class="btn btn-secondary btn-sm" onclick="handlers.showItemOfferHistory()">
                         ${components.icon('clock', 16)} Item History
                     </button>
@@ -171,13 +177,18 @@ Object.assign(pages, {
                             <option value="countered" ${statusFilter === 'countered' ? 'selected' : ''}>Countered</option>
                         </select>
                     </div>
-                    ${pendingOffers.length > 0 ? `
-                    ${store.state.offersProcessing ? `
+                    ${
+                        pendingOffers.length > 0
+                            ? `
+                    ${
+                        store.state.offersProcessing
+                            ? `
                         <div style="margin-left: auto; display: flex; gap: 8px; align-items: center;">
                             <div class="offers-processing-spinner"></div>
                             <span class="text-sm text-gray-500">Processing offers...</span>
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div style="margin-left: auto; display: flex; gap: 8px; align-items: center;">
                             <span class="text-sm text-gray-500">${selectedOffers.length} selected</span>
                             <button class="btn btn-success btn-sm" onclick="handlers.bulkAcceptOffers()" ${selectedOffers.length === 0 ? 'disabled' : ''} title="Accept selected offers">
@@ -187,52 +198,81 @@ Object.assign(pages, {
                                 ${components.icon('x', 14)} Decline (${selectedOffers.length})
                             </button>
                         </div>
-                    `}
-                    ` : ''}
+                    `
+                    }
+                    `
+                            : ''
+                    }
                 </div>
 
                 <!-- Negotiation Tip -->
-                ${pendingOffers.length > 0 ? (() => {
-                    // Calculate helpful metrics for tips
-                    const highOffers = pendingOffers.filter(o => {
-                        const offerAmt = o.amount || o.offer_amount || 0;
-                        const listPrice = o.listing_price || offerAmt * 1.2;
-                        return listPrice > 0 && (offerAmt / listPrice) >= 0.85;
-                    }).length;
-                    const urgentOffers = pendingOffers.filter(o => {
-                        if (!o.expires_at) return false;
-                        const hoursLeft = Math.floor((new Date(o.expires_at) - new Date()) / (1000 * 60 * 60));
-                        return hoursLeft <= 12;
-                    }).length;
+                ${
+                    pendingOffers.length > 0
+                        ? (() => {
+                              // Calculate helpful metrics for tips
+                              const highOffers = pendingOffers.filter((o) => {
+                                  const offerAmt = o.amount || o.offer_amount || 0;
+                                  const listPrice = o.listing_price || offerAmt * 1.2;
+                                  return listPrice > 0 && offerAmt / listPrice >= 0.85;
+                              }).length;
+                              const urgentOffers = pendingOffers.filter((o) => {
+                                  if (!o.expires_at) return false;
+                                  const hoursLeft = Math.floor(
+                                      (new Date(o.expires_at) - new Date()) / (1000 * 60 * 60),
+                                  );
+                                  return hoursLeft <= 12;
+                              }).length;
 
-                    let tipText = '';
-                    if (urgentOffers > 0) {
-                        tipText = urgentOffers + ' offer' + (urgentOffers > 1 ? 's' : '') + ' expiring soon - respond quickly to avoid missing out.';
-                    } else if (highOffers > 0) {
-                        tipText = highOffers + ' offer' + (highOffers > 1 ? 's are' : ' is') + ' at 85%+ of listing price - strong candidates for acceptance.';
-                    } else if (pendingOffers.length > 3) {
-                        tipText = 'Multiple pending offers - consider prioritizing higher percentage offers first.';
-                    } else if (acceptanceRate >= 70) {
-                        tipText = 'Strong acceptance rate! Being selective with lower offers can maximize profit.';
-                    } else if (avgOfferPercent < 70) {
-                        tipText = 'Offers averaging ' + avgOfferPercent + '% of list price. Counter at 85-90% to find a middle ground.';
-                    } else {
-                        tipText = 'Review offers carefully. Counter offers tend to close deals when set around 85-90% of listing price.';
-                    }
+                              let tipText = '';
+                              if (urgentOffers > 0) {
+                                  tipText =
+                                      urgentOffers +
+                                      ' offer' +
+                                      (urgentOffers > 1 ? 's' : '') +
+                                      ' expiring soon - respond quickly to avoid missing out.';
+                              } else if (highOffers > 0) {
+                                  tipText =
+                                      highOffers +
+                                      ' offer' +
+                                      (highOffers > 1 ? 's are' : ' is') +
+                                      ' at 85%+ of listing price - strong candidates for acceptance.';
+                              } else if (pendingOffers.length > 3) {
+                                  tipText =
+                                      'Multiple pending offers - consider prioritizing higher percentage offers first.';
+                              } else if (acceptanceRate >= 70) {
+                                  tipText =
+                                      'Strong acceptance rate! Being selective with lower offers can maximize profit.';
+                              } else if (avgOfferPercent < 70) {
+                                  tipText =
+                                      'Offers averaging ' +
+                                      avgOfferPercent +
+                                      '% of list price. Counter at 85-90% to find a middle ground.';
+                              } else {
+                                  tipText =
+                                      'Review offers carefully. Counter offers tend to close deals when set around 85-90% of listing price.';
+                              }
 
-                    return '<div class="offers-tip"><div class="tip-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div><div class="tip-content"><strong>Negotiation Tip:</strong> ' + tipText + '</div></div>';
-                })() : ''}
+                              return (
+                                  '<div class="offers-tip"><div class="tip-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div><div class="tip-content"><strong>Negotiation Tip:</strong> ' +
+                                  tipText +
+                                  '</div></div>'
+                              );
+                          })()
+                        : ''
+                }
             </div>
 
-            ${bestOfferId && pendingOffers.length > 1 ? `
+            ${
+                bestOfferId && pendingOffers.length > 1
+                    ? `
             <div class="best-offer-highlight mb-4" style="background: linear-gradient(135deg, rgba(251, 191, 36, 0.08), rgba(245, 158, 11, 0.05)); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 16px;">
                 <div style="width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary-400), var(--primary-500)); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; flex-shrink: 0;">
                     ${components.icon('star', 24)}
                 </div>
                 <div style="flex: 1;">
-                    <div style="font-weight: 700; font-size: 15px; color: var(--gray-800);">Best Offer: C$${(pendingOffers.find(o => o.id === bestOfferId)?.amount || 0).toFixed(2)}</div>
+                    <div style="font-weight: 700; font-size: 15px; color: var(--gray-800);">Best Offer: C$${(pendingOffers.find((o) => o.id === bestOfferId)?.amount || 0).toFixed(2)}</div>
                     <div style="font-size: 13px; color: var(--gray-600);">
-                        ${escapeHtml(pendingOffers.find(o => o.id === bestOfferId)?.buyer_name || 'Anonymous')} •
+                        ${escapeHtml(pendingOffers.find((o) => o.id === bestOfferId)?.buyer_name || 'Anonymous')} •
                         ${Math.round(bestOfferPercent)}% of listed price •
                         Deal Quality: <span style="color: ${bestOfferPercent >= 90 ? 'var(--success)' : bestOfferPercent >= 75 ? 'var(--warning-600)' : 'var(--error)'}; font-weight: 600;">${bestOfferPercent >= 90 ? 'Excellent' : bestOfferPercent >= 75 ? 'Good' : 'Fair'}</span>
                     </div>
@@ -241,9 +281,13 @@ Object.assign(pages, {
                     ${components.icon('check', 14)} Accept Best
                 </button>
             </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
-            ${pendingOffers.length > 0 ? `
+            ${
+                pendingOffers.length > 0
+                    ? `
             <div class="card mb-6">
                 <div class="card-header">
                     <h2 class="card-title">Pending Offers (${pendingOffers.length})</h2>
@@ -271,75 +315,159 @@ Object.assign(pages, {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${pendingOffers.map(offer => {
-                                    const listing = store.state.listings.find(l => l.id === offer.listing_id);
-                                    const offerAmount = offer.amount || offer.offer_amount || 0;
-                                    const listingPrice = offer.listing_price || listing?.price || offerAmount * 1.2;
-                                    const offerPercent = listingPrice > 0 ? Math.round((offerAmount / listingPrice) * 100) : 0;
-                                    const smartCounter = getSmartCounter({ ...offer, amount: offerAmount });
-                                    const currentCounter = store.state['counterAmount_' + offer.id] || smartCounter;
-                                    // Calculate expiration countdown with hours and minutes
-                                    let expiresIn = null;
-                                    let expiresHours = 0;
-                                    let expiresMinutes = 0;
-                                    let expiresText = '';
-                                    let expiresUrgency = '';
-                                    if (offer.expires_at) {
-                                        const msLeft = Math.max(0, new Date(offer.expires_at) - new Date());
-                                        expiresHours = Math.floor(msLeft / (1000 * 60 * 60));
-                                        expiresMinutes = Math.floor((msLeft % (1000 * 60 * 60)) / (1000 * 60));
-                                        expiresIn = expiresHours;
+                                ${pendingOffers
+                                    .map((offer) => {
+                                        const listing = store.state.listings.find((l) => l.id === offer.listing_id);
+                                        const offerAmount = offer.amount || offer.offer_amount || 0;
+                                        const listingPrice = offer.listing_price || listing?.price || offerAmount * 1.2;
+                                        const offerPercent =
+                                            listingPrice > 0 ? Math.round((offerAmount / listingPrice) * 100) : 0;
+                                        const smartCounter = getSmartCounter({ ...offer, amount: offerAmount });
+                                        const currentCounter = store.state['counterAmount_' + offer.id] || smartCounter;
+                                        // Calculate expiration countdown with hours and minutes
+                                        let expiresIn = null;
+                                        let expiresHours = 0;
+                                        let expiresMinutes = 0;
+                                        let expiresText = '';
+                                        let expiresUrgency = '';
+                                        if (offer.expires_at) {
+                                            const msLeft = Math.max(0, new Date(offer.expires_at) - new Date());
+                                            expiresHours = Math.floor(msLeft / (1000 * 60 * 60));
+                                            expiresMinutes = Math.floor((msLeft % (1000 * 60 * 60)) / (1000 * 60));
+                                            expiresIn = expiresHours;
 
-                                        if (expiresHours === 0 && expiresMinutes === 0) {
-                                            expiresText = 'Expired';
-                                            expiresUrgency = 'expired';
-                                        } else if (expiresHours === 0) {
-                                            expiresText = expiresMinutes + 'm';
-                                            expiresUrgency = 'critical';
-                                        } else if (expiresHours < 6) {
-                                            expiresText = expiresHours + 'h ' + expiresMinutes + 'm';
-                                            expiresUrgency = 'critical';
-                                        } else if (expiresHours <= 12) {
-                                            expiresText = expiresHours + 'h ' + expiresMinutes + 'm';
-                                            expiresUrgency = 'urgent';
-                                        } else if (expiresHours <= 24) {
-                                            expiresText = expiresHours + 'h';
-                                            expiresUrgency = 'warning';
-                                        } else {
-                                            expiresText = expiresHours + 'h';
-                                            expiresUrgency = 'normal';
+                                            if (expiresHours === 0 && expiresMinutes === 0) {
+                                                expiresText = 'Expired';
+                                                expiresUrgency = 'expired';
+                                            } else if (expiresHours === 0) {
+                                                expiresText = expiresMinutes + 'm';
+                                                expiresUrgency = 'critical';
+                                            } else if (expiresHours < 6) {
+                                                expiresText = expiresHours + 'h ' + expiresMinutes + 'm';
+                                                expiresUrgency = 'critical';
+                                            } else if (expiresHours <= 12) {
+                                                expiresText = expiresHours + 'h ' + expiresMinutes + 'm';
+                                                expiresUrgency = 'urgent';
+                                            } else if (expiresHours <= 24) {
+                                                expiresText = expiresHours + 'h';
+                                                expiresUrgency = 'warning';
+                                            } else {
+                                                expiresText = expiresHours + 'h';
+                                                expiresUrgency = 'normal';
+                                            }
                                         }
-                                    }
-                                    const isSelected = selectedOffers.includes(offer.id);
-                                    const isBestOffer = offer.id === bestOfferId && pendingOffers.length > 1;
+                                        const isSelected = selectedOffers.includes(offer.id);
+                                        const isBestOffer = offer.id === bestOfferId && pendingOffers.length > 1;
 
-                                    return '<tr class="' + (isSelected ? 'row-selected' : '') + (isBestOffer ? ' best-offer-row' : '') + '">' +
-                                        '<td><input type="checkbox" ' + (isSelected ? 'checked' : '') + ' onchange="handlers.toggleOfferSelection(\'' + offer.id + '\')" aria-label="Select offer"></td>' +
-                                        '<td><div class="flex items-center gap-2">' + (isBestOffer ? '<span class="badge badge-sm" style="background: linear-gradient(135deg, var(--primary-400), var(--primary-500)); color: #fff; font-size: 9px; padding: 2px 6px; font-weight: 700;">BEST</span>' : '') + '<div class="font-medium" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">' + escapeHtml(listing?.title || offer.listing_title || 'Unknown Item') + '</div></div></td>' +
-                                        '<td><div class="text-sm">' + escapeHtml(offer.buyer_name || offer.buyer_username || 'Anonymous') + '</div></td>' +
-                                        '<td>' + components.platformBadge(offer.platform || 'unknown') + '</td>' +
-                                        '<td class="font-medium">$' + listingPrice.toFixed(2) + '</td>' +
-                                        '<td class="font-bold ' + (offerPercent >= 80 ? 'text-success' : offerPercent >= 60 ? 'text-warning' : 'text-error') + '">$' + offerAmount.toFixed(2) + '</td>' +
-                                        '<td><span class="badge badge-' + (offerPercent >= 80 ? 'success' : offerPercent >= 60 ? 'warning' : 'error') + '">' + offerPercent + '%</span></td>' +
-                                        '<td><div class="flex items-center gap-1"><span class="text-gray-400">$</span>' +
-                                        '<div style="flex: 1;">' +
-                                        '<input type="number" class="form-input" style="width: 80px; padding: 4px 8px; font-size: 13px;" value="' + currentCounter.toFixed(0) + '" min="' + offerAmount + '" max="' + listingPrice + '" step="1" oninput="handlers.validateCounterAmount(\'' + offer.id + '\', this.value, ' + offerAmount + ', ' + listingPrice + '); handlers.setCounterAmount(\'' + offer.id + '\', parseFloat(this.value) || ' + smartCounter + ')" aria-label="Counter offer amount">' +
-                                        '<div id="counter-error-' + offer.id + '" style="display:none; color: var(--error); font-size: 10px; margin-top: 2px;"></div>' +
-                                        '</div></div></td>' +
-                                        '<td>' + (expiresIn !== null ? '<div class="offer-expiry-countdown ' + expiresUrgency + '"><span class="expiry-icon">' + (expiresUrgency === 'critical' || expiresUrgency === 'expired' ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>' : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>') + '</span><span class="expiry-time">' + expiresText + '</span></div>' : '<span class="text-gray-400">-</span>') + '</td>' +
-                                        '<td><div class="flex gap-1">' +
-                                        '<button class="btn btn-success btn-xs" onclick="handlers.acceptOffer(\'' + offer.id + '\')" title="Accept offer">' + components.icon('check', 12) + '</button>' +
-                                        '<button class="btn btn-primary btn-xs" onclick="handlers.counterOffer(\'' + offer.id + '\')" title="Send counter offer">' + components.icon('refresh', 12) + '</button>' +
-                                        '<button class="btn btn-error btn-xs" onclick="handlers.declineOffer(\'' + offer.id + '\')" title="Decline offer">' + components.icon('x', 12) + '</button>' +
-                                        '</div></td>' +
-                                        '</tr>';
-                                }).join('')}
+                                        return (
+                                            '<tr class="' +
+                                            (isSelected ? 'row-selected' : '') +
+                                            (isBestOffer ? ' best-offer-row' : '') +
+                                            '">' +
+                                            '<td><input type="checkbox" ' +
+                                            (isSelected ? 'checked' : '') +
+                                            ' onchange="handlers.toggleOfferSelection(\'' +
+                                            offer.id +
+                                            '\')" aria-label="Select offer"></td>' +
+                                            '<td><div class="flex items-center gap-2">' +
+                                            (isBestOffer
+                                                ? '<span class="badge badge-sm" style="background: linear-gradient(135deg, var(--primary-400), var(--primary-500)); color: #fff; font-size: 9px; padding: 2px 6px; font-weight: 700;">BEST</span>'
+                                                : '') +
+                                            '<div class="font-medium" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">' +
+                                            escapeHtml(listing?.title || offer.listing_title || 'Unknown Item') +
+                                            '</div></div></td>' +
+                                            '<td><div class="text-sm">' +
+                                            escapeHtml(offer.buyer_name || offer.buyer_username || 'Anonymous') +
+                                            '</div></td>' +
+                                            '<td>' +
+                                            components.platformBadge(offer.platform || 'unknown') +
+                                            '</td>' +
+                                            '<td class="font-medium">$' +
+                                            listingPrice.toFixed(2) +
+                                            '</td>' +
+                                            '<td class="font-bold ' +
+                                            (offerPercent >= 80
+                                                ? 'text-success'
+                                                : offerPercent >= 60
+                                                  ? 'text-warning'
+                                                  : 'text-error') +
+                                            '">$' +
+                                            offerAmount.toFixed(2) +
+                                            '</td>' +
+                                            '<td><span class="badge badge-' +
+                                            (offerPercent >= 80
+                                                ? 'success'
+                                                : offerPercent >= 60
+                                                  ? 'warning'
+                                                  : 'error') +
+                                            '">' +
+                                            offerPercent +
+                                            '%</span></td>' +
+                                            '<td><div class="flex items-center gap-1"><span class="text-gray-400">$</span>' +
+                                            '<div style="flex: 1;">' +
+                                            '<input type="number" class="form-input" style="width: 80px; padding: 4px 8px; font-size: 13px;" value="' +
+                                            currentCounter.toFixed(0) +
+                                            '" min="' +
+                                            offerAmount +
+                                            '" max="' +
+                                            listingPrice +
+                                            '" step="1" oninput="handlers.validateCounterAmount(\'' +
+                                            offer.id +
+                                            "', this.value, " +
+                                            offerAmount +
+                                            ', ' +
+                                            listingPrice +
+                                            "); handlers.setCounterAmount('" +
+                                            offer.id +
+                                            "', parseFloat(this.value) || " +
+                                            smartCounter +
+                                            ')" aria-label="Counter offer amount">' +
+                                            '<div id="counter-error-' +
+                                            offer.id +
+                                            '" style="display:none; color: var(--error); font-size: 10px; margin-top: 2px;"></div>' +
+                                            '</div></div></td>' +
+                                            '<td>' +
+                                            (expiresIn !== null
+                                                ? '<div class="offer-expiry-countdown ' +
+                                                  expiresUrgency +
+                                                  '"><span class="expiry-icon">' +
+                                                  (expiresUrgency === 'critical' || expiresUrgency === 'expired'
+                                                      ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>'
+                                                      : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>') +
+                                                  '</span><span class="expiry-time">' +
+                                                  expiresText +
+                                                  '</span></div>'
+                                                : '<span class="text-gray-400">-</span>') +
+                                            '</td>' +
+                                            '<td><div class="flex gap-1">' +
+                                            '<button class="btn btn-success btn-xs" onclick="handlers.acceptOffer(\'' +
+                                            offer.id +
+                                            '\')" title="Accept offer">' +
+                                            components.icon('check', 12) +
+                                            '</button>' +
+                                            '<button class="btn btn-primary btn-xs" onclick="handlers.counterOffer(\'' +
+                                            offer.id +
+                                            '\')" title="Send counter offer">' +
+                                            components.icon('refresh', 12) +
+                                            '</button>' +
+                                            '<button class="btn btn-error btn-xs" onclick="handlers.declineOffer(\'' +
+                                            offer.id +
+                                            '\')" title="Decline offer">' +
+                                            components.icon('x', 12) +
+                                            '</button>' +
+                                            '</div></td>' +
+                                            '</tr>'
+                                        );
+                                    })
+                                    .join('')}
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Offer History -->
             <div class="card">
@@ -347,7 +475,9 @@ Object.assign(pages, {
                     <h2 class="card-title">Offer History</h2>
                 </div>
                 <div class="card-body">
-                    ${offers.filter(o => o.status !== 'pending').length > 0 ? `
+                    ${
+                        offers.filter((o) => o.status !== 'pending').length > 0
+                            ? `
                         <div class="table-container">
                             <table class="table">
                                 <thead>
@@ -360,9 +490,11 @@ Object.assign(pages, {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${offers.filter(o => o.status !== 'pending').map(offer => {
-                                        const listing = store.state.listings.find(l => l.id === offer.listing_id);
-                                        return `
+                                    ${offers
+                                        .filter((o) => o.status !== 'pending')
+                                        .map((offer) => {
+                                            const listing = store.state.listings.find((l) => l.id === offer.listing_id);
+                                            return `
                                             <tr>
                                                 <td>${escapeHtml(listing?.title || 'Unknown')}</td>
                                                 <td>${escapeHtml(offer.buyer_name || 'Anonymous')}</td>
@@ -371,16 +503,19 @@ Object.assign(pages, {
                                                 <td class="text-sm text-gray-500">${new Date(offer.created_at).toLocaleDateString()}</td>
                                             </tr>
                                         `;
-                                    }).join('')}
+                                        })
+                                        .join('')}
                                 </tbody>
                             </table>
                         </div>
-                    ` : components.emptyState(
-                        'No offer history',
-                        'Accepted, declined, and countered offers will appear here',
-                        null,
-                        null
-                    )}
+                    `
+                            : components.emptyState(
+                                  'No offer history',
+                                  'Accepted, declined, and countered offers will appear here',
+                                  null,
+                                  null,
+                              )
+                    }
                 </div>
             </div>
 
@@ -390,28 +525,41 @@ Object.assign(pages, {
                     <h2 class="card-title">${components.icon('bar-chart-2', 18)} Offer Analytics</h2>
                 </div>
                 <div class="card-body">
-                    ${allOffers.length > 0 ? `
+                    ${
+                        allOffers.length > 0
+                            ? `
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
                             <div>
                                 <h2 style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Acceptance Rate by Platform</h2>
                                 ${(() => {
                                     const platforms = {};
-                                    allOffers.forEach(o => {
+                                    allOffers.forEach((o) => {
                                         const p = o.platform || 'unknown';
                                         if (!platforms[p]) platforms[p] = { total: 0, accepted: 0 };
                                         platforms[p].total++;
                                         if (o.status === 'accepted') platforms[p].accepted++;
                                     });
-                                    return Object.entries(platforms).map(([p, d]) => {
-                                        const rate = d.total > 0 ? Math.round((d.accepted / d.total) * 100) : 0;
-                                        return '<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">' +
-                                            '<span style="width: 70px; font-size: 12px; font-weight: 500;">' + p.charAt(0).toUpperCase() + p.slice(1) + '</span>' +
-                                            '<div style="flex: 1; height: 8px; background: var(--gray-100); border-radius: 4px; overflow: hidden;">' +
-                                            '<div style="width: ' + rate + '%; height: 100%; background: var(--success); border-radius: 4px; transition: width 600ms;"></div>' +
-                                            '</div>' +
-                                            '<span style="font-size: 12px; font-weight: 600; width: 40px; text-align: right;">' + rate + '%</span>' +
-                                            '</div>';
-                                    }).join('');
+                                    return Object.entries(platforms)
+                                        .map(([p, d]) => {
+                                            const rate = d.total > 0 ? Math.round((d.accepted / d.total) * 100) : 0;
+                                            return (
+                                                '<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">' +
+                                                '<span style="width: 70px; font-size: 12px; font-weight: 500;">' +
+                                                p.charAt(0).toUpperCase() +
+                                                p.slice(1) +
+                                                '</span>' +
+                                                '<div style="flex: 1; height: 8px; background: var(--gray-100); border-radius: 4px; overflow: hidden;">' +
+                                                '<div style="width: ' +
+                                                rate +
+                                                '%; height: 100%; background: var(--success); border-radius: 4px; transition: width 600ms;"></div>' +
+                                                '</div>' +
+                                                '<span style="font-size: 12px; font-weight: 600; width: 40px; text-align: right;">' +
+                                                rate +
+                                                '%</span>' +
+                                                '</div>'
+                                            );
+                                        })
+                                        .join('');
                                 })()}
                             </div>
                             <div>
@@ -422,27 +570,37 @@ Object.assign(pages, {
                                         { label: '$25-50', min: 25, max: 50, count: 0, accepted: 0 },
                                         { label: '$50-100', min: 50, max: 100, count: 0, accepted: 0 },
                                         { label: '$100-250', min: 100, max: 250, count: 0, accepted: 0 },
-                                        { label: '$250+', min: 250, max: Infinity, count: 0, accepted: 0 }
+                                        { label: '$250+', min: 250, max: Infinity, count: 0, accepted: 0 },
                                     ];
-                                    allOffers.forEach(o => {
+                                    allOffers.forEach((o) => {
                                         const amt = o.amount || 0;
-                                        const range = ranges.find(r => amt >= r.min && amt < r.max);
+                                        const range = ranges.find((r) => amt >= r.min && amt < r.max);
                                         if (range) {
                                             range.count++;
                                             if (o.status === 'accepted') range.accepted++;
                                         }
                                     });
-                                    const maxCount = Math.max(...ranges.map(r => r.count), 1);
-                                    return ranges.map(r => {
-                                        const barWidth = Math.round((r.count / maxCount) * 100);
-                                        return '<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">' +
-                                            '<span style="width: 55px; font-size: 12px; font-weight: 500;">' + r.label + '</span>' +
-                                            '<div style="flex: 1; height: 8px; background: var(--gray-100); border-radius: 4px; overflow: hidden;">' +
-                                            '<div style="width: ' + barWidth + '%; height: 100%; background: var(--primary); border-radius: 4px; transition: width 600ms;"></div>' +
-                                            '</div>' +
-                                            '<span style="font-size: 12px; color: var(--gray-500); width: 20px; text-align: right;">' + r.count + '</span>' +
-                                            '</div>';
-                                    }).join('');
+                                    const maxCount = Math.max(...ranges.map((r) => r.count), 1);
+                                    return ranges
+                                        .map((r) => {
+                                            const barWidth = Math.round((r.count / maxCount) * 100);
+                                            return (
+                                                '<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">' +
+                                                '<span style="width: 55px; font-size: 12px; font-weight: 500;">' +
+                                                r.label +
+                                                '</span>' +
+                                                '<div style="flex: 1; height: 8px; background: var(--gray-100); border-radius: 4px; overflow: hidden;">' +
+                                                '<div style="width: ' +
+                                                barWidth +
+                                                '%; height: 100%; background: var(--primary); border-radius: 4px; transition: width 600ms;"></div>' +
+                                                '</div>' +
+                                                '<span style="font-size: 12px; color: var(--gray-500); width: 20px; text-align: right;">' +
+                                                r.count +
+                                                '</span>' +
+                                                '</div>'
+                                            );
+                                        })
+                                        .join('');
                                 })()}
                             </div>
                         </div>
@@ -464,19 +622,20 @@ Object.assign(pages, {
                                 <div style="font-size: 12px; color: var(--gray-500);">Countered</div>
                             </div>
                         </div>
-                    ` : '<p style="text-align: center; color: var(--gray-500);">No offer data to analyze yet.</p>'}
+                    `
+                            : '<p style="text-align: center; color: var(--gray-500);">No offer data to analyze yet.</p>'
+                    }
                 </div>
             </div>
         `;
     },
 
     offers() {
-        store.setState({ordersMainTab: 'offers'});
+        store.setState({ ordersMainTab: 'offers' });
         return window.pages.orders();
     },
 
     // Sales page,
-
 
     sales() {
         window.scrollTo(0, 0);
@@ -490,27 +649,31 @@ Object.assign(pages, {
         const buyerFilter = store.state.salesBuyerFilter || '';
 
         if (platformFilter !== 'all') {
-            sales = sales.filter(s => s.platform === platformFilter);
+            sales = sales.filter((s) => s.platform === platformFilter);
         }
         if (statusFilter !== 'all') {
-            sales = sales.filter(s => s.status === statusFilter);
+            sales = sales.filter((s) => s.status === statusFilter);
         }
         if (itemFilter) {
-            sales = sales.filter(s => {
-                const item = store.state.inventory.find(i => i.id === s.inventory_id);
+            sales = sales.filter((s) => {
+                const item = store.state.inventory.find((i) => i.id === s.inventory_id);
                 const itemTitle = item ? item.title.toLowerCase() : '';
                 return itemTitle.includes(itemFilter.toLowerCase());
             });
         }
         if (buyerFilter) {
-            sales = sales.filter(s => s.buyer_username && s.buyer_username.toLowerCase().includes(buyerFilter.toLowerCase()));
+            sales = sales.filter(
+                (s) => s.buyer_username && s.buyer_username.toLowerCase().includes(buyerFilter.toLowerCase()),
+            );
         }
 
         if (salesMainTab === 'purchases' && !store.state.purchasesLoaded) {
-            api.get('/financials/purchases').then(r => {
-                store.setState({purchases: r?.data || r || [], purchasesLoaded: true});
-                renderApp(window.pages.sales());
-            }).catch(() => {});
+            api.get('/financials/purchases')
+                .then((r) => {
+                    store.setState({ purchases: r?.data || r || [], purchasesLoaded: true });
+                    renderApp(window.pages.sales());
+                })
+                .catch(() => {});
         }
 
         const purchases = store.state.purchases || [];
@@ -532,12 +695,14 @@ Object.assign(pages, {
                 </button>
             </div>
 
-            ${salesMainTab === 'sales' ? `
+            ${
+                salesMainTab === 'sales'
+                    ? `
             <div class="stats-grid mb-6" style="grid-template-columns: repeat(4, 1fr);">
                 ${components.statCard('Total Sales', sales.length, 'sales')}
                 ${components.statCard('Revenue', 'C$' + sales.reduce((s, x) => s + (x.sale_price || 0), 0).toFixed(2), 'analytics')}
                 ${components.statCard('Gross Profit', 'C$' + sales.reduce((s, x) => s + (x.net_profit || 0), 0).toFixed(2), 'activity')}
-                ${components.statCard('Pending Shipments', sales.filter(s => s.status === 'pending').length, 'inventory')}
+                ${components.statCard('Pending Shipments', sales.filter((s) => s.status === 'pending').length, 'inventory')}
             </div>
 
             <!-- Sales Tools Section -->
@@ -588,7 +753,9 @@ Object.assign(pages, {
                         </div>
                     </div>
                 </div>
-                ${sales.length > 0 ? `
+                ${
+                    sales.length > 0
+                        ? `
                     <div class="table-container">
                         <table class="table">
                             <thead>
@@ -604,17 +771,19 @@ Object.assign(pages, {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${sales.map(sale => {
-                                    // Get item title from inventory
-                                    const item = store.state.inventory.find(i => i.id === sale.inventory_id);
-                                    const itemTitle = item ? item.title : 'Unknown Item';
+                                ${sales
+                                    .map((sale) => {
+                                        // Get item title from inventory
+                                        const item = store.state.inventory.find((i) => i.id === sale.inventory_id);
+                                        const itemTitle = item ? item.title : 'Unknown Item';
 
-                                    // Calculate platform fee percentage
-                                    const feePercentage = sale.sale_price > 0
-                                        ? ((sale.platform_fee / sale.sale_price) * 100).toFixed(1)
-                                        : 0;
+                                        // Calculate platform fee percentage
+                                        const feePercentage =
+                                            sale.sale_price > 0
+                                                ? ((sale.platform_fee / sale.sale_price) * 100).toFixed(1)
+                                                : 0;
 
-                                    return `
+                                        return `
                                     <tr>
                                         <td>
                                             <div class="font-medium">${escapeHtml(itemTitle)}</div>
@@ -625,9 +794,11 @@ Object.assign(pages, {
                                         <td>C$${(sale.platform_fee || 0).toFixed(2)} <span class="text-xs text-gray-500">(${feePercentage}%)</span></td>
                                         <td>
                                             <span class="badge badge-${
-                                                sale.status === 'delivered' ? 'success' :
-                                                sale.status === 'shipped' ? 'primary' :
-                                                'gray'
+                                                sale.status === 'delivered'
+                                                    ? 'success'
+                                                    : sale.status === 'shipped'
+                                                      ? 'primary'
+                                                      : 'gray'
                                             }">${sale.status}</span>
                                         </td>
                                         <td class="font-medium">C$${(sale.sale_price || 0).toFixed(2)}</td>
@@ -635,11 +806,13 @@ Object.assign(pages, {
                                         <td class="text-sm text-gray-500">${new Date(sale.created_at).toLocaleDateString()}</td>
                                     </tr>
                                     `;
-                                }).join('')}
+                                    })
+                                    .join('')}
                             </tbody>
                         </table>
                     </div>
-                ` : `
+                `
+                        : `
                     <div class="card-body">
                         <div class="empty-state">
                             <div class="empty-state-icon">${components.icon('dollar-sign', 48)}</div>
@@ -648,14 +821,24 @@ Object.assign(pages, {
                             <button class="btn btn-primary mt-4" onclick="handlers.showAddSale()">${components.icon('plus', 16)} Log Sale</button>
                         </div>
                     </div>
-                `}
+                `
+                }
             </div>
-            ` : `
+            `
+                    : `
             <div class="stats-grid mb-6" style="grid-template-columns: repeat(4, 1fr);">
                 ${components.statCard('Total Purchases', purchases.length, 'activity')}
                 ${components.statCard('Total Spent', 'C$' + purchases.reduce((s, p) => s + (p.total_amount || 0), 0).toFixed(2), 'dollar')}
-                ${components.statCard('Pending', purchases.filter(p => p.status === 'pending').length, 'inventory')}
-                ${components.statCard('This Month', purchases.filter(p => { const d = new Date(p.purchase_date); const now = new Date(); return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth(); }).length, 'analytics')}
+                ${components.statCard('Pending', purchases.filter((p) => p.status === 'pending').length, 'inventory')}
+                ${components.statCard(
+                    'This Month',
+                    purchases.filter((p) => {
+                        const d = new Date(p.purchase_date);
+                        const now = new Date();
+                        return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+                    }).length,
+                    'analytics',
+                )}
             </div>
 
             <div class="card">
@@ -667,7 +850,7 @@ Object.assign(pages, {
                                 ${components.icon('plus', 16)} Add Purchases Manually
                                 ${components.icon('chevron-down', 14)}
                             </button>
-                            <div class="dropdown-menu" style="min-width:220px; right:0; z-index:200;">
+                            <div class="dropdown-menu" style="min-width:220px; right:0; z-index:200;" aria-hidden="true">
                                 <button class="dropdown-item" onclick="event.stopPropagation(); handlers.showAddPurchase(); this.closest('.dropdown').classList.remove('open');" style="display:flex; align-items:center; gap:8px;">
                                     ${components.icon('edit', 14)} Add Manually
                                 </button>
@@ -701,14 +884,17 @@ Object.assign(pages, {
                     </div>
                 </div>
                 <div class="card-body">
-                    ${purchases.length === 0 ? `
+                    ${
+                        purchases.length === 0
+                            ? `
                         <div class="empty-state">
                             <div class="empty-state-icon">${components.icon('shopping-cart', 48)}</div>
                             <h2 class="empty-state-title">No purchases yet</h2>
                             <p class="empty-state-description">Connect a sourcing platform or add purchases manually to track your inventory costs.</p>
                             <button class="btn btn-primary" onclick="handlers.showAddPurchase()">${components.icon('plus', 16)} Add Manually</button>
                         </div>
-                    ` : `
+                    `
+                            : `
                         <table class="data-table">
                             <thead>
                                 <tr>
@@ -721,7 +907,9 @@ Object.assign(pages, {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${purchases.map(p => `
+                                ${purchases
+                                    .map(
+                                        (p) => `
                                     <tr>
                                         <td>${p.purchase_date || '—'}</td>
                                         <td>${escapeHtml(p.vendor_name || '—')}</td>
@@ -732,18 +920,21 @@ Object.assign(pages, {
                                             <button class="btn btn-xs btn-secondary" onclick="handlers.viewPurchase('${p.id}')">View</button>
                                         </td>
                                     </tr>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </tbody>
                         </table>
-                    `}
+                    `
+                    }
                 </div>
             </div>
-            `}
+            `
+            }
         `;
     },
 
     // Analytics page with tabs,
-
 
     financials() {
         const currentTab = store.state.financialsTab || 'accounts';
@@ -754,7 +945,10 @@ Object.assign(pages, {
         const purchaseStats = {
             total: purchases.length,
             totalSpend: purchases.reduce((sum, p) => sum + (p.total_amount || 0), 0),
-            avgAmount: purchases.length > 0 ? purchases.reduce((sum, p) => sum + (p.total_amount || 0), 0) / purchases.length : 0
+            avgAmount:
+                purchases.length > 0
+                    ? purchases.reduce((sum, p) => sum + (p.total_amount || 0), 0) / purchases.length
+                    : 0,
         };
 
         const tabContent = {
@@ -774,7 +968,7 @@ Object.assign(pages, {
                                     ${components.icon('plus', 16)} Add Purchases Manually
                                     ${components.icon('chevron-down', 14)}
                                 </button>
-                                <div class="dropdown-menu" style="min-width:220px; right:0; z-index:200;">
+                                <div class="dropdown-menu" style="min-width:220px; right:0; z-index:200;" aria-hidden="true">
                                     <button class="dropdown-item" onclick="event.stopPropagation(); handlers.showAddPurchase(); this.closest('.dropdown').classList.remove('open');" style="display:flex; align-items:center; gap:8px;">
                                         ${components.icon('edit', 14)} Add Manually
                                     </button>
@@ -808,14 +1002,17 @@ Object.assign(pages, {
                         </div>
                     </div>
                     <div class="card-body">
-                        ${purchases.length === 0 ? `
+                        ${
+                            purchases.length === 0
+                                ? `
                             <div class="empty-state">
                                 <div class="empty-state-icon">${components.icon('dollar', 48)}</div>
                                 <h2 class="empty-state-title">No purchases yet</h2>
                                 <p class="empty-state-description">Track your inventory purchases to calculate accurate COGS</p>
                                 <button class="btn btn-primary" onclick="handlers.showAddPurchase()">Add Manually</button>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <table class="data-table">
                                 <thead>
                                     <tr>
@@ -829,7 +1026,9 @@ Object.assign(pages, {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${purchases.map(p => `
+                                    ${purchases
+                                        .map(
+                                            (p) => `
                                         <tr>
                                             <td class="font-medium">${escapeHtml(p.purchase_number || 'N/A')}</td>
                                             <td>${escapeHtml(p.vendor_name)}</td>
@@ -842,10 +1041,13 @@ Object.assign(pages, {
                                                 <button class="btn btn-sm btn-ghost" onclick="handlers.deletePurchase(${p.id})">Delete</button>
                                             </td>
                                         </tr>
-                                    `).join('')}
+                                    `,
+                                        )
+                                        .join('')}
                                 </tbody>
                             </table>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
             `,
@@ -862,13 +1064,16 @@ Object.assign(pages, {
                         </div>
                     </div>
                     <div class="card-body">
-                        ${(store.state.sales || []).length === 0 ? `
+                        ${
+                            (store.state.sales || []).length === 0
+                                ? `
                             <div class="empty-state">
                                 <div class="empty-state-icon">${components.icon('sales', 48)}</div>
                                 <h2 class="empty-state-title">No sales yet</h2>
                                 <p class="empty-state-description">Sales will appear here with detailed cost tracking</p>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <table class="data-table">
                                 <thead>
                                     <tr>
@@ -883,7 +1088,9 @@ Object.assign(pages, {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${store.state.sales.map(s => `
+                                    ${store.state.sales
+                                        .map(
+                                            (s) => `
                                         <tr>
                                             <td>${new Date(s.created_at).toLocaleDateString()}</td>
                                             <td class="font-medium">${escapeHtml(s.listing_title || s.inventory_title || 'N/A')}</td>
@@ -894,10 +1101,13 @@ Object.assign(pages, {
                                             <td class="text-gray-600">C$${(s.platform_fee || 0).toFixed(2)}</td>
                                             <td class="font-medium ${(s.net_profit || 0) >= 0 ? 'text-success' : 'text-error'}">C$${(s.net_profit || 0).toFixed(2)}</td>
                                         </tr>
-                                    `).join('')}
+                                    `,
+                                        )
+                                        .join('')}
                                 </tbody>
                             </table>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
             `,
@@ -918,7 +1128,8 @@ Object.assign(pages, {
                         </div>
                     </div>
                     <div class="card-body" style="display:flex;gap:0;padding:0;">
-                        <nav class="coa-left-nav" role="navigation" aria-label="Chart of Accounts sections" style="width:160px;min-width:140px;border-right:1px solid var(--gray-200);padding:12px 0;flex-shrink:0;">
+                        <nav class="coa-left-nav" aria-label="Chart of Accounts sections" style="width:160px;min-width:140px;border-right:1px solid var(--gray-200);padding:12px 0;flex-shrink:0;">
+                            <div role="tablist" aria-orientation="vertical">
                             <button class="coa-nav-item ${coaSubTab === 'accounts' ? 'active' : ''}" role="tab" aria-selected="${coaSubTab === 'accounts'}" onclick="store.setState({coaSubTab:'accounts'});renderApp(window.pages.financials())" style="display:block;width:100%;text-align:left;padding:8px 16px;background:${coaSubTab === 'accounts' ? 'var(--primary-50)' : 'none'};color:${coaSubTab === 'accounts' ? 'var(--primary-600)' : 'var(--gray-700)'};font-weight:${coaSubTab === 'accounts' ? '600' : '400'};border:none;cursor:pointer;font-size:13px;">
                                 ${components.icon('list', 14)} Accounts
                             </button>
@@ -928,41 +1139,60 @@ Object.assign(pages, {
                             <button class="coa-nav-item ${coaSubTab === 'sales' ? 'active' : ''}" role="tab" aria-selected="${coaSubTab === 'sales'}" onclick="store.setState({coaSubTab:'sales'});renderApp(window.pages.financials())" style="display:block;width:100%;text-align:left;padding:8px 16px;background:${coaSubTab === 'sales' ? 'var(--primary-50)' : 'none'};color:${coaSubTab === 'sales' ? 'var(--primary-600)' : 'var(--gray-700)'};font-weight:${coaSubTab === 'sales' ? '600' : '400'};border:none;cursor:pointer;font-size:13px;">
                                 ${components.icon('dollar-sign', 14)} Sales
                             </button>
+                            </div>
                         </nav>
                         <div style="flex:1;padding:16px;">
-                            ${coaSubTab === 'purchases' ? `
+                            ${
+                                coaSubTab === 'purchases'
+                                    ? `
                                 <div class="empty-state" style="padding:40px 0;">
                                     <div class="empty-state-icon">${components.icon('shopping-cart', 48)}</div>
                                     <h2 class="empty-state-title">No purchases recorded yet</h2>
                                     <p class="empty-state-description">Purchase records will appear here once you add inventory costs or expenses.</p>
                                 </div>
-                            ` : coaSubTab === 'sales' ? `
+                            `
+                                    : coaSubTab === 'sales'
+                                      ? `
                                 <div class="empty-state" style="padding:40px 0;">
                                     <div class="empty-state-icon">${components.icon('dollar-sign', 48)}</div>
                                     <h2 class="empty-state-title">No sales recorded yet</h2>
                                     <p class="empty-state-description">Sales records will appear here once you have completed sales.</p>
                                 </div>
-                            ` : accounts.length === 0 ? `
+                            `
+                                      : accounts.length === 0
+                                        ? `
                                 <div class="empty-state">
                                     <div class="empty-state-icon">${components.icon('list', 48)}</div>
                                     <h2 class="empty-state-title">No accounts set up</h2>
                                     <p class="empty-state-description">Create accounts to organize your financial transactions</p>
                                     <button class="btn btn-primary" onclick="handlers.seedDefaultAccounts()">Create Default Accounts</button>
                                 </div>
-                            ` : (() => {
-                                const grouped = store.state.accountsGrouped || {};
-                                const categories = ['Assets', 'Liabilities', 'Equity', 'Income', 'Expenses'];
-                                return categories.map(cat => {
-                                    const types = grouped[cat] || {};
-                                    const typeNames = Object.keys(types);
-                                    if (typeNames.length === 0) return '';
-                                    return `
+                            `
+                                        : (() => {
+                                              const grouped = store.state.accountsGrouped || {};
+                                              const categories = [
+                                                  'Assets',
+                                                  'Liabilities',
+                                                  'Equity',
+                                                  'Income',
+                                                  'Expenses',
+                                              ];
+                                              return categories
+                                                  .map((cat) => {
+                                                      const types = grouped[cat] || {};
+                                                      const typeNames = Object.keys(types);
+                                                      if (typeNames.length === 0) return '';
+                                                      return `
                                         <div class="mb-6">
                                             <h3 class="text-lg font-semibold mb-3" style="color: var(--gray-700);">${cat}</h3>
-                                            ${typeNames.map(type => `
+                                            ${typeNames
+                                                .map(
+                                                    (type) => `
                                                 <div class="mb-3">
                                                     <div class="text-sm font-medium text-gray-500 mb-2">${type}</div>
-                                                    ${types[type].map(acct => `
+                                                    ${types[type]
+                                                        .map(
+                                                            (acct) => `
                                                         <div role="button" tabindex="0" class="flex justify-between items-center p-3 bg-gray-50 rounded-lg mb-2 hover:bg-gray-100 cursor-pointer" onclick="handlers.viewAccountTransactions(${acct.id})">
                                                             <div>
                                                                 <span class="font-medium">${escapeHtml(acct.account_name)}</span>
@@ -970,13 +1200,19 @@ Object.assign(pages, {
                                                             </div>
                                                             <span class="font-medium ${(acct.calculated_balance || 0) >= 0 ? 'text-success' : 'text-error'}">C$${Math.abs(acct.calculated_balance || 0).toFixed(2)}</span>
                                                         </div>
-                                                    `).join('')}
+                                                    `,
+                                                        )
+                                                        .join('')}
                                                 </div>
-                                            `).join('')}
+                                            `,
+                                                )
+                                                .join('')}
                                         </div>
                                     `;
-                                }).join('');
-                            })()}
+                                                  })
+                                                  .join('');
+                                          })()
+                            }
                         </div>
                     </div>
                 </div>
@@ -992,13 +1228,18 @@ Object.assign(pages, {
 
                 // Helper to render a list of account line items
                 const renderLineItems = (accounts, indent = false) => {
-                    if (!accounts || accounts.length === 0) return '<div class="text-sm text-gray-400" style="padding-left:1.5rem;">No items</div>';
-                    return accounts.map(a => `
+                    if (!accounts || accounts.length === 0)
+                        return '<div class="text-sm text-gray-400" style="padding-left:1.5rem;">No items</div>';
+                    return accounts
+                        .map(
+                            (a) => `
                         <div class="flex justify-between py-2 ${indent ? '' : ''}" style="padding-left:${indent ? '2rem' : '1.5rem'}; border-bottom: 1px solid var(--gray-100);">
                             <span class="text-sm">${escapeHtml(a.account_name || a.name || 'Unnamed')}</span>
                             <span class="text-sm font-medium">C$${Math.abs(a.total || a.balance || 0).toFixed(2)}</span>
                         </div>
-                    `).join('');
+                    `,
+                        )
+                        .join('');
                 };
 
                 // Helper for section subtotals
@@ -1053,31 +1294,39 @@ Object.assign(pages, {
                             Calculated from your recorded transactions. Not a substitute for professional accounting.
                         </div>
 
-                        ${statementsSubTab === 'income' ? `
-                            ${!stmtData && !pnl.income ? `
+                        ${
+                            statementsSubTab === 'income'
+                                ? `
+                            ${
+                                !stmtData && !pnl.income
+                                    ? `
                                 <div class="empty-state">
                                     <div class="empty-state-icon">${components.icon('analytics', 48)}</div>
                                     <h2 class="empty-state-title">Select a period to view your Profit Overview</h2>
                                 </div>
-                            ` : `
+                            `
+                                    : `
                                 ${(() => {
                                     const incomeAccts = pnl.income?.accounts || [];
                                     const totalRevenue = pnl.income?.total || 0;
                                     const totalCOGS = pnl.costOfGoodsSold?.total || 0;
-                                    const totalOpEx = (pnl.expenses?.total || 0);
+                                    const totalOpEx = pnl.expenses?.total || 0;
 
                                     // If no account data from API, derive from sales/purchases
                                     const hasPnlData = incomeAccts.length > 0 || totalRevenue > 0;
                                     const salesRevenue = sales.reduce((sum, s) => sum + (s.sale_price || 0), 0);
                                     const salesCOGS = sales.reduce((sum, s) => sum + (s.item_cost || 0), 0);
                                     const salesPlatformFees = sales.reduce((sum, s) => sum + (s.platform_fee || 0), 0);
-                                    const salesShipping = sales.reduce((sum, s) => sum + (s.seller_shipping_cost || s.shipping_cost || 0), 0);
+                                    const salesShipping = sales.reduce(
+                                        (sum, s) => sum + (s.seller_shipping_cost || s.shipping_cost || 0),
+                                        0,
+                                    );
                                     const purchasesCOGS = purchases.reduce((sum, p) => sum + (p.total_amount || 0), 0);
 
                                     const useAcctData = hasPnlData;
                                     const displayRevenue = useAcctData ? totalRevenue : salesRevenue;
-                                    const displayCOGS = useAcctData ? totalCOGS : (salesCOGS || purchasesCOGS);
-                                    const displayOpEx = useAcctData ? totalOpEx : (salesPlatformFees + salesShipping);
+                                    const displayCOGS = useAcctData ? totalCOGS : salesCOGS || purchasesCOGS;
+                                    const displayOpEx = useAcctData ? totalOpEx : salesPlatformFees + salesShipping;
                                     const displayNet = displayRevenue - displayCOGS - displayOpEx;
 
                                     return `
@@ -1098,7 +1347,7 @@ Object.assign(pages, {
                                             <div class="p-4 rounded-lg" style="background: ${displayNet >= 0 ? 'rgba(59,130,246,0.08)' : 'rgba(239,68,68,0.08)'}; border: 1px solid ${displayNet >= 0 ? 'rgba(59,130,246,0.2)' : 'rgba(239,68,68,0.2)'};">
                                                 <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Estimated Profit</div>
                                                 <div class="text-xl font-bold" style="color: ${displayNet >= 0 ? 'var(--blue-600)' : 'var(--error-600)'};">C$${displayNet.toFixed(2)}</div>
-                                                <div class="text-xs text-gray-400 mt-1">${displayRevenue > 0 ? (displayNet / displayRevenue * 100).toFixed(1) : '0'}% margin</div>
+                                                <div class="text-xs text-gray-400 mt-1">${displayRevenue > 0 ? ((displayNet / displayRevenue) * 100).toFixed(1) : '0'}% margin</div>
                                             </div>
                                             <div class="p-4 rounded-lg" style="background: rgba(107,114,128,0.05); border: 1px solid var(--gray-200);">
                                                 <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Fee Impact</div>
@@ -1112,20 +1361,26 @@ Object.assign(pages, {
                                             </div>
                                             <div class="p-4 rounded-lg" style="background: rgba(107,114,128,0.05); border: 1px solid var(--gray-200);">
                                                 <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Gross Margin</div>
-                                                <div class="text-xl font-bold text-gray-700">${displayRevenue > 0 ? ((displayRevenue - displayCOGS) / displayRevenue * 100).toFixed(1) : '0'}%</div>
+                                                <div class="text-xl font-bold text-gray-700">${displayRevenue > 0 ? (((displayRevenue - displayCOGS) / displayRevenue) * 100).toFixed(1) : '0'}%</div>
                                                 <div class="text-xs text-gray-400 mt-1">revenue minus item costs</div>
                                             </div>
                                         </div>
                                     `;
                                 })()}
-                            `}
-                        ` : statementsSubTab === 'balance-sheet' ? `
-                            ${!stmtData ? `
+                            `
+                            }
+                        `
+                                : statementsSubTab === 'balance-sheet'
+                                  ? `
+                            ${
+                                !stmtData
+                                    ? `
                                 <div class="empty-state">
                                     <div class="empty-state-icon">${components.icon('analytics', 48)}</div>
                                     <h2 class="empty-state-title">Select a period to view your Current Position</h2>
                                 </div>
-                            ` : `
+                            `
+                                    : `
                                 ${(() => {
                                     const stmt = stmtData;
                                     const totals = stmt.totals || {};
@@ -1157,21 +1412,41 @@ Object.assign(pages, {
                                         ${stmt.balanceCheck ? '' : `<div class="text-xs text-center p-2 rounded" style="background: rgba(239,68,68,0.08); color: var(--error-600);">Note: recorded totals may not yet balance — ensure all transactions are recorded.</div>`}
                                     `;
                                 })()}
-                            `}
-                        ` : statementsSubTab === 'cash-flow' ? `
-                            ${!stmtData ? `
+                            `
+                            }
+                        `
+                                  : statementsSubTab === 'cash-flow'
+                                    ? `
+                            ${
+                                !stmtData
+                                    ? `
                                 <div class="empty-state">
                                     <div class="empty-state-icon">${components.icon('activity', 48)}</div>
                                     <h2 class="empty-state-title">Select a period to view Cash Movement</h2>
                                 </div>
-                            ` : `
+                            `
+                                    : `
                                 ${(() => {
                                     const totalSalesInflow = sales.reduce((sum, s) => sum + (s.sale_price || 0), 0);
-                                    const totalPurchaseOutflow = purchases.reduce((sum, p) => sum + (p.total_amount || p.amount || 0), 0);
+                                    const totalPurchaseOutflow = purchases.reduce(
+                                        (sum, p) => sum + (p.total_amount || p.amount || 0),
+                                        0,
+                                    );
                                     const platformFees = sales.reduce((sum, s) => sum + (s.platform_fee || 0), 0);
-                                    const shippingCosts = sales.reduce((sum, s) => sum + (s.seller_shipping_cost || s.shipping_cost || 0), 0);
-                                    const customerShipping = sales.reduce((sum, s) => sum + (s.customer_shipping_cost || 0), 0);
-                                    const netOperating = totalSalesInflow + customerShipping - totalPurchaseOutflow - platformFees - shippingCosts;
+                                    const shippingCosts = sales.reduce(
+                                        (sum, s) => sum + (s.seller_shipping_cost || s.shipping_cost || 0),
+                                        0,
+                                    );
+                                    const customerShipping = sales.reduce(
+                                        (sum, s) => sum + (s.customer_shipping_cost || 0),
+                                        0,
+                                    );
+                                    const netOperating =
+                                        totalSalesInflow +
+                                        customerShipping -
+                                        totalPurchaseOutflow -
+                                        platformFees -
+                                        shippingCosts;
 
                                     return `
                                         <div class="text-xs text-gray-400 text-center mb-4">
@@ -1196,27 +1471,47 @@ Object.assign(pages, {
                                         </div>
                                     `;
                                 })()}
-                            `}
-                        ` : statementsSubTab === 'owners-equity' ? `
-                            ${!stmtData ? `
+                            `
+                            }
+                        `
+                                    : statementsSubTab === 'owners-equity'
+                                      ? `
+                            ${
+                                !stmtData
+                                    ? `
                                 <div class="empty-state">
                                     <div class="empty-state-icon">${components.icon('user', 48)}</div>
                                     <h2 class="empty-state-title">Select a period to view your Net Position</h2>
                                 </div>
-                            ` : `
+                            `
+                                    : `
                                 ${(() => {
                                     const totals = stmtData.totals || {};
                                     const pnlData = pnl;
 
-                                    const totalRevenue = pnlData.income?.total || sales.reduce((sum, s) => sum + (s.sale_price || 0), 0);
-                                    const totalCOGS = pnlData.costOfGoodsSold?.total || purchases.reduce((sum, p) => sum + (p.total_amount || 0), 0);
-                                    const totalExpenses = pnlData.expenses?.total || sales.reduce((sum, s) => sum + (s.platform_fee || 0) + (s.seller_shipping_cost || s.shipping_cost || 0), 0);
+                                    const totalRevenue =
+                                        pnlData.income?.total || sales.reduce((sum, s) => sum + (s.sale_price || 0), 0);
+                                    const totalCOGS =
+                                        pnlData.costOfGoodsSold?.total ||
+                                        purchases.reduce((sum, p) => sum + (p.total_amount || 0), 0);
+                                    const totalExpenses =
+                                        pnlData.expenses?.total ||
+                                        sales.reduce(
+                                            (sum, s) =>
+                                                sum +
+                                                (s.platform_fee || 0) +
+                                                (s.seller_shipping_cost || s.shipping_cost || 0),
+                                            0,
+                                        );
                                     const netIncome = totalRevenue - totalCOGS - totalExpenses;
 
                                     const beginningEquity = totals.equity || 0;
                                     const endingEquity = beginningEquity + netIncome;
 
-                                    const inventoryValue = (store.state.inventory || []).reduce((sum, i) => sum + ((i.cost_price || i.list_price || 0) * (i.quantity || 1)), 0);
+                                    const inventoryValue = (store.state.inventory || []).reduce(
+                                        (sum, i) => sum + (i.cost_price || i.list_price || 0) * (i.quantity || 1),
+                                        0,
+                                    );
 
                                     return `
                                         <div class="text-xs text-gray-400 text-center mb-4">
@@ -1236,8 +1531,11 @@ Object.assign(pages, {
                                         </div>
                                     `;
                                 })()}
-                            `}
-                        ` : ''}
+                            `
+                            }
+                        `
+                                      : ''
+                        }
 
                     </div>
                 </div>
@@ -1255,13 +1553,16 @@ Object.assign(pages, {
                         </div>
                     </div>
                     <div class="card-body">
-                        ${!store.state.profitLossReport ? `
+                        ${
+                            !store.state.profitLossReport
+                                ? `
                             <div class="empty-state">
                                 <div class="empty-state-icon">${components.icon('dollar', 48)}</div>
                                 <h2 class="empty-state-title">Generate P&L Report</h2>
                                 <p class="empty-state-description">Select a date range to see your income, expenses, and net profit</p>
                             </div>
-                        ` : `
+                        `
+                                : `
                             ${(() => {
                                 const pnl = store.state.profitLossReport;
                                 return `
@@ -1305,7 +1606,8 @@ Object.assign(pages, {
                                     </div>
                                 `;
                             })()}
-                        `}
+                        `
+                        }
                     </div>
                 </div>
             `,
@@ -1334,29 +1636,48 @@ Object.assign(pages, {
                     </div>
                     <div style="padding: 16px; background: var(--gray-50); border-radius: 8px;">
                         <div style="font-size: 13px; font-weight: 600; margin-bottom: 12px;">Unmatched Transactions</div>
-                        ${(store.state.unmatchedTransactions || []).length === 0 ?
-                            '<div style="text-align: center; padding: 16px; color: var(--gray-400);"><p style="font-size: 13px;">No unmatched transactions</p></div>' :
-                        (store.state.unmatchedTransactions || []).map(t => '<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--gray-200);">' +
-                            '<div style="display: flex; gap: 12px; align-items: center;">' +
-                                '<span style="font-size: 12px; color: var(--gray-500); width: 80px;">' + t.date + '</span>' +
-                                '<span style="font-size: 13px;">' + t.desc + '</span>' +
-                            '</div>' +
-                            '<div style="display: flex; gap: 8px; align-items: center;">' +
-                                '<span style="font-weight: 600; color: ' + (t.amount >= 0 ? 'var(--success)' : 'var(--danger)') + ';">' + (t.amount >= 0 ? '+' : '') + 'C$' + Math.abs(t.amount).toFixed(2) + '</span>' +
-                                '<button class="btn btn-sm btn-ghost" onclick="handlers.matchTransaction()" title="Match">' + components.icon('check', 14) + '</button>' +
-                            '</div>' +
-                        '</div>').join('')}
+                        ${
+                            (store.state.unmatchedTransactions || []).length === 0
+                                ? '<div style="text-align: center; padding: 16px; color: var(--gray-400);"><p style="font-size: 13px;">No unmatched transactions</p></div>'
+                                : (store.state.unmatchedTransactions || [])
+                                      .map(
+                                          (t) =>
+                                              '<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--gray-200);">' +
+                                              '<div style="display: flex; gap: 12px; align-items: center;">' +
+                                              '<span style="font-size: 12px; color: var(--gray-500); width: 80px;">' +
+                                              t.date +
+                                              '</span>' +
+                                              '<span style="font-size: 13px;">' +
+                                              t.desc +
+                                              '</span>' +
+                                              '</div>' +
+                                              '<div style="display: flex; gap: 8px; align-items: center;">' +
+                                              '<span style="font-weight: 600; color: ' +
+                                              (t.amount >= 0 ? 'var(--success)' : 'var(--danger)') +
+                                              ';">' +
+                                              (t.amount >= 0 ? '+' : '') +
+                                              'C$' +
+                                              Math.abs(t.amount).toFixed(2) +
+                                              '</span>' +
+                                              '<button class="btn btn-sm btn-ghost" onclick="handlers.matchTransaction()" title="Match">' +
+                                              components.icon('check', 14) +
+                                              '</button>' +
+                                              '</div>' +
+                                              '</div>',
+                                      )
+                                      .join('')
+                        }
                     </div>
                 </div>
             </div>
-            `
+            `,
         };
 
         // Calculate financial metrics
         const totalRevenue = (store.state.sales || []).reduce((sum, s) => sum + (s.sale_price || 0), 0);
         const totalExpenses = purchases.reduce((sum, p) => sum + (p.total_amount || 0), 0);
         const netProfit = totalRevenue - totalExpenses;
-        const profitMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100) : 0;
+        const profitMargin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
 
         // Financial dashboard metrics
         const cashFlow = totalRevenue - totalExpenses;
@@ -1366,16 +1687,24 @@ Object.assign(pages, {
             profit: netProfit,
             margin: profitMargin,
             cashFlow: cashFlow,
-            cashFlowChange: 0
+            cashFlowChange: 0,
         };
 
         // Cash flow waterfall data
         const waterfallData = [
             { label: 'Revenue', value: totalRevenue, type: 'positive' },
             { label: 'COGS', value: -totalExpenses * 0.6, type: 'negative' },
-            { label: 'Shipping', value: -(store.state.sales || []).reduce((sum, s) => sum + (s.shipping_cost || 0), 0), type: 'negative' },
-            { label: 'Fees', value: -(store.state.sales || []).reduce((sum, s) => sum + (s.platform_fee || 0), 0), type: 'negative' },
-            { label: 'Net', value: netProfit, type: 'total' }
+            {
+                label: 'Shipping',
+                value: -(store.state.sales || []).reduce((sum, s) => sum + (s.shipping_cost || 0), 0),
+                type: 'negative',
+            },
+            {
+                label: 'Fees',
+                value: -(store.state.sales || []).reduce((sum, s) => sum + (s.platform_fee || 0), 0),
+                type: 'negative',
+            },
+            { label: 'Net', value: netProfit, type: 'total' },
         ];
 
         // Financial ratios
@@ -1387,16 +1716,19 @@ Object.assign(pages, {
             totalEquity: netProfit * 0.5,
             revenue: totalRevenue,
             cogs: totalExpenses * 0.6,
-            netIncome: netProfit
+            netIncome: netProfit,
         };
 
         // Budget data
-        const budgetData = store.state.budgets && store.state.budgets.length > 0 ? store.state.budgets : [
-            { name: 'Marketing', budget: 200, actual: 0 },
-            { name: 'Shipping', budget: 500, actual: 0 },
-            { name: 'Supplies', budget: 300, actual: 0 },
-            { name: 'Fees', budget: 400, actual: 0 }
-        ];
+        const budgetData =
+            store.state.budgets && store.state.budgets.length > 0
+                ? store.state.budgets
+                : [
+                      { name: 'Marketing', budget: 200, actual: 0 },
+                      { name: 'Shipping', budget: 500, actual: 0 },
+                      { name: 'Supplies', budget: 300, actual: 0 },
+                      { name: 'Fees', budget: 400, actual: 0 },
+                  ];
 
         // Calculate financial health score
         const healthFactors = [];
@@ -1416,9 +1748,14 @@ Object.assign(pages, {
 
         const financialHealthScore = healthFactors.reduce((a, b) => a + b, 0);
 
-        const healthLevel = financialHealthScore >= 80 ? 'excellent' :
-                           financialHealthScore >= 60 ? 'good' :
-                           financialHealthScore >= 40 ? 'fair' : 'needs-attention';
+        const healthLevel =
+            financialHealthScore >= 80
+                ? 'excellent'
+                : financialHealthScore >= 60
+                  ? 'good'
+                  : financialHealthScore >= 40
+                    ? 'fair'
+                    : 'needs-attention';
 
         return `
             <div class="page-header">
@@ -1434,7 +1771,7 @@ Object.assign(pages, {
                         <button aria-haspopup="menu" class="btn btn-secondary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                             ${components.icon('download', 16)} Export
                         </button>
-                        <div class="dropdown-menu">
+                        <div class="dropdown-menu" aria-hidden="true">
                             <button class="dropdown-item" onclick="handlers.exportFinancials('csv')">CSV</button>
                             <button class="dropdown-item" onclick="handlers.exportFinancials('pdf')">PDF Report</button>
                             <button class="dropdown-item" onclick="handlers.exportFinancials('xlsx')">Excel</button>
@@ -1451,9 +1788,15 @@ Object.assign(pages, {
                             <svg viewBox="0 0 100 100">
                                 <circle cx="50" cy="50" r="45" fill="none" stroke="var(--gray-200)" stroke-width="10"/>
                                 <circle cx="50" cy="50" r="45" fill="none"
-                                    stroke="${healthLevel === 'excellent' ? 'var(--success-500)' :
-                                             healthLevel === 'good' ? 'var(--primary-500)' :
-                                             healthLevel === 'fair' ? 'var(--warning-500)' : 'var(--error-500)'}"
+                                    stroke="${
+                                        healthLevel === 'excellent'
+                                            ? 'var(--success-500)'
+                                            : healthLevel === 'good'
+                                              ? 'var(--primary-500)'
+                                              : healthLevel === 'fair'
+                                                ? 'var(--warning-500)'
+                                                : 'var(--error-500)'
+                                    }"
                                     stroke-width="10"
                                     stroke-dasharray="${financialHealthScore * 2.83} 283"
                                     stroke-linecap="round" transform="rotate(-90 50 50)"/>
@@ -1464,10 +1807,15 @@ Object.assign(pages, {
                             </div>
                         </div>
                         <div class="health-status-badge ${healthLevel}">
-                            ${healthLevel === 'excellent' ? components.icon('check-circle', 14) + ' Excellent' :
-                              healthLevel === 'good' ? components.icon('check', 14) + ' Good' :
-                              healthLevel === 'fair' ? components.icon('alert-circle', 14) + ' Fair' :
-                              components.icon('alert-triangle', 14) + ' Needs Attention'}
+                            ${
+                                healthLevel === 'excellent'
+                                    ? components.icon('check-circle', 14) + ' Excellent'
+                                    : healthLevel === 'good'
+                                      ? components.icon('check', 14) + ' Good'
+                                      : healthLevel === 'fair'
+                                        ? components.icon('alert-circle', 14) + ' Fair'
+                                        : components.icon('alert-triangle', 14) + ' Needs Attention'
+                            }
                         </div>
                     </div>
 
@@ -1507,16 +1855,24 @@ Object.assign(pages, {
                 </div>
 
                 <div class="financials-insights">
-                    ${(totalRevenue > 0 || purchases.length > 0) ? `
+                    ${
+                        totalRevenue > 0 || purchases.length > 0
+                            ? `
                     <div class="insight-card ${profitMargin >= 15 ? 'positive' : profitMargin >= 0 ? 'neutral' : 'negative'}">
                         <div class="insight-icon">${profitMargin >= 15 ? components.icon('thumbs-up', 16) : components.icon('info', 16)}</div>
                         <div class="insight-text">
-                            ${profitMargin >= 15 ? 'Your profit margin is healthy!' :
-                              profitMargin >= 0 ? 'Consider optimizing costs to improve margins' :
-                              'Expenses exceed revenue - review pricing strategy'}
+                            ${
+                                profitMargin >= 15
+                                    ? 'Your profit margin is healthy!'
+                                    : profitMargin >= 0
+                                      ? 'Consider optimizing costs to improve margins'
+                                      : 'Expenses exceed revenue - review pricing strategy'
+                            }
                         </div>
                     </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                     <div class="insight-card neutral">
                         <div class="insight-icon">${components.icon('clock', 16)}</div>
                         <div class="insight-text">
@@ -1534,9 +1890,11 @@ Object.assign(pages, {
                 <button class="tab ${currentTab === 'bank-reconciliation' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'bank-reconciliation' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('bank-reconciliation')">Bank Reconciliation</button>
             </div>
 
-            ${currentTab === 'cash-flow-projection' ? '' : (tabContent[currentTab] || tabContent.accounts)}
+            ${currentTab === 'cash-flow-projection' ? '' : tabContent[currentTab] || tabContent.accounts}
 
-            ${currentTab === 'cash-flow-projection' ? `
+            ${
+                currentTab === 'cash-flow-projection'
+                    ? `
             <!-- Cash Flow Projection -->
             <div class="card mb-6">
                 <div class="card-header">
@@ -1546,40 +1904,90 @@ Object.assign(pages, {
                 <div class="card-body">
                     ${(() => {
                         const sales = store.state.sales || [];
-                        if (sales.length === 0) return '<div style="text-align: center; padding: 24px; color: var(--gray-400);"><p>No sales data yet. Cash flow projections will appear after your first sale.</p></div>';
+                        if (sales.length === 0)
+                            return '<div style="text-align: center; padding: 24px; color: var(--gray-400);"><p>No sales data yet. Cash flow projections will appear after your first sale.</p></div>';
                         const currentMonth = new Date().getMonth();
-                        const projMonths = Array.from({length: 6}, (_, i) => {
+                        const projMonths = Array.from({ length: 6 }, (_, i) => {
                             const m = (currentMonth + i + 1) % 12;
-                            return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m];
+                            return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][
+                                m
+                            ];
                         });
-                        const avgMonthlyRevenue = sales.reduce((s, sale) => s + (sale.sale_price || 0), 0) / Math.max(1, Math.ceil((Date.now() - new Date(sales[sales.length-1]?.created_at || Date.now()).getTime()) / (30*86400000)));
+                        const avgMonthlyRevenue =
+                            sales.reduce((s, sale) => s + (sale.sale_price || 0), 0) /
+                            Math.max(
+                                1,
+                                Math.ceil(
+                                    (Date.now() -
+                                        new Date(sales[sales.length - 1]?.created_at || Date.now()).getTime()) /
+                                        (30 * 86400000),
+                                ),
+                            );
                         const income = Array(6).fill(Math.round(avgMonthlyRevenue));
                         const expenses = Array(6).fill(Math.round(avgMonthlyRevenue * 0.65));
                         const net = income.map((v, i) => v - expenses[i]);
-                        const cumulative = net.reduce((acc, v) => { acc.push((acc.length > 0 ? acc[acc.length - 1] : 0) + v); return acc; }, []);
+                        const cumulative = net.reduce((acc, v) => {
+                            acc.push((acc.length > 0 ? acc[acc.length - 1] : 0) + v);
+                            return acc;
+                        }, []);
                         const maxVal = Math.max(...income, ...expenses);
-                        return '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px;">' +
-                            '<div style="text-align: center; padding: 12px; background: var(--gray-50); border-radius: 8px;"><div style="font-size: 20px; font-weight: 700; color: var(--success);">$' + income.reduce((a,b) => a+b, 0).toLocaleString() + '</div><div style="font-size: 11px; color: var(--gray-500);">Projected Income</div></div>' +
-                            '<div style="text-align: center; padding: 12px; background: var(--gray-50); border-radius: 8px;"><div style="font-size: 20px; font-weight: 700; color: var(--danger);">$' + expenses.reduce((a,b) => a+b, 0).toLocaleString() + '</div><div style="font-size: 11px; color: var(--gray-500);">Projected Expenses</div></div>' +
-                            '<div style="text-align: center; padding: 12px; background: var(--gray-50); border-radius: 8px;"><div style="font-size: 20px; font-weight: 700; color: var(--primary-600);">$' + net.reduce((a,b) => a+b, 0).toLocaleString() + '</div><div style="font-size: 11px; color: var(--gray-500);">Net Cash Flow</div></div>' +
-                            '<div style="text-align: center; padding: 12px; background: var(--gray-50); border-radius: 8px;"><div style="font-size: 20px; font-weight: 700; color: var(--gray-700);">$' + cumulative[cumulative.length - 1].toLocaleString() + '</div><div style="font-size: 11px; color: var(--gray-500);">End Balance</div></div>' +
-                        '</div>' +
-                        '<div style="overflow-x: auto;"><table class="table"><thead><tr><th>Month</th><th>Income</th><th>Expenses</th><th>Net</th><th>Cumulative</th><th>Bar</th></tr></thead><tbody>' +
-                        projMonths.map((m, i) => '<tr>' +
-                            '<td class="font-medium">' + m + '</td>' +
-                            '<td style="color: var(--success);">$' + income[i].toLocaleString() + '</td>' +
-                            '<td style="color: var(--danger);">$' + expenses[i].toLocaleString() + '</td>' +
-                            '<td class="font-medium" style="color: ' + (net[i] >= 0 ? 'var(--success)' : 'var(--danger)') + ';">' + (net[i] >= 0 ? '+' : '') + 'C$' + net[i].toLocaleString() + '</td>' +
-                            '<td class="font-medium">$' + cumulative[i].toLocaleString() + '</td>' +
-                            '<td style="width: 120px;"><div style="height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden;"><div style="height: 100%; width: ' + Math.round(income[i] / maxVal * 100) + '%; background: var(--success); border-radius: 4px;"></div></div></td>' +
-                        '</tr>').join('') +
-                        '</tbody></table></div>';
+                        return (
+                            '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px;">' +
+                            '<div style="text-align: center; padding: 12px; background: var(--gray-50); border-radius: 8px;"><div style="font-size: 20px; font-weight: 700; color: var(--success);">$' +
+                            income.reduce((a, b) => a + b, 0).toLocaleString() +
+                            '</div><div style="font-size: 11px; color: var(--gray-500);">Projected Income</div></div>' +
+                            '<div style="text-align: center; padding: 12px; background: var(--gray-50); border-radius: 8px;"><div style="font-size: 20px; font-weight: 700; color: var(--danger);">$' +
+                            expenses.reduce((a, b) => a + b, 0).toLocaleString() +
+                            '</div><div style="font-size: 11px; color: var(--gray-500);">Projected Expenses</div></div>' +
+                            '<div style="text-align: center; padding: 12px; background: var(--gray-50); border-radius: 8px;"><div style="font-size: 20px; font-weight: 700; color: var(--primary-600);">$' +
+                            net.reduce((a, b) => a + b, 0).toLocaleString() +
+                            '</div><div style="font-size: 11px; color: var(--gray-500);">Net Cash Flow</div></div>' +
+                            '<div style="text-align: center; padding: 12px; background: var(--gray-50); border-radius: 8px;"><div style="font-size: 20px; font-weight: 700; color: var(--gray-700);">$' +
+                            cumulative[cumulative.length - 1].toLocaleString() +
+                            '</div><div style="font-size: 11px; color: var(--gray-500);">End Balance</div></div>' +
+                            '</div>' +
+                            '<div style="overflow-x: auto;"><table class="table"><thead><tr><th>Month</th><th>Income</th><th>Expenses</th><th>Net</th><th>Cumulative</th><th>Bar</th></tr></thead><tbody>' +
+                            projMonths
+                                .map(
+                                    (m, i) =>
+                                        '<tr>' +
+                                        '<td class="font-medium">' +
+                                        m +
+                                        '</td>' +
+                                        '<td style="color: var(--success);">$' +
+                                        income[i].toLocaleString() +
+                                        '</td>' +
+                                        '<td style="color: var(--danger);">$' +
+                                        expenses[i].toLocaleString() +
+                                        '</td>' +
+                                        '<td class="font-medium" style="color: ' +
+                                        (net[i] >= 0 ? 'var(--success)' : 'var(--danger)') +
+                                        ';">' +
+                                        (net[i] >= 0 ? '+' : '') +
+                                        'C$' +
+                                        net[i].toLocaleString() +
+                                        '</td>' +
+                                        '<td class="font-medium">$' +
+                                        cumulative[i].toLocaleString() +
+                                        '</td>' +
+                                        '<td style="width: 120px;"><div style="height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden;"><div style="height: 100%; width: ' +
+                                        Math.round((income[i] / maxVal) * 100) +
+                                        '%; background: var(--success); border-radius: 4px;"></div></div></td>' +
+                                        '</tr>',
+                                )
+                                .join('') +
+                            '</tbody></table></div>'
+                        );
                     })()}
                 </div>
             </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
-            ${currentTab !== 'cash-flow-projection' ? `
+            ${
+                currentTab !== 'cash-flow-projection'
+                    ? `
             <!-- Multi-Currency Support -->
             <div class="card mb-6">
                 <div class="card-header">
@@ -1588,12 +1996,12 @@ Object.assign(pages, {
                 <div class="card-body">
                     <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: end; margin-bottom: 20px;">
                         <div class="form-group" style="margin: 0;">
-                            <label class="form-label">Amount</label>
+                            <label class="form-label" for="currency-amount">Amount</label>
                             <input aria-label="Currency Amount" type="number" id="currency-amount" class="form-input" value="100" min="0" step="0.01" onchange="handlers.convertCurrency()">
                         </div>
                         <div style="padding-bottom: 8px; font-size: 20px; color: var(--gray-400);">&rarr;</div>
                         <div class="form-group" style="margin: 0;">
-                            <label class="form-label">Convert To</label>
+                            <label class="form-label" for="currency-target">Convert To</label>
                             <select id="currency-target" class="form-select" onchange="handlers.convertCurrency()" aria-label="Target currency">
                                 <option value="EUR">EUR (Euro)</option>
                                 <option value="GBP">GBP (British Pound)</option>
@@ -1615,11 +2023,21 @@ Object.assign(pages, {
                                 { code: 'GBP', rate: 0.795, symbol: '£' },
                                 { code: 'CAD', rate: 1.365, symbol: 'C$' },
                                 { code: 'AUD', rate: 1.535, symbol: 'A$' },
-                                { code: 'JPY', rate: 149.8, symbol: '¥' }
-                            ].map(c => '<div style="text-align: center; padding: 8px; background: var(--gray-50); border-radius: 6px;">' +
-                                '<div style="font-size: 12px; font-weight: 600;">' + c.code + '</div>' +
-                                '<div style="font-size: 11px; color: var(--gray-500);">' + c.symbol + c.rate + '</div>' +
-                            '</div>').join('')}
+                                { code: 'JPY', rate: 149.8, symbol: '¥' },
+                            ]
+                                .map(
+                                    (c) =>
+                                        '<div style="text-align: center; padding: 8px; background: var(--gray-50); border-radius: 6px;">' +
+                                        '<div style="font-size: 12px; font-weight: 600;">' +
+                                        c.code +
+                                        '</div>' +
+                                        '<div style="font-size: 11px; color: var(--gray-500);">' +
+                                        c.symbol +
+                                        c.rate +
+                                        '</div>' +
+                                        '</div>',
+                                )
+                                .join('')}
                         </div>
                     </div>
                 </div>
@@ -1632,36 +2050,71 @@ Object.assign(pages, {
                     <button class="btn btn-sm btn-primary" onclick="handlers.addFinancialGoal()">+ Add Goal</button>
                 </div>
                 <div class="card-body">
-                    ${(store.state.financialGoals || []).length > 0 ? `
+                    ${
+                        (store.state.financialGoals || []).length > 0
+                            ? `
                         <div style="display: grid; gap: 16px;">
-                            ${(store.state.financialGoals || []).map(goal => {
-                                const progress = Math.min(100, Math.round((goal.current / goal.target) * 100));
-                                const color = progress >= 100 ? 'success' : progress >= 60 ? 'primary' : progress >= 30 ? 'warning' : 'danger';
-                                return '<div style="padding: 16px; background: var(--gray-50); border-radius: 8px;">' +
-                                    '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">' +
-                                        '<div><span style="font-weight: 600;">' + escapeHtml(goal.name) + '</span><span style="font-size: 12px; color: var(--gray-500); margin-left: 8px;">' + escapeHtml(goal.category || '') + '</span></div>' +
-                                        '<span style="font-size: 13px; font-weight: 600; color: var(--' + color + ');">' + progress + '%</span>' +
-                                    '</div>' +
-                                    '<div style="height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden; margin-bottom: 8px;">' +
-                                        '<div style="height: 100%; width: ' + progress + '%; background: var(--' + color + '); border-radius: 4px; transition: width 0.3s;"></div>' +
-                                    '</div>' +
-                                    '<div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--gray-500);">' +
-                                        '<span>$' + (goal.current || 0).toLocaleString() + ' of $' + (goal.target || 0).toLocaleString() + '</span>' +
-                                        '<span>Deadline: ' + (goal.deadline || 'None') + '</span>' +
-                                    '</div>' +
-                                '</div>';
-                            }).join('')}
+                            ${(store.state.financialGoals || [])
+                                .map((goal) => {
+                                    const progress = Math.min(100, Math.round((goal.current / goal.target) * 100));
+                                    const color =
+                                        progress >= 100
+                                            ? 'success'
+                                            : progress >= 60
+                                              ? 'primary'
+                                              : progress >= 30
+                                                ? 'warning'
+                                                : 'danger';
+                                    return (
+                                        '<div style="padding: 16px; background: var(--gray-50); border-radius: 8px;">' +
+                                        '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">' +
+                                        '<div><span style="font-weight: 600;">' +
+                                        escapeHtml(goal.name) +
+                                        '</span><span style="font-size: 12px; color: var(--gray-500); margin-left: 8px;">' +
+                                        escapeHtml(goal.category || '') +
+                                        '</span></div>' +
+                                        '<span style="font-size: 13px; font-weight: 600; color: var(--' +
+                                        color +
+                                        ');">' +
+                                        progress +
+                                        '%</span>' +
+                                        '</div>' +
+                                        '<div style="height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden; margin-bottom: 8px;">' +
+                                        '<div style="height: 100%; width: ' +
+                                        progress +
+                                        '%; background: var(--' +
+                                        color +
+                                        '); border-radius: 4px; transition: width 0.3s;"></div>' +
+                                        '</div>' +
+                                        '<div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--gray-500);">' +
+                                        '<span>$' +
+                                        (goal.current || 0).toLocaleString() +
+                                        ' of $' +
+                                        (goal.target || 0).toLocaleString() +
+                                        '</span>' +
+                                        '<span>Deadline: ' +
+                                        (goal.deadline || 'None') +
+                                        '</span>' +
+                                        '</div>' +
+                                        '</div>'
+                                    );
+                                })
+                                .join('')}
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div class="text-center py-8">
                             <p style="color: var(--gray-500); margin-bottom: 12px;">Set financial goals to track your progress. Examples: Revenue target, savings, debt payoff.</p>
                             <button class="btn btn-primary btn-sm" onclick="handlers.addFinancialGoal()">+ Create First Goal</button>
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Business FAB -->
             ${businessFAB.render()}
@@ -1671,21 +2124,21 @@ Object.assign(pages, {
     // Sustainability page
     // Shops page,
 
-
     orders() {
         let orders = store.state.orders || [];
         const orderStats = store.state.orderStats || {};
 
         // Use database totals from backend stats (not paginated local array)
         const totalOrders = orderStats.total_all || orders.length;
-        const pendingOrders = orderStats.pending || orders.filter(o => o.status === 'pending').length;
-        const confirmedOrders = orderStats.confirmed || orders.filter(o => o.status === 'confirmed').length;
-        const shippedOrders = orderStats.shipped || orders.filter(o => o.status === 'shipped').length;
-        const deliveredOrders = orderStats.delivered || orders.filter(o => o.status === 'delivered').length;
-        const totalOrderValue = orderStats.total_value || orders.reduce((sum, o) => sum + (parseFloat(o.sale_price) || 0), 0);
+        const pendingOrders = orderStats.pending || orders.filter((o) => o.status === 'pending').length;
+        const confirmedOrders = orderStats.confirmed || orders.filter((o) => o.status === 'confirmed').length;
+        const shippedOrders = orderStats.shipped || orders.filter((o) => o.status === 'shipped').length;
+        const deliveredOrders = orderStats.delivered || orders.filter((o) => o.status === 'delivered').length;
+        const totalOrderValue =
+            orderStats.total_value || orders.reduce((sum, o) => sum + (parseFloat(o.sale_price) || 0), 0);
 
         // Calculate urgent orders needing shipping
-        const urgentOrders = orders.filter(o => {
+        const urgentOrders = orders.filter((o) => {
             if (o.status === 'delivered' || o.status === 'shipped') return false;
             const createdDate = new Date(o.created_at || o.sold_at);
             const hoursSince = (Date.now() - createdDate.getTime()) / (1000 * 60 * 60);
@@ -1699,23 +2152,24 @@ Object.assign(pages, {
         const dateFilter = store.state.ordersDateFilter || 'all';
 
         if (platformFilter !== 'all') {
-            orders = orders.filter(o => o.platform === platformFilter);
+            orders = orders.filter((o) => o.platform === platformFilter);
         }
         if (statusFilter !== 'all') {
-            orders = orders.filter(o => o.status === statusFilter);
+            orders = orders.filter((o) => o.status === statusFilter);
         }
         if (searchQuery) {
-            orders = orders.filter(o =>
-                o.buyer_username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                o.item_title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                o.tracking_number?.includes(searchQuery)
+            orders = orders.filter(
+                (o) =>
+                    o.buyer_username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    o.item_title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    o.tracking_number?.includes(searchQuery),
             );
         }
         // Date range filter
         if (dateFilter !== 'all') {
             const now = new Date();
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            orders = orders.filter(o => {
+            orders = orders.filter((o) => {
                 const orderDate = new Date(o.created_at || o.sold_at);
                 switch (dateFilter) {
                     case 'today':
@@ -1743,8 +2197,16 @@ Object.assign(pages, {
         }
 
         // Get visible columns
-        const visibleColumns = store.state.ordersVisibleColumns ||
-            ['date', 'buyer', 'status', 'item', 'sale_price', 'profit', 'tracking', 'carrier'];
+        const visibleColumns = store.state.ordersVisibleColumns || [
+            'date',
+            'buyer',
+            'status',
+            'item',
+            'sale_price',
+            'profit',
+            'tracking',
+            'carrier',
+        ];
 
         // Calculate urgency for orders (ship within 24 hours)
         const getOrderUrgency = (order) => {
@@ -1780,8 +2242,11 @@ Object.assign(pages, {
                 </button>
             </div>
 
-            ${ordersMainTab === 'offers' ? window.pages.offersContent()
-            : ordersMainTab === 'shipping' ? `
+            ${
+                ordersMainTab === 'offers'
+                    ? window.pages.offersContent()
+                    : ordersMainTab === 'shipping'
+                      ? `
                 ${window.pages.shippingLabelsPage()}
                 <div style="margin-top:24px;">
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
@@ -1793,7 +2258,7 @@ Object.assign(pages, {
                     ${window.pages.shippingProfiles ? window.pages.shippingProfiles() : ''}
                 </div>
             `
-            : `
+                      : `
             <!-- Orders Hero Section with Pipeline -->
             <div class="orders-hero">
                 <div class="orders-hero-header">
@@ -1824,7 +2289,7 @@ Object.assign(pages, {
                                 ${components.icon('list', 14)} More
                                 ${components.icon('chevron-down', 12)}
                             </button>
-                            <div class="dropdown-menu" style="min-width: 180px; right: 0;">
+                            <div class="dropdown-menu" style="min-width: 180px; right: 0;" aria-hidden="true">
                                 <button class="dropdown-item" onclick="handlers.showImportOrdersModal()">
                                     ${components.icon('download', 16)} Import Orders
                                 </button>
@@ -1858,7 +2323,7 @@ Object.assign(pages, {
                         </div>
                         <div class="pipeline-stage-count"><span class="pipeline-count-badge pending">${pendingOrders}</span></div>
                         <div class="pipeline-stage-label">Pending</div>
-                        <div class="pipeline-stage-bar" style="--fill: ${totalOrders > 0 ? (pendingOrders / totalOrders * 100) : 0}%;"></div>
+                        <div class="pipeline-stage-bar" style="--fill: ${totalOrders > 0 ? (pendingOrders / totalOrders) * 100 : 0}%;"></div>
                     </div>
                     <div class="pipeline-connector"></div>
                     <div class="pipeline-stage ${confirmedOrders > 0 ? 'active' : ''}" onclick="handlers.filterOrders('status', 'confirmed');">
@@ -1869,7 +2334,7 @@ Object.assign(pages, {
                         </div>
                         <div class="pipeline-stage-count"><span class="pipeline-count-badge confirmed">${confirmedOrders}</span></div>
                         <div class="pipeline-stage-label">Confirmed</div>
-                        <div class="pipeline-stage-bar" style="--fill: ${totalOrders > 0 ? (confirmedOrders / totalOrders * 100) : 0}%;"></div>
+                        <div class="pipeline-stage-bar" style="--fill: ${totalOrders > 0 ? (confirmedOrders / totalOrders) * 100 : 0}%;"></div>
                     </div>
                     <div class="pipeline-connector"></div>
                     <div class="pipeline-stage ${shippedOrders > 0 ? 'active' : ''}" onclick="handlers.filterOrders('status', 'shipped');">
@@ -1883,7 +2348,7 @@ Object.assign(pages, {
                         </div>
                         <div class="pipeline-stage-count"><span class="pipeline-count-badge shipped">${shippedOrders}</span></div>
                         <div class="pipeline-stage-label">Shipped</div>
-                        <div class="pipeline-stage-bar" style="--fill: ${totalOrders > 0 ? (shippedOrders / totalOrders * 100) : 0}%;"></div>
+                        <div class="pipeline-stage-bar" style="--fill: ${totalOrders > 0 ? (shippedOrders / totalOrders) * 100 : 0}%;"></div>
                     </div>
                     <div class="pipeline-connector"></div>
                     <div class="pipeline-stage ${deliveredOrders > 0 ? 'active' : ''}" onclick="handlers.filterOrders('status', 'delivered');">
@@ -1895,12 +2360,14 @@ Object.assign(pages, {
                         </div>
                         <div class="pipeline-stage-count"><span class="pipeline-count-badge delivered">${deliveredOrders}</span></div>
                         <div class="pipeline-stage-label">Delivered</div>
-                        <div class="pipeline-stage-bar" style="--fill: ${totalOrders > 0 ? (deliveredOrders / totalOrders * 100) : 0}%;"></div>
+                        <div class="pipeline-stage-bar" style="--fill: ${totalOrders > 0 ? (deliveredOrders / totalOrders) * 100 : 0}%;"></div>
                     </div>
                 </div>
 
                 <!-- Urgent Orders Alert -->
-                ${urgentOrders > 0 ? `
+                ${
+                    urgentOrders > 0
+                        ? `
                 <div class="orders-urgent-alert">
                     <div class="urgent-alert-icon">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1917,7 +2384,9 @@ Object.assign(pages, {
                         View Orders
                     </button>
                 </div>
-                ` : ''}
+                `
+                        : ''
+                }
 
                 <!-- Quick Stats Row -->
                 <div class="orders-quick-stats">
@@ -1940,8 +2409,8 @@ Object.assign(pages, {
                 <div class="card-header">
                     <div class="flex gap-4 flex-wrap orders-filter-bar">
                         <div>
-                            <label class="form-label">Search</label>
-                            <input type="text"
+                            <label class="form-label" for="pso-orders-search">Search</label>
+                            <input id="pso-orders-search" type="text"
                                    class="form-input orders-search-input"
                                    aria-label="Search orders"
                                    placeholder="Buyer, item, tracking..."
@@ -1950,8 +2419,8 @@ Object.assign(pages, {
                                    style="width: 250px;">
                         </div>
                         <div>
-                            <label class="form-label">Platform</label>
-                            <select class="form-select" onchange="handlers.filterOrders('platform', this.value)" aria-label="Filter orders by platform">
+                            <label class="form-label" for="pso-orders-platform">Platform</label>
+                            <select id="pso-orders-platform" class="form-select" onchange="handlers.filterOrders('platform', this.value)" aria-label="Filter orders by platform">
                                 <option value="all" ${platformFilter === 'all' ? 'selected' : ''}>All Platforms</option>
                                 <option value="poshmark" ${platformFilter === 'poshmark' ? 'selected' : ''}>Poshmark</option>
                                 <option value="ebay" ${platformFilter === 'ebay' ? 'selected' : ''}>eBay</option>
@@ -1962,8 +2431,8 @@ Object.assign(pages, {
                             </select>
                         </div>
                         <div>
-                            <label class="form-label">Status</label>
-                            <select aria-label="Filter by status" class="form-select" onchange="handlers.filterOrders('status', this.value)">
+                            <label class="form-label" for="pso-orders-status">Status</label>
+                            <select id="pso-orders-status" aria-label="Filter by status" class="form-select" onchange="handlers.filterOrders('status', this.value)">
                                 <option value="all" ${statusFilter === 'all' ? 'selected' : ''}>All Status</option>
                                 <option value="pending" ${statusFilter === 'pending' ? 'selected' : ''}>Pending</option>
                                 <option value="confirmed" ${statusFilter === 'confirmed' ? 'selected' : ''}>Confirmed</option>
@@ -1972,8 +2441,8 @@ Object.assign(pages, {
                             </select>
                         </div>
                         <div>
-                            <label class="form-label">Date Range</label>
-                            <select aria-label="Filter by date" class="form-select" onchange="handlers.filterOrders('date', this.value)">
+                            <label class="form-label" for="pso-orders-date">Date Range</label>
+                            <select id="pso-orders-date" aria-label="Filter by date" class="form-select" onchange="handlers.filterOrders('date', this.value)">
                                 <option value="all" ${dateFilter === 'all' ? 'selected' : ''}>All Time</option>
                                 <option value="today" ${dateFilter === 'today' ? 'selected' : ''}>Today</option>
                                 <option value="week" ${dateFilter === 'week' ? 'selected' : ''}>Last 7 Days</option>
@@ -1982,19 +2451,27 @@ Object.assign(pages, {
                                 <option value="year" ${dateFilter === 'year' ? 'selected' : ''}>This Year</option>
                             </select>
                         </div>
-                        ${(platformFilter !== 'all' || statusFilter !== 'all' || dateFilter !== 'all' || searchQuery) ? `
+                        ${
+                            platformFilter !== 'all' || statusFilter !== 'all' || dateFilter !== 'all' || searchQuery
+                                ? `
                             <div style="display: flex; align-items: flex-end;">
                                 <button class="btn btn-ghost btn-sm" onclick="handlers.clearOrderFilters()" style="color: var(--error-600);">
                                     ${components.icon('close', 14)} Clear Filters
                                 </button>
                             </div>
-                        ` : ''}
+                        `
+                                : ''
+                        }
                     </div>
                 </div>
 
-                ${store.state.ordersLoading ? `
+                ${
+                    store.state.ordersLoading
+                        ? `
                     <div class="orders-loading-skeleton">
-                        ${[1,2,3,4,5].map(() => `
+                        ${[1, 2, 3, 4, 5]
+                            .map(
+                                () => `
                             <div class="skeleton-row">
                                 <div class="skeleton-cell skeleton-shimmer" style="width: 40px; height: 18px;"></div>
                                 <div class="skeleton-cell skeleton-shimmer" style="width: 80px; height: 18px;"></div>
@@ -2005,9 +2482,13 @@ Object.assign(pages, {
                                 <div class="skeleton-cell skeleton-shimmer" style="width: 60px; height: 18px;"></div>
                                 <div class="skeleton-cell skeleton-shimmer" style="width: 100px; height: 18px;"></div>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
-                ` : orders.length > 0 ? `
+                `
+                        : orders.length > 0
+                          ? `
                     <div class="table-container">
                         <table class="table">
                             <thead>
@@ -2027,63 +2508,93 @@ Object.assign(pages, {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${orders.map(order => {
-                                    const statusColors = {
-                                        pending: 'warning',
-                                        confirmed: 'info',
-                                        shipped: 'primary',
-                                        delivered: 'success',
-                                        cancelled: 'gray',
-                                        returned: 'error'
-                                    };
-                                    const statusColor = statusColors[order.status] || 'gray';
-                                    const isSelected = (store.state.selectedOrderIds || []).includes(order.id);
-                                    const orderUrgency = getOrderUrgency(order);
+                                ${orders
+                                    .map((order) => {
+                                        const statusColors = {
+                                            pending: 'warning',
+                                            confirmed: 'info',
+                                            shipped: 'primary',
+                                            delivered: 'success',
+                                            cancelled: 'gray',
+                                            returned: 'error',
+                                        };
+                                        const statusColor = statusColors[order.status] || 'gray';
+                                        const isSelected = (store.state.selectedOrderIds || []).includes(order.id);
+                                        const orderUrgency = getOrderUrgency(order);
 
-                                    return `
+                                        return `
                                         <tr class="${orderUrgency === 'urgent' ? 'order-row-overdue' : orderUrgency === 'warning' ? 'order-row-warning' : ''}">
                                             <td><input type="checkbox" ${isSelected ? 'checked' : ''} aria-label="Select order ${order.id}" onchange="handlers.toggleOrderSelection('${order.id}', this.checked)"></td>
                                             ${visibleColumns.includes('date') ? `<td>${new Date(order.created_at).toLocaleDateString()}</td>` : ''}
                                             ${visibleColumns.includes('buyer') ? `<td>${escapeHtml(order.buyer_username || 'N/A')}</td>` : ''}
-                                            ${visibleColumns.includes('status') ? `<td>
+                                            ${
+                                                visibleColumns.includes('status')
+                                                    ? `<td>
                                                 <span class="badge badge-${statusColor}" style="color: #111; font-weight: 600;">${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span>
-                                                ${order.priority ? (() => {
-                                                    const priorityColors = { low: '#6b7280', normal: '#6b7280', high: '#f59e0b', urgent: '#ef4444' };
-                                                    return `<span class="badge" style="background: ${priorityColors[order.priority] || 'var(--gray-500)'}; color: white; margin-left: 6px; text-transform: capitalize;">${order.priority}</span>`;
-                                                })() : ''}
+                                                ${
+                                                    order.priority
+                                                        ? (() => {
+                                                              const priorityColors = {
+                                                                  low: '#6b7280',
+                                                                  normal: '#6b7280',
+                                                                  high: '#f59e0b',
+                                                                  urgent: '#ef4444',
+                                                              };
+                                                              return `<span class="badge" style="background: ${priorityColors[order.priority] || 'var(--gray-500)'}; color: white; margin-left: 6px; text-transform: capitalize;">${order.priority}</span>`;
+                                                          })()
+                                                        : ''
+                                                }
                                                 ${orderUrgency === 'urgent' ? '<span class="badge badge-error badge-sm" style="margin-left: 4px;">Overdue</span>' : orderUrgency === 'warning' ? '<span class="badge badge-warning badge-sm" style="margin-left: 4px;">Ship Soon</span>' : ''}
-                                            </td>` : ''}
+                                            </td>`
+                                                    : ''
+                                            }
                                             ${visibleColumns.includes('item') ? `<td>${escapeHtml(order.item_title || 'N/A')}</td>` : ''}
                                             ${visibleColumns.includes('sale_price') ? `<td class="font-medium">C$${parseFloat(order.sale_price || 0).toFixed(2)}</td>` : ''}
-                                            ${visibleColumns.includes('profit') ? (() => {
-                                                const salePrice = parseFloat(order.sale_price) || 0;
-                                                const platformFee = parseFloat(order.platform_fee) || 0;
-                                                const shippingCost = parseFloat(order.shipping_cost) || 0;
-                                                let itemCost = 0;
-                                                if (order.item_id) {
-                                                    const invItem = (store.state.inventory || []).find(i => i.id === order.item_id);
-                                                    if (invItem) itemCost = parseFloat(invItem.cost_price) || 0;
-                                                }
-                                                const netProfit = salePrice - platformFee - shippingCost - itemCost;
-                                                const margin = salePrice > 0 ? ((netProfit / salePrice) * 100).toFixed(0) : 0;
-                                                const profitClass = netProfit > 0 ? 'text-green-600' : netProfit < 0 ? 'text-red-600' : '';
-                                                return `<td>
+                                            ${
+                                                visibleColumns.includes('profit')
+                                                    ? (() => {
+                                                          const salePrice = parseFloat(order.sale_price) || 0;
+                                                          const platformFee = parseFloat(order.platform_fee) || 0;
+                                                          const shippingCost = parseFloat(order.shipping_cost) || 0;
+                                                          let itemCost = 0;
+                                                          if (order.item_id) {
+                                                              const invItem = (store.state.inventory || []).find(
+                                                                  (i) => i.id === order.item_id,
+                                                              );
+                                                              if (invItem)
+                                                                  itemCost = parseFloat(invItem.cost_price) || 0;
+                                                          }
+                                                          const netProfit =
+                                                              salePrice - platformFee - shippingCost - itemCost;
+                                                          const margin =
+                                                              salePrice > 0
+                                                                  ? ((netProfit / salePrice) * 100).toFixed(0)
+                                                                  : 0;
+                                                          const profitClass =
+                                                              netProfit > 0
+                                                                  ? 'text-green-600'
+                                                                  : netProfit < 0
+                                                                    ? 'text-red-600'
+                                                                    : '';
+                                                          return `<td>
                                                     <div class="font-medium ${profitClass}">C$${netProfit.toFixed(2)}</div>
                                                     <div class="text-xs text-gray-500">${margin}% margin</div>
                                                 </td>`;
-                                            })() : ''}
+                                                      })()
+                                                    : ''
+                                            }
                                             ${visibleColumns.includes('shipping_method') ? `<td>${escapeHtml(order.shipping_provider || 'Standard')}</td>` : ''}
-                                            ${visibleColumns.includes('tracking') ? '<td>' + (order.tracking_number ? '<a href="#" onclick="event.preventDefault(); handlers.trackShipment(\'' + order.tracking_number + '\', \'' + (order.shipping_provider || '') + '\')" class="text-primary-600 hover:underline">' + order.tracking_number + '</a>' : '-') + '</td>' : ''}
+                                            ${visibleColumns.includes('tracking') ? '<td>' + (order.tracking_number ? '<a href="#" onclick="event.preventDefault(); handlers.trackShipment(\'' + order.tracking_number + "', '" + (order.shipping_provider || '') + '\')" class="text-primary-600 hover:underline">' + order.tracking_number + '</a>' : '-') + '</td>' : ''}
                                             ${visibleColumns.includes('carrier') ? `<td>${escapeHtml(order.shipping_provider || '-')}</td>` : ''}
-                                            ${visibleColumns.includes('arrival') ? `<td>${order.expected_delivery ? new Date(order.expected_delivery).toLocaleDateString() : (order.delivered_at ? 'Delivered ' + new Date(order.delivered_at).toLocaleDateString() : '-')}</td>` : ''}
+                                            ${visibleColumns.includes('arrival') ? `<td>${order.expected_delivery ? new Date(order.expected_delivery).toLocaleDateString() : order.delivered_at ? 'Delivered ' + new Date(order.delivered_at).toLocaleDateString() : '-'}</td>` : ''}
                                             <td>
                                                 <div class="flex gap-1">
                                                     <button class="btn btn-sm btn-ghost" onclick="handlers.viewOrderDetails('${order.id}')" title="View Details">
                                                         ${components.icon('eye', 14)}
                                                     </button>
-                                                    <button class="btn btn-sm btn-ghost ${(store.state.orderNotes?.[order.id]?.length > 0) ? 'has-notes' : ''}" onclick="handlers.showOrderNotes('${order.id}')" title="Internal Notes">
+                                                    <button class="btn btn-sm btn-ghost ${store.state.orderNotes?.[order.id]?.length > 0 ? 'has-notes' : ''}" onclick="handlers.showOrderNotes('${order.id}')" title="Internal Notes">
                                                         ${components.icon('message-square', 14)}
-                                                        ${(store.state.orderNotes?.[order.id]?.length > 0) ? '<span class="notes-badge">' + store.state.orderNotes[order.id].length + '</span>' : ''}
+                                                        ${store.state.orderNotes?.[order.id]?.length > 0 ? '<span class="notes-badge">' + store.state.orderNotes[order.id].length + '</span>' : ''}
                                                     </button>
                                                     <button class="btn btn-sm btn-ghost ${store.state.followUpReminders?.[order.id] ? 'has-reminder' : ''}" onclick="handlers.showFollowUpReminder('${order.id}')" title="Follow-up Reminder">
                                                         ${components.icon('bell', 14)}
@@ -2098,33 +2609,43 @@ Object.assign(pages, {
                                                     <button class="btn btn-sm btn-ghost" onclick="handlers.printPackingSlip('${order.id}')" title="Print Packing Slip">
                                                         ${components.icon('printer', 14)}
                                                     </button>
-                                                    ${(order.status === 'delivered' || order.status === 'shipped') && !order.return_status ? `
+                                                    ${
+                                                        (order.status === 'delivered' || order.status === 'shipped') &&
+                                                        !order.return_status
+                                                            ? `
                                                         <button class="btn btn-sm btn-ghost" onclick="handlers.initiateReturn('${order.id}')" title="Initiate Return">
                                                             ${components.icon('rotate-ccw', 14)}
                                                         </button>
-                                                    ` : ''}
+                                                    `
+                                                            : ''
+                                                    }
                                                     ${order.return_status ? `<span class="badge badge-sm badge-warning">${order.return_status}</span>` : ''}
                                                 </div>
                                             </td>
                                         </tr>
                                     `;
-                                }).join('')}
+                                    })
+                                    .join('')}
                             </tbody>
                         </table>
                     </div>
-                ` : components.emptyState(
-                    'No orders yet',
-                    searchQuery ? 'No orders match your search' : 'Orders will appear here when customers purchase your listings',
-                    searchQuery ? 'Clear Search' : null,
-                    searchQuery ? "handlers.searchOrders('')" : null
-                )}
+                `
+                          : components.emptyState(
+                                'No orders yet',
+                                searchQuery
+                                    ? 'No orders match your search'
+                                    : 'Orders will appear here when customers purchase your listings',
+                                searchQuery ? 'Clear Search' : null,
+                                searchQuery ? "handlers.searchOrders('')" : null,
+                            )
+                }
             </div>
-            `}
+            `
+            }
         `;
     },
 
     // Checklist page,
-
 
     shippingLabelsPage() {
         const activeTab = store.state.shippingLabelsTab || 'labels';
@@ -2153,7 +2674,9 @@ Object.assign(pages, {
                 </button>
             </div>
 
-            ${activeTab === 'labels' ? `
+            ${
+                activeTab === 'labels'
+                    ? `
                 <div class="card">
                     <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
                         <h2 class="card-title">Shipping Labels</h2>
@@ -2170,7 +2693,9 @@ Object.assign(pages, {
                         </div>
                     </div>
                     <div class="card-body">
-                        ${labels.length > 0 ? `
+                        ${
+                            labels.length > 0
+                                ? `
                             <div class="table-container">
                                 <table class="table">
                                     <thead>
@@ -2186,7 +2711,9 @@ Object.assign(pages, {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${labels.map(label => `
+                                        ${labels
+                                            .map(
+                                                (label) => `
                                             <tr>
                                                 <td><input aria-label="Toggle ${escapeHtml(label.to_name)}" type="checkbox" class="label-checkbox" value="${label.id}" onchange="handlers.toggleLabelCheckbox(this)"></td>
                                                 <td>${escapeHtml(label.to_name)}</td>
@@ -2199,14 +2726,20 @@ Object.assign(pages, {
                                                     <button class="btn btn-ghost btn-sm" onclick="handlers.viewLabel('${label.id}')" title="View">
                                                         ${components.icon('eye', 14)}
                                                     </button>
-                                                    ${label.status === 'draft' ? `
+                                                    ${
+                                                        label.status === 'draft'
+                                                            ? `
                                                         <button class="btn btn-ghost btn-sm" onclick="handlers.deleteLabel('${label.id}')" title="Delete">
                                                             ${components.icon('trash', 14)}
                                                         </button>
-                                                    ` : ''}
+                                                    `
+                                                            : ''
+                                                    }
                                                 </td>
                                             </tr>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </tbody>
                                 </table>
                             </div>
@@ -2218,16 +2751,22 @@ Object.assign(pages, {
                                     Create Batch from Selected
                                 </button>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="text-center py-8 text-gray-500">
                                 <p>No shipping labels yet. Create one to get started.</p>
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
-            ${activeTab === 'addresses' ? `
+            ${
+                activeTab === 'addresses'
+                    ? `
                 <div class="card">
                     <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
                         <h2 class="card-title">Return Addresses</h2>
@@ -2236,9 +2775,13 @@ Object.assign(pages, {
                         </button>
                     </div>
                     <div class="card-body">
-                        ${addresses.length > 0 ? `
+                        ${
+                            addresses.length > 0
+                                ? `
                             <div class="shipping-address-grid">
-                                ${addresses.map(addr => `
+                                ${addresses
+                                    .map(
+                                        (addr) => `
                                     <div class="shipping-address-card ${addr.is_default ? 'is-default' : ''}">
                                         <div class="shipping-address-header">
                                             <strong>${escapeHtml(addr.name)}</strong>
@@ -2258,24 +2801,34 @@ Object.assign(pages, {
                                             </button>
                                         </div>
                                     </div>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="text-center py-8 text-gray-500">
                                 <p>No return addresses saved. Add one for faster label creation.</p>
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
-            ${activeTab === 'batches' ? `
+            ${
+                activeTab === 'batches'
+                    ? `
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Label Batches</h2>
                     </div>
                     <div class="card-body">
-                        ${batches.length > 0 ? `
+                        ${
+                            batches.length > 0
+                                ? `
                             <div class="table-container">
                                 <table class="table">
                                     <thead>
@@ -2290,7 +2843,9 @@ Object.assign(pages, {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${batches.map(batch => `
+                                        ${batches
+                                            .map(
+                                                (batch) => `
                                             <tr>
                                                 <td>${escapeHtml(batch.name || 'Unnamed')}</td>
                                                 <td>${batch.total_labels}</td>
@@ -2299,29 +2854,38 @@ Object.assign(pages, {
                                                 <td>C$${(batch.total_postage || 0).toFixed(2)}</td>
                                                 <td><span class="badge badge-${batch.status === 'completed' ? 'success' : batch.status === 'failed' ? 'error' : 'warning'}">${batch.status}</span></td>
                                                 <td>
-                                                    ${batch.status === 'pending' ? `
+                                                    ${
+                                                        batch.status === 'pending'
+                                                            ? `
                                                         <button class="btn btn-primary btn-sm" onclick="handlers.processBatch('${batch.id}')">Process</button>
-                                                    ` : ''}
+                                                    `
+                                                            : ''
+                                                    }
                                                 </td>
                                             </tr>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </tbody>
                                 </table>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="text-center py-8 text-gray-500">
                                 <p>No batches created yet.</p>
                                 <button class="btn btn-primary mt-3" onclick="handlers.showCreateBatch()">Create Batch</button>
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
         `;
     },
 
     // Inventory Import page,
-
 
     transactions() {
         // Load persisted filters on first visit
@@ -2341,15 +2905,19 @@ Object.assign(pages, {
 
         // Apply filters to sales
         if (txPlatformFilter !== 'all') {
-            salesTransactions = salesTransactions.filter(s => s.platform === txPlatformFilter);
+            salesTransactions = salesTransactions.filter((s) => s.platform === txPlatformFilter);
         }
         if (txSearchQuery) {
             const q = txSearchQuery.toLowerCase();
-            purchases = purchases.filter(p =>
-                (p.vendor || p.vendor_name || '').toLowerCase().includes(q) || (p.item || '').toLowerCase().includes(q)
+            purchases = purchases.filter(
+                (p) =>
+                    (p.vendor || p.vendor_name || '').toLowerCase().includes(q) ||
+                    (p.item || '').toLowerCase().includes(q),
             );
-            salesTransactions = salesTransactions.filter(s =>
-                (s.listing_title || s.inventory_title || '').toLowerCase().includes(q) || (s.platform || '').toLowerCase().includes(q)
+            salesTransactions = salesTransactions.filter(
+                (s) =>
+                    (s.listing_title || s.inventory_title || '').toLowerCase().includes(q) ||
+                    (s.platform || '').toLowerCase().includes(q),
             );
         }
         if (txDateFilter !== 'all') {
@@ -2361,43 +2929,42 @@ Object.assign(pages, {
             else if (txDateFilter === 'today') {
                 cutoff = new Date();
                 cutoff.setHours(0, 0, 0, 0);
-            }
-            else if (txDateFilter === 'week') cutoff = new Date(now - 7 * 86400000);
+            } else if (txDateFilter === 'week') cutoff = new Date(now - 7 * 86400000);
             else if (txDateFilter === 'month') cutoff = new Date(now - 30 * 86400000);
             else if (txDateFilter === 'quarter') cutoff = new Date(now - 90 * 86400000);
             if (cutoff) {
-                purchases = purchases.filter(p => new Date(p.date || p.purchase_date || p.created_at) >= cutoff);
-                salesTransactions = salesTransactions.filter(s => new Date(s.created_at) >= cutoff);
+                purchases = purchases.filter((p) => new Date(p.date || p.purchase_date || p.created_at) >= cutoff);
+                salesTransactions = salesTransactions.filter((s) => new Date(s.created_at) >= cutoff);
             }
         }
         // Status filter
         const txStatusFilter = store.state.txStatusFilter || 'all';
         if (txStatusFilter !== 'all') {
-            salesTransactions = salesTransactions.filter(s => (s.status || 'completed') === txStatusFilter);
+            salesTransactions = salesTransactions.filter((s) => (s.status || 'completed') === txStatusFilter);
         }
         // Buyer filter
         const txBuyerFilter = store.state.txBuyerFilter || '';
         if (txBuyerFilter) {
             const buyerQ = txBuyerFilter.toLowerCase();
-            salesTransactions = salesTransactions.filter(s =>
-                (s.buyer_username || s.buyer_name || '').toLowerCase().includes(buyerQ)
+            salesTransactions = salesTransactions.filter((s) =>
+                (s.buyer_username || s.buyer_name || '').toLowerCase().includes(buyerQ),
             );
         }
         // Amount range filter
         const txAmountMin = parseFloat(store.state.txAmountMin) || 0;
         const txAmountMax = parseFloat(store.state.txAmountMax) || 0;
         if (txAmountMin > 0) {
-            purchases = purchases.filter(p => (p.amount || p.total_amount || 0) >= txAmountMin);
-            salesTransactions = salesTransactions.filter(s => (s.sale_price || 0) >= txAmountMin);
+            purchases = purchases.filter((p) => (p.amount || p.total_amount || 0) >= txAmountMin);
+            salesTransactions = salesTransactions.filter((s) => (s.sale_price || 0) >= txAmountMin);
         }
         if (txAmountMax > 0) {
-            purchases = purchases.filter(p => (p.amount || p.total_amount || 0) <= txAmountMax);
-            salesTransactions = salesTransactions.filter(s => (s.sale_price || 0) <= txAmountMax);
+            purchases = purchases.filter((p) => (p.amount || p.total_amount || 0) <= txAmountMax);
+            salesTransactions = salesTransactions.filter((s) => (s.sale_price || 0) <= txAmountMax);
         }
         // Category filter
         const txCategoryFilter = store.state.txCategoryFilter || 'all';
         if (txCategoryFilter !== 'all') {
-            purchases = purchases.filter(p => (p.category || 'Other') === txCategoryFilter);
+            purchases = purchases.filter((p) => (p.category || 'Other') === txCategoryFilter);
         }
 
         // Count active filters (only count filters relevant to the active tab)
@@ -2420,8 +2987,11 @@ Object.assign(pages, {
         const purchaseStats = {
             total: purchases.length,
             totalAmount: purchases.reduce((sum, p) => sum + (p.amount || p.total_amount || 0), 0),
-            avgAmount: purchases.length > 0 ? purchases.reduce((sum, p) => sum + (p.amount || p.total_amount || 0), 0) / purchases.length : 0,
-            vendors: [...new Set(purchases.map(p => p.vendor || p.vendor_name).filter(Boolean))].length
+            avgAmount:
+                purchases.length > 0
+                    ? purchases.reduce((sum, p) => sum + (p.amount || p.total_amount || 0), 0) / purchases.length
+                    : 0,
+            vendors: [...new Set(purchases.map((p) => p.vendor || p.vendor_name).filter(Boolean))].length,
         };
 
         const salesStats = {
@@ -2429,7 +2999,10 @@ Object.assign(pages, {
             totalRevenue: salesTransactions.reduce((sum, s) => sum + (s.sale_price || 0), 0),
             totalFees: salesTransactions.reduce((sum, s) => sum + (s.platform_fee || 0), 0),
             totalProfit: salesTransactions.reduce((sum, s) => sum + (s.net_profit || 0), 0),
-            avgSale: salesTransactions.length > 0 ? salesTransactions.reduce((sum, s) => sum + (s.sale_price || 0), 0) / salesTransactions.length : 0
+            avgSale:
+                salesTransactions.length > 0
+                    ? salesTransactions.reduce((sum, s) => sum + (s.sale_price || 0), 0) / salesTransactions.length
+                    : 0,
         };
 
         // View mode for transactions
@@ -2437,7 +3010,7 @@ Object.assign(pages, {
 
         // Calculate expense categories for pie chart
         const expenseCategories = {};
-        purchases.forEach(p => {
+        purchases.forEach((p) => {
             const cat = p.category || 'Other';
             expenseCategories[cat] = (expenseCategories[cat] || 0) + (p.amount || p.total_amount || 0);
         });
@@ -2448,24 +3021,24 @@ Object.assign(pages, {
 
         // Calculate running balances for transactions
         // Sort by date (newest first for display, but calculate from oldest)
-        const sortedPurchases = [...purchases].sort((a, b) =>
-            new Date(a.date || a.purchase_date || a.created_at) - new Date(b.date || b.purchase_date || b.created_at)
+        const sortedPurchases = [...purchases].sort(
+            (a, b) =>
+                new Date(a.date || a.purchase_date || a.created_at) -
+                new Date(b.date || b.purchase_date || b.created_at),
         );
-        const sortedSales = [...salesTransactions].sort((a, b) =>
-            new Date(a.created_at) - new Date(b.created_at)
-        );
+        const sortedSales = [...salesTransactions].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
         // Calculate running balance starting from a base (using salesStats.totalRevenue as starting point)
         let purchaseRunningBalance = salesStats.totalRevenue;
-        const purchasesWithBalance = sortedPurchases.map(p => {
-            purchaseRunningBalance -= (p.amount || p.total_amount || 0);
+        const purchasesWithBalance = sortedPurchases.map((p) => {
+            purchaseRunningBalance -= p.amount || p.total_amount || 0;
             return { ...p, runningBalance: purchaseRunningBalance };
         });
         // Reverse so newest is first
         purchasesWithBalance.reverse();
 
         let salesRunningBalance = 0;
-        const salesWithBalance = sortedSales.map(s => {
+        const salesWithBalance = sortedSales.map((s) => {
             salesRunningBalance += (s.sale_price || 0) - (s.platform_fee || 0);
             return { ...s, runningBalance: salesRunningBalance };
         });
@@ -2476,15 +3049,162 @@ Object.assign(pages, {
         const monthlyData = [
             { month: 'Oct', revenue: 2400, expenses: 1800 },
             { month: 'Nov', revenue: 3200, expenses: 2100 },
-            { month: 'Dec', revenue: 4500, expenses: 2800 }
+            { month: 'Dec', revenue: 4500, expenses: 2800 },
         ];
 
         // Calculate month-over-month change
         const lastMonth = monthlyData[monthlyData.length - 1] || {};
         const prevMonth = monthlyData[monthlyData.length - 2] || {};
-        const revenueChange = prevMonth.revenue > 0 ? Math.round(((lastMonth.revenue - prevMonth.revenue) / prevMonth.revenue) * 100) : 0;
+        const revenueChange =
+            prevMonth.revenue > 0 ? Math.round(((lastMonth.revenue - prevMonth.revenue) / prevMonth.revenue) * 100) : 0;
         const netFlow = salesStats.totalRevenue - purchaseStats.totalAmount;
-        const profitMargin = salesStats.totalRevenue > 0 ? Math.round((salesStats.totalProfit / salesStats.totalRevenue) * 100) : 0;
+        const profitMargin =
+            salesStats.totalRevenue > 0 ? Math.round((salesStats.totalProfit / salesStats.totalRevenue) * 100) : 0;
+        const selectedPurchaseIds = store.state.selectedPurchases || [];
+        const allPurchasesSelected =
+            selectedPurchaseIds.length === purchasesWithBalance.length && purchasesWithBalance.length > 0;
+        const purchaseSelectionChecked = allPurchasesSelected ? 'checked' : '';
+        const bulkCategorizePurchaseMarkup =
+            selectedPurchaseIds.length > 0
+                ? `
+                                <select class="form-select" style="width: auto; font-size: 12px;" aria-label="Bulk categorize" onchange="handlers.bulkCategorizePurchases(this.value); this.value='';">
+                                    <option value="">Categorize ${selectedPurchaseIds.length} selected...</option>
+                                    <option value="shipping">Shipping</option>
+                                    <option value="supplies">Supplies</option>
+                                    <option value="fees">Fees</option>
+                                    <option value="COGS">COGS</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            `
+                : '';
+
+        const renderSalesTransactionTable = () => {
+            const allTags = [...new Set(salesWithBalance.flatMap((s) => s.tags || []))];
+            const defaultTags = ['High Priority', 'Refund', 'Wholesale', 'Bundle', 'Custom'];
+            const availableTags = [...new Set([...allTags, ...defaultTags])];
+            const activeTagFilter = store.state.txTagFilter || null;
+            const filteredSales = activeTagFilter
+                ? salesWithBalance.filter((s) => (s.tags || []).includes(activeTagFilter))
+                : salesWithBalance;
+
+            return `
+                            <!-- Tag Quick Filter Bar -->
+                            <div class="transaction-tag-bar" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; padding: 10px; background: var(--gray-50); border-radius: 8px;">
+                                <span style="font-size: 11px; color: var(--gray-500); margin-right: 8px; align-self: center;">Filter by tag:</span>
+                                <button class="tag-filter-btn ${!activeTagFilter ? 'active' : ''}" onclick="store.setState({txTagFilter: null}); renderApp(pages.transactions());" style="font-size: 11px; padding: 4px 10px; border-radius: 12px; border: 1px solid var(--gray-300); background: ${!activeTagFilter ? 'var(--primary)' : 'white'}; color: ${!activeTagFilter ? 'white' : 'var(--gray-600)'}; cursor: pointer;">
+                                    All
+                                </button>
+                                ${availableTags
+                                    .slice(0, 6)
+                                    .map(
+                                        (tag) => `
+                                    <button class="tag-filter-btn ${activeTagFilter === tag ? 'active' : ''}" onclick="store.setState({txTagFilter: '${tag}'}); renderApp(pages.transactions());" style="font-size: 11px; padding: 4px 10px; border-radius: 12px; border: 1px solid ${activeTagFilter === tag ? 'var(--primary)' : 'var(--gray-300)'}; background: ${activeTagFilter === tag ? 'var(--primary)' : 'white'}; color: ${activeTagFilter === tag ? 'white' : 'var(--gray-600)'}; cursor: pointer;">
+                                        ${tag}
+                                    </button>
+                                `,
+                                    )
+                                    .join('')}
+                            </div>
+
+                            <!-- Table View -->
+                            <div class="table-container">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Item</th>
+                                            <th>Platform</th>
+                                            <th>Price</th>
+                                            <th>Fees</th>
+                                            <th>Profit</th>
+                                            <th>Tags</th>
+                                            <th>Running Balance</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${filteredSales
+                                            .map((sale) => {
+                                                const saleTags = sale.tags || [];
+                                                const tagColors = {
+                                                    'High Priority': 'var(--error)',
+                                                    Refund: 'var(--warning)',
+                                                    Wholesale: 'var(--info)',
+                                                    Bundle: 'var(--primary)',
+                                                    Custom: 'var(--gray-500)',
+                                                };
+
+                                                return `
+                                            <tr>
+                                                <td>${new Date(sale.created_at).toLocaleDateString()}</td>
+                                                <td>${escapeHtml(sale.listing_title || sale.inventory_title || 'N/A')}</td>
+                                                <td>${components.platformBadge(sale.platform)}</td>
+                                                <td class="font-medium text-success">+C$${(sale.sale_price || 0).toFixed(2)}</td>
+                                                <td class="text-error">-C$${(sale.platform_fee || 0).toFixed(2)}</td>
+                                                <td class="font-medium text-success">C$${(sale.net_profit || 0).toFixed(2)}</td>
+                                                <td>
+                                                    <div class="transaction-tags" style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center;">
+                                                        ${saleTags
+                                                            .map(
+                                                                (tag) => `
+                                                            <span class="tx-tag" style="font-size: 9px; padding: 2px 6px; border-radius: 10px; background: ${tagColors[tag] || 'var(--gray-400)'}20; color: ${tagColors[tag] || 'var(--gray-600)'}; font-weight: 500;">
+                                                                ${tag}
+                                                            </span>
+                                                        `,
+                                                            )
+                                                            .join('')}
+                                                        <button class="add-tag-btn" onclick="handlers.showAddTagModal('${sale.id}')" style="width: 18px; height: 18px; border-radius: 50%; border: 1px dashed var(--gray-300); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--gray-400); font-size: 12px;" title="Add tag">+</button>
+                                                    </div>
+                                                </td>
+                                                <td class="font-medium ${sale.runningBalance >= 0 ? 'text-success' : 'text-error'}">C$${sale.runningBalance.toFixed(2)}</td>
+                                                <td>
+                                                    <div class="flex gap-1">
+                                                        <button class="btn btn-sm btn-ghost" onclick="handlers.showSplitTransactionModal('${sale.id}')" title="Split">
+                                                            ${components.icon('scissors', 14)}
+                                                        </button>
+                                                        <button class="btn btn-sm btn-ghost" onclick="handlers.showAttachReceiptModal('${sale.id}')" title="Attach Receipt">
+                                                            ${components.icon('paperclip', 14)}
+                                                        </button>
+                                                        <button class="btn btn-sm btn-ghost" onclick="handlers.showTransactionAuditLog('${sale.id}')" title="Audit Log">
+                                                            ${components.icon('clock', 14)}
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            `;
+                                            })
+                                            .join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        `;
+        };
+
+        let salesTransactionsBody = `
+                            <div class="text-gray-500 text-sm text-center py-8">
+                                No sales transactions yet
+                            </div>
+                        `;
+        if (salesWithBalance.length > 0) {
+            if (txViewMode === 'timeline') {
+                salesTransactionsBody = `
+                            <!-- Timeline View -->
+                            ${transactionTimeline.render(
+                                salesWithBalance.map((s) => ({
+                                    id: s.id,
+                                    type: 'sale',
+                                    title: s.listing_title || s.inventory_title || 'Sale',
+                                    amount: s.sale_price || 0,
+                                    date: s.created_at,
+                                    platform: s.platform,
+                                    status: 'completed',
+                                })),
+                            )}
+                        `;
+            } else {
+                salesTransactionsBody = renderSalesTransactionTable();
+            }
+        }
 
         return `
             <div class="page-header">
@@ -2512,7 +3232,7 @@ Object.assign(pages, {
                         <button class="btn btn-secondary" onclick="this.parentElement.classList.toggle('open')">
                             ${components.icon('download', 16)} Export
                         </button>
-                        <div class="dropdown-menu">
+                        <div class="dropdown-menu" aria-hidden="true">
                             <button class="dropdown-item" onclick="handlers.exportTransactions('csv')">CSV</button>
                             <button class="dropdown-item" onclick="handlers.exportTransactions('pdf')">PDF</button>
                             <button class="dropdown-item" onclick="handlers.exportTransactions('xlsx')">Excel</button>
@@ -2615,48 +3335,81 @@ Object.assign(pages, {
                     <span style="font-size: 12px; color: var(--gray-500);">Last ${Math.min((activeTab === 'purchases' ? purchasesWithBalance : salesWithBalance).length, 15)} transactions</span>
                 </div>
                 ${(() => {
-                    const data = (activeTab === 'purchases' ? purchasesWithBalance : salesWithBalance).slice(0, 15).reverse();
+                    const data = (activeTab === 'purchases' ? purchasesWithBalance : salesWithBalance)
+                        .slice(0, 15)
+                        .reverse();
                     if (data.length < 2) {
                         return '<div style="text-align: center; color: var(--gray-400); font-size: 13px; padding: 20px;">Need at least 2 transactions for trend chart</div>';
                     }
-                    const balances = data.map(d => d.runningBalance);
+                    const balances = data.map((d) => d.runningBalance);
                     const maxB = Math.max(...balances);
                     const minB = Math.min(...balances);
                     const range = maxB - minB || 1;
                     const w = 100;
                     const h = 40;
-                    const points = balances.map((b, i) => {
-                        const x = (i / (balances.length - 1)) * w;
-                        const y = h - ((b - minB) / range) * (h - 4) - 2;
-                        return x.toFixed(1) + ',' + y.toFixed(1);
-                    }).join(' ');
+                    const points = balances
+                        .map((b, i) => {
+                            const x = (i / (balances.length - 1)) * w;
+                            const y = h - ((b - minB) / range) * (h - 4) - 2;
+                            return x.toFixed(1) + ',' + y.toFixed(1);
+                        })
+                        .join(' ');
                     const areaPoints = points + ' ' + w + ',' + h + ' 0,' + h;
                     const lastBalance = balances[balances.length - 1];
                     const firstBalance = balances[0];
-                    const trendColor = lastBalance >= firstBalance ? 'var(--success, #22c55e)' : 'var(--error, #ef4444)';
-                    return '<svg viewBox="0 0 ' + w + ' ' + h + '" style="width: 100%; height: 80px;" preserveAspectRatio="none"><defs><linearGradient id="balanceGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' + trendColor + '" stop-opacity="0.2"/><stop offset="100%" stop-color="' + trendColor + '" stop-opacity="0.02"/></linearGradient></defs><polygon points="' + areaPoints + '" fill="url(#balanceGrad)"/><polyline points="' + points + '" fill="none" stroke="' + trendColor + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--gray-500); margin-top: 4px;"><span>$' + firstBalance.toFixed(2) + '</span><span style="color: ' + trendColor + '; font-weight: 600;">$' + lastBalance.toFixed(2) + '</span></div>';
+                    const trendColor =
+                        lastBalance >= firstBalance ? 'var(--success, #22c55e)' : 'var(--error, #ef4444)';
+                    return (
+                        '<svg viewBox="0 0 ' +
+                        w +
+                        ' ' +
+                        h +
+                        '" style="width: 100%; height: 80px;" preserveAspectRatio="none"><defs><linearGradient id="balanceGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' +
+                        trendColor +
+                        '" stop-opacity="0.2"/><stop offset="100%" stop-color="' +
+                        trendColor +
+                        '" stop-opacity="0.02"/></linearGradient></defs><polygon points="' +
+                        areaPoints +
+                        '" fill="url(#balanceGrad)"/><polyline points="' +
+                        points +
+                        '" fill="none" stroke="' +
+                        trendColor +
+                        '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--gray-500); margin-top: 4px;"><span>$' +
+                        firstBalance.toFixed(2) +
+                        '</span><span style="color: ' +
+                        trendColor +
+                        '; font-weight: 600;">$' +
+                        lastBalance.toFixed(2) +
+                        '</span></div>'
+                    );
                 })()}
             </div>
 
             <!-- Summary Stats -->
-            ${activeTab === 'purchases' ? `
+            ${
+                activeTab === 'purchases'
+                    ? `
                 <div class="stats-grid mb-6">
                     ${components.statCard('Total Purchases', purchaseStats.total.toString(), 'download', 0)}
                     ${components.statCard('Total Spent', 'C$' + purchaseStats.totalAmount.toFixed(2), 'analytics', 0)}
                     ${components.statCard('Avg Purchase', 'C$' + purchaseStats.avgAmount.toFixed(2), 'activity', 0)}
                     ${components.statCard('Unique Vendors', purchaseStats.vendors.toString(), 'sales', 0)}
                 </div>
-            ` : `
+            `
+                    : `
                 <div class="stats-grid mb-6">
                     ${components.statCard('Total Sales', salesStats.total.toString(), 'upload', 0)}
                     ${components.statCard('Total Revenue', 'C$' + salesStats.totalRevenue.toFixed(2), 'analytics', 0)}
                     ${components.statCard('Platform Fees', 'C$' + salesStats.totalFees.toFixed(2), 'analytics', 0)}
                     ${components.statCard('Net Profit', 'C$' + salesStats.totalProfit.toFixed(2), 'activity', 0)}
                 </div>
-            `}
+            `
+            }
 
             <!-- Expense Breakdown & Monthly Comparison -->
-            ${activeTab === 'purchases' && expensePieData.length > 0 ? `
+            ${
+                activeTab === 'purchases' && expensePieData.length > 0
+                    ? `
                 <div class="grid grid-cols-2 gap-6 mb-6">
                     <div class="card">
                         <div class="card-header">
@@ -2675,7 +3428,9 @@ Object.assign(pages, {
                         </div>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Tabs -->
             <div class="flex justify-between items-center mb-6">
@@ -2706,13 +3461,15 @@ Object.assign(pages, {
                 <div class="card-body" style="padding: 12px 16px;">
                     <div class="flex gap-3 flex-wrap items-end">
                         <div role="search">
-                            <label class="form-label" style="font-size: 12px;">Search</label>
-                            <input type="text" class="form-input" style="width: 200px;" placeholder="Search..." value="${escapeHtml(txSearchQuery)}" data-tx-filter="search" oninput="handlers.debouncedTxFilter('txSearchQuery', this.value)" aria-label="Search transactions">
+                            <label class="form-label" style="font-size: 12px;" for="pso-tx-search">Search</label>
+                            <input id="pso-tx-search" type="text" class="form-input" style="width: 200px;" placeholder="Search..." value="${escapeHtml(txSearchQuery)}" data-tx-filter="search" oninput="handlers.debouncedTxFilter('txSearchQuery', this.value)" aria-label="Search transactions">
                         </div>
-                        ${activeTab === 'sales' ? `
+                        ${
+                            activeTab === 'sales'
+                                ? `
                         <div>
-                            <label class="form-label" style="font-size: 12px;">Platform</label>
-                            <select class="form-select" style="width: 150px;" aria-label="Filter by platform" onchange="store.setState({txPlatformFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <label class="form-label" style="font-size: 12px;" for="pso-tx-platform">Platform</label>
+                            <select id="pso-tx-platform" class="form-select" style="width: 150px;" aria-label="Filter by platform" onchange="store.setState({txPlatformFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                                 <option value="all" ${txPlatformFilter === 'all' ? 'selected' : ''}>All</option>
                                 <option value="poshmark" ${txPlatformFilter === 'poshmark' ? 'selected' : ''}>Poshmark</option>
                                 <option value="ebay" ${txPlatformFilter === 'ebay' ? 'selected' : ''}>eBay</option>
@@ -2720,9 +3477,11 @@ Object.assign(pages, {
                                 <option value="depop" ${txPlatformFilter === 'depop' ? 'selected' : ''}>Depop</option>
                             </select>
                         </div>
-                        ` : ''}
+                        `
+                                : ''
+                        }
                         <div style="display: flex; flex-direction: column; gap: 6px;">
-                            <label class="form-label" style="font-size: 12px;">Date Range</label>
+                            <label class="form-label" style="font-size: 12px;" for="pso-tx-date">Date Range</label>
                             <div style="display: flex; gap: 8px; align-items: flex-end;">
                                 <select class="form-select" style="width: 140px;" aria-label="Filter by date" onchange="store.setState({txDateFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                                     <option value="all" ${txDateFilter === 'all' ? 'selected' : ''}>All Time</option>
@@ -2738,10 +3497,12 @@ Object.assign(pages, {
                                 </div>
                             </div>
                         </div>
-                        ${activeTab === 'sales' ? `
+                        ${
+                            activeTab === 'sales'
+                                ? `
                         <div>
-                            <label class="form-label" style="font-size: 12px;">Status</label>
-                            <select class="form-select" style="width: 130px;" aria-label="Filter by status" onchange="store.setState({txStatusFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <label class="form-label" style="font-size: 12px;" for="pso-tx-status">Status</label>
+                            <select id="pso-tx-status" class="form-select" style="width: 130px;" aria-label="Filter by status" onchange="store.setState({txStatusFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                                 <option value="all" ${(store.state.txStatusFilter || 'all') === 'all' ? 'selected' : ''}>All Status</option>
                                 <option value="completed" ${store.state.txStatusFilter === 'completed' ? 'selected' : ''}>Completed</option>
                                 <option value="pending" ${store.state.txStatusFilter === 'pending' ? 'selected' : ''}>Pending</option>
@@ -2749,22 +3510,26 @@ Object.assign(pages, {
                             </select>
                         </div>
                         <div>
-                            <label class="form-label" style="font-size: 12px;">Buyer</label>
-                            <input type="text" class="form-input" style="width: 150px;" placeholder="Buyer name..." value="${escapeHtml(store.state.txBuyerFilter || '')}" data-tx-filter="buyer" oninput="handlers.debouncedTxFilter('txBuyerFilter', this.value)" aria-label="Search buyers">
+                            <label class="form-label" style="font-size: 12px;" for="pso-tx-buyer">Buyer</label>
+                            <input id="pso-tx-buyer" type="text" class="form-input" style="width: 150px;" placeholder="Buyer name..." value="${escapeHtml(store.state.txBuyerFilter || '')}" data-tx-filter="buyer" oninput="handlers.debouncedTxFilter('txBuyerFilter', this.value)" aria-label="Search buyers">
                         </div>
-                        ` : ''}
+                        `
+                                : ''
+                        }
                         <div>
-                            <label class="form-label" style="font-size: 12px;">Min Amount</label>
-                            <input type="number" class="form-input" style="width: 100px;" placeholder="C$0" step="0.01" value="${store.state.txAmountMin || ''}" onchange="store.setState({txAmountMin: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());" aria-label="Minimum price">
+                            <label class="form-label" style="font-size: 12px;" for="pso-tx-min">Min Amount</label>
+                            <input id="pso-tx-min" type="number" class="form-input" style="width: 100px;" placeholder="C$0" step="0.01" value="${store.state.txAmountMin || ''}" onchange="store.setState({txAmountMin: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());" aria-label="Minimum price">
                         </div>
                         <div>
-                            <label class="form-label" style="font-size: 12px;">Max Amount</label>
-                            <input type="number" class="form-input" style="width: 100px;" placeholder="C$999" step="0.01" value="${store.state.txAmountMax || ''}" onchange="store.setState({txAmountMax: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());" aria-label="Maximum price">
+                            <label class="form-label" style="font-size: 12px;" for="pso-tx-max">Max Amount</label>
+                            <input id="pso-tx-max" type="number" class="form-input" style="width: 100px;" placeholder="C$999" step="0.01" value="${store.state.txAmountMax || ''}" onchange="store.setState({txAmountMax: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());" aria-label="Maximum price">
                         </div>
-                        ${activeTab === 'purchases' ? `
+                        ${
+                            activeTab === 'purchases'
+                                ? `
                         <div>
-                            <label class="form-label" style="font-size: 12px;">Category</label>
-                            <select class="form-select" style="width: 130px;" aria-label="Filter by category" onchange="store.setState({txCategoryFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <label class="form-label" style="font-size: 12px;" for="pso-tx-category">Category</label>
+                            <select id="pso-tx-category" class="form-select" style="width: 130px;" aria-label="Filter by category" onchange="store.setState({txCategoryFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                                 <option value="all" ${txCategoryFilter === 'all' ? 'selected' : ''}>All Categories</option>
                                 <option value="shipping" ${txCategoryFilter === 'shipping' ? 'selected' : ''}>Shipping</option>
                                 <option value="supplies" ${txCategoryFilter === 'supplies' ? 'selected' : ''}>Supplies</option>
@@ -2773,50 +3538,55 @@ Object.assign(pages, {
                                 <option value="Other" ${txCategoryFilter === 'Other' ? 'selected' : ''}>Other</option>
                             </select>
                         </div>
-                        ` : ''}
-                        ${isFiltered ? `
+                        `
+                                : ''
+                        }
+                        ${
+                            isFiltered
+                                ? `
                         <div style="align-self: flex-end;">
                             <button class="btn btn-sm btn-secondary" onclick="store.setState({txSearchQuery:'',txPlatformFilter:'all',txDateFilter:'all',txStatusFilter:'all',txBuyerFilter:'',txAmountMin:'',txAmountMax:'',txCategoryFilter:'all'}); renderApp(pages.transactions());" style="white-space: nowrap;">
                                 ${components.icon('x', 14)} Clear All (${activeFilterCount})
                             </button>
                         </div>
-                        ` : ''}
+                        `
+                                : ''
+                        }
                     </div>
-                    ${isFiltered ? `
+                    ${
+                        isFiltered
+                            ? `
                     <div style="margin-top: 8px; font-size: 12px; color: var(--gray-500);">
                         Showing ${activeTab === 'purchases' ? purchases.length + ' of ' + allPurchases.length + ' purchases' : salesTransactions.length + ' of ' + allSales.length + ' sales'} (${activeFilterCount} filter${activeFilterCount > 1 ? 's' : ''} active)
                     </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                 </div>
             </div>
 
-            ${activeTab === 'purchases' ? `
+            ${
+                activeTab === 'purchases'
+                    ? `
                 <div class="card">
                     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                         <h2 class="card-title">Purchase Records</h2>
                         <div class="flex gap-2">
-                            ${(store.state.selectedPurchases || []).length > 0 ? `
-                                <select class="form-select" style="width: auto; font-size: 12px;" aria-label="Bulk categorize" onchange="handlers.bulkCategorizePurchases(this.value); this.value='';">
-                                    <option value="">Categorize ${(store.state.selectedPurchases || []).length} selected...</option>
-                                    <option value="shipping">Shipping</option>
-                                    <option value="supplies">Supplies</option>
-                                    <option value="fees">Fees</option>
-                                    <option value="COGS">COGS</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            ` : ''}
+                            ${bulkCategorizePurchaseMarkup}
                             <button class="btn btn-primary btn-sm" onclick="router.navigate('receipt-parser')">
                                 ${components.icon('upload', 14)} Parse Receipt
                             </button>
                         </div>
                     </div>
                     <div class="card-body">
-                        ${purchasesWithBalance.length > 0 ? `
+                        ${
+                            purchasesWithBalance.length > 0
+                                ? `
                             <div class="table-container">
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th style="width: 32px;"><input aria-label="Toggle Date" type="checkbox" onchange="handlers.toggleAllPurchases(this.checked)" ${(store.state.selectedPurchases || []).length === purchasesWithBalance.length && purchasesWithBalance.length > 0 ? 'checked' : ''}></th>
+                                            <th style="width: 32px;"><input aria-label="Toggle Date" type="checkbox" onchange="handlers.toggleAllPurchases(this.checked)" ${purchaseSelectionChecked}></th>
                                             <th>Date</th>
                                             <th>Vendor</th>
                                             <th>Description</th>
@@ -2828,9 +3598,14 @@ Object.assign(pages, {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${purchasesWithBalance.map(purchase => `
+                                        ${purchasesWithBalance
+                                            .map((purchase) => {
+                                                const purchaseChecked = selectedPurchaseIds.includes(purchase.id)
+                                                    ? 'checked'
+                                                    : '';
+                                                return `
                                             <tr>
-                                                <td><input aria-label="Toggle ${escapeHtml(purchase.vendor || purchase.vendor_name || 'N/A')}" type="checkbox" onchange="handlers.togglePurchaseSelect('${purchase.id}')" ${(store.state.selectedPurchases || []).includes(purchase.id) ? 'checked' : ''}></td>
+                                                <td><input aria-label="Toggle ${escapeHtml(purchase.vendor || purchase.vendor_name || 'N/A')}" type="checkbox" onchange="handlers.togglePurchaseSelect('${purchase.id}')" ${purchaseChecked}></td>
                                                 <td>${new Date(purchase.date || purchase.purchase_date || purchase.created_at).toLocaleDateString()}</td>
                                                 <td class="font-medium">${escapeHtml(purchase.vendor || purchase.vendor_name || 'N/A')}</td>
                                                 <td>${escapeHtml(purchase.description || purchase.item || 'N/A')}</td>
@@ -2858,136 +3633,36 @@ Object.assign(pages, {
                                                     </div>
                                                 </td>
                                             </tr>
-                                        `).join('')}
+                                            `;
+                                            })
+                                            .join('')}
                                     </tbody>
                                 </table>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="empty-state" style="text-align: center; padding: 3rem;">
                                 ${components.icon('dollar', 48)}
                                 <h2 style="margin: 1rem 0 0.5rem;">No purchase records yet</h2>
                                 <p style="color: var(--gray-500); margin-bottom: 1rem;">Track your inventory purchases to calculate accurate COGS</p>
                                 <button class="btn btn-primary" onclick="handlers.showAddPurchaseModal()">Add First Purchase</button>
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
-            ` : `
+            `
+                    : `
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">${components.icon('trending-up', 18)} Sales Transactions</h2>
                     </div>
                     <div class="card-body">
-                        ${salesWithBalance.length > 0 ? (txViewMode === 'timeline' ? `
-                            <!-- Timeline View -->
-                            ${transactionTimeline.render(salesWithBalance.map(s => ({
-                                id: s.id,
-                                type: 'sale',
-                                title: s.listing_title || s.inventory_title || 'Sale',
-                                amount: s.sale_price || 0,
-                                date: s.created_at,
-                                platform: s.platform,
-                                status: 'completed'
-                            })))}
-                        ` : (() => {
-                            // Get all unique tags from transactions
-                            const allTags = [...new Set(salesWithBalance.flatMap(s => s.tags || []))];
-                            const defaultTags = ['High Priority', 'Refund', 'Wholesale', 'Bundle', 'Custom'];
-                            const availableTags = [...new Set([...allTags, ...defaultTags])];
-                            const activeTagFilter = store.state.txTagFilter || null;
-
-                            // Filter by tag if selected
-                            const filteredSales = activeTagFilter
-                                ? salesWithBalance.filter(s => (s.tags || []).includes(activeTagFilter))
-                                : salesWithBalance;
-
-                            return `
-                            <!-- Tag Quick Filter Bar -->
-                            <div class="transaction-tag-bar" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; padding: 10px; background: var(--gray-50); border-radius: 8px;">
-                                <span style="font-size: 11px; color: var(--gray-500); margin-right: 8px; align-self: center;">Filter by tag:</span>
-                                <button class="tag-filter-btn ${!activeTagFilter ? 'active' : ''}" onclick="store.setState({txTagFilter: null}); renderApp(pages.transactions());" style="font-size: 11px; padding: 4px 10px; border-radius: 12px; border: 1px solid var(--gray-300); background: ${!activeTagFilter ? 'var(--primary)' : 'white'}; color: ${!activeTagFilter ? 'white' : 'var(--gray-600)'}; cursor: pointer;">
-                                    All
-                                </button>
-                                ${availableTags.slice(0, 6).map(tag => `
-                                    <button class="tag-filter-btn ${activeTagFilter === tag ? 'active' : ''}" onclick="store.setState({txTagFilter: '${tag}'}); renderApp(pages.transactions());" style="font-size: 11px; padding: 4px 10px; border-radius: 12px; border: 1px solid ${activeTagFilter === tag ? 'var(--primary)' : 'var(--gray-300)'}; background: ${activeTagFilter === tag ? 'var(--primary)' : 'white'}; color: ${activeTagFilter === tag ? 'white' : 'var(--gray-600)'}; cursor: pointer;">
-                                        ${tag}
-                                    </button>
-                                `).join('')}
-                            </div>
-
-                            <!-- Table View -->
-                            <div class="table-container">
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Item</th>
-                                            <th>Platform</th>
-                                            <th>Price</th>
-                                            <th>Fees</th>
-                                            <th>Profit</th>
-                                            <th>Tags</th>
-                                            <th>Running Balance</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${filteredSales.map(sale => {
-                                            const saleTags = sale.tags || [];
-                                            const tagColors = {
-                                                'High Priority': 'var(--error)',
-                                                'Refund': 'var(--warning)',
-                                                'Wholesale': 'var(--info)',
-                                                'Bundle': 'var(--primary)',
-                                                'Custom': 'var(--gray-500)'
-                                            };
-
-                                            return `
-                                            <tr>
-                                                <td>${new Date(sale.created_at).toLocaleDateString()}</td>
-                                                <td>${escapeHtml(sale.listing_title || sale.inventory_title || 'N/A')}</td>
-                                                <td>${components.platformBadge(sale.platform)}</td>
-                                                <td class="font-medium text-success">+C$${(sale.sale_price || 0).toFixed(2)}</td>
-                                                <td class="text-error">-C$${(sale.platform_fee || 0).toFixed(2)}</td>
-                                                <td class="font-medium text-success">C$${(sale.net_profit || 0).toFixed(2)}</td>
-                                                <td>
-                                                    <div class="transaction-tags" style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center;">
-                                                        ${saleTags.map(tag => `
-                                                            <span class="tx-tag" style="font-size: 9px; padding: 2px 6px; border-radius: 10px; background: ${tagColors[tag] || 'var(--gray-400)'}20; color: ${tagColors[tag] || 'var(--gray-600)'}; font-weight: 500;">
-                                                                ${tag}
-                                                            </span>
-                                                        `).join('')}
-                                                        <button class="add-tag-btn" onclick="handlers.showAddTagModal('${sale.id}')" style="width: 18px; height: 18px; border-radius: 50%; border: 1px dashed var(--gray-300); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--gray-400); font-size: 12px;" title="Add tag">+</button>
-                                                    </div>
-                                                </td>
-                                                <td class="font-medium ${sale.runningBalance >= 0 ? 'text-success' : 'text-error'}">C$${sale.runningBalance.toFixed(2)}</td>
-                                                <td>
-                                                    <div class="flex gap-1">
-                                                        <button class="btn btn-sm btn-ghost" onclick="handlers.showSplitTransactionModal('${sale.id}')" title="Split">
-                                                            ${components.icon('scissors', 14)}
-                                                        </button>
-                                                        <button class="btn btn-sm btn-ghost" onclick="handlers.showAttachReceiptModal('${sale.id}')" title="Attach Receipt">
-                                                            ${components.icon('paperclip', 14)}
-                                                        </button>
-                                                        <button class="btn btn-sm btn-ghost" onclick="handlers.showTransactionAuditLog('${sale.id}')" title="Audit Log">
-                                                            ${components.icon('clock', 14)}
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            `;
-                                        }).join('')}
-                                    </tbody>
-                                </table>
-                            </div>
-                        `})()) : `
-                            <div class="text-gray-500 text-sm text-center py-8">
-                                No sales transactions yet
-                            </div>
-                        `}
+                        ${salesTransactionsBody}
                     </div>
                 </div>
-            `}
+            `
+            }
 
             <!-- Business FAB -->
             ${businessFAB.render()}
@@ -2995,7 +3670,6 @@ Object.assign(pages, {
     },
 
     // Whatnot Live Selling page,
-
 
     reports() {
         const reports = store.state.customReports || [];
@@ -3017,9 +3691,13 @@ Object.assign(pages, {
                 </button>
             </div>
 
-            ${reports.length > 0 ? `
+            ${
+                reports.length > 0
+                    ? `
                 <div class="grid grid-cols-3 gap-4">
-                    ${reports.map(report => `
+                    ${reports
+                        .map(
+                            (report) => `
                         <div role="button" tabindex="0" class="card hover:shadow-lg transition-shadow cursor-pointer" onclick="handlers.viewReport('${report.id}')">
                             <div class="card-body">
                                 <div class="flex items-start justify-between mb-3">
@@ -3043,9 +3721,12 @@ Object.assign(pages, {
                                 </div>
                             </div>
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
-            ` : `
+            `
+                    : `
                 <div class="card">
                     <div class="card-body">
                         <div class="empty-state text-center py-12">
@@ -3055,12 +3736,12 @@ Object.assign(pages, {
                         </div>
                     </div>
                 </div>
-            `}
+            `
+            }
         `;
     },
 
     // Recently Deleted (Trash) Page,
-
 
     reportBuilder() {
         const savedReports = store.state.savedReports || [];
@@ -3126,7 +3807,9 @@ Object.assign(pages, {
                         <h2 class="card-title">Saved Reports (${savedReports.length})</h2>
                     </div>
                     <div class="card-body">
-                        ${savedReports.length === 0 ? `
+                        ${
+                            savedReports.length === 0
+                                ? `
                             <div class="empty-state">
                                 <div class="empty-state-icon">${components.icon('analytics', 48)}</div>
                                 <h2 class="empty-state-title">No saved reports yet</h2>
@@ -3135,9 +3818,12 @@ Object.assign(pages, {
                                     ${components.icon('plus', 16)} Create Report
                                 </button>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                ${savedReports.map(report => `
+                                ${savedReports
+                                    .map(
+                                        (report) => `
                                     <div class="card card-hover border">
                                         <div class="card-body">
                                             <div class="flex justify-between items-start mb-2">
@@ -3168,14 +3854,19 @@ Object.assign(pages, {
                                             </button>
                                         </div>
                                     </div>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
 
                 <!-- Report Results Modal (shown when results available) -->
-                ${reportResults ? `
+                ${
+                    reportResults
+                        ? `
                     <div class="card mt-6">
                         <div class="card-header">
                             <h2 class="card-title">Report Results</h2>
@@ -3188,34 +3879,48 @@ Object.assign(pages, {
                                 <table class="data-table">
                                     <thead>
                                         <tr>
-                                            ${reportResults.columns && reportResults.columns.length > 0 ?
-                                                reportResults.columns.map(col => `<th>${escapeHtml(col)}</th>`).join('')
-                                                : '<th>Data</th>'
+                                            ${
+                                                reportResults.columns && reportResults.columns.length > 0
+                                                    ? reportResults.columns
+                                                          .map((col) => `<th>${escapeHtml(col)}</th>`)
+                                                          .join('')
+                                                    : '<th>Data</th>'
                                             }
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${reportResults.rows && reportResults.rows.length > 0 ?
-                                            reportResults.rows.map(row => `
+                                        ${
+                                            reportResults.rows && reportResults.rows.length > 0
+                                                ? reportResults.rows
+                                                      .map(
+                                                          (row) => `
                                                 <tr>
-                                                    ${Array.isArray(row) ?
-                                                        row.map(cell => `<td>${escapeHtml(String(cell))}</td>`).join('')
-                                                        : Object.values(row).map(val => `<td>${escapeHtml(String(val))}</td>`).join('')
+                                                    ${
+                                                        Array.isArray(row)
+                                                            ? row
+                                                                  .map((cell) => `<td>${escapeHtml(String(cell))}</td>`)
+                                                                  .join('')
+                                                            : Object.values(row)
+                                                                  .map((val) => `<td>${escapeHtml(String(val))}</td>`)
+                                                                  .join('')
                                                     }
                                                 </tr>
-                                            `).join('')
-                                            : '<tr><td colspan="100%">No results</td></tr>'
+                                            `,
+                                                      )
+                                                      .join('')
+                                                : '<tr><td colspan="100%">No results</td></tr>'
                                         }
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
             </div>
         `;
     },
 
     // Forgot Password page
-
 });

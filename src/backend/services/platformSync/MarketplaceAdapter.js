@@ -50,7 +50,8 @@
  * @param {InventoryItem} inventory - parent inventory item
  * @returns {Promise<PublishResult>}
  */
-export async function publishListing(shop, listing, inventory) { // eslint-disable-line no-unused-vars
+export async function publishListing(shop, listing, inventory) {
+    // eslint-disable-line no-unused-vars
     throw new Error('publishListing() not implemented');
 }
 
@@ -60,7 +61,8 @@ export async function publishListing(shop, listing, inventory) { // eslint-disab
  * @param {Shop} shop
  * @returns {Promise<SyncResult>}
  */
-export async function syncShop(shop) { // eslint-disable-line no-unused-vars
+export async function syncShop(shop) {
+    // eslint-disable-line no-unused-vars
     throw new Error('syncShop() not implemented');
 }
 
@@ -70,6 +72,7 @@ export async function syncShop(shop) { // eslint-disable-line no-unused-vars
  * @param {Shop} shop
  * @returns {Promise<{ healthy: boolean, error?: string }>}
  */
-export async function healthCheck(shop) { // eslint-disable-line no-unused-vars
+export async function healthCheck(shop) {
+    // eslint-disable-line no-unused-vars
     throw new Error('healthCheck() not implemented');
 }

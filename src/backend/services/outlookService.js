@@ -24,16 +24,16 @@ export async function refreshOutlookToken(refreshToken) {
         response = await fetch(MICROSOFT_TOKEN_URL, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Content-Type': 'application/x-www-form-urlencoded',
             },
             body: new URLSearchParams({
                 client_id: clientId,
                 client_secret: clientSecret,
                 refresh_token: refreshToken,
                 grant_type: 'refresh_token',
-                scope: 'https://graph.microsoft.com/Mail.Read https://graph.microsoft.com/User.Read offline_access'
+                scope: 'https://graph.microsoft.com/Mail.Read https://graph.microsoft.com/User.Read offline_access',
             }),
-            signal: AbortSignal.timeout(15000)
+            signal: AbortSignal.timeout(15000),
         });
     } catch (fetchError) {
         if (fetchError.name === 'TimeoutError' || fetchError.name === 'AbortError') {
@@ -57,19 +57,14 @@ export async function refreshOutlookToken(refreshToken) {
  * @returns {Promise<Array>} Array of messages
  */
 export async function fetchRecentEmails(accessToken, options = {}) {
-    const {
-        sinceMessageId,
-        senderFilters = [],
-        maxResults = 100,
-        afterDate
-    } = options;
+    const { sinceMessageId, senderFilters = [], maxResults = 100, afterDate } = options;
 
     // Build OData filter for senders
     let filterParts = [];
 
     if (senderFilters.length > 0) {
         const senderFilter = senderFilters
-            .map(s => `contains(from/emailAddress/address, '${s.replace(/'/g, "''")}')`)
+            .map((s) => `contains(from/emailAddress/address, '${s.replace(/'/g, "''")}')`)
             .join(' or ');
         filterParts.push(`(${senderFilter})`);
     }
@@ -97,10 +92,10 @@ export async function fetchRecentEmails(accessToken, options = {}) {
     try {
         response = await fetch(url.toString(), {
             headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Accept': 'application/json'
+                Authorization: `Bearer ${accessToken}`,
+                Accept: 'application/json',
             },
-            signal: AbortSignal.timeout(15000)
+            signal: AbortSignal.timeout(15000),
         });
     } catch (fetchError) {
         if (fetchError.name === 'TimeoutError' || fetchError.name === 'AbortError') {
@@ -119,7 +114,7 @@ export async function fetchRecentEmails(accessToken, options = {}) {
 
     // If we have a sinceMessageId, filter out messages we've already seen
     if (sinceMessageId) {
-        const sinceIndex = messages.findIndex(m => m.id === sinceMessageId);
+        const sinceIndex = messages.findIndex((m) => m.id === sinceMessageId);
         if (sinceIndex !== -1) {
             return messages.slice(0, sinceIndex);
         }
@@ -141,10 +136,10 @@ export async function getEmailContent(accessToken, messageId) {
     try {
         response = await fetch(url, {
             headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Accept': 'application/json'
+                Authorization: `Bearer ${accessToken}`,
+                Accept: 'application/json',
             },
-            signal: AbortSignal.timeout(15000)
+            signal: AbortSignal.timeout(15000),
         });
     } catch (fetchError) {
         if (fetchError.name === 'TimeoutError' || fetchError.name === 'AbortError') {
@@ -182,14 +177,14 @@ export function parseOutlookMessage(message, attachments = []) {
         subject: message.subject || '(No Subject)',
         from: message.from?.emailAddress?.address || '',
         fromName: message.from?.emailAddress?.name || '',
-        to: message.toRecipients?.map(r => r.emailAddress?.address).join(', ') || '',
+        to: message.toRecipients?.map((r) => r.emailAddress?.address).join(', ') || '',
         date: message.receivedDateTime || '',
         snippet: message.bodyPreview || '',
         body: {
             text: '',
-            html: ''
+            html: '',
         },
-        attachments: []
+        attachments: [],
     };
 
     // Parse from email
@@ -216,13 +211,13 @@ export function parseOutlookMessage(message, attachments = []) {
     }
 
     // Process attachments
-    parsed.attachments = attachments.map(att => ({
+    parsed.attachments = attachments.map((att) => ({
         filename: att.name,
         mimeType: att.contentType,
         size: att.size || 0,
         attachmentId: att.id,
         data: att.contentBytes,
-        inline: att.isInline || false
+        inline: att.isInline || false,
     }));
 
     return parsed;
@@ -241,14 +236,16 @@ async function getAttachments(accessToken, messageId) {
     try {
         response = await fetch(url, {
             headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Accept': 'application/json'
+                Authorization: `Bearer ${accessToken}`,
+                Accept: 'application/json',
             },
-            signal: AbortSignal.timeout(15000)
+            signal: AbortSignal.timeout(15000),
         });
     } catch (fetchError) {
         if (fetchError.name === 'TimeoutError' || fetchError.name === 'AbortError') {
-            logger.error('[OutlookService] Outlook attachment fetch timed out after 15s', null, { detail: fetchError.message });
+            logger.error('[OutlookService] Outlook attachment fetch timed out after 15s', null, {
+                detail: fetchError.message,
+            });
             return [];
         }
         logger.error('[OutlookService] Failed to fetch attachments', null, { detail: fetchError.message });
@@ -276,10 +273,10 @@ export async function getUserEmail(accessToken) {
     try {
         response = await fetch(url, {
             headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Accept': 'application/json'
+                Authorization: `Bearer ${accessToken}`,
+                Accept: 'application/json',
             },
-            signal: AbortSignal.timeout(15000)
+            signal: AbortSignal.timeout(15000),
         });
     } catch (fetchError) {
         if (fetchError.name === 'TimeoutError' || fetchError.name === 'AbortError') {
@@ -322,7 +319,7 @@ export function getMockOutlookEmails() {
             receivedDateTime: new Date(now - 2 * 24 * 60 * 60 * 1000).toISOString(),
             bodyPreview: 'Your order #123-456-789 has shipped and is on its way!',
             body: { contentType: 'text', content: 'Your order #123-456-789 has shipped...' },
-            hasAttachments: false
+            hasAttachments: false,
         },
         {
             id: 'mock-outlook-2',
@@ -331,7 +328,7 @@ export function getMockOutlookEmails() {
             receivedDateTime: new Date(now - 1 * 24 * 60 * 60 * 1000).toISOString(),
             bodyPreview: 'Congratulations! Your item sold for $45.00',
             body: { contentType: 'text', content: 'Congratulations! Your item sold for $45.00...' },
-            hasAttachments: false
+            hasAttachments: false,
         },
         {
             id: 'mock-outlook-3',
@@ -340,7 +337,7 @@ export function getMockOutlookEmails() {
             receivedDateTime: new Date(now - 3 * 60 * 60 * 1000).toISOString(),
             bodyPreview: 'Thank you for shopping at Target. Total: $27.45',
             body: { contentType: 'html', content: '<p>Thank you for shopping at Target. Total: $27.45</p>' },
-            hasAttachments: true
-        }
+            hasAttachments: true,
+        },
     ];
 }

@@ -40,9 +40,17 @@ const CreateListingSchema = z.object({
 
 // Defense-in-depth: whitelist for dynamic listing update fields
 const ALLOWED_LISTING_FIELDS = new Set([
-    'title', 'description', 'price', 'original_price', 'shipping_price',
-    'category_path', 'condition_tag', 'status', 'platform_listing_id',
-    'platform_url', 'folder_id'
+    'title',
+    'description',
+    'price',
+    'original_price',
+    'shipping_price',
+    'category_path',
+    'condition_tag',
+    'status',
+    'platform_listing_id',
+    'platform_url',
+    'folder_id',
 ]);
 const ALLOWED_FOLDER_FIELDS = new Set(['name', 'color', 'icon']);
 const ALLOWED_STALENESS_FIELDS = new Set(['stalenessDays', 'autoRelistEnabled']);
@@ -83,8 +91,8 @@ export async function listingsRouter(ctx) {
                     total,
                     limit: limitNum,
                     offset: offsetNum,
-                    hasMore: offsetNum + folders.length < total
-                }
+                    hasMore: offsetNum + folders.length < total,
+                },
             };
         } catch (error) {
             logger.error('[Listings] Error fetching folders', user?.id, { detail: error.message });
@@ -102,29 +110,59 @@ export async function listingsRouter(ctx) {
 
         // Validate name length
         if (name.length > 100) {
-            return { status: 400, data: { error: { message: 'Folder name must be 100 characters or less', code: 'BAD_REQUEST' } } };
+            return {
+                status: 400,
+                data: { error: { message: 'Folder name must be 100 characters or less', code: 'BAD_REQUEST' } },
+            };
         }
 
         // Validate color format if provided
         if (color && !/^#[0-9A-Fa-f]{6}$/.test(color)) {
-            return { status: 400, data: { error: { message: 'Invalid color format. Use hex format (e.g., #FF5733)', code: 'BAD_REQUEST' } } };
+            return {
+                status: 400,
+                data: {
+                    error: { message: 'Invalid color format. Use hex format (e.g., #FF5733)', code: 'BAD_REQUEST' },
+                },
+            };
         }
 
         // Validate icon if provided
-        const validIcons = ['folder', 'archive', 'bookmark', 'star', 'heart', 'tag', 'box', 'package', 'shopping-bag', 'gift'];
+        const validIcons = [
+            'folder',
+            'archive',
+            'bookmark',
+            'star',
+            'heart',
+            'tag',
+            'box',
+            'package',
+            'shopping-bag',
+            'gift',
+        ];
         if (icon && !validIcons.includes(icon)) {
-            return { status: 400, data: { error: { message: `Invalid icon. Choose from: ${validIcons.join(', ')}`, code: 'BAD_REQUEST' } } };
+            return {
+                status: 400,
+                data: {
+                    error: { message: `Invalid icon. Choose from: ${validIcons.join(', ')}`, code: 'BAD_REQUEST' },
+                },
+            };
         }
 
         try {
             const id = uuidv4();
 
-            await query.run(
-                `INSERT INTO listings_folders (id, user_id, name, color, icon) VALUES (?, ?, ?, ?, ?)`,
-                [id, user.id, name.trim(), color || '#f59e0b', icon || 'folder']
-            );
+            await query.run(`INSERT INTO listings_folders (id, user_id, name, color, icon) VALUES (?, ?, ?, ?, ?)`, [
+                id,
+                user.id,
+                name.trim(),
+                color || '#f59e0b',
+                icon || 'folder',
+            ]);
 
-            const folder = await query.get('SELECT * FROM listings_folders WHERE id = ? AND user_id = ?', [id, user.id]);
+            const folder = await query.get('SELECT * FROM listings_folders WHERE id = ? AND user_id = ?', [
+                id,
+                user.id,
+            ]);
 
             return { status: 201, data: folder };
         } catch (error) {
@@ -137,10 +175,10 @@ export async function listingsRouter(ctx) {
     if (method === 'PATCH' && path.match(/^\/folders\/[a-f0-9-]+$/)) {
         const folderId = path.split('/')[2];
 
-        const existing = await query.get(
-            'SELECT * FROM listings_folders WHERE id = ? AND user_id = ?',
-            [folderId, user.id]
-        );
+        const existing = await query.get('SELECT * FROM listings_folders WHERE id = ? AND user_id = ?', [
+            folderId,
+            user.id,
+        ]);
 
         if (!existing) {
             return { status: 404, data: { error: { message: 'Folder not found', code: 'NOT_FOUND' } } };
@@ -152,7 +190,10 @@ export async function listingsRouter(ctx) {
 
         if (name !== undefined) {
             if (!name.trim() || name.length > 100) {
-                return { status: 400, data: { error: { message: 'Folder name must be 1-100 characters', code: 'BAD_REQUEST' } } };
+                return {
+                    status: 400,
+                    data: { error: { message: 'Folder name must be 1-100 characters', code: 'BAD_REQUEST' } },
+                };
             }
             updates.push('name = ?');
             values.push(name.trim());
@@ -160,16 +201,42 @@ export async function listingsRouter(ctx) {
         if (color !== undefined) {
             // Validate hex color format
             if (color && !/^#[0-9A-Fa-f]{6}$/.test(color)) {
-                return { status: 400, data: { error: { message: 'Invalid color format. Use hex format (e.g., #FF5733)', code: 'BAD_REQUEST' } } };
+                return {
+                    status: 400,
+                    data: {
+                        error: { message: 'Invalid color format. Use hex format (e.g., #FF5733)', code: 'BAD_REQUEST' },
+                    },
+                };
             }
             updates.push('color = ?');
             values.push(color);
         }
         if (icon !== undefined) {
             // Validate icon against allowed list
-            const validIcons = ['folder', 'archive', 'bookmark', 'star', 'heart', 'tag', 'box', 'package', 'shopping-bag', 'gift', null];
+            const validIcons = [
+                'folder',
+                'archive',
+                'bookmark',
+                'star',
+                'heart',
+                'tag',
+                'box',
+                'package',
+                'shopping-bag',
+                'gift',
+                null,
+            ];
             if (icon && !validIcons.includes(icon)) {
-                return { status: 400, data: { error: { message: 'Invalid icon. Choose from: folder, archive, bookmark, star, heart, tag, box, package, shopping-bag, gift', code: 'BAD_REQUEST' } } };
+                return {
+                    status: 400,
+                    data: {
+                        error: {
+                            message:
+                                'Invalid icon. Choose from: folder, archive, bookmark, star, heart, tag, box, package, shopping-bag, gift',
+                            code: 'BAD_REQUEST',
+                        },
+                    },
+                };
             }
             updates.push('icon = ?');
             values.push(icon);
@@ -179,11 +246,14 @@ export async function listingsRouter(ctx) {
             values.push(folderId, user.id);
             await query.run(
                 `UPDATE listings_folders SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
-                values
+                values,
             );
         }
 
-        const folder = await query.get('SELECT * FROM listings_folders WHERE id = ? AND user_id = ?', [folderId, user.id]);
+        const folder = await query.get('SELECT * FROM listings_folders WHERE id = ? AND user_id = ?', [
+            folderId,
+            user.id,
+        ]);
 
         return { status: 200, data: folder };
     }
@@ -192,10 +262,10 @@ export async function listingsRouter(ctx) {
     if (method === 'DELETE' && path.match(/^\/folders\/[a-f0-9-]+$/)) {
         const folderId = path.split('/')[2];
 
-        const existing = await query.get(
-            'SELECT * FROM listings_folders WHERE id = ? AND user_id = ?',
-            [folderId, user.id]
-        );
+        const existing = await query.get('SELECT * FROM listings_folders WHERE id = ? AND user_id = ?', [
+            folderId,
+            user.id,
+        ]);
 
         if (!existing) {
             return { status: 404, data: { error: { message: 'Folder not found', code: 'NOT_FOUND' } } };
@@ -212,7 +282,8 @@ export async function listingsRouter(ctx) {
     if (method === 'GET' && (path === '/' || path === '')) {
         const { platform, status, inventoryId, folderId, limit = 50, offset = 0 } = queryParams;
 
-        let sql = 'SELECT l.*, i.title as inventory_title, i.images as inventory_images FROM listings l LEFT JOIN inventory i ON l.inventory_id = i.id WHERE l.user_id = ?';
+        let sql =
+            'SELECT l.*, i.title as inventory_title, i.images as inventory_images FROM listings l LEFT JOIN inventory i ON l.inventory_id = i.id WHERE l.user_id = ?';
         const params = [user.id];
 
         if (platform) {
@@ -247,7 +318,7 @@ export async function listingsRouter(ctx) {
         const listings = await query.all(sql, params);
 
         // Parse JSON fields safely
-        listings.forEach(listing => {
+        listings.forEach((listing) => {
             listing.images = safeJsonParse(listing.images, []);
             listing.inventory_images = safeJsonParse(listing.inventory_images, []);
             listing.platform_specific_data = safeJsonParse(listing.platform_specific_data, {});
@@ -289,11 +360,14 @@ export async function listingsRouter(ctx) {
     // GET /api/listings/:id - Get single listing
     if (method === 'GET' && path.match(/^\/[a-f0-9-]+$/)) {
         const id = path.slice(1);
-        const listing = await query.get(`
+        const listing = await query.get(
+            `
             SELECT l.*, i.* FROM listings l
             LEFT JOIN inventory i ON l.inventory_id = i.id
             WHERE l.id = ? AND l.user_id = ?
-        `, [id, user.id]);
+        `,
+            [id, user.id],
+        );
 
         if (!listing) {
             return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
@@ -310,7 +384,19 @@ export async function listingsRouter(ctx) {
         const { data: listingInput, error: validationError } = validateBody(body, CreateListingSchema);
         if (validationError) return validationError;
 
-        const { inventoryId, platform, title, description, price, originalPrice, shippingPrice, categoryPath, images, platformSpecificData, folderId } = listingInput;
+        const {
+            inventoryId,
+            platform,
+            title,
+            description,
+            price,
+            originalPrice,
+            shippingPrice,
+            categoryPath,
+            images,
+            platformSpecificData,
+            folderId,
+        } = listingInput;
 
         // Check inventory item exists
         const item = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [inventoryId, user.id]);
@@ -322,26 +408,45 @@ export async function listingsRouter(ctx) {
 
         // Use atomic insert to prevent race condition - rely on unique constraint
         try {
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO listings (
                     id, inventory_id, user_id, platform, title, description,
                     price, original_price, shipping_price, category_path, images,
                     platform_specific_data, status, folder_id
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `, [
-                id, inventoryId, user.id, platform, title, description || item.description,
-                price, originalPrice || null, shippingPrice || 0, categoryPath || null,
-                JSON.stringify(images || safeJsonParse(item.images, [])),
-                JSON.stringify(platformSpecificData || {}), 'draft', folderId || null
-            ]);
+            `,
+                [
+                    id,
+                    inventoryId,
+                    user.id,
+                    platform,
+                    title,
+                    description || item.description,
+                    price,
+                    originalPrice || null,
+                    shippingPrice || 0,
+                    categoryPath || null,
+                    JSON.stringify(images || safeJsonParse(item.images, [])),
+                    JSON.stringify(platformSpecificData || {}),
+                    'draft',
+                    folderId || null,
+                ],
+            );
         } catch (error) {
             // If unique constraint violation, listing already exists
             if (error.message && error.message.includes('UNIQUE constraint')) {
                 const existingListing = await query.get(
                     'SELECT id FROM listings WHERE inventory_id = ? AND platform = ? AND user_id = ?',
-                    [inventoryId, platform, user.id]
+                    [inventoryId, platform, user.id],
                 );
-                return { status: 409, data: { error: { message: 'Listing already exists for this platform', code: 'CONFLICT' }, existingId: existingListing?.id } };
+                return {
+                    status: 409,
+                    data: {
+                        error: { message: 'Listing already exists for this platform', code: 'CONFLICT' },
+                        existingId: existingListing?.id,
+                    },
+                };
             }
             throw error;
         }
@@ -360,22 +465,29 @@ export async function listingsRouter(ctx) {
 
         // Support both single inventoryId and array of itemIds
         const inventoryIds = itemIds
-            ? (Array.isArray(itemIds) ? itemIds : [itemIds])
-            : (inventoryId ? [inventoryId] : []);
+            ? Array.isArray(itemIds)
+                ? itemIds
+                : [itemIds]
+            : inventoryId
+              ? [inventoryId]
+              : [];
 
         if (inventoryIds.length === 0 || !platforms || !Array.isArray(platforms)) {
-            return { status: 400, data: { error: { message: 'Inventory ID(s) and platforms array required', code: 'BAD_REQUEST' } } };
+            return {
+                status: 400,
+                data: { error: { message: 'Inventory ID(s) and platforms array required', code: 'BAD_REQUEST' } },
+            };
         }
 
         const results = { created: [], skipped: [], errors: [] };
 
         // Batch-fetch all inventory items in one query instead of N+1
         const placeholders = inventoryIds.map(() => '?').join(',');
-        const allItems = await query.all(
-            `SELECT * FROM inventory WHERE id IN (${placeholders}) AND user_id = ?`,
-            [...inventoryIds, user.id]
-        );
-        const itemMap = new Map(allItems.map(item => [item.id, item]));
+        const allItems = await query.all(`SELECT * FROM inventory WHERE id IN (${placeholders}) AND user_id = ?`, [
+            ...inventoryIds,
+            user.id,
+        ]);
+        const itemMap = new Map(allItems.map((item) => [item.id, item]));
 
         for (const invId of inventoryIds) {
             const item = itemMap.get(invId);
@@ -392,15 +504,17 @@ export async function listingsRouter(ctx) {
                     // Validate that we have a valid price from inventory
                     if (!price || price <= 0) {
                         results.errors.push({
-                            inventoryId: invId, platform,
-                            error: 'Inventory item must have a valid list price'
+                            inventoryId: invId,
+                            platform,
+                            error: 'Inventory item must have a valid list price',
                         });
                         continue;
                     }
 
                     // Apply platform-specific price adjustments
                     // priceAdjustments is an object { platform: adj }, priceAdjustment is a single % for all platforms
-                    const platformAdj = priceAdjustments?.[platform] ?? (typeof priceAdjustment === 'number' ? priceAdjustment : null);
+                    const platformAdj =
+                        priceAdjustments?.[platform] ?? (typeof priceAdjustment === 'number' ? priceAdjustment : null);
                     if (platformAdj !== null && platformAdj !== undefined) {
                         const adj = platformAdj;
                         if (typeof adj === 'number') {
@@ -411,7 +525,11 @@ export async function listingsRouter(ctx) {
                             } else if (adj.type === 'fixed') {
                                 price = price + adj.value;
                             } else {
-                                results.errors.push({ inventoryId: invId, platform, error: `Invalid adjustment type '${adj.type}'. Use 'percentage' or 'fixed'` });
+                                results.errors.push({
+                                    inventoryId: invId,
+                                    platform,
+                                    error: `Invalid adjustment type '${adj.type}'. Use 'percentage' or 'fixed'`,
+                                });
                                 continue;
                             }
                         }
@@ -427,20 +545,24 @@ export async function listingsRouter(ctx) {
 
                     // Ensure price is valid after adjustments (check after rounding)
                     if (!price || price <= 0) {
-                        results.errors.push({ inventoryId: invId, platform, error: 'Calculated price must be greater than zero' });
+                        results.errors.push({
+                            inventoryId: invId,
+                            platform,
+                            error: 'Calculated price must be greater than zero',
+                        });
                         continue;
                     }
 
                     // Use atomic insert to prevent race condition - rely on unique constraint
-                    await query.run(`
+                    await query.run(
+                        `
                         INSERT INTO listings (
                             id, inventory_id, user_id, platform, title, description,
                             price, images, status
                         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    `, [
-                        id, invId, user.id, platform, item.title, item.description,
-                        price, item.images, 'draft'
-                    ]);
+                    `,
+                        [id, invId, user.id, platform, item.title, item.description, price, item.images, 'draft'],
+                    );
 
                     results.created.push({ inventoryId: invId, platform, id });
                 } catch (error) {
@@ -448,9 +570,14 @@ export async function listingsRouter(ctx) {
                     if (error.message && error.message.includes('UNIQUE constraint')) {
                         const existing = await query.get(
                             'SELECT id FROM listings WHERE inventory_id = ? AND platform = ? AND user_id = ?',
-                            [invId, platform, user.id]
+                            [invId, platform, user.id],
                         );
-                        results.skipped.push({ inventoryId: invId, platform, reason: 'Already listed', existingId: existing?.id });
+                        results.skipped.push({
+                            inventoryId: invId,
+                            platform,
+                            reason: 'Already listed',
+                            existingId: existing?.id,
+                        });
                     } else {
                         logger.error('[Listings] Error crossposting to platform', user?.id, { detail: error.message });
                         results.errors.push({ inventoryId: invId, platform, error: 'Failed to crosspost to platform' });
@@ -472,29 +599,60 @@ export async function listingsRouter(ctx) {
         }
 
         const {
-            title, description, price, originalPrice, shippingPrice,
-            categoryPath, conditionTag, status, images, platformSpecificData,
-            platformListingId, platformUrl, folderId
+            title,
+            description,
+            price,
+            originalPrice,
+            shippingPrice,
+            categoryPath,
+            conditionTag,
+            status,
+            images,
+            platformSpecificData,
+            platformListingId,
+            platformUrl,
+            folderId,
         } = body;
 
-        if (title && title.length > 500) return { status: 400, data: { error: { message: 'Title must be 500 characters or less', code: 'BAD_REQUEST' } } };
-        if (description && description.length > 5000) return { status: 400, data: { error: { message: 'Description must be 5000 characters or less', code: 'BAD_REQUEST' } } };
-        if (categoryPath && categoryPath.length > 300) return { status: 400, data: { error: { message: 'Category path must be 300 characters or less', code: 'BAD_REQUEST' } } };
+        if (title && title.length > 500)
+            return {
+                status: 400,
+                data: { error: { message: 'Title must be 500 characters or less', code: 'BAD_REQUEST' } },
+            };
+        if (description && description.length > 5000)
+            return {
+                status: 400,
+                data: { error: { message: 'Description must be 5000 characters or less', code: 'BAD_REQUEST' } },
+            };
+        if (categoryPath && categoryPath.length > 300)
+            return {
+                status: 400,
+                data: { error: { message: 'Category path must be 300 characters or less', code: 'BAD_REQUEST' } },
+            };
 
         // Prevent sold listings from being changed back to active
         if (existing.status === 'sold' && status && status !== 'sold') {
-            return { status: 400, data: { error: { message: 'Cannot change status of a sold listing', code: 'BAD_REQUEST' } } };
+            return {
+                status: 400,
+                data: { error: { message: 'Cannot change status of a sold listing', code: 'BAD_REQUEST' } },
+            };
         }
 
         const updates = [];
         const values = [];
 
         const fields = {
-            title, description, price, original_price: originalPrice,
-            shipping_price: shippingPrice, category_path: categoryPath,
-            condition_tag: conditionTag, status,
-            platform_listing_id: platformListingId, platform_url: platformUrl,
-            folder_id: folderId
+            title,
+            description,
+            price,
+            original_price: originalPrice,
+            shipping_price: shippingPrice,
+            category_path: categoryPath,
+            condition_tag: conditionTag,
+            status,
+            platform_listing_id: platformListingId,
+            platform_url: platformUrl,
+            folder_id: folderId,
         };
 
         for (const [key, value] of Object.entries(fields)) {
@@ -516,7 +674,10 @@ export async function listingsRouter(ctx) {
         if (platformSpecificData !== undefined) {
             const psdJson = JSON.stringify(platformSpecificData);
             if (psdJson.length > 50000) {
-                return { status: 400, data: { error: { message: 'Platform specific data exceeds maximum size', code: 'BAD_REQUEST' } } };
+                return {
+                    status: 400,
+                    data: { error: { message: 'Platform specific data exceeds maximum size', code: 'BAD_REQUEST' } },
+                };
             }
             updates.push('platform_specific_data = ?');
             values.push(psdJson);
@@ -530,7 +691,7 @@ export async function listingsRouter(ctx) {
             values.push(id);
             await query.run(
                 `UPDATE listings SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
-                [...values, user.id]
+                [...values, user.id],
             );
         }
 
@@ -540,12 +701,12 @@ export async function listingsRouter(ctx) {
             if (status === 'sold') {
                 await query.run(
                     `UPDATE inventory SET status = 'sold', updated_at = ? WHERE id = ? AND user_id = ? AND status != 'sold'`,
-                    [now, existing.inventory_id, user.id]
+                    [now, existing.inventory_id, user.id],
                 );
             } else if (status === 'removed' || status === 'expired' || status === 'inactive' || status === 'ended') {
                 await query.run(
                     `UPDATE inventory SET status = 'active', updated_at = ? WHERE id = ? AND user_id = ? AND status NOT IN ('sold', 'archived', 'deleted')`,
-                    [now, existing.inventory_id, user.id]
+                    [now, existing.inventory_id, user.id],
                 );
             }
         }
@@ -567,17 +728,23 @@ export async function listingsRouter(ctx) {
         }
 
         // Check for affected offers before deleting
-        const affectedOffers = Number((await query.get(
-            'SELECT COUNT(*) as count FROM offers WHERE listing_id = ? AND status = ?',
-            [id, 'pending']
-        ))?.count) || 0;
+        const affectedOffers =
+            Number(
+                (
+                    await query.get('SELECT COUNT(*) as count FROM offers WHERE listing_id = ? AND status = ?', [
+                        id,
+                        'pending',
+                    ])
+                )?.count,
+            ) || 0;
 
         // SECURITY: Include user_id in DELETE to prevent TOCTOU race
         await query.run('DELETE FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
 
-        const message = affectedOffers > 0
-            ? `Listing deleted. ${affectedOffers} pending offer${affectedOffers > 1 ? 's were' : ' was'} also removed.`
-            : 'Listing deleted';
+        const message =
+            affectedOffers > 0
+                ? `Listing deleted. ${affectedOffers} pending offer${affectedOffers > 1 ? 's were' : ' was'} also removed.`
+                : 'Listing deleted';
         return { status: 200, data: { message, affectedOffers } };
     }
 
@@ -592,13 +759,25 @@ export async function listingsRouter(ctx) {
 
         // Queue share task
         const taskId = uuidv4();
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO tasks (id, user_id, type, payload, status)
             VALUES (?, ?, ?, ?, ?)
-        `, [taskId, user.id, 'share_listing', JSON.stringify({ listingId: id, platform: listing.platform }), 'pending']);
+        `,
+            [
+                taskId,
+                user.id,
+                'share_listing',
+                JSON.stringify({ listingId: id, platform: listing.platform }),
+                'pending',
+            ],
+        );
 
         // Update last shared
-        await query.run('UPDATE listings SET last_shared_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?', [id, user.id]);
+        await query.run('UPDATE listings SET last_shared_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?', [
+            id,
+            user.id,
+        ]);
 
         return { status: 200, data: { message: 'Share queued', taskId } };
     }
@@ -606,19 +785,34 @@ export async function listingsRouter(ctx) {
     // GET /api/listings/stats - Get listing statistics
     if (method === 'GET' && path === '/stats') {
         const stats = {
-            total: Number((await query.get('SELECT COUNT(*) as count FROM listings WHERE user_id = ?', [user.id]))?.count) || 0,
-            byPlatform: await query.all(`
+            total:
+                Number(
+                    (await query.get('SELECT COUNT(*) as count FROM listings WHERE user_id = ?', [user.id]))?.count,
+                ) || 0,
+            byPlatform: await query.all(
+                `
                 SELECT platform, COUNT(*) as count, SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active
                 FROM listings WHERE user_id = ?
                 GROUP BY platform
-            `, [user.id]),
-            byStatus: await query.all(`
+            `,
+                [user.id],
+            ),
+            byStatus: await query.all(
+                `
                 SELECT status, COUNT(*) as count
                 FROM listings WHERE user_id = ?
                 GROUP BY status
-            `, [user.id]),
-            totalViews: Number((await query.get('SELECT SUM(views) as total FROM listings WHERE user_id = ?', [user.id]))?.total) || 0,
-            totalLikes: Number((await query.get('SELECT SUM(likes) as total FROM listings WHERE user_id = ?', [user.id]))?.total) || 0
+            `,
+                [user.id],
+            ),
+            totalViews:
+                Number(
+                    (await query.get('SELECT SUM(views) as total FROM listings WHERE user_id = ?', [user.id]))?.total,
+                ) || 0,
+            totalLikes:
+                Number(
+                    (await query.get('SELECT SUM(likes) as total FROM listings WHERE user_id = ?', [user.id]))?.total,
+                ) || 0,
         };
 
         return { status: 200, data: { stats } };
@@ -636,14 +830,15 @@ export async function listingsRouter(ctx) {
         const errors = [];
 
         // Batch-fetch all inventory items up front to avoid N+1
-        const batchInventoryIds = [...new Set(listings.map(l => l.inventory_id).filter(Boolean))];
-        const batchInventoryRows = batchInventoryIds.length > 0
-            ? await query.all(
-                `SELECT * FROM inventory WHERE id IN (${batchInventoryIds.map(() => '?').join(',')}) AND user_id = ?`,
-                [...batchInventoryIds, user.id]
-              )
-            : [];
-        const batchInventoryMap = new Map(batchInventoryRows.map(r => [r.id, r]));
+        const batchInventoryIds = [...new Set(listings.map((l) => l.inventory_id).filter(Boolean))];
+        const batchInventoryRows =
+            batchInventoryIds.length > 0
+                ? await query.all(
+                      `SELECT * FROM inventory WHERE id IN (${batchInventoryIds.map(() => '?').join(',')}) AND user_id = ?`,
+                      [...batchInventoryIds, user.id],
+                  )
+                : [];
+        const batchInventoryMap = new Map(batchInventoryRows.map((r) => [r.id, r]));
 
         for (const listing of listings) {
             const { inventory_id, platform, title, description, price, tags, shipping } = listing;
@@ -663,17 +858,20 @@ export async function listingsRouter(ctx) {
             // Check if listing already exists for this platform
             const existingListing = await query.get(
                 'SELECT id FROM listings WHERE inventory_id = ? AND platform = ? AND user_id = ?',
-                [inventory_id, platform, user.id]
+                [inventory_id, platform, user.id],
             );
 
             if (existingListing) {
                 // Update existing listing
                 try {
-                    await query.run(`
+                    await query.run(
+                        `
                         UPDATE listings
                         SET title = ?, description = ?, price = ?, status = 'active', updated_at = CURRENT_TIMESTAMP
                         WHERE id = ? AND user_id = ?
-                    `, [title, description || null, price, existingListing.id, user.id]);
+                    `,
+                        [title, description || null, price, existingListing.id, user.id],
+                    );
 
                     created.push({ id: existingListing.id, updated: true });
                 } catch (error) {
@@ -689,15 +887,28 @@ export async function listingsRouter(ctx) {
                 const images = safeJsonParse(item.images, []);
 
                 try {
-                    await query.run(`
+                    await query.run(
+                        `
                         INSERT INTO listings (
                             id, inventory_id, user_id, platform, title, description, price,
                             images, status, listed_at, created_at, updated_at
                         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    `, [
-                        id, inventory_id, user.id, platform, title, description || null, price,
-                        JSON.stringify(images), 'active', now, now, now
-                    ]);
+                    `,
+                        [
+                            id,
+                            inventory_id,
+                            user.id,
+                            platform,
+                            title,
+                            description || null,
+                            price,
+                            JSON.stringify(images),
+                            'active',
+                            now,
+                            now,
+                            now,
+                        ],
+                    );
 
                     created.push({ id, created: true });
                 } catch (error) {
@@ -714,8 +925,8 @@ export async function listingsRouter(ctx) {
                 created: created.length,
                 errors: errors.length,
                 results: created,
-                errorDetails: errors
-            }
+                errorDetails: errors,
+            },
         };
     }
 
@@ -750,7 +961,7 @@ export async function listingsRouter(ctx) {
 
         const staleListings = await query.all(sql, params);
 
-        staleListings.forEach(listing => {
+        staleListings.forEach((listing) => {
             listing.images = safeJsonParse(listing.images, []);
             listing.inventory_images = safeJsonParse(listing.inventory_images, []);
             listing.platform_specific_data = safeJsonParse(listing.platform_specific_data, {});
@@ -776,38 +987,57 @@ export async function listingsRouter(ctx) {
 
         // For Facebook Marketplace, use "mark as sold" instead
         if (listing.platform === 'facebook') {
-            await query.run(`
+            await query.run(
+                `
                 UPDATE listings
                 SET status = 'ended', marked_as_sold = 1, last_delisted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
                 WHERE id = ? AND user_id = ?
-            `, [id, user.id]);
+            `,
+                [id, user.id],
+            );
 
             // Log the action as "mark_sold"
             const historyId = uuidv4();
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO listing_refresh_history (id, listing_id, user_id, platform, action, reason, previous_status, new_status)
                 VALUES (?, ?, ?, ?, 'mark_sold', ?, ?, 'ended')
-            `, [historyId, id, user.id, listing.platform, reason, previousStatus]);
+            `,
+                [historyId, id, user.id, listing.platform, reason, previousStatus],
+            );
 
             const updated = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
             updated.images = safeJsonParse(updated.images, []);
 
-            return { status: 200, data: { listing: updated, action: 'mark_sold', message: 'Listing marked as sold on Facebook Marketplace' } };
+            return {
+                status: 200,
+                data: {
+                    listing: updated,
+                    action: 'mark_sold',
+                    message: 'Listing marked as sold on Facebook Marketplace',
+                },
+            };
         }
 
         // For other platforms, delist normally
-        await query.run(`
+        await query.run(
+            `
             UPDATE listings
             SET status = 'ended', last_delisted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
             WHERE id = ? AND user_id = ?
-        `, [id, user.id]);
+        `,
+            [id, user.id],
+        );
 
         // Log the action
         const historyId = uuidv4();
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO listing_refresh_history (id, listing_id, user_id, platform, action, reason, previous_status, new_status)
             VALUES (?, ?, ?, ?, 'delist', ?, ?, 'ended')
-        `, [historyId, id, user.id, listing.platform, reason, previousStatus]);
+        `,
+            [historyId, id, user.id, listing.platform, reason, previousStatus],
+        );
 
         const updated = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         updated.images = safeJsonParse(updated.images, []);
@@ -826,25 +1056,40 @@ export async function listingsRouter(ctx) {
 
         // Facebook listings that were marked as sold cannot be relisted
         if (listing.platform === 'facebook' && listing.marked_as_sold) {
-            return { status: 400, data: { error: { message: 'Facebook Marketplace listings marked as sold cannot be relisted. Please create a new listing.', code: 'BAD_REQUEST' } } };
+            return {
+                status: 400,
+                data: {
+                    error: {
+                        message:
+                            'Facebook Marketplace listings marked as sold cannot be relisted. Please create a new listing.',
+                        code: 'BAD_REQUEST',
+                    },
+                },
+            };
         }
 
         const previousStatus = listing.status;
         const reason = body.reason || 'manual';
 
         // Relist the item
-        await query.run(`
+        await query.run(
+            `
             UPDATE listings
             SET status = 'active', last_relisted_at = CURRENT_TIMESTAMP, listed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
             WHERE id = ? AND user_id = ?
-        `, [id, user.id]);
+        `,
+            [id, user.id],
+        );
 
         // Log the action
         const historyId = uuidv4();
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO listing_refresh_history (id, listing_id, user_id, platform, action, reason, previous_status, new_status)
             VALUES (?, ?, ?, ?, 'relist', ?, ?, 'active')
-        `, [historyId, id, user.id, listing.platform, reason, previousStatus]);
+        `,
+            [historyId, id, user.id, listing.platform, reason, previousStatus],
+        );
 
         const updated = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         updated.images = safeJsonParse(updated.images, []);
@@ -863,14 +1108,23 @@ export async function listingsRouter(ctx) {
 
         // Facebook Marketplace doesn't support refresh - use mark as sold instead
         if (listing.platform === 'facebook') {
-            return { status: 400, data: { error: { message: 'Facebook Marketplace does not support refresh. Use "Mark as Sold" instead.', code: 'BAD_REQUEST' } } };
+            return {
+                status: 400,
+                data: {
+                    error: {
+                        message: 'Facebook Marketplace does not support refresh. Use "Mark as Sold" instead.',
+                        code: 'BAD_REQUEST',
+                    },
+                },
+            };
         }
 
         const previousStatus = listing.status;
         const reason = body.reason || 'refresh';
 
         // Refresh = delist + relist
-        await query.run(`
+        await query.run(
+            `
             UPDATE listings
             SET status = 'active',
                 last_delisted_at = CURRENT_TIMESTAMP,
@@ -878,25 +1132,36 @@ export async function listingsRouter(ctx) {
                 listed_at = CURRENT_TIMESTAMP,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = ? AND user_id = ?
-        `, [id, user.id]);
+        `,
+            [id, user.id],
+        );
 
         // Log both actions
         const delistHistoryId = uuidv4();
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO listing_refresh_history (id, listing_id, user_id, platform, action, reason, previous_status, new_status)
             VALUES (?, ?, ?, ?, 'delist', ?, ?, 'ended')
-        `, [delistHistoryId, id, user.id, listing.platform, reason, previousStatus]);
+        `,
+            [delistHistoryId, id, user.id, listing.platform, reason, previousStatus],
+        );
 
         const relistHistoryId = uuidv4();
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO listing_refresh_history (id, listing_id, user_id, platform, action, reason, previous_status, new_status)
             VALUES (?, ?, ?, ?, 'relist', ?, 'ended', 'active')
-        `, [relistHistoryId, id, user.id, listing.platform, reason]);
+        `,
+            [relistHistoryId, id, user.id, listing.platform, reason],
+        );
 
         const updated = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         updated.images = safeJsonParse(updated.images, []);
 
-        return { status: 200, data: { listing: updated, action: 'refresh', message: 'Listing refreshed (delisted and relisted)' } };
+        return {
+            status: 200,
+            data: { listing: updated, action: 'refresh', message: 'Listing refreshed (delisted and relisted)' },
+        };
     }
 
     // POST /api/listings/refresh-bulk - Refresh multiple stale listings at once
@@ -908,18 +1173,21 @@ export async function listingsRouter(ctx) {
         }
 
         if (listingIds.length > 100) {
-            return { status: 400, data: { error: { message: 'Too many listings (max 100 per bulk refresh)', code: 'BAD_REQUEST' } } };
+            return {
+                status: 400,
+                data: { error: { message: 'Too many listings (max 100 per bulk refresh)', code: 'BAD_REQUEST' } },
+            };
         }
 
         const results = { refreshed: [], skipped: [], errors: [] };
 
         // Batch-fetch all listings in one query instead of N+1
         const placeholders = listingIds.map(() => '?').join(',');
-        const allListings = await query.all(
-            `SELECT * FROM listings WHERE id IN (${placeholders}) AND user_id = ?`,
-            [...listingIds, user.id]
-        );
-        const listingMap = new Map(allListings.map(l => [l.id, l]));
+        const allListings = await query.all(`SELECT * FROM listings WHERE id IN (${placeholders}) AND user_id = ?`, [
+            ...listingIds,
+            user.id,
+        ]);
+        const listingMap = new Map(allListings.map((l) => [l.id, l]));
 
         for (const listingId of listingIds) {
             const listing = listingMap.get(listingId);
@@ -939,7 +1207,8 @@ export async function listingsRouter(ctx) {
 
             try {
                 // Refresh the listing
-                await query.run(`
+                await query.run(
+                    `
                     UPDATE listings
                     SET status = 'active',
                         last_delisted_at = CURRENT_TIMESTAMP,
@@ -947,21 +1216,29 @@ export async function listingsRouter(ctx) {
                         listed_at = CURRENT_TIMESTAMP,
                         updated_at = CURRENT_TIMESTAMP
                     WHERE id = ? AND user_id = ?
-                `, [listingId, user.id]);
+                `,
+                    [listingId, user.id],
+                );
 
                 // Log delist
                 const delistHistoryId = uuidv4();
-                await query.run(`
+                await query.run(
+                    `
                     INSERT INTO listing_refresh_history (id, listing_id, user_id, platform, action, reason, previous_status, new_status)
                     VALUES (?, ?, ?, ?, 'delist', ?, ?, 'ended')
-                `, [delistHistoryId, listingId, user.id, listing.platform, reason, previousStatus]);
+                `,
+                    [delistHistoryId, listingId, user.id, listing.platform, reason, previousStatus],
+                );
 
                 // Log relist
                 const relistHistoryId = uuidv4();
-                await query.run(`
+                await query.run(
+                    `
                     INSERT INTO listing_refresh_history (id, listing_id, user_id, platform, action, reason, previous_status, new_status)
                     VALUES (?, ?, ?, ?, 'relist', ?, 'ended', 'active')
-                `, [relistHistoryId, listingId, user.id, listing.platform, reason]);
+                `,
+                    [relistHistoryId, listingId, user.id, listing.platform, reason],
+                );
 
                 results.refreshed.push({ id: listingId, platform: listing.platform });
             } catch (error) {
@@ -977,8 +1254,8 @@ export async function listingsRouter(ctx) {
                 refreshed: results.refreshed.length,
                 skipped: results.skipped.length,
                 errors: results.errors.length,
-                results
-            }
+                results,
+            },
         };
     }
 
@@ -991,12 +1268,15 @@ export async function listingsRouter(ctx) {
             return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
         }
 
-        const history = await query.all(`
+        const history = await query.all(
+            `
             SELECT * FROM listing_refresh_history
             WHERE listing_id = ?
             ORDER BY created_at DESC
             LIMIT 50
-        `, [id]);
+        `,
+            [id],
+        );
 
         return { status: 200, data: { history } };
     }
@@ -1028,7 +1308,10 @@ export async function listingsRouter(ctx) {
         if (updates.length > 0) {
             values.push(id);
             values.push(user.id);
-            await query.run(`UPDATE listings SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`, values);
+            await query.run(
+                `UPDATE listings SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
+                values,
+            );
         }
 
         const updated = await query.get('SELECT * FROM listings WHERE id = ?', [id]);
@@ -1048,11 +1331,14 @@ export async function listingsRouter(ctx) {
 
         // Try to archive with 'archived' status first
         try {
-            await query.run(`
+            await query.run(
+                `
                 UPDATE listings
                 SET status = 'archived', deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
                 WHERE id = ? AND user_id = ?
-            `, [id, user.id]);
+            `,
+                [id, user.id],
+            );
 
             const updated = await query.get('SELECT * FROM listings WHERE id = ?', [id]);
             updated.images = safeJsonParse(updated.images, []);
@@ -1062,15 +1348,20 @@ export async function listingsRouter(ctx) {
         } catch (error) {
             // If constraint error (migration not applied), fallback to 'ended' status
             if (error.message && error.message.includes('CHECK constraint')) {
-                logger.warn(`[Listings] Archive failed for listing ${id}, using 'ended' status fallback. Migration 035 may not be applied.`);
+                logger.warn(
+                    `[Listings] Archive failed for listing ${id}, using 'ended' status fallback. Migration 035 may not be applied.`,
+                );
 
                 try {
-                    await query.run(`
+                    await query.run(
+                        `
                         UPDATE listings
                         SET status = 'ended', deleted_at = CURRENT_TIMESTAMP, notes = COALESCE(notes || ' | ', '') || '[ARCHIVED] User archived this listing',
                             updated_at = CURRENT_TIMESTAMP
                         WHERE id = ? AND user_id = ?
-                    `, [id, user.id]);
+                    `,
+                        [id, user.id],
+                    );
 
                     const updated = await query.get('SELECT * FROM listings WHERE id = ?', [id]);
                     updated.images = safeJsonParse(updated.images, []);
@@ -1081,16 +1372,23 @@ export async function listingsRouter(ctx) {
                         data: {
                             listing: updated,
                             message: 'Listing archived (using ended status)',
-                            warning: 'Database migration needed. Status set to "ended" instead of "archived". Contact support to update your database.'
-                        }
+                            warning:
+                                'Database migration needed. Status set to "ended" instead of "archived". Contact support to update your database.',
+                        },
                     };
                 } catch (fallbackError) {
                     logger.error('[Listings] Archive fallback failed', user?.id, { detail: fallbackError.message });
-                    return { status: 500, data: { error: { message: 'Failed to archive listing', code: 'INTERNAL_ERROR' } } };
+                    return {
+                        status: 500,
+                        data: { error: { message: 'Failed to archive listing', code: 'INTERNAL_ERROR' } },
+                    };
                 }
             } else {
                 logger.error('[Listings] Archive failed', user?.id, { detail: error.message });
-                return { status: 500, data: { error: { message: 'Failed to archive listing', code: 'INTERNAL_ERROR' } } };
+                return {
+                    status: 500,
+                    data: { error: { message: 'Failed to archive listing', code: 'INTERNAL_ERROR' } },
+                };
             }
         }
     }
@@ -1105,8 +1403,14 @@ export async function listingsRouter(ctx) {
         }
 
         // Only allow unarchiving if status is 'archived' or 'ended' with archive note
-        if (listing.status !== 'archived' && !(listing.status === 'ended' && listing.notes && listing.notes.includes('[ARCHIVED]'))) {
-            return { status: 400, data: { error: { message: 'Only archived listings can be unarchived', code: 'BAD_REQUEST' } } };
+        if (
+            listing.status !== 'archived' &&
+            !(listing.status === 'ended' && listing.notes && listing.notes.includes('[ARCHIVED]'))
+        ) {
+            return {
+                status: 400,
+                data: { error: { message: 'Only archived listings can be unarchived', code: 'BAD_REQUEST' } },
+            };
         }
 
         try {
@@ -1119,11 +1423,14 @@ export async function listingsRouter(ctx) {
                 }
             }
 
-            await query.run(`
+            await query.run(
+                `
                 UPDATE listings
                 SET status = 'draft', deleted_at = NULL, notes = ?, updated_at = CURRENT_TIMESTAMP
                 WHERE id = ? AND user_id = ?
-            `, [cleanedNotes || null, id, user.id]);
+            `,
+                [cleanedNotes || null, id, user.id],
+            );
 
             const updated = await query.get('SELECT * FROM listings WHERE id = ?', [id]);
             updated.images = safeJsonParse(updated.images, []);
@@ -1169,26 +1476,32 @@ export async function listingsRouter(ctx) {
                 drops_completed: 0,
                 floor_price: floor_price || 0,
                 status: 'active',
-                created_at: new Date().toISOString()
+                created_at: new Date().toISOString(),
             };
 
             await query.run(
                 'UPDATE listings SET platform_specific_data = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
-                [JSON.stringify(platformData), id, user.id]
+                [JSON.stringify(platformData), id, user.id],
             );
 
             // If scheduled for now, apply immediately
             if (scheduled_date && new Date(scheduled_date) <= new Date()) {
                 await query.run(
                     'UPDATE listings SET price = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
-                    [new_price, id, user.id]
+                    [new_price, id, user.id],
                 );
             }
 
-            return { status: 200, data: { message: 'Price drop scheduled', schedule: platformData.price_drop_schedule } };
+            return {
+                status: 200,
+                data: { message: 'Price drop scheduled', schedule: platformData.price_drop_schedule },
+            };
         } catch (error) {
             logger.error('[Listings] Error scheduling price drop', user?.id, { detail: error.message });
-            return { status: 500, data: { error: { message: 'Failed to schedule price drop', code: 'INTERNAL_ERROR' } } };
+            return {
+                status: 500,
+                data: { error: { message: 'Failed to schedule price drop', code: 'INTERNAL_ERROR' } },
+            };
         }
     }
 
@@ -1208,7 +1521,8 @@ export async function listingsRouter(ctx) {
             const category = listing.category || '';
             const brand = listing.brand || '';
 
-            const similarSales = await query.all(`
+            const similarSales = await query.all(
+                `
                 SELECT s.sale_price, s.created_at, i.title, i.brand, i.category, i.condition
                 FROM sales s
                 JOIN inventory i ON s.inventory_id = i.id
@@ -1216,10 +1530,12 @@ export async function listingsRouter(ctx) {
                 AND (i.category = ? OR i.brand = ?)
                 ORDER BY s.created_at DESC
                 LIMIT 10
-            `, [user.id, category, brand]);
+            `,
+                [user.id, category, brand],
+            );
 
             // Calculate pricing stats
-            const prices = similarSales.map(s => parseFloat(s.sale_price)).filter(p => p > 0);
+            const prices = similarSales.map((s) => parseFloat(s.sale_price)).filter((p) => p > 0);
             const avgPrice = prices.length > 0 ? prices.reduce((a, b) => a + b, 0) / prices.length : 0;
             const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
             const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
@@ -1235,14 +1551,21 @@ export async function listingsRouter(ctx) {
                     min_price: parseFloat(minPrice.toFixed(2)),
                     max_price: parseFloat(maxPrice.toFixed(2)),
                     price_position: parseInt(pricePosition),
-                    recommendation: currentPrice > avgPrice * 1.2 ? 'overpriced' :
-                                   currentPrice < avgPrice * 0.8 ? 'underpriced' : 'competitive',
-                    recent_sales: similarSales.slice(0, 5)
-                }
+                    recommendation:
+                        currentPrice > avgPrice * 1.2
+                            ? 'overpriced'
+                            : currentPrice < avgPrice * 0.8
+                              ? 'underpriced'
+                              : 'competitive',
+                    recent_sales: similarSales.slice(0, 5),
+                },
             };
         } catch (error) {
             logger.error('[Listings] Error fetching competitor pricing', user?.id, { detail: error.message });
-            return { status: 500, data: { error: { message: 'Failed to fetch competitor pricing', code: 'INTERNAL_ERROR' } } };
+            return {
+                status: 500,
+                data: { error: { message: 'Failed to fetch competitor pricing', code: 'INTERNAL_ERROR' } },
+            };
         }
     }
 
@@ -1263,7 +1586,8 @@ export async function listingsRouter(ctx) {
             const price = parseFloat(listing.price) || 0;
 
             // Get historical time-to-sell for similar items
-            const historicalData = await query.all(`
+            const historicalData = await query.all(
+                `
                 SELECT
                     EXTRACT(EPOCH FROM (s.created_at - i.listed_at)) / 86400 as days_to_sell,
                     s.sale_price, i.category, i.brand, i.condition
@@ -1275,17 +1599,20 @@ export async function listingsRouter(ctx) {
                 AND EXTRACT(EPOCH FROM (s.created_at - i.listed_at)) / 86400 > 0
                 ORDER BY s.created_at DESC
                 LIMIT 20
-            `, [user.id, category, brand]);
+            `,
+                [user.id, category, brand],
+            );
 
-            const days = historicalData.map(h => h.days_to_sell).filter(d => d > 0);
+            const days = historicalData.map((h) => h.days_to_sell).filter((d) => d > 0);
             const avgDays = days.length > 0 ? Math.round(days.reduce((a, b) => a + b, 0) / days.length) : null;
             const minDays = days.length > 0 ? Math.round(Math.min(...days)) : null;
             const maxDays = days.length > 0 ? Math.round(Math.max(...days)) : null;
 
             // Price factor adjustment
-            const avgSalePrice = historicalData.length > 0
-                ? historicalData.reduce((sum, h) => sum + (h.sale_price || 0), 0) / historicalData.length
-                : 0;
+            const avgSalePrice =
+                historicalData.length > 0
+                    ? historicalData.reduce((sum, h) => sum + (h.sale_price || 0), 0) / historicalData.length
+                    : 0;
             const priceFactor = avgSalePrice > 0 ? price / avgSalePrice : 1;
             const adjustedEstimate = avgDays ? Math.round(avgDays * Math.max(0.5, Math.min(2, priceFactor))) : null;
 
@@ -1298,12 +1625,15 @@ export async function listingsRouter(ctx) {
                     max_days: maxDays,
                     data_points: days.length,
                     confidence: days.length >= 10 ? 'high' : days.length >= 5 ? 'medium' : 'low',
-                    price_factor: priceFactor.toFixed(2)
-                }
+                    price_factor: priceFactor.toFixed(2),
+                },
             };
         } catch (error) {
             logger.error('[Listings] Error calculating time-to-sell', user?.id, { detail: error.message });
-            return { status: 500, data: { error: { message: 'Failed to calculate time-to-sell', code: 'INTERNAL_ERROR' } } };
+            return {
+                status: 500,
+                data: { error: { message: 'Failed to calculate time-to-sell', code: 'INTERNAL_ERROR' } },
+            };
         }
     }
 
@@ -1313,30 +1643,57 @@ export async function listingsRouter(ctx) {
 
         let publishSucceeded = false;
         try {
-            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
+            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [
+                listingId,
+                user.id,
+            ]);
             if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
 
-            const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
-            if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
+            const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [
+                listing.inventory_id,
+                user.id,
+            ]);
+            if (!inventory)
+                return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
             const shop = await query.get(
                 "SELECT * FROM shops WHERE user_id = ? AND platform = 'ebay' AND is_connected = TRUE",
-                [user.id]
+                [user.id],
             );
-            if (!shop) return { status: 400, data: { error: { message: 'No connected eBay shop found. Connect eBay in My Shops first.', code: 'BAD_REQUEST' } } };
-            if (!shop.oauth_token) return { status: 400, data: { error: { message: 'eBay shop has no OAuth token. Reconnect eBay in My Shops.', code: 'BAD_REQUEST' } } };
+            if (!shop)
+                return {
+                    status: 400,
+                    data: {
+                        error: {
+                            message: 'No connected eBay shop found. Connect eBay in My Shops first.',
+                            code: 'BAD_REQUEST',
+                        },
+                    },
+                };
+            if (!shop.oauth_token)
+                return {
+                    status: 400,
+                    data: {
+                        error: {
+                            message: 'eBay shop has no OAuth token. Reconnect eBay in My Shops.',
+                            code: 'BAD_REQUEST',
+                        },
+                    },
+                };
 
-            await query.run(
-                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                ['pending', new Date().toISOString(), listingId, user.id]
-            );
+            await query.run('UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?', [
+                'pending',
+                new Date().toISOString(),
+                listingId,
+                user.id,
+            ]);
             const result = await publishListingToEbay(shop, listing, inventory);
             publishSucceeded = true;
 
             // Update listing record with eBay listing ID and URL
             await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id]
+                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id],
             );
 
             return {
@@ -1346,14 +1703,18 @@ export async function listingsRouter(ctx) {
                     offerId: result.offerId,
                     listingId: result.listingId,
                     sku: result.sku,
-                    listingUrl: result.listingUrl
-                }
+                    listingUrl: result.listingUrl,
+                },
             };
         } catch (error) {
-            await query.run(
-                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                [publishSucceeded ? 'pending' : 'error', new Date().toISOString(), listingId, user.id]
-            ).catch(() => {});
+            await query
+                .run('UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?', [
+                    publishSucceeded ? 'pending' : 'error',
+                    new Date().toISOString(),
+                    listingId,
+                    user.id,
+                ])
+                .catch(() => {});
             logger.error('[Listings] eBay publish error', user?.id, { detail: error.message });
             return { status: 500, data: { error: { message: error.message, code: 'INTERNAL_ERROR' } } };
         }
@@ -1365,29 +1726,56 @@ export async function listingsRouter(ctx) {
 
         let publishSucceeded = false;
         try {
-            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
+            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [
+                listingId,
+                user.id,
+            ]);
             if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
 
-            const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
-            if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
+            const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [
+                listing.inventory_id,
+                user.id,
+            ]);
+            if (!inventory)
+                return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
             const shop = await query.get(
                 "SELECT * FROM shops WHERE user_id = ? AND platform = 'etsy' AND is_connected = TRUE",
-                [user.id]
+                [user.id],
             );
-            if (!shop) return { status: 400, data: { error: { message: 'No connected Etsy shop found. Connect Etsy in My Shops first.', code: 'BAD_REQUEST' } } };
-            if (!shop.oauth_token) return { status: 400, data: { error: { message: 'Etsy shop has no OAuth token. Reconnect Etsy in My Shops.', code: 'BAD_REQUEST' } } };
+            if (!shop)
+                return {
+                    status: 400,
+                    data: {
+                        error: {
+                            message: 'No connected Etsy shop found. Connect Etsy in My Shops first.',
+                            code: 'BAD_REQUEST',
+                        },
+                    },
+                };
+            if (!shop.oauth_token)
+                return {
+                    status: 400,
+                    data: {
+                        error: {
+                            message: 'Etsy shop has no OAuth token. Reconnect Etsy in My Shops.',
+                            code: 'BAD_REQUEST',
+                        },
+                    },
+                };
 
-            await query.run(
-                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                ['pending', new Date().toISOString(), listingId, user.id]
-            );
+            await query.run('UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?', [
+                'pending',
+                new Date().toISOString(),
+                listingId,
+                user.id,
+            ]);
             const result = await publishListingToEtsy(shop, listing, inventory);
             publishSucceeded = true;
 
             await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id]
+                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id],
             );
 
             return {
@@ -1395,14 +1783,18 @@ export async function listingsRouter(ctx) {
                 data: {
                     success: true,
                     listingId: result.listingId,
-                    listingUrl: result.listingUrl
-                }
+                    listingUrl: result.listingUrl,
+                },
             };
         } catch (error) {
-            await query.run(
-                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                [publishSucceeded ? 'pending' : 'error', new Date().toISOString(), listingId, user.id]
-            ).catch(() => {});
+            await query
+                .run('UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?', [
+                    publishSucceeded ? 'pending' : 'error',
+                    new Date().toISOString(),
+                    listingId,
+                    user.id,
+                ])
+                .catch(() => {});
             logger.error('[Listings] Etsy publish error', user?.id, { detail: error.message });
             return { status: 500, data: { error: { message: error.message, code: 'INTERNAL_ERROR' } } };
         }
@@ -1414,22 +1806,31 @@ export async function listingsRouter(ctx) {
 
         let publishSucceeded = false;
         try {
-            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
+            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [
+                listingId,
+                user.id,
+            ]);
             if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
 
-            const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
-            if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
+            const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [
+                listing.inventory_id,
+                user.id,
+            ]);
+            if (!inventory)
+                return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
-            await query.run(
-                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                ['pending', new Date().toISOString(), listingId, user.id]
-            );
+            await query.run('UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?', [
+                'pending',
+                new Date().toISOString(),
+                listingId,
+                user.id,
+            ]);
             const result = await publishListingToPoshmark(null, listing, inventory);
             publishSucceeded = true;
 
             await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id]
+                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id],
             );
 
             return {
@@ -1437,14 +1838,18 @@ export async function listingsRouter(ctx) {
                 data: {
                     success: true,
                     listingId: result.listingId,
-                    listingUrl: result.listingUrl
-                }
+                    listingUrl: result.listingUrl,
+                },
             };
         } catch (error) {
-            await query.run(
-                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                [publishSucceeded ? 'pending' : 'error', new Date().toISOString(), listingId, user.id]
-            ).catch(() => {});
+            await query
+                .run('UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?', [
+                    publishSucceeded ? 'pending' : 'error',
+                    new Date().toISOString(),
+                    listingId,
+                    user.id,
+                ])
+                .catch(() => {});
             logger.error('[Listings] Poshmark publish error: ' + error.message);
             return { status: 500, data: { error: { message: error.message, code: 'INTERNAL_ERROR' } } };
         }
@@ -1455,10 +1860,15 @@ export async function listingsRouter(ctx) {
         const id = path.split('/')[1];
         const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
-        if (listing.status === 'active') return { status: 400, data: { error: { message: 'Listing is already active', code: 'BAD_REQUEST' } } };
+        if (listing.status === 'active')
+            return { status: 400, data: { error: { message: 'Listing is already active', code: 'BAD_REQUEST' } } };
 
-        const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
-        if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
+        const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [
+            listing.inventory_id,
+            user.id,
+        ]);
+        if (!inventory)
+            return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
         const publishers = {
             poshmark: publishListingToPoshmark,
@@ -1473,9 +1883,19 @@ export async function listingsRouter(ctx) {
         };
 
         const publisher = publishers[listing.platform];
-        if (!publisher) return { status: 400, data: { error: { message: `Platform '${listing.platform}' does not support publish`, code: 'BAD_REQUEST' } } };
+        if (!publisher)
+            return {
+                status: 400,
+                data: {
+                    error: { message: `Platform '${listing.platform}' does not support publish`, code: 'BAD_REQUEST' },
+                },
+            };
 
-        const shop = await query.get('SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE', [user.id, listing.platform]) || null;
+        const shop =
+            (await query.get('SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE', [
+                user.id,
+                listing.platform,
+            ])) || null;
 
         // Pre-flight content safety scan (Layer 8)
         const scanResult = scanListingContent({
@@ -1485,20 +1905,30 @@ export async function listingsRouter(ctx) {
             platform: listing.platform,
         });
         if (scanResult.status === 'BLOCK') {
-            return { status: 400, data: { error: { message: `Content safety check failed: ${scanResult.issues.join('; ')}`, code: 'CONTENT_BLOCKED' } } };
+            return {
+                status: 400,
+                data: {
+                    error: {
+                        message: `Content safety check failed: ${scanResult.issues.join('; ')}`,
+                        code: 'CONTENT_BLOCKED',
+                    },
+                },
+            };
         }
 
         let publishSucceeded = false;
         try {
-            await query.run(
-                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                ['pending', new Date().toISOString(), id, user.id]
-            );
+            await query.run('UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?', [
+                'pending',
+                new Date().toISOString(),
+                id,
+                user.id,
+            ]);
             const result = await publisher(shop, listing, inventory);
             publishSucceeded = true;
             await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), id, user.id]
+                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), id, user.id],
             );
             try {
                 websocketService.sendToUser(user.id, {
@@ -1507,17 +1937,21 @@ export async function listingsRouter(ctx) {
                     listingId: id,
                     status: 'success',
                     platformListingId: result.listingId,
-                    platformUrl: result.listingUrl
+                    platformUrl: result.listingUrl,
                 });
             } catch (wsErr) {
                 logger.warn('[Listings] WebSocket notify failed', user?.id, { detail: wsErr.message });
             }
             return { status: 200, data: { success: true, listingId: result.listingId, listingUrl: result.listingUrl } };
         } catch (error) {
-            await query.run(
-                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                [publishSucceeded ? 'pending' : 'error', new Date().toISOString(), id, user.id]
-            ).catch(() => {});
+            await query
+                .run('UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?', [
+                    publishSucceeded ? 'pending' : 'error',
+                    new Date().toISOString(),
+                    id,
+                    user.id,
+                ])
+                .catch(() => {});
             logger.error('[Listings] Publish error', user?.id, { platform: listing.platform, detail: error.message });
             try {
                 websocketService.sendToUser(user.id, {
@@ -1525,7 +1959,7 @@ export async function listingsRouter(ctx) {
                     platform: listing.platform,
                     listingId: id,
                     status: 'error',
-                    error: error.message
+                    error: error.message,
                 });
             } catch (wsErr) {
                 // Silent — WS failure shouldn't block error response
@@ -1540,22 +1974,31 @@ export async function listingsRouter(ctx) {
 
         let publishSucceeded = false;
         try {
-            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
+            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [
+                listingId,
+                user.id,
+            ]);
             if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
 
-            const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
-            if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
+            const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [
+                listing.inventory_id,
+                user.id,
+            ]);
+            if (!inventory)
+                return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
-            await query.run(
-                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                ['pending', new Date().toISOString(), listingId, user.id]
-            );
+            await query.run('UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?', [
+                'pending',
+                new Date().toISOString(),
+                listingId,
+                user.id,
+            ]);
             const result = await publishListingToMercari(null, listing, inventory);
             publishSucceeded = true;
 
             await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id]
+                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id],
             );
 
             return {
@@ -1563,14 +2006,18 @@ export async function listingsRouter(ctx) {
                 data: {
                     success: true,
                     listingId: result.listingId,
-                    listingUrl: result.listingUrl
-                }
+                    listingUrl: result.listingUrl,
+                },
             };
         } catch (error) {
-            await query.run(
-                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                [publishSucceeded ? 'pending' : 'error', new Date().toISOString(), listingId, user.id]
-            ).catch(() => {});
+            await query
+                .run('UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?', [
+                    publishSucceeded ? 'pending' : 'error',
+                    new Date().toISOString(),
+                    listingId,
+                    user.id,
+                ])
+                .catch(() => {});
             logger.error('[Listings] Mercari publish error', user?.id, { detail: error.message });
             return { status: 500, data: { error: { message: error.message, code: 'INTERNAL_ERROR' } } };
         }
@@ -1582,22 +2029,31 @@ export async function listingsRouter(ctx) {
 
         let publishSucceeded = false;
         try {
-            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
+            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [
+                listingId,
+                user.id,
+            ]);
             if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
 
-            const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
-            if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
+            const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [
+                listing.inventory_id,
+                user.id,
+            ]);
+            if (!inventory)
+                return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
-            await query.run(
-                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                ['pending', new Date().toISOString(), listingId, user.id]
-            );
+            await query.run('UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?', [
+                'pending',
+                new Date().toISOString(),
+                listingId,
+                user.id,
+            ]);
             const result = await publishListingToDepop(null, listing, inventory);
             publishSucceeded = true;
 
             await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id]
+                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id],
             );
 
             return {
@@ -1605,14 +2061,18 @@ export async function listingsRouter(ctx) {
                 data: {
                     success: true,
                     listingId: result.listingId,
-                    listingUrl: result.listingUrl
-                }
+                    listingUrl: result.listingUrl,
+                },
             };
         } catch (error) {
-            await query.run(
-                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                [publishSucceeded ? 'pending' : 'error', new Date().toISOString(), listingId, user.id]
-            ).catch(() => {});
+            await query
+                .run('UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?', [
+                    publishSucceeded ? 'pending' : 'error',
+                    new Date().toISOString(),
+                    listingId,
+                    user.id,
+                ])
+                .catch(() => {});
             logger.error('[Listings] Depop publish error', user?.id, { detail: error.message });
             return { status: 500, data: { error: { message: error.message, code: 'INTERNAL_ERROR' } } };
         }
@@ -1624,22 +2084,31 @@ export async function listingsRouter(ctx) {
 
         let publishSucceeded = false;
         try {
-            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
+            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [
+                listingId,
+                user.id,
+            ]);
             if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
 
-            const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
-            if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
+            const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [
+                listing.inventory_id,
+                user.id,
+            ]);
+            if (!inventory)
+                return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
-            await query.run(
-                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                ['pending', new Date().toISOString(), listingId, user.id]
-            );
+            await query.run('UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?', [
+                'pending',
+                new Date().toISOString(),
+                listingId,
+                user.id,
+            ]);
             const result = await publishListingToGrailed(null, listing, inventory);
             publishSucceeded = true;
 
             await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id]
+                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id],
             );
 
             return {
@@ -1647,14 +2116,18 @@ export async function listingsRouter(ctx) {
                 data: {
                     success: true,
                     listingId: result.listingId,
-                    listingUrl: result.listingUrl
-                }
+                    listingUrl: result.listingUrl,
+                },
             };
         } catch (error) {
-            await query.run(
-                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                [publishSucceeded ? 'pending' : 'error', new Date().toISOString(), listingId, user.id]
-            ).catch(() => {});
+            await query
+                .run('UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?', [
+                    publishSucceeded ? 'pending' : 'error',
+                    new Date().toISOString(),
+                    listingId,
+                    user.id,
+                ])
+                .catch(() => {});
             logger.error('[Listings] Grailed publish error', user?.id, { detail: error.message });
             return { status: 500, data: { error: { message: error.message, code: 'INTERNAL_ERROR' } } };
         }
@@ -1666,33 +2139,46 @@ export async function listingsRouter(ctx) {
 
         let publishSucceeded = false;
         try {
-            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
+            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [
+                listingId,
+                user.id,
+            ]);
             if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
 
-            const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
-            if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
+            const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [
+                listing.inventory_id,
+                user.id,
+            ]);
+            if (!inventory)
+                return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
-            await query.run(
-                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                ['pending', new Date().toISOString(), listingId, user.id]
-            );
+            await query.run('UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?', [
+                'pending',
+                new Date().toISOString(),
+                listingId,
+                user.id,
+            ]);
             const result = await publishListingToFacebook(null, listing, inventory);
             publishSucceeded = true;
 
             await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id]
+                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id],
             );
 
             return {
                 status: 200,
-                data: { success: true, listingId: result.listingId, listingUrl: result.listingUrl }
+                data: { success: true, listingId: result.listingId, listingUrl: result.listingUrl },
             };
         } catch (error) {
-            await query.run(
-                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                [publishSucceeded ? 'pending' : 'error', new Date().toISOString(), listingId, user.id]
-            ).catch(() => {});
+            await query
+                .run('UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?', [
+                    publishSucceeded ? 'pending' : 'error',
+                    new Date().toISOString(),
+                    listingId,
+                    user.id,
+                ])
+                .catch(() => {});
             logger.error('[Listings] Facebook publish error', user?.id, { detail: error.message });
             return { status: 500, data: { error: { message: error.message, code: 'INTERNAL_ERROR' } } };
         }
@@ -1704,33 +2190,46 @@ export async function listingsRouter(ctx) {
 
         let publishSucceeded = false;
         try {
-            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
+            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [
+                listingId,
+                user.id,
+            ]);
             if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
 
-            const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
-            if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
+            const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [
+                listing.inventory_id,
+                user.id,
+            ]);
+            if (!inventory)
+                return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
-            await query.run(
-                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                ['pending', new Date().toISOString(), listingId, user.id]
-            );
+            await query.run('UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?', [
+                'pending',
+                new Date().toISOString(),
+                listingId,
+                user.id,
+            ]);
             const result = await publishListingToWhatnot(null, listing, inventory);
             publishSucceeded = true;
 
             await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id]
+                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id],
             );
 
             return {
                 status: 200,
-                data: { success: true, listingId: result.listingId, listingUrl: result.listingUrl }
+                data: { success: true, listingId: result.listingId, listingUrl: result.listingUrl },
             };
         } catch (error) {
-            await query.run(
-                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                [publishSucceeded ? 'pending' : 'error', new Date().toISOString(), listingId, user.id]
-            ).catch(() => {});
+            await query
+                .run('UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?', [
+                    publishSucceeded ? 'pending' : 'error',
+                    new Date().toISOString(),
+                    listingId,
+                    user.id,
+                ])
+                .catch(() => {});
             logger.error('[Listings] Whatnot publish error', user?.id, { detail: error.message });
             return { status: 500, data: { error: { message: error.message, code: 'INTERNAL_ERROR' } } };
         }
@@ -1742,33 +2241,46 @@ export async function listingsRouter(ctx) {
 
         let publishSucceeded = false;
         try {
-            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
+            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [
+                listingId,
+                user.id,
+            ]);
             if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
 
-            const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
-            if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
+            const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [
+                listing.inventory_id,
+                user.id,
+            ]);
+            if (!inventory)
+                return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
-            await query.run(
-                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                ['pending', new Date().toISOString(), listingId, user.id]
-            );
+            await query.run('UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?', [
+                'pending',
+                new Date().toISOString(),
+                listingId,
+                user.id,
+            ]);
             const result = await publishListingToShopify(null, listing, inventory);
             publishSucceeded = true;
 
             await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id]
+                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id],
             );
 
             return {
                 status: 200,
-                data: { success: true, listingId: result.listingId, listingUrl: result.listingUrl }
+                data: { success: true, listingId: result.listingId, listingUrl: result.listingUrl },
             };
         } catch (error) {
-            await query.run(
-                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
-                [publishSucceeded ? 'pending' : 'error', new Date().toISOString(), listingId, user.id]
-            ).catch(() => {});
+            await query
+                .run('UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?', [
+                    publishSucceeded ? 'pending' : 'error',
+                    new Date().toISOString(),
+                    listingId,
+                    user.id,
+                ])
+                .catch(() => {});
             logger.error('[Listings] Shopify publish error', user?.id, { detail: error.message });
             return { status: 500, data: { error: { message: error.message, code: 'INTERNAL_ERROR' } } };
         }
@@ -1809,13 +2321,13 @@ export async function listingsRouter(ctx) {
                 checked: 0,
                 updated: 0,
                 soldCount: 0,
-                errors: []
+                errors: [],
             };
 
             // Batch-fetch all active shops for this user to avoid N+1 per listing
             const allActiveShops = await query.all(
                 `SELECT * FROM shops WHERE user_id = ? AND status = 'active' ORDER BY created_at DESC`,
-                [user.id]
+                [user.id],
             );
             const shopByPlatform = new Map();
             for (const s of allActiveShops) {
@@ -1828,40 +2340,54 @@ export async function listingsRouter(ctx) {
                     const shop = shopByPlatform.get(listing.platform);
 
                     if (!shop) {
-                        results.errors.push({ listingId: listing.id, error: `No active ${listing.platform} shop connected` });
+                        results.errors.push({
+                            listingId: listing.id,
+                            error: `No active ${listing.platform} shop connected`,
+                        });
                         continue;
                     }
 
                     // Use the platform-specific sync module to get fresh status
                     let platformStatus = null;
                     try {
-                        const { getPlatformListingStatus } = await import(`../services/platformSync/${listing.platform}Sync.js`);
+                        const { getPlatformListingStatus } = await import(
+                            `../services/platformSync/${listing.platform}Sync.js`
+                        );
                         platformStatus = await getPlatformListingStatus(shop, listing.platform_listing_id);
                     } catch (importErr) {
                         // Platform sync module does not expose getPlatformListingStatus yet — skip silently
-                        results.errors.push({ listingId: listing.id, error: `Status fetch not supported for ${listing.platform}` });
+                        results.errors.push({
+                            listingId: listing.id,
+                            error: `Status fetch not supported for ${listing.platform}`,
+                        });
                         continue;
                     }
 
                     if (!platformStatus) {
-                        results.errors.push({ listingId: listing.id, error: `No status returned from ${listing.platform}` });
+                        results.errors.push({
+                            listingId: listing.id,
+                            error: `No status returned from ${listing.platform}`,
+                        });
                         continue;
                     }
 
                     results.checked++;
 
                     // Map platform status to local status
-                    const localStatus = platformStatus.sold ? 'sold'
-                        : platformStatus.ended ? 'ended'
-                        : platformStatus.active ? 'active'
-                        : listing.status;
+                    const localStatus = platformStatus.sold
+                        ? 'sold'
+                        : platformStatus.ended
+                          ? 'ended'
+                          : platformStatus.active
+                            ? 'active'
+                            : listing.status;
 
                     if (localStatus !== listing.status) {
                         const now = new Date().toISOString();
 
                         await query.run(
                             `UPDATE listings SET status = ?, updated_at = ?, sold_at = CASE WHEN ? = 'sold' THEN ? ELSE sold_at END WHERE id = ? AND user_id = ?`,
-                            [localStatus, now, localStatus, now, listing.id, user.id]
+                            [localStatus, now, localStatus, now, listing.id, user.id],
                         );
 
                         results.updated++;
@@ -1870,13 +2396,13 @@ export async function listingsRouter(ctx) {
                         if (localStatus === 'sold' && listing.inventory_id) {
                             await query.run(
                                 `UPDATE inventory SET status = 'sold', updated_at = ? WHERE id = ? AND user_id = ? AND status != 'sold'`,
-                                [now, listing.inventory_id, user.id]
+                                [now, listing.inventory_id, user.id],
                             );
 
                             // Mark all other active listings for the same inventory item as ended
                             await query.run(
                                 `UPDATE listings SET status = 'ended', updated_at = ? WHERE inventory_id = ? AND user_id = ? AND id != ? AND status IN ('active', 'pending')`,
-                                [now, listing.inventory_id, user.id, listing.id]
+                                [now, listing.inventory_id, user.id, listing.id],
                             );
 
                             results.soldCount++;
@@ -1949,13 +2475,18 @@ export async function listingsRouter(ctx) {
             const countResult = await query.get(countSql, countParams);
             const total = Number(countResult?.total) || 0;
 
-            const history = rows.map(row => ({
+            const history = rows.map((row) => ({
                 inventoryId: row.inventory_id,
                 itemTitle: row.item_title,
                 itemSku: row.item_sku,
                 listingCount: Number(row.listing_count),
                 lastListedAt: row.last_listed_at,
-                platformListings: safeJsonParse(typeof row.platform_listings === 'string' ? row.platform_listings : JSON.stringify(row.platform_listings), [])
+                platformListings: safeJsonParse(
+                    typeof row.platform_listings === 'string'
+                        ? row.platform_listings
+                        : JSON.stringify(row.platform_listings),
+                    [],
+                ),
             }));
 
             return {
@@ -1965,8 +2496,8 @@ export async function listingsRouter(ctx) {
                     total,
                     limit: limitNum,
                     offset: offsetNum,
-                    hasMore: offsetNum + rows.length < total
-                }
+                    hasMore: offsetNum + rows.length < total,
+                },
             };
         } catch (error) {
             logger.error('[Listings] Error fetching cross-list history', user?.id, { detail: error.message });
@@ -1975,5 +2506,4 @@ export async function listingsRouter(ctx) {
     }
 
     return { status: 404, data: { error: { message: 'Route not found', code: 'NOT_FOUND' } } };
-
 }

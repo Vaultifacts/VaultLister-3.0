@@ -10,8 +10,8 @@ import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT_DIR = join(__dirname, '..', '..', '..');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
-const UPLOADS_DIR = join(ROOT_DIR, 'public', 'uploads', 'images');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+const ROOT_DIR = join(__dirname, '..', '..', '..'); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+const UPLOADS_DIR = join(ROOT_DIR, 'public', 'uploads', 'images'); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 
 const USE_R2 = process.env.IMAGE_STORAGE === 'r2';
 const R2_BUCKET = process.env.R2_BUCKET_NAME;
@@ -35,8 +35,8 @@ async function getS3() {
 
 // Ensure local directories exist (local mode only)
 if (!USE_R2) {
-    ['original', 'thumbnails', 'edited', 'temp'].forEach(dir => {
-        const path = join(UPLOADS_DIR, dir);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+    ['original', 'thumbnails', 'edited', 'temp'].forEach((dir) => {
+        const path = join(UPLOADS_DIR, dir); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
         if (!existsSync(path)) {
             mkdirSync(path, { recursive: true });
         }
@@ -59,7 +59,7 @@ function getExtensionFromMime(mimeType) {
         'image/jpg': 'jpg',
         'image/png': 'png',
         'image/webp': 'webp',
-        'image/gif': 'gif'
+        'image/gif': 'gif',
     };
     return map[mimeType] || 'jpg';
 }
@@ -85,7 +85,8 @@ export async function validateImage(file) {
 
     // Validate actual file content via magic bytes if buffer is available
     if (file.buffer || file.arrayBuffer) {
-        const buffer = file.buffer || (typeof file.arrayBuffer === 'function' ? Buffer.from(await file.arrayBuffer()) : null);
+        const buffer =
+            file.buffer || (typeof file.arrayBuffer === 'function' ? Buffer.from(await file.arrayBuffer()) : null);
         if (buffer && !validateMagicBytes(buffer)) {
             return { valid: false, reason: 'content', error: 'File content does not match a valid image format.' };
         }
@@ -141,12 +142,21 @@ export function validateBase64Image(base64Data, declaredMimeType, maxBytes = 10 
 function validateMagicBytes(buffer) {
     if (!buffer || buffer.length < 12) return false;
     // JPEG: FF D8 FF
-    if (buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF) return true;
+    if (buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) return true;
     // PNG: 89 50 4E 47
-    if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47) return true;
+    if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4e && buffer[3] === 0x47) return true;
     // WebP: RIFF....WEBP
-    if (buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46 &&
-        buffer[8] === 0x57 && buffer[9] === 0x45 && buffer[10] === 0x42 && buffer[11] === 0x50) return true;
+    if (
+        buffer[0] === 0x52 &&
+        buffer[1] === 0x49 &&
+        buffer[2] === 0x46 &&
+        buffer[3] === 0x46 &&
+        buffer[8] === 0x57 &&
+        buffer[9] === 0x45 &&
+        buffer[10] === 0x42 &&
+        buffer[11] === 0x50
+    )
+        return true;
     return false;
 }
 
@@ -185,22 +195,24 @@ export async function saveImage(fileData, userId, originalFilename, mimeType = '
             const { PutObjectCommand } = await import('@aws-sdk/client-s3');
             const s3 = await getS3();
             const r2Key = `images/${userId}/${storedFilename}`;
-            await s3.send(new PutObjectCommand({
-                Bucket: R2_BUCKET,
-                Key: r2Key,
-                Body: buffer,
-                ContentType: mimeType,
-            }));
+            await s3.send(
+                new PutObjectCommand({
+                    Bucket: R2_BUCKET,
+                    Key: r2Key,
+                    Body: buffer,
+                    ContentType: mimeType,
+                }),
+            );
             filePath = r2Key;
             thumbnailPath = await generateThumbnail(buffer, userId, imageId);
         } else {
             const safeUserId = String(userId).replace(/[^a-zA-Z0-9\-_]/g, '');
-            const userDir = join(UPLOADS_DIR, 'original', safeUserId);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
-            if (!resolve(userDir).startsWith(resolve(UPLOADS_DIR))) throw new Error('Invalid user path');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+            const userDir = join(UPLOADS_DIR, 'original', safeUserId); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+            if (!resolve(userDir).startsWith(resolve(UPLOADS_DIR))) throw new Error('Invalid user path'); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
             if (!existsSync(userDir)) {
                 mkdirSync(userDir, { recursive: true });
             }
-            const localPath = join(userDir, storedFilename);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+            const localPath = join(userDir, storedFilename); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
             await fs.promises.writeFile(localPath, buffer);
             filePath = `/uploads/images/original/${userId}/${storedFilename}`;
             thumbnailPath = await generateThumbnail(localPath, userId, imageId, extension);
@@ -217,7 +229,7 @@ export async function saveImage(fileData, userId, originalFilename, mimeType = '
             width: null,
             height: null,
             aspect_ratio: null,
-            dominant_color: null
+            dominant_color: null,
         };
     } catch (error) {
         logger.error('[ImageStorage] Error saving image', null, { detail: error.message });
@@ -242,17 +254,21 @@ export async function generateThumbnail(pathOrBuffer, userId, imageId, extension
                 .resize(300, null, { fit: 'inside', withoutEnlargement: true })
                 .jpeg({ quality: 80 })
                 .toBuffer();
-            await s3.send(new PutObjectCommand({ Bucket: R2_BUCKET, Key: r2Key, Body: thumbBuffer, ContentType: 'image/jpeg' }));
+            await s3.send(
+                new PutObjectCommand({ Bucket: R2_BUCKET, Key: r2Key, Body: thumbBuffer, ContentType: 'image/jpeg' }),
+            );
         } catch (err) {
             logger.error('[ImageStorage] sharp/R2 thumbnail failed, uploading original', null, { detail: err.message });
-            await s3.send(new PutObjectCommand({ Bucket: R2_BUCKET, Key: r2Key, Body: pathOrBuffer, ContentType: 'image/jpeg' }));
+            await s3.send(
+                new PutObjectCommand({ Bucket: R2_BUCKET, Key: r2Key, Body: pathOrBuffer, ContentType: 'image/jpeg' }),
+            );
         }
         return r2Key;
     }
 
     const safeUserId = String(userId).replace(/[^a-zA-Z0-9\-_]/g, '');
-    const userThumbDir = join(UPLOADS_DIR, 'thumbnails', safeUserId);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
-    if (!resolve(userThumbDir).startsWith(resolve(UPLOADS_DIR))) throw new Error('Invalid user path');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+    const userThumbDir = join(UPLOADS_DIR, 'thumbnails', safeUserId); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+    if (!resolve(userThumbDir).startsWith(resolve(UPLOADS_DIR))) throw new Error('Invalid user path'); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 
     const fileSize = typeof pathOrBuffer === 'string' ? lstatSync(pathOrBuffer).size : pathOrBuffer.length;
     if (fileSize > 20 * 1024 * 1024) {
@@ -263,7 +279,7 @@ export async function generateThumbnail(pathOrBuffer, userId, imageId, extension
     if (!existsSync(userThumbDir)) {
         mkdirSync(userThumbDir, { recursive: true });
     }
-    const thumbnailPath = join(userThumbDir, thumbnailFilename);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+    const thumbnailPath = join(userThumbDir, thumbnailFilename); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
     try {
         const sharp = (await import('sharp')).default;
         await sharp(pathOrBuffer)
@@ -273,7 +289,8 @@ export async function generateThumbnail(pathOrBuffer, userId, imageId, extension
     } catch (err) {
         logger.error('[ImageStorage] sharp resize failed, falling back to copy', null, { detail: err.message });
         try {
-            const originalBuffer = typeof pathOrBuffer === 'string' ? await fs.promises.readFile(pathOrBuffer) : pathOrBuffer;
+            const originalBuffer =
+                typeof pathOrBuffer === 'string' ? await fs.promises.readFile(pathOrBuffer) : pathOrBuffer;
             await fs.promises.writeFile(thumbnailPath, originalBuffer);
         } catch (writeErr) {
             logger.error('[ImageStorage] Fallback thumbnail write failed', null, { detail: writeErr.message });
@@ -287,9 +304,9 @@ export async function generateThumbnail(pathOrBuffer, userId, imageId, extension
  */
 function safeDeleteFile(relativePath) {
     try {
-        const fullPath = join(ROOT_DIR, 'public', relativePath);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
-        const resolvedPath = resolve(fullPath);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
-        const resolvedUploadsDir = resolve(UPLOADS_DIR);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+        const fullPath = join(ROOT_DIR, 'public', relativePath); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+        const resolvedPath = resolve(fullPath); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+        const resolvedUploadsDir = resolve(UPLOADS_DIR); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
         if (!resolvedPath.startsWith(resolvedUploadsDir)) {
             logger.error('[ImageStorage] Path traversal blocked', null, { path: relativePath });
             return;
@@ -312,44 +329,48 @@ function safeDeleteFile(relativePath) {
 export async function streamFromR2(r2Key, mimeType = 'image/jpeg') {
     const { GetObjectCommand } = await import('@aws-sdk/client-s3');
     const s3 = await getS3();
-    const resp = await s3.send(new GetObjectCommand({
-        Bucket: process.env.R2_BUCKET_NAME,
-        Key: r2Key,
-    }));
+    const resp = await s3.send(
+        new GetObjectCommand({
+            Bucket: process.env.R2_BUCKET_NAME,
+            Key: r2Key,
+        }),
+    );
     const chunks = [];
     for await (const chunk of resp.Body) chunks.push(chunk);
-    return { body: Buffer.concat(chunks), contentType: resp.ContentType || mimeType, contentLength: resp.ContentLength };
+    return {
+        body: Buffer.concat(chunks),
+        contentType: resp.ContentType || mimeType,
+        contentLength: resp.ContentLength,
+    };
 }
 
 export async function deleteImage(imageId, userId) {
     try {
-        const image = await query.get(
-            'SELECT * FROM image_bank WHERE id = ? AND user_id = ?',
-            [imageId, userId]
-        );
+        const image = await query.get('SELECT * FROM image_bank WHERE id = ? AND user_id = ?', [imageId, userId]);
 
         if (!image) {
             return { success: false, error: 'Image not found' };
         }
 
-        const editHistory = await query.all(
-            'SELECT edited_path FROM image_edit_history WHERE image_id = ?',
-            [imageId]
-        );
+        const editHistory = await query.all('SELECT edited_path FROM image_edit_history WHERE image_id = ?', [imageId]);
 
         if (USE_R2) {
             const { DeleteObjectCommand } = await import('@aws-sdk/client-s3');
             const s3 = await getS3();
             const keys = [image.file_path];
             if (image.thumbnail_path) keys.push(image.thumbnail_path);
-            editHistory.forEach(edit => { if (edit.edited_path) keys.push(edit.edited_path); });
-            await Promise.all(keys.map(key =>
-                s3.send(new DeleteObjectCommand({ Bucket: R2_BUCKET, Key: key })).catch(() => {})
-            ));
+            editHistory.forEach((edit) => {
+                if (edit.edited_path) keys.push(edit.edited_path);
+            });
+            await Promise.all(
+                keys.map((key) => s3.send(new DeleteObjectCommand({ Bucket: R2_BUCKET, Key: key })).catch(() => {})),
+            );
         } else {
             safeDeleteFile(image.file_path);
             if (image.thumbnail_path) safeDeleteFile(image.thumbnail_path);
-            editHistory.forEach(edit => { safeDeleteFile(edit.edited_path); });
+            editHistory.forEach((edit) => {
+                safeDeleteFile(edit.edited_path);
+            });
         }
 
         await query.run('DELETE FROM image_bank WHERE id = ? AND user_id = ?', [imageId, userId]);
@@ -365,10 +386,7 @@ export async function deleteImage(imageId, userId) {
  * Get public URL for image
  */
 export async function getImageUrl(imageId, userId) {
-    const image = await query.get(
-        'SELECT file_path FROM image_bank WHERE id = ? AND user_id = ?',
-        [imageId, userId]
-    );
+    const image = await query.get('SELECT file_path FROM image_bank WHERE id = ? AND user_id = ?', [imageId, userId]);
 
     if (!image) return null;
 
@@ -384,10 +402,10 @@ export async function getImageUrl(imageId, userId) {
 export async function importFromInventory(inventoryId, userId) {
     try {
         // Get inventory item
-        const item = await query.get(
-            'SELECT images FROM inventory WHERE id = ? AND user_id = ?',
-            [inventoryId, userId]
-        );
+        const item = await query.get('SELECT images FROM inventory WHERE id = ? AND user_id = ?', [
+            inventoryId,
+            userId,
+        ]);
 
         if (!item || !item.images) {
             return { success: false, error: 'Item not found or has no images' };
@@ -420,30 +438,28 @@ export async function importFromInventory(inventoryId, userId) {
             }
 
             // Save to filesystem
-            const savedImage = await saveImage(
-                base64Image,
-                userId,
-                `inventory_${inventoryId}_${i + 1}.jpg`,
-                mimeType
-            );
+            const savedImage = await saveImage(base64Image, userId, `inventory_${inventoryId}_${i + 1}.jpg`, mimeType);
 
             // Save to image_bank table
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO image_bank (
                     id, user_id, folder_id, original_filename, stored_filename,
                     file_path, file_size, mime_type, source_inventory_id
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `, [
-                savedImage.id,
-                userId,
-                null,
-                savedImage.original_filename,
-                savedImage.stored_filename,
-                savedImage.file_path,
-                savedImage.file_size,
-                savedImage.mime_type,
-                inventoryId
-            ]);
+            `,
+                [
+                    savedImage.id,
+                    userId,
+                    null,
+                    savedImage.original_filename,
+                    savedImage.stored_filename,
+                    savedImage.file_path,
+                    savedImage.file_size,
+                    savedImage.mime_type,
+                    inventoryId,
+                ],
+            );
 
             importedImages.push(savedImage.id);
         }
@@ -492,12 +508,14 @@ export async function generateOptimizedVariants(source, userId, imageId) {
         // WebP conversion + EXIF strip
         try {
             const webpBuffer = await sharp(inputBuffer)
-                .rotate()  // auto-rotate based on EXIF orientation, then strip EXIF
-                .withMetadata({})  // strip all metadata
+                .rotate() // auto-rotate based on EXIF orientation, then strip EXIF
+                .withMetadata({}) // strip all metadata
                 .webp({ quality: 82 })
                 .toBuffer();
             const webpKey = `images/${safeUserId}/webp/${imageId}.webp`;
-            await s3.send(new PutObjectCommand({ Bucket: R2_BUCKET, Key: webpKey, Body: webpBuffer, ContentType: 'image/webp' }));
+            await s3.send(
+                new PutObjectCommand({ Bucket: R2_BUCKET, Key: webpKey, Body: webpBuffer, ContentType: 'image/webp' }),
+            );
             variants.webp = webpKey;
         } catch (err) {
             logger.error('[ImageStorage] WebP conversion failed (R2)', null, { detail: err.message });
@@ -512,7 +530,14 @@ export async function generateOptimizedVariants(source, userId, imageId) {
                 .jpeg({ quality: 85 })
                 .toBuffer();
             const mediumKey = `images/${safeUserId}/medium/${imageId}_medium.jpg`;
-            await s3.send(new PutObjectCommand({ Bucket: R2_BUCKET, Key: mediumKey, Body: mediumBuffer, ContentType: 'image/jpeg' }));
+            await s3.send(
+                new PutObjectCommand({
+                    Bucket: R2_BUCKET,
+                    Key: mediumKey,
+                    Body: mediumBuffer,
+                    ContentType: 'image/jpeg',
+                }),
+            );
             variants.medium = mediumKey;
         } catch (err) {
             logger.error('[ImageStorage] Medium variant failed (R2)', null, { detail: err.message });
@@ -520,15 +545,11 @@ export async function generateOptimizedVariants(source, userId, imageId) {
     } else {
         // Strip EXIF from original in place
         try {
-            const strippedBuffer = await sharp(inputBuffer)
-                .rotate()
-                .withMetadata({})
-                .jpeg({ quality: 95 })
-                .toBuffer();
-            const userOriginalDir = join(UPLOADS_DIR, 'original', safeUserId);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
-            if (!resolve(userOriginalDir).startsWith(resolve(UPLOADS_DIR))) throw new Error('Invalid user path');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+            const strippedBuffer = await sharp(inputBuffer).rotate().withMetadata({}).jpeg({ quality: 95 }).toBuffer();
+            const userOriginalDir = join(UPLOADS_DIR, 'original', safeUserId); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+            if (!resolve(userOriginalDir).startsWith(resolve(UPLOADS_DIR))) throw new Error('Invalid user path'); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
             mkdirSync(userOriginalDir, { recursive: true });
-            const originalPath = join(userOriginalDir, `${imageId}.jpg`);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+            const originalPath = join(userOriginalDir, `${imageId}.jpg`); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
             writeFileSync(originalPath, strippedBuffer);
             variants.original = `/uploads/images/original/${safeUserId}/${imageId}.jpg`;
         } catch (err) {
@@ -537,15 +558,11 @@ export async function generateOptimizedVariants(source, userId, imageId) {
 
         // WebP variant
         try {
-            const webpDir = join(UPLOADS_DIR, 'webp', safeUserId);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
-            if (!resolve(webpDir).startsWith(resolve(UPLOADS_DIR))) throw new Error('Invalid user path');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+            const webpDir = join(UPLOADS_DIR, 'webp', safeUserId); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+            if (!resolve(webpDir).startsWith(resolve(UPLOADS_DIR))) throw new Error('Invalid user path'); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
             mkdirSync(webpDir, { recursive: true });
-            const webpPath = join(webpDir, `${imageId}.webp`);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
-            await sharp(inputBuffer)
-                .rotate()
-                .withMetadata({})
-                .webp({ quality: 82 })
-                .toFile(webpPath);
+            const webpPath = join(webpDir, `${imageId}.webp`); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+            await sharp(inputBuffer).rotate().withMetadata({}).webp({ quality: 82 }).toFile(webpPath);
             variants.webp = `/uploads/images/webp/${safeUserId}/${imageId}.webp`;
         } catch (err) {
             logger.error('[ImageStorage] WebP variant failed', null, { detail: err.message });
@@ -553,10 +570,10 @@ export async function generateOptimizedVariants(source, userId, imageId) {
 
         // Medium variant (800px max width)
         try {
-            const mediumDir = join(UPLOADS_DIR, 'medium', safeUserId);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
-            if (!resolve(mediumDir).startsWith(resolve(UPLOADS_DIR))) throw new Error('Invalid user path');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+            const mediumDir = join(UPLOADS_DIR, 'medium', safeUserId); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+            if (!resolve(mediumDir).startsWith(resolve(UPLOADS_DIR))) throw new Error('Invalid user path'); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
             mkdirSync(mediumDir, { recursive: true });
-            const mediumPath = join(mediumDir, `${imageId}_medium.jpg`);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+            const mediumPath = join(mediumDir, `${imageId}_medium.jpg`); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
             await sharp(inputBuffer)
                 .rotate()
                 .withMetadata({})
@@ -579,5 +596,5 @@ export default {
     generateOptimizedVariants,
     deleteImage,
     getImageUrl,
-    importFromInventory
+    importFromInventory,
 };

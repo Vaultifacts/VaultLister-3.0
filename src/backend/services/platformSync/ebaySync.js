@@ -26,7 +26,7 @@ export async function syncEbayShop(shop) {
         listings: { synced: 0, created: 0, updated: 0, errors: [] },
         orders: { synced: 0, created: 0, errors: [] },
         startedAt: new Date().toISOString(),
-        completedAt: null
+        completedAt: null,
     };
 
     try {
@@ -45,38 +45,41 @@ export async function syncEbayShop(shop) {
 
         // Update shop's last sync time (handle missing columns gracefully)
         try {
-            await query.run(`
+            await query.run(
+                `
                 UPDATE shops SET
                     last_sync_at = ?,
                     sync_error = NULL,
                     updated_at = ?
                 WHERE id = ?
-            `, [results.completedAt, results.completedAt, shop.id]);
+            `,
+                [results.completedAt, results.completedAt, shop.id],
+            );
         } catch (err) {
             if (err.message.includes('no such column')) {
-                await query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`,
-                    [results.completedAt, shop.id]);
+                await query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`, [results.completedAt, shop.id]);
             }
         }
 
         return results;
-
     } catch (error) {
         results.error = error.message;
         results.completedAt = new Date().toISOString();
 
         // Record sync error (handle missing columns gracefully)
         try {
-            await query.run(`
+            await query.run(
+                `
                 UPDATE shops SET
                     sync_error = ?,
                     updated_at = ?
                 WHERE id = ?
-            `, [error.message, new Date().toISOString(), shop.id]);
+            `,
+                [error.message, new Date().toISOString(), shop.id],
+            );
         } catch (err) {
             if (err.message.includes('no such column')) {
-                await query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`,
-                    [new Date().toISOString(), shop.id]);
+                await query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`, [new Date().toISOString(), shop.id]);
             }
         }
 
@@ -99,9 +102,9 @@ async function syncEbayListings(shop, accessToken, mode) {
             const expectedListings = await query.all(
                 `SELECT platform_listing_id AS id, created_at AS createdAt, status
                  FROM listings WHERE user_id = ? AND platform = 'ebay' AND status IN ('active','pending')`,
-                [shop.user_id]
+                [shop.user_id],
             );
-            const observedIds = new Set(listings.map(l => String(l.sku || l.listingId)));
+            const observedIds = new Set(listings.map((l) => String(l.sku || l.listingId)));
             await checkListingInvisibility('ebay', expectedListings, observedIds);
         }
 
@@ -113,14 +116,18 @@ async function syncEbayListings(shop, accessToken, mode) {
                 const mapped = mapEbayListingToVaultLister(ebayListing, shop);
 
                 // Check if listing already exists
-                const existing = await query.get(`
+                const existing = await query.get(
+                    `
                     SELECT id FROM listings
                     WHERE user_id = ? AND platform = 'ebay' AND platform_listing_id = ?
-                `, [shop.user_id, ebayListing.sku || ebayListing.listingId]);
+                `,
+                    [shop.user_id, ebayListing.sku || ebayListing.listingId],
+                );
 
                 if (existing) {
                     // Update existing listing
-                    await query.run(`
+                    await query.run(
+                        `
                         UPDATE listings SET
                             title = ?,
                             price = ?,
@@ -128,36 +135,41 @@ async function syncEbayListings(shop, accessToken, mode) {
                             platform_specific_data = ?,
                             updated_at = ?
                         WHERE id = ?
-                    `, [
-                        mapped.title,
-                        mapped.price,
-                        mapped.status,
-                        JSON.stringify(mapped.externalData),
-                        new Date().toISOString(),
-                        existing.id
-                    ]);
+                    `,
+                        [
+                            mapped.title,
+                            mapped.price,
+                            mapped.status,
+                            JSON.stringify(mapped.externalData),
+                            new Date().toISOString(),
+                            existing.id,
+                        ],
+                    );
                     result.updated++;
                 } else {
                     // Create new listing
                     const listingId = uuidv4();
-                    await query.run(`
+                    await query.run(
+                        `
                         INSERT INTO listings (
                             id, user_id, inventory_id, platform, title, price,
                             status, platform_listing_id, platform_specific_data,
                             created_at, updated_at
                         ) VALUES (?, ?, ?, 'ebay', ?, ?, ?, ?, ?, ?, ?)
-                    `, [
-                        listingId,
-                        shop.user_id,
-                        null, // No linked inventory item yet
-                        mapped.title,
-                        mapped.price,
-                        mapped.status,
-                        mapped.externalListingId,
-                        JSON.stringify(mapped.externalData),
-                        new Date().toISOString(),
-                        new Date().toISOString()
-                    ]);
+                    `,
+                        [
+                            listingId,
+                            shop.user_id,
+                            null, // No linked inventory item yet
+                            mapped.title,
+                            mapped.price,
+                            mapped.status,
+                            mapped.externalListingId,
+                            JSON.stringify(mapped.externalData),
+                            new Date().toISOString(),
+                            new Date().toISOString(),
+                        ],
+                    );
                     result.created++;
                 }
 
@@ -165,13 +177,12 @@ async function syncEbayListings(shop, accessToken, mode) {
             } catch (error) {
                 result.errors.push({
                     listingId: ebayListing.sku || ebayListing.listingId,
-                    error: error.message
+                    error: error.message,
                 });
             }
         }
 
         return result;
-
     } catch (error) {
         result.errors.push({ error: error.message });
         throw error;
@@ -192,36 +203,42 @@ async function syncEbayOrders(shop, accessToken, mode) {
                 const mapped = mapEbayOrderToSale(ebayOrder, shop);
 
                 // Check if sale already exists
-                const existing = await query.get(`
+                const existing = await query.get(
+                    `
                     SELECT id FROM sales
                     WHERE user_id = ? AND platform_order_id = ? AND platform = 'ebay'
-                `, [shop.user_id, ebayOrder.orderId]);
+                `,
+                    [shop.user_id, ebayOrder.orderId],
+                );
 
                 if (!existing) {
                     // Create new sale
                     const saleId = uuidv4();
-                    await query.run(`
+                    await query.run(
+                        `
                         INSERT INTO sales (
                             id, user_id, listing_id, platform, platform_order_id, buyer_username,
                             sale_price, platform_fee, shipping_cost, net_profit,
                             status, notes,
                             created_at, updated_at
                         ) VALUES (?, ?, ?, 'ebay', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    `, [
-                        saleId,
-                        shop.user_id,
-                        null, // Try to link listing later
-                        mapped.externalOrderId,
-                        mapped.buyerUsername,
-                        mapped.salePrice,
-                        mapped.platformFees,
-                        mapped.shippingCost,
-                        mapped.netProfit,
-                        mapped.status,
-                        mapped.externalData ? JSON.stringify(mapped.externalData) : null,
-                        new Date().toISOString(),
-                        new Date().toISOString()
-                    ]);
+                    `,
+                        [
+                            saleId,
+                            shop.user_id,
+                            null, // Try to link listing later
+                            mapped.externalOrderId,
+                            mapped.buyerUsername,
+                            mapped.salePrice,
+                            mapped.platformFees,
+                            mapped.shippingCost,
+                            mapped.netProfit,
+                            mapped.status,
+                            mapped.externalData ? JSON.stringify(mapped.externalData) : null,
+                            new Date().toISOString(),
+                            new Date().toISOString(),
+                        ],
+                    );
                     result.created++;
                 }
 
@@ -229,13 +246,12 @@ async function syncEbayOrders(shop, accessToken, mode) {
             } catch (error) {
                 result.errors.push({
                     orderId: ebayOrder.orderId,
-                    error: error.message
+                    error: error.message,
                 });
             }
         }
 
         return result;
-
     } catch (error) {
         result.errors.push({ error: error.message });
         throw error;
@@ -253,16 +269,14 @@ async function fetchEbayListings(accessToken, mode) {
 
     // Real eBay API call
     const ebayEnvironment = process.env.EBAY_ENVIRONMENT || 'production';
-    const apiBase = ebayEnvironment === 'production'
-        ? 'https://api.ebay.com'
-        : 'https://api.sandbox.ebay.com';
+    const apiBase = ebayEnvironment === 'production' ? 'https://api.ebay.com' : 'https://api.sandbox.ebay.com';
 
     const response = await _fetchWithLatency(`${apiBase}/sell/inventory/v1/inventory_item?limit=100`, {
         headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        }
+            Authorization: `Bearer ${accessToken}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+        },
     });
 
     if (!response.ok) {
@@ -285,9 +299,7 @@ async function fetchEbayOrders(accessToken, mode) {
 
     // Real eBay API call
     const ebayEnvironment = process.env.EBAY_ENVIRONMENT || 'production';
-    const apiBase = ebayEnvironment === 'production'
-        ? 'https://api.ebay.com'
-        : 'https://api.sandbox.ebay.com';
+    const apiBase = ebayEnvironment === 'production' ? 'https://api.ebay.com' : 'https://api.sandbox.ebay.com';
 
     // Get orders from last 90 days
     const startDate = new Date();
@@ -297,11 +309,11 @@ async function fetchEbayOrders(accessToken, mode) {
         `${apiBase}/sell/fulfillment/v1/order?filter=creationdate:[${startDate.toISOString()}]&limit=50`,
         {
             headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        }
+                Authorization: `Bearer ${accessToken}`,
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+        },
     );
 
     if (!response.ok) {
@@ -320,8 +332,7 @@ function mapEbayListingToVaultLister(ebayListing, shop) {
     return {
         title: ebayListing.title || ebayListing.product?.title || 'Untitled',
         price: parseFloat(ebayListing.price?.value || ebayListing.offers?.[0]?.price?.value || 0),
-        quantity: ebayListing.availability?.shipToLocationAvailability?.quantity ||
-                  ebayListing.quantity || 1,
+        quantity: ebayListing.availability?.shipToLocationAvailability?.quantity || ebayListing.quantity || 1,
         status: mapEbayStatus(ebayListing.status || ebayListing.availability?.status),
         externalListingId: ebayListing.sku || ebayListing.listingId,
         externalData: {
@@ -331,8 +342,8 @@ function mapEbayListingToVaultLister(ebayListing, shop) {
             condition: ebayListing.condition,
             category: ebayListing.product?.category,
             images: ebayListing.product?.imageUrls || [],
-            syncedAt: new Date().toISOString()
-        }
+            syncedAt: new Date().toISOString(),
+        },
     };
 }
 
@@ -344,7 +355,7 @@ function mapEbayOrderToSale(ebayOrder, shop) {
     const shipping = parseFloat(ebayOrder.pricingSummary?.deliveryCost?.value || 0);
 
     // Estimate eBay fees (approximately 12.9% + $0.30)
-    const estimatedFees = total * 0.129 + 0.30;
+    const estimatedFees = total * 0.129 + 0.3;
 
     return {
         buyerUsername: ebayOrder.buyer?.username || 'Unknown',
@@ -361,8 +372,8 @@ function mapEbayOrderToSale(ebayOrder, shop) {
             lineItems: ebayOrder.lineItems,
             paymentStatus: ebayOrder.orderPaymentStatus,
             fulfillmentStatus: ebayOrder.orderFulfillmentStatus,
-            syncedAt: new Date().toISOString()
-        }
+            syncedAt: new Date().toISOString(),
+        },
     };
 }
 
@@ -371,11 +382,11 @@ function mapEbayOrderToSale(ebayOrder, shop) {
  */
 function mapEbayStatus(ebayStatus) {
     const statusMap = {
-        'ACTIVE': 'active',
-        'INACTIVE': 'ended',
-        'OUT_OF_STOCK': 'ended',
-        'ENDED': 'ended',
-        'SOLD': 'sold'
+        ACTIVE: 'active',
+        INACTIVE: 'ended',
+        OUT_OF_STOCK: 'ended',
+        ENDED: 'ended',
+        SOLD: 'sold',
     };
     return statusMap[ebayStatus] || 'draft';
 }
@@ -385,10 +396,10 @@ function mapEbayStatus(ebayStatus) {
  */
 function mapEbayOrderStatus(ebayStatus) {
     const statusMap = {
-        'NOT_STARTED': 'pending',
-        'IN_PROGRESS': 'pending',
-        'FULFILLED': 'delivered',
-        'CANCELLED': 'cancelled'
+        NOT_STARTED: 'pending',
+        IN_PROGRESS: 'pending',
+        FULFILLED: 'delivered',
+        CANCELLED: 'cancelled',
     };
     return statusMap[ebayStatus] || 'pending';
 }
@@ -422,5 +433,5 @@ export default {
     syncEbayShop,
     syncEbayListings,
     syncEbayOrders,
-    healthCheck
+    healthCheck,
 };

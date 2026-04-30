@@ -31,11 +31,13 @@ export function initRedis() {
     try {
         // Diagnostic: log what IPs redis.railway.internal resolves to
         const redisHost = new URL(REDIS_URL).hostname;
-        lookup(redisHost, { all: true }).then(results => {
-            logger.info('[Redis] DNS resolved ' + redisHost + ':', JSON.stringify(results));
-        }).catch(err => {
-            logger.warn('[Redis] DNS lookup failed for ' + redisHost + ':', err.message);
-        });
+        lookup(redisHost, { all: true })
+            .then((results) => {
+                logger.info('[Redis] DNS resolved ' + redisHost + ':', JSON.stringify(results));
+            })
+            .catch((err) => {
+                logger.warn('[Redis] DNS lookup failed for ' + redisHost + ':', err.message);
+            });
 
         redisClient = new Redis(REDIS_URL, {
             maxRetriesPerRequest: 3,
@@ -70,7 +72,10 @@ export function initRedis() {
         });
 
         redisClient.on('close', () => {
-            if (_heartbeatTimer) { clearInterval(_heartbeatTimer); _heartbeatTimer = null; }
+            if (_heartbeatTimer) {
+                clearInterval(_heartbeatTimer);
+                _heartbeatTimer = null;
+            }
             isConnected = false;
             logger.info('[Redis] Connection closed');
         });
@@ -255,7 +260,11 @@ export async function exists(key) {
 export async function getJson(key) {
     const raw = await get(key);
     if (!raw) return null;
-    try { return JSON.parse(raw); } catch { return null; }
+    try {
+        return JSON.parse(raw);
+    } catch {
+        return null;
+    }
 }
 
 export async function setJson(key, value, ttlSeconds = 3600) {
@@ -292,13 +301,20 @@ export function getClient() {
  */
 export async function closeRedis() {
     if (redisClient) {
-        if (_heartbeatTimer) { clearInterval(_heartbeatTimer); _heartbeatTimer = null; }
+        if (_heartbeatTimer) {
+            clearInterval(_heartbeatTimer);
+            _heartbeatTimer = null;
+        }
         try {
             redisClient.removeAllListeners();
             await redisClient.quit();
         } catch (err) {
             // Force disconnect if graceful quit fails
-            try { redisClient.disconnect(); } catch (_) { /* ignore */ }
+            try {
+                redisClient.disconnect();
+            } catch (_) {
+                /* ignore */
+            }
         } finally {
             redisClient = null;
             isConnected = false;
@@ -322,5 +338,5 @@ export default {
     close: closeRedis,
     getJson,
     setJson,
-    flushAll
+    flushAll,
 };

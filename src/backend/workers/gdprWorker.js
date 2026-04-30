@@ -21,7 +21,7 @@ async function writeHeartbeat() {
     await setRedisValue(
         HEARTBEAT_KEY,
         JSON.stringify({ lastRun: new Date(lastRun).toISOString(), status: 'running' }),
-        HEARTBEAT_TTL_SECONDS
+        HEARTBEAT_TTL_SECONDS,
     );
 }
 
@@ -30,14 +30,17 @@ async function processAccountDeletions() {
     const now = new Date().toISOString();
 
     // Find accounts scheduled for deletion that have passed the grace period
-    const pendingDeletions = await query.all(`
+    const pendingDeletions = await query.all(
+        `
         SELECT adr.*, u.email, u.full_name, u.username
         FROM account_deletion_requests adr
         JOIN users u ON adr.user_id = u.id
         WHERE adr.status = 'pending'
         AND adr.scheduled_for <= ?
         LIMIT 10
-    `, [now]);
+    `,
+        [now],
+    );
 
     if (!pendingDeletions || pendingDeletions.length === 0) {
         return;
@@ -53,11 +56,14 @@ async function processAccountDeletions() {
             logger.error(`[GDPR Worker] Error deleting account ${deletion.user_id}:`, error.message);
 
             // Mark as failed
-            await query.run(`
+            await query.run(
+                `
                 UPDATE account_deletion_requests
                 SET status = 'failed', error = ?, updated_at = NOW()
                 WHERE id = ?
-            `, [error.message, deletion.id]);
+            `,
+                [error.message, deletion.id],
+            );
         }
     }
 }
@@ -92,10 +98,9 @@ async function executeAccountDeletion(deletion) {
 
     // Revoke OAuth tokens at each platform before deleting (REM-13)
     try {
-        const oauthAccounts = await query.all(
-            'SELECT platform, access_token FROM oauth_accounts WHERE user_id = ?',
-            [userId]
-        );
+        const oauthAccounts = await query.all('SELECT platform, access_token FROM oauth_accounts WHERE user_id = ?', [
+            userId,
+        ]);
         for (const acct of oauthAccounts || []) {
             try {
                 const config = getOAuthConfig(acct.platform);
@@ -111,16 +116,21 @@ async function executeAccountDeletion(deletion) {
     }
 
     // Anonymize sales data (keep for financial records)
-    await query.run(`
+    await query.run(
+        `
         UPDATE sales SET
             buyer_username = 'DELETED',
             buyer_address = NULL,
             notes = NULL
         WHERE user_id = ?
-    `, [userId]);
+    `,
+        [userId],
+    );
 
     const VALID_ID = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
-    function validateIdentifier(name) { if (!VALID_ID.test(name)) throw new Error(`Invalid SQL identifier: ${name}`); }
+    function validateIdentifier(name) {
+        if (!VALID_ID.test(name)) throw new Error(`Invalid SQL identifier: ${name}`);
+    }
 
     // Delete user data from all tables
     for (const { table, idColumn } of USER_DATA_TABLES) {
@@ -137,11 +147,14 @@ async function executeAccountDeletion(deletion) {
     await query.run('DELETE FROM users WHERE id = ?', [userId]);
 
     // Mark deletion request as completed
-    await query.run(`
+    await query.run(
+        `
         UPDATE account_deletion_requests
         SET status = 'completed', completed_at = NOW()
         WHERE id = ?
-    `, [deletion.id]);
+    `,
+        [deletion.id],
+    );
 
     // Send confirmation email (to the email we still have in the deletion record)
     try {
@@ -150,8 +163,8 @@ async function executeAccountDeletion(deletion) {
             subject: 'Your VaultLister Account Has Been Deleted',
             template: 'account-deleted',
             data: {
-                name: full_name || username || 'User'
-            }
+                name: full_name || username || 'User',
+            },
         });
     } catch (e) {
         // Email send failure shouldn't stop the process
@@ -160,13 +173,13 @@ async function executeAccountDeletion(deletion) {
 
     // Log to audit
     try {
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO audit_logs (id, user_id, action, category, severity, details, created_at)
             VALUES (?, NULL, 'account_deleted', 'security', 'info', ?, NOW())
-        `, [
-            crypto.randomUUID(),
-            JSON.stringify({ deletedUserId: userId, reason: deletion.reason })
-        ]);
+        `,
+            [crypto.randomUUID(), JSON.stringify({ deletedUserId: userId, reason: deletion.reason })],
+        );
     } catch (e) {
         // Audit log failure shouldn't stop the process
     }
@@ -178,7 +191,8 @@ async function sendDeletionReminders() {
     const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString();
 
     // Find accounts that will be deleted in the next 3 days
-    const upcomingDeletions = await query.all(`
+    const upcomingDeletions = await query.all(
+        `
         SELECT adr.*, u.email, u.full_name, u.username
         FROM account_deletion_requests adr
         JOIN users u ON adr.user_id = u.id
@@ -186,7 +200,9 @@ async function sendDeletionReminders() {
         AND adr.scheduled_for <= ?
         AND adr.scheduled_for > ?
         AND (adr.reminder_sent IS NULL OR adr.reminder_sent = 0)
-    `, [threeDaysFromNow, now.toISOString()]);
+    `,
+        [threeDaysFromNow, now.toISOString()],
+    );
 
     for (const deletion of upcomingDeletions || []) {
         try {
@@ -197,17 +213,19 @@ async function sendDeletionReminders() {
                 data: {
                     name: deletion.full_name || deletion.username,
                     deletionDate: new Date(deletion.scheduled_for).toLocaleDateString(),
-                    cancelUrl: '/settings?action=cancel-deletion'
-                }
+                    cancelUrl: '/settings?action=cancel-deletion',
+                },
             });
 
             // Mark reminder as sent
-            await query.run(`
+            await query.run(
+                `
                 UPDATE account_deletion_requests
                 SET reminder_sent = 1, updated_at = NOW()
                 WHERE id = ?
-            `, [deletion.id]);
-
+            `,
+                [deletion.id],
+            );
         } catch (e) {
             logger.error('[GDPR Worker] Failed to send deletion reminder:', e.message);
         }
@@ -218,20 +236,19 @@ async function sendDeletionReminders() {
 async function cleanupExportRequests() {
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
-    await query.run(`
+    await query.run(
+        `
         UPDATE data_export_requests
         SET export_data = NULL, status = 'expired'
         WHERE status = 'completed'
         AND completed_at < ?
-    `, [sevenDaysAgo]);
+    `,
+        [sevenDaysAgo],
+    );
 }
 
 async function runGDPRCycle() {
-    const lock = await acquireRedisLock(
-        GDPR_WORKER_LOCK_KEY,
-        GDPR_WORKER_LOCK_TTL_MS,
-        { name: 'GDPR worker' }
-    );
+    const lock = await acquireRedisLock(GDPR_WORKER_LOCK_KEY, GDPR_WORKER_LOCK_TTL_MS, { name: 'GDPR worker' });
 
     if (!lock.acquired) {
         return;
@@ -240,9 +257,15 @@ async function runGDPRCycle() {
     lastRun = Date.now();
 
     try {
-        await processAccountDeletions().catch(e => logger.error('[GDPRWorker] processAccountDeletions failed', null, { detail: e.message }));
-        await sendDeletionReminders().catch(e => logger.error('[GDPRWorker] sendDeletionReminders failed', null, { detail: e.message }));
-        await cleanupExportRequests().catch(e => logger.error('[GDPRWorker] cleanupExportRequests failed', null, { detail: e.message }));
+        await processAccountDeletions().catch((e) =>
+            logger.error('[GDPRWorker] processAccountDeletions failed', null, { detail: e.message }),
+        );
+        await sendDeletionReminders().catch((e) =>
+            logger.error('[GDPRWorker] sendDeletionReminders failed', null, { detail: e.message }),
+        );
+        await cleanupExportRequests().catch((e) =>
+            logger.error('[GDPRWorker] cleanupExportRequests failed', null, { detail: e.message }),
+        );
 
         try {
             await writeHeartbeat();
@@ -259,12 +282,17 @@ export function startGDPRWorker() {
     logger.info('[GDPR Worker] Starting...');
 
     // Run immediately on start
-    runGDPRCycle().catch(e => logger.error('[GDPRWorker] initial cycle failed', null, { detail: e.message }));
+    runGDPRCycle().catch((e) => logger.error('[GDPRWorker] initial cycle failed', null, { detail: e.message }));
 
     // Run every hour
-    intervalId = setInterval(async () => {
-        await runGDPRCycle().catch(e => logger.error('[GDPRWorker] scheduled cycle failed', null, { detail: e.message }));
-    }, 60 * 60 * 1000); // 1 hour
+    intervalId = setInterval(
+        async () => {
+            await runGDPRCycle().catch((e) =>
+                logger.error('[GDPRWorker] scheduled cycle failed', null, { detail: e.message }),
+            );
+        },
+        60 * 60 * 1000,
+    ); // 1 hour
 
     logger.info('[GDPR Worker] Started - running every hour');
 }
@@ -282,7 +310,7 @@ export function getGDPRWorkerStatus() {
     return {
         running: intervalId !== null,
         intervalMs: 60 * 60 * 1000,
-        lastRun: lastRun ? new Date(lastRun).toISOString() : null
+        lastRun: lastRun ? new Date(lastRun).toISOString() : null,
     };
 }
 
