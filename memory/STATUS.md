@@ -1,4 +1,20 @@
 # VaultLister 3.0 — Session Status
+**Updated:** 2026-04-30 MST (nav language/currency dropdown cleanup across all 54 public HTML files)
+
+## Completed This Session (2026-04-30)
+
+### Nav language + currency dropdown cleanup — all 54 public HTML files
+
+- **Removed duplicate English variants**: Removed `en-CA` and `en-US` buttons; single `data-lang="en"` → `English` remains
+- **Removed "Coming Soon" from language dropdown**: English button now appears first; no Coming Soon label
+- **Removed "Coming Soon" from currency dropdown**: Clean list — $ CAD, $ USD, £ GBP, € EUR, $ AUD
+- **Renamed native language names to English**: Español→Spanish, Français→French, Deutsch→German, Italiano→Italian, Português→Portuguese, 日本語→Japanese, 中文→Chinese, 한국어→Korean, العربية→Arabic
+- **SPA settings page**: EN/FR option labels updated to "English" / "Français" in `pages-settings-account.js`; `en-GB` removed from `src/frontend/i18n/index.js`; `core-bundle.js` and `dist/chunk-settings.js` rebuilt
+
+**Verification:** `python -c "..."` audit across all 54 files — `Issues found: 0` (0 Coming Soon in dropdowns, 0 native scripts, 0 en-ca/en-gb/en-us lang buttons, 0 old English labels) ✅
+
+---
+
 **Updated:** 2026-04-26 MST (synced from codex/e2e-session-guardrails — all security fixes + CI improvement + docs cleanup now on master)
 
 ## Pre-Launch Branch: `codex/e2e-session-guardrails` (DO NOT MERGE until launch-ready)
