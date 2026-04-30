@@ -1,7 +1,7 @@
 // VaultLister Service Worker v5.6
 // Pre-caching, fetch strategies, offline fallback, auth via MessageChannel
 
-const CACHE_VERSION = 'v5.22';
+const CACHE_VERSION = 'v5.23';
 const STATIC_CACHE = `vaultlister-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `vaultlister-runtime-${CACHE_VERSION}`;
 
