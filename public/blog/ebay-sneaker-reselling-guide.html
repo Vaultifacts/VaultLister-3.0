@@ -165,7 +165,7 @@ main { flex: 1; }
     <div class="nav-links">
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-features" aria-haspopup="menu" aria-expanded="false">Features &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-features" role="menu" aria-hidden="true">
+            <div class="nav-dropdown-menu" id="dropdown-features" role="menu" inert>
                 <a href="/#cross-listing" role="menuitem">Cross-Listing</a>
                 <a href="/#inventory-management" role="menuitem">Inventory Management</a>
                 <a href="/#sale-purchase-sync" role="menuitem">Sale &amp; Purchase Sync</a>
@@ -183,7 +183,7 @@ main { flex: 1; }
         <a class="nav-link" href="/pricing.html">Pricing</a>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="menu" aria-expanded="false">Resources &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-resources" role="menu" aria-hidden="true">
+            <div class="nav-dropdown-menu" id="dropdown-resources" role="menu" inert>
                 <a href="/learning.html" role="menuitem">Learning</a>
                 <a href="/documentation.html" role="menuitem">Documentation</a>
                 <a href="/blog/index.html" role="menuitem">Blog</a>
@@ -192,7 +192,7 @@ main { flex: 1; }
         </div>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-feedback" aria-haspopup="menu" aria-expanded="false">Feedback &amp; Support &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-feedback" role="menu" aria-hidden="true">
+            <div class="nav-dropdown-menu" id="dropdown-feedback" role="menu" inert>
                 <a href="/help.html" role="menuitem">Help Center</a>
                 <a href="/faq.html" role="menuitem">FAQs</a>
                 <a href="/request-feature.html" role="menuitem">Request a Feature</a>
@@ -202,7 +202,7 @@ main { flex: 1; }
         </div>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-product-updates" aria-haspopup="menu" aria-expanded="false">Status &amp; Updates &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu" aria-hidden="true">
+            <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu" inert>
                 <a href="/changelog.html" role="menuitem">Changelog</a>
                 <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
                 <a href="/status.html" role="menuitem">Status Page</a>
@@ -428,22 +428,22 @@ main { flex: 1; }
             var menu = document.getElementById(targetId);
             if (!menu) return;
             var isOpen = menu.classList.contains('open');
-            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
+            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('inert', ''); });
             document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
             if (!isOpen) {
                 menu.classList.add('open');
-                menu.setAttribute('aria-hidden', 'false');
+                menu.removeAttribute('inert');
                 btn.setAttribute('aria-expanded', 'true');
             }
         });
     });
     document.addEventListener('click', function() {
-        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
+        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('inert', ''); });
         document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
     });
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
+            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('inert', ''); });
             document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
         }
     });
