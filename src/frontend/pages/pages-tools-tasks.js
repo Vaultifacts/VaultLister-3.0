@@ -144,7 +144,7 @@ Object.assign(pages, {
                         <button aria-haspopup="menu" class="btn btn-secondary">
                             ${components.icon('download', 16)} Export
                         </button>
-                        <div class="dropdown-menu" style="min-width: 160px; right: 0;">
+                        <div class="dropdown-menu" style="min-width: 160px; right: 0;" aria-hidden="true">
                             <button class="dropdown-item" onclick="handlers.exportChecklist('markdown')">
                                 ${components.icon('file-text', 14)} Markdown (.md)
                             </button>
@@ -177,7 +177,7 @@ Object.assign(pages, {
                         <button class="btn btn-sm btn-secondary" aria-haspopup="menu">
                             ${components.icon(viewMode === 'kanban' ? 'columns' : 'list', 14)} ${viewMode === 'kanban' ? 'Kanban View' : 'List View'} ${components.icon('chevron-down', 12)}
                         </button>
-                        <div class="dropdown-menu" style="min-width: 160px;">
+                        <div class="dropdown-menu" style="min-width: 160px;" aria-hidden="true">
                             <button class="dropdown-item ${viewMode === 'list' ? 'active' : ''}" onclick="handlers.setChecklistView('list')">
                                 ${components.icon('list', 14)} List View
                             </button>

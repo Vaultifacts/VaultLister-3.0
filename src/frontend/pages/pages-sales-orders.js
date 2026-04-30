@@ -667,7 +667,7 @@ Object.assign(pages, {
                                 ${components.icon('plus', 16)} Add Purchases Manually
                                 ${components.icon('chevron-down', 14)}
                             </button>
-                            <div class="dropdown-menu" style="min-width:220px; right:0; z-index:200;">
+                            <div class="dropdown-menu" style="min-width:220px; right:0; z-index:200;" aria-hidden="true">
                                 <button class="dropdown-item" onclick="event.stopPropagation(); handlers.showAddPurchase(); this.closest('.dropdown').classList.remove('open');" style="display:flex; align-items:center; gap:8px;">
                                     ${components.icon('edit', 14)} Add Manually
                                 </button>
@@ -774,7 +774,7 @@ Object.assign(pages, {
                                     ${components.icon('plus', 16)} Add Purchases Manually
                                     ${components.icon('chevron-down', 14)}
                                 </button>
-                                <div class="dropdown-menu" style="min-width:220px; right:0; z-index:200;">
+                                <div class="dropdown-menu" style="min-width:220px; right:0; z-index:200;" aria-hidden="true">
                                     <button class="dropdown-item" onclick="event.stopPropagation(); handlers.showAddPurchase(); this.closest('.dropdown').classList.remove('open');" style="display:flex; align-items:center; gap:8px;">
                                         ${components.icon('edit', 14)} Add Manually
                                     </button>
@@ -1436,7 +1436,7 @@ Object.assign(pages, {
                         <button aria-haspopup="menu" class="btn btn-secondary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                             ${components.icon('download', 16)} Export
                         </button>
-                        <div class="dropdown-menu">
+                        <div class="dropdown-menu" aria-hidden="true">
                             <button class="dropdown-item" onclick="handlers.exportFinancials('csv')">CSV</button>
                             <button class="dropdown-item" onclick="handlers.exportFinancials('pdf')">PDF Report</button>
                             <button class="dropdown-item" onclick="handlers.exportFinancials('xlsx')">Excel</button>
@@ -1826,7 +1826,7 @@ Object.assign(pages, {
                                 ${components.icon('list', 14)} More
                                 ${components.icon('chevron-down', 12)}
                             </button>
-                            <div class="dropdown-menu" style="min-width: 180px; right: 0;">
+                            <div class="dropdown-menu" style="min-width: 180px; right: 0;" aria-hidden="true">
                                 <button class="dropdown-item" onclick="handlers.showImportOrdersModal()">
                                     ${components.icon('download', 16)} Import Orders
                                 </button>
@@ -2514,7 +2514,7 @@ Object.assign(pages, {
                         <button class="btn btn-secondary" onclick="this.parentElement.classList.toggle('open')">
                             ${components.icon('download', 16)} Export
                         </button>
-                        <div class="dropdown-menu">
+                        <div class="dropdown-menu" aria-hidden="true">
                             <button class="dropdown-item" onclick="handlers.exportTransactions('csv')">CSV</button>
                             <button class="dropdown-item" onclick="handlers.exportTransactions('pdf')">PDF</button>
                             <button class="dropdown-item" onclick="handlers.exportTransactions('xlsx')">Excel</button>

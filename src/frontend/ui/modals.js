@@ -625,7 +625,7 @@ const modals = {
                         <button type="button" class="btn btn-outline" onclick="event.stopPropagation(); this.parentElement.classList.toggle('open')">
                             Save as Draft ${components.icon('chevron-down', 14)}
                         </button>
-                        <div class="dropdown-menu" style="min-width: 200px; bottom: 100%; top: auto; margin-bottom: 4px;">
+                        <div class="dropdown-menu" style="min-width: 200px; bottom: 100%; top: auto; margin-bottom: 4px;" aria-hidden="true">
                             <button class="dropdown-item" onclick="handlers.saveItemAsDraft(event, 'vaultlister')">
                                 ${components.icon('database', 14)} VaultLister Only
                                 <span class="text-xs text-gray-500 block">Save locally, don't publish</span>

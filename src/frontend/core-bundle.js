@@ -7762,16 +7762,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Keep aria-expanded in sync for dropdown triggers
+    // Keep aria-expanded and aria-hidden in sync for dropdowns
     document.addEventListener('click', (e) => {
         const dropdown = e.target.closest('.dropdown');
         if (dropdown) {
-            const trigger = dropdown.querySelector('[aria-haspopup]');
-            if (trigger) {
-                requestAnimationFrame(() => {
-                    trigger.setAttribute('aria-expanded', dropdown.classList.contains('open'));
-                });
-            }
+            requestAnimationFrame(() => {
+                const isOpen = dropdown.classList.contains('open');
+                const trigger = dropdown.querySelector('[aria-haspopup]');
+                if (trigger) trigger.setAttribute('aria-expanded', isOpen);
+                const menu = dropdown.querySelector('.dropdown-menu');
+                if (menu) menu.setAttribute('aria-hidden', String(!isOpen));
+            });
         }
     });
 });
@@ -15327,7 +15328,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '1737e250';
+    const v = '4b1992bf';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16279,7 +16280,7 @@ const components = {
                             </div>
                             <span class="sidebar-user-chevron">&#9662;</span>
                         </button>
-                        <div class="dropdown-menu">
+                        <div class="dropdown-menu" aria-hidden="true">
                             <button class="dropdown-item" onclick="event.stopPropagation(); document.querySelector('.sidebar-user-menu')?.classList.remove('open'); router.navigate('dashboard')">
                                 ${this.icon('home', 16)} Return to Dashboard
                             </button>
@@ -16325,7 +16326,7 @@ const components = {
                             ${this.icon('bell')}
                             <span id="notification-badge" class="badge" style="${(typeof notificationCenter !== 'undefined' ? notificationCenter.unreadCount : store.state.notifications.length) > 0 ? 'display:flex' : 'display:none'}">${(typeof notificationCenter !== 'undefined' ? notificationCenter.unreadCount : store.state.notifications.length) || ''}</span>
                         </button>
-                        <div class="dropdown-menu" style="min-width: 320px; max-width: 400px; right: 0;">
+                        <div class="dropdown-menu" style="min-width: 320px; max-width: 400px; right: 0;" aria-hidden="true">
                             <div style="padding: 12px 16px; border-bottom: 1px solid var(--gray-200); display: flex; justify-content: space-between; align-items: center;">
                                 <h3 style="margin: 0; font-size: 16px; font-weight: 600;">Notifications</h3>
                                 ${store.state.notifications.length > 0 ? `<span class="text-xs text-gray-500">${store.state.notifications.length} new</span>` : ''}
@@ -16350,7 +16351,7 @@ const components = {
                     </div>
                     <div class="user-menu dropdown" aria-haspopup="listbox" aria-expanded="false" aria-label="User menu" onclick="const _open=this.classList.toggle('open'); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();const _open=this.classList.toggle('open');this.setAttribute('aria-expanded',_open);}">
                         <div class="user-avatar" aria-hidden="true">${store.state.user?.username?.[0]?.toUpperCase() || 'U'}</div>
-                        <div class="dropdown-menu">
+                        <div class="dropdown-menu" aria-hidden="true">
                             <button class="dropdown-item" onclick="router.navigate('account')" aria-label="Account">
                                 ${this.icon('user', 16)} Account
                             </button>
@@ -20150,7 +20151,7 @@ const pages = {
                         <button aria-haspopup="menu" class="btn btn-secondary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                             ${components.icon('more-horizontal', 16)} More
                         </button>
-                        <div class="dropdown-menu" style="right: 0; min-width: 160px;">
+                        <div class="dropdown-menu" style="right: 0; min-width: 160px;" aria-hidden="true">
                             <button class="dropdown-item" onclick="handlers.showCustomMetricBuilder()">
                                 ${components.icon('sliders', 16)} Custom KPIs
                             </button>
@@ -22317,7 +22318,7 @@ const modals = {
                         <button type="button" class="btn btn-outline" onclick="event.stopPropagation(); this.parentElement.classList.toggle('open')">
                             Save as Draft ${components.icon('chevron-down', 14)}
                         </button>
-                        <div class="dropdown-menu" style="min-width: 200px; bottom: 100%; top: auto; margin-bottom: 4px;">
+                        <div class="dropdown-menu" style="min-width: 200px; bottom: 100%; top: auto; margin-bottom: 4px;" aria-hidden="true">
                             <button class="dropdown-item" onclick="handlers.saveItemAsDraft(event, 'vaultlister')">
                                 ${components.icon('database', 14)} VaultLister Only
                                 <span class="text-xs text-gray-500 block">Save locally, don't publish</span>

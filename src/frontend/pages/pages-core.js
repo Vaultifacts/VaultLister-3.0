@@ -2096,7 +2096,7 @@ const pages = {
                         <button aria-haspopup="menu" class="btn btn-secondary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                             ${components.icon('more-horizontal', 16)} More
                         </button>
-                        <div class="dropdown-menu" style="right: 0; min-width: 160px;">
+                        <div class="dropdown-menu" style="right: 0; min-width: 160px;" aria-hidden="true">
                             <button class="dropdown-item" onclick="handlers.showCustomMetricBuilder()">
                                 ${components.icon('sliders', 16)} Custom KPIs
                             </button>

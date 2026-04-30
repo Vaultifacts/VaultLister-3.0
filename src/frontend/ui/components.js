@@ -434,7 +434,7 @@ const components = {
                             </div>
                             <span class="sidebar-user-chevron">&#9662;</span>
                         </button>
-                        <div class="dropdown-menu">
+                        <div class="dropdown-menu" aria-hidden="true">
                             <button class="dropdown-item" onclick="event.stopPropagation(); document.querySelector('.sidebar-user-menu')?.classList.remove('open'); router.navigate('dashboard')">
                                 ${this.icon('home', 16)} Return to Dashboard
                             </button>
@@ -480,7 +480,7 @@ const components = {
                             ${this.icon('bell')}
                             <span id="notification-badge" class="badge" style="${(typeof notificationCenter !== 'undefined' ? notificationCenter.unreadCount : store.state.notifications.length) > 0 ? 'display:flex' : 'display:none'}">${(typeof notificationCenter !== 'undefined' ? notificationCenter.unreadCount : store.state.notifications.length) || ''}</span>
                         </button>
-                        <div class="dropdown-menu" style="min-width: 320px; max-width: 400px; right: 0;">
+                        <div class="dropdown-menu" style="min-width: 320px; max-width: 400px; right: 0;" aria-hidden="true">
                             <div style="padding: 12px 16px; border-bottom: 1px solid var(--gray-200); display: flex; justify-content: space-between; align-items: center;">
                                 <h3 style="margin: 0; font-size: 16px; font-weight: 600;">Notifications</h3>
                                 ${store.state.notifications.length > 0 ? `<span class="text-xs text-gray-500">${store.state.notifications.length} new</span>` : ''}
@@ -505,7 +505,7 @@ const components = {
                     </div>
                     <div class="user-menu dropdown" aria-haspopup="listbox" aria-expanded="false" aria-label="User menu" onclick="const _open=this.classList.toggle('open'); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();const _open=this.classList.toggle('open');this.setAttribute('aria-expanded',_open);}">
                         <div class="user-avatar" aria-hidden="true">${store.state.user?.username?.[0]?.toUpperCase() || 'U'}</div>
-                        <div class="dropdown-menu">
+                        <div class="dropdown-menu" aria-hidden="true">
                             <button class="dropdown-item" onclick="router.navigate('account')" aria-label="Account">
                                 ${this.icon('user', 16)} Account
                             </button>
