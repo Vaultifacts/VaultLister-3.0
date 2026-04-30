@@ -1,1187 +1,1758 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="VaultLister version history and release notes">
-    <title>VaultLister Product Changelog — New Features and Fixes</title>
-    <!-- Google Analytics (GA4) with Consent Mode -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('consent', 'default', {
-        analytics_storage: localStorage.getItem('cookie_consent') === 'accepted' ? 'granted' : 'denied'
-      });
-      gtag('js', new Date());
-      gtag('config', 'G-LXETN4PYRM');
-    </script>
-    <style>
-        :root {
-            --text-primary: #111827;
-            --text-secondary: #595959;
-            --text-muted: #767676;
-            --border: #e5e7eb;
-            --bg: #ffffff;
-            --badge-new-bg: #dbeafe;
-            --badge-new-text: #1d4ed8;
-            --badge-fix-bg: #fef3c7;
-            --badge-fix-text: #92400e;
-            --badge-security-bg: #fce7f3;
-            --badge-security-text: #9d174d;
-            --badge-ai-bg: #ede9fe;
-            --badge-ai-text: #5b21b6;
-        }
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="description" content="VaultLister version history and release notes" />
+        <title>VaultLister Product Changelog — New Features and Fixes</title>
+        <!-- Google Analytics (GA4) with Consent Mode -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+                dataLayer.push(arguments);
+            }
+            gtag('consent', 'default', {
+                analytics_storage: localStorage.getItem('cookie_consent') === 'accepted' ? 'granted' : 'denied',
+            });
+            gtag('js', new Date());
+            gtag('config', 'G-LXETN4PYRM');
+        </script>
+        <style>
+            :root {
+                --text-primary: #111827;
+                --text-secondary: #595959;
+                --text-muted: #767676;
+                --border: #e5e7eb;
+                --bg: #ffffff;
+                --badge-new-bg: #dbeafe;
+                --badge-new-text: #1d4ed8;
+                --badge-fix-bg: #fef3c7;
+                --badge-fix-text: #92400e;
+                --badge-security-bg: #fce7f3;
+                --badge-security-text: #9d174d;
+                --badge-ai-bg: #ede9fe;
+                --badge-ai-text: #5b21b6;
+            }
 
-        body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background: #f9fafb;
-            color: var(--text-primary);
-            line-height: 1.6;
-            min-height: 100vh;
-        }
+            body {
+                font-family:
+                    'Inter',
+                    system-ui,
+                    -apple-system,
+                    sans-serif;
+                background: #f9fafb;
+                color: var(--text-primary);
+                line-height: 1.6;
+                min-height: 100vh;
+            }
 
-        .hero {
-            max-width: 760px;
-            margin: 0 auto;
-            padding: 3rem 1.5rem 1rem;
-        }
+            .hero {
+                max-width: 760px;
+                margin: 0 auto;
+                padding: 3rem 1.5rem 1rem;
+            }
 
-        .hero h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            margin-bottom: 0.5rem;
-        }
+            .hero h1 {
+                font-size: 2rem;
+                font-weight: 700;
+                letter-spacing: -0.02em;
+                margin-bottom: 0.5rem;
+            }
 
-        .hero p {
-            color: var(--text-secondary);
-            font-size: 1rem;
-        }
+            .hero p {
+                color: var(--text-secondary);
+                font-size: 1rem;
+            }
 
-        .main {
-            max-width: 980px;
-            margin: 0 auto;
-            padding: 1.5rem 1.5rem 5rem;
-        }
+            .main {
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 1.5rem 1.5rem 5rem;
+            }
 
-        /* ── Search + filter controls ───────────────────── */
-        .controls-bar {
-            margin-bottom: 2rem;
-        }
+            /* ── Search + filter controls ───────────────────── */
+            .controls-bar {
+                margin-bottom: 2rem;
+            }
 
-        .search-shell {
-            position: relative;
-            margin-bottom: 1rem;
-        }
+            .search-shell {
+                position: relative;
+                margin-bottom: 1rem;
+            }
 
-        .search-shell svg {
-            position: absolute;
-            top: 50%;
-            left: 0.95rem;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-            pointer-events: none;
-        }
+            .search-shell svg {
+                position: absolute;
+                top: 50%;
+                left: 0.95rem;
+                transform: translateY(-50%);
+                color: var(--text-muted);
+                pointer-events: none;
+            }
 
-        .search-input {
-            width: 100%;
-            min-height: 52px;
-            padding: 0.9rem 1rem 0.9rem 2.9rem;
-            border-radius: 14px;
-            border: 1.5px solid var(--border);
-            background: #fff;
-            color: var(--text-primary);
-            font: inherit;
-            font-size: 0.9375rem;
-            transition: border-color 0.15s, box-shadow 0.15s;
-        }
+            .search-input {
+                width: 100%;
+                min-height: 52px;
+                padding: 0.9rem 1rem 0.9rem 2.9rem;
+                border-radius: 14px;
+                border: 1.5px solid var(--border);
+                background: #fff;
+                color: var(--text-primary);
+                font: inherit;
+                font-size: 0.9375rem;
+                transition:
+                    border-color 0.15s,
+                    box-shadow 0.15s;
+            }
 
-        .search-input:focus {
-            outline: none;
-            border-color: #767676;
-            box-shadow: 0 0 0 4px rgba(17, 24, 39, 0.06);
-        }
+            .search-input:focus {
+                outline: none;
+                border-color: #767676;
+                box-shadow: 0 0 0 4px rgba(17, 24, 39, 0.06);
+            }
 
-        .filter-bar {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-            margin-bottom: 0.75rem;
-        }
+            .filter-bar {
+                display: flex;
+                gap: 0.5rem;
+                flex-wrap: wrap;
+                margin-bottom: 0.75rem;
+            }
 
-        .filter-btn {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.375rem 1rem;
-            border-radius: 9999px;
-            border: 1.5px solid var(--border);
-            background: #fff;
-            color: var(--text-secondary);
-            font-family: inherit;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: border-color 0.15s, background 0.15s, color 0.15s;
-        }
+            .filter-btn {
+                display: inline-flex;
+                align-items: center;
+                padding: 0.375rem 1rem;
+                border-radius: 9999px;
+                border: 1.5px solid var(--border);
+                background: #fff;
+                color: var(--text-secondary);
+                font-family: inherit;
+                font-size: 0.875rem;
+                font-weight: 500;
+                cursor: pointer;
+                transition:
+                    border-color 0.15s,
+                    background 0.15s,
+                    color 0.15s;
+            }
 
-        .filter-btn:hover {
-            border-color: #767676;
-            color: var(--text-primary);
-        }
+            .filter-btn:hover {
+                border-color: #767676;
+                color: var(--text-primary);
+            }
 
-        .filter-btn.active {
-            background: var(--filter-bg, #111827);
-            color: var(--filter-text, #fff);
-            border-color: transparent;
-        }
+            .filter-btn.active {
+                background: var(--filter-bg, #111827);
+                color: var(--filter-text, #fff);
+                border-color: transparent;
+            }
 
-        .results-meta {
-            font-size: 0.8125rem;
-            color: var(--text-muted);
-            min-height: 1.25rem;
-        }
+            .results-meta {
+                font-size: 0.8125rem;
+                color: var(--text-muted);
+                min-height: 1.25rem;
+            }
 
-        /* ── Timeline ────────────────────────────────────── */
-        .timeline {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            position: relative;
-            padding-left: 11.5rem;
-        }
-
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 11.4375rem;
-            top: 0.5rem;
-            bottom: 0.5rem;
-            width: 2px;
-            background: var(--border);
-            border-radius: 1px;
-        }
-
-        .release {
-            display: grid;
-            grid-template-columns: 9.5rem 1rem minmax(0, 1fr);
-            column-gap: 1rem;
-            position: relative;
-            align-items: start;
-        }
-
-        .release-meta {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 0.2rem;
-            padding-top: 0.05rem;
-            text-align: right;
-        }
-
-        .release-meta .release-version {
-            font-size: 0.875rem;
-            font-weight: 800;
-            color: var(--text-primary);
-        }
-
-        .release-meta .release-date {
-            font-size: 0.8125rem;
-            color: var(--text-muted);
-        }
-
-        .release-dot {
-            width: 0.875rem;
-            height: 0.875rem;
-            border-radius: 50%;
-            background: #d1d5db;
-            border: 2px solid #f9fafb;
-            flex-shrink: 0;
-            margin-top: 0.375rem;
-            box-shadow: 0 0 0 2px #d1d5db;
-            z-index: 1;
-        }
-
-        .release--latest .release-dot {
-            background: #111827;
-            box-shadow: 0 0 0 2px #111827;
-        }
-
-        /* ── Release card ─────────────────────────────────── */
-        .release-card {
-            flex: 1;
-            background: #fff;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.125rem 1.375rem 1.375rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-        }
-
-        .release-header {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-            margin-bottom: 0.5rem;
-        }
-
-        .release-version {
-            font-size: 0.8125rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            font-variant-numeric: tabular-nums;
-        }
-
-        .release-date {
-            font-size: 0.8125rem;
-            color: var(--text-muted);
-        }
-
-        .badge-latest {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.1rem 0.5rem;
-            border-radius: 9999px;
-            background: #111827;
-            color: #fff;
-            font-size: 0.625rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-        }
-
-        .release-title {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 0.875rem;
-            line-height: 1.4;
-        }
-
-        /* ── Change list ─────────────────────────────────── */
-        .change-list {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 0.4375rem;
-        }
-
-        .change-item {
-            display: flex;
-            align-items: baseline;
-            gap: 0.5rem;
-            font-size: 0.9375rem;
-            color: var(--text-secondary);
-            line-height: 1.5;
-        }
-
-        .change-item code {
-            font-size: 0.8125rem;
-            background: #f3f4f6;
-            padding: 0.1em 0.35em;
-            border-radius: 4px;
-            color: #374151;
-        }
-
-        /* ── Badges ──────────────────────────────────────── */
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.15rem 0.5rem;
-            border-radius: 9999px;
-            font-size: 0.6875rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            white-space: nowrap;
-            flex-shrink: 0;
-            line-height: 1.4;
-        }
-
-        .badge-new { background: var(--badge-new-bg); color: var(--badge-new-text); }
-        .badge-fix { background: var(--badge-fix-bg); color: var(--badge-fix-text); }
-        .badge-security { background: var(--badge-security-bg); color: var(--badge-security-text); }
-        .badge-ai { background: var(--badge-ai-bg); color: var(--badge-ai-text); }
-
-        @media (max-width: 860px) {
-            .main { max-width: 760px; }
+            /* ── Timeline ────────────────────────────────────── */
             .timeline {
-                padding-left: 0.5rem;
+                display: flex;
+                flex-direction: column;
+                gap: 1.5rem;
+                position: relative;
+                padding-left: 11.5rem;
             }
+
             .timeline::before {
-                left: 0.4375rem;
+                content: '';
+                position: absolute;
+                left: 11.4375rem;
+                top: 0.5rem;
+                bottom: 0.5rem;
+                width: 2px;
+                background: var(--border);
+                border-radius: 1px;
             }
+
             .release {
-                grid-template-columns: 1rem minmax(0, 1fr);
+                display: grid;
+                grid-template-columns: 9.5rem 1rem minmax(0, 1fr);
                 column-gap: 1rem;
+                position: relative;
+                align-items: start;
             }
+
             .release-meta {
-                grid-column: 1 / -1;
-                align-items: flex-start;
-                text-align: left;
-                padding-left: 1.75rem;
-                padding-bottom: 0.2rem;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end;
+                gap: 0.2rem;
+                padding-top: 0.05rem;
+                text-align: right;
             }
+
+            .release-meta .release-version {
+                font-size: 0.875rem;
+                font-weight: 800;
+                color: var(--text-primary);
+            }
+
+            .release-meta .release-date {
+                font-size: 0.8125rem;
+                color: var(--text-muted);
+            }
+
             .release-dot {
-                grid-column: 1;
-                grid-row: 2;
+                width: 0.875rem;
+                height: 0.875rem;
+                border-radius: 50%;
+                background: #d1d5db;
+                border: 2px solid #f9fafb;
+                flex-shrink: 0;
+                margin-top: 0.375rem;
+                box-shadow: 0 0 0 2px #d1d5db;
+                z-index: 1;
             }
+
+            .release--latest .release-dot {
+                background: #111827;
+                box-shadow: 0 0 0 2px #111827;
+            }
+
+            /* ── Release card ─────────────────────────────────── */
             .release-card {
-                grid-column: 2;
-                grid-row: 2;
+                flex: 1;
+                background: #fff;
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                padding: 1.125rem 1.375rem 1.375rem;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
             }
-        }
-    </style>
-    <link rel="stylesheet" href="/styles/public-base.css">
-</head>
-<body>
-<a href="#main-content" class="skip-link">Skip to main content</a>
 
+            .release-header {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                flex-wrap: wrap;
+                margin-bottom: 0.5rem;
+            }
 
-<!-- Navigation -->
-<nav class="nav" aria-label="Main navigation">
-    <a class="nav-logo" href="/">
-        <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" width="348" height="87" style="display:block;">
-    </a>
-    <div class="nav-links">
-        <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="features-menu" aria-haspopup="menu" aria-expanded="false">Features &#9662;</button>
-            <div id="features-menu" class="nav-dropdown-menu" role="menu" inert>
-                <a href="#cross-listing" role="menuitem">Cross-Listing</a>
-                <a href="#inventory-management" role="menuitem">Inventory Management</a>
-                <a href="#sale-purchase-sync" role="menuitem">Sale &amp; Purchase Sync</a>
-                <a href="#analytics" role="menuitem">Analytics</a>
-                <a href="#offer-management" role="menuitem">Offer Management</a>
-                <a href="#marketplace-sharing" role="menuitem">Marketplace Sharing</a>
-                <a href="#bulk-actions" role="menuitem">Bulk Actions</a>
-                <a href="#photo-tools" role="menuitem">Photo Tools</a>
-                <a href="#ai-listing-generation" role="menuitem">AI Listing Generation</a>
-                <a href="#financial-management" role="menuitem">Financial Management</a>
-                <a href="#productivity-tools" role="menuitem">Productivity Tools</a>
-            </div>
-        </div>
-        <a class="nav-link" href="/platforms.html">Marketplaces</a>
-        <a class="nav-link" href="/pricing.html">Pricing</a>
-        <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="resources-menu" aria-haspopup="menu" aria-expanded="false">Resources &#9662;</button>
-            <div id="resources-menu" class="nav-dropdown-menu" role="menu" inert>
-                <a href="/learning.html" role="menuitem">Learning</a>
-                <a href="/documentation.html" role="menuitem">Documentation</a>
-                <a href="/blog/index.html" role="menuitem">Blog</a>
-                <a href="/affiliate.html" role="menuitem">Affiliate Program</a>
-            </div>
-        </div>
-        <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="feedback-menu" aria-haspopup="menu" aria-expanded="false">Feedback &amp; Support &#9662;</button>
-            <div id="feedback-menu" class="nav-dropdown-menu" role="menu" inert>
-                <a href="/help.html" role="menuitem">Help Center</a>
-                <a href="/faq.html" role="menuitem">FAQs</a>
-                <a href="/request-feature.html" role="menuitem">Request a Feature</a>
-                <a href="/contact.html#contact-form" role="menuitem">Report a Bug</a>
-                <a href="/contact.html" role="menuitem">Contact Us</a>
-            </div>
-        </div>
-        <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="product-updates-menu" aria-haspopup="menu" aria-expanded="false">Status &amp; Updates &#9662;</button>
-            <div id="product-updates-menu" class="nav-dropdown-menu" role="menu" inert>
-                <a href="/changelog.html" role="menuitem">Changelog</a>
-                <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
-                <a href="/status.html" role="menuitem">Status Page</a>
-            </div>
-        </div>
-    </div>
-    <button type="button" class="nav-hamburger" aria-label="Open menu" aria-expanded="false">
-        <span></span>
-        <span></span>
-        <span></span>
-    </button>
-    <div class="nav-actions">
-        <div class="currency-selector">
-            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false" aria-haspopup="listbox"><span id="current-currency-code">CAD</span>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-            </button>
-            <div class="currency-dropdown" id="currency-dropdown">
-                <div style="padding:0.375rem 0.75rem;font-size:0.7rem;color:#a1a1aa;text-align:center;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:0.25rem;">Coming Soon</div>
-                <button type="button" class="currency-option" data-currency="CAD" data-symbol="$">$ CAD</button>
-                <button type="button" class="currency-option" data-currency="USD" data-symbol="$">$ USD</button>
-                <button type="button" class="currency-option" data-currency="GBP" data-symbol="£">£ GBP</button>
-                <button type="button" class="currency-option" data-currency="EUR" data-symbol="€">€ EUR</button>
-                <button type="button" class="currency-option" data-currency="AUD" data-symbol="$">$ AUD</button>
-            </div>
-        </div>
-        <div class="lang-selector">
-        <button type="button" class="lang-btn" title="Change language" aria-expanded="false" aria-haspopup="listbox">
-            <span class="lang-code" id="current-lang-code">EN</span>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-        </button>
-        <div class="lang-dropdown" id="lang-dropdown">
-                <div style="padding:0.375rem 0.75rem;font-size:0.7rem;color:#a1a1aa;text-align:center;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:0.25rem;">Coming Soon</div>
-            <button type="button" class="lang-option" data-lang="en">English (U.S)</button>
-            <button type="button" class="lang-option" data-lang="en-ca">English (CA)</button>
-            <button type="button" class="lang-option" data-lang="es">Español</button>
-            <button type="button" class="lang-option" data-lang="fr">Français</button>
-            <button type="button" class="lang-option" data-lang="de">Deutsch</button>
-            <button type="button" class="lang-option" data-lang="it">Italiano</button>
-            <button type="button" class="lang-option" data-lang="pt">Português</button>
-            <button type="button" class="lang-option" data-lang="ja">日本語</button>
-            <button type="button" class="lang-option" data-lang="zh">中文</button>
-            <button type="button" class="lang-option" data-lang="ko">한국어</button>
-            <button type="button" class="lang-option" data-lang="ar">العربية</button>
-        </div>
-    </div>
+            .release-version {
+                font-size: 0.8125rem;
+                font-weight: 700;
+                color: var(--text-primary);
+                font-variant-numeric: tabular-nums;
+            }
 
-        <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
-        <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
-    </div>
-</nav>
+            .release-date {
+                font-size: 0.8125rem;
+                color: var(--text-muted);
+            }
 
-<!-- Mobile nav drawer -->
-<nav class="mobile-nav-drawer" inert id="mobile-nav-drawer" aria-label="Mobile navigation">
-    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-features-sub" aria-controls="mobile-features-sub" aria-expanded="false">Features</button>
-    <div class="mobile-nav-sub" id="mobile-features-sub">
-        <a href="#cross-listing">Cross-Listing</a>
-        <a href="#inventory-management">Inventory Management</a>
-        <a href="#sale-purchase-sync">Sale &amp; Purchase Sync</a>
-        <a href="#analytics">Analytics</a>
-        <a href="#offer-management">Offer Management</a>
-        <a href="#marketplace-sharing">Marketplace Sharing</a>
-        <a href="#bulk-actions">Bulk Actions</a>
-        <a href="#photo-tools">Photo Tools</a>
-        <a href="#ai-listing-generation">AI Listing Generation</a>
-        <a href="#financial-management">Financial Management</a>
-        <a href="#productivity-tools">Productivity Tools</a>
-    </div>
-    <a class="mobile-nav-item" href="/platforms.html">Marketplaces</a>
-    <a class="mobile-nav-item" href="/pricing.html">Pricing</a>
-    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-resources-sub" aria-controls="mobile-resources-sub" aria-expanded="false">Resources</button>
-    <div class="mobile-nav-sub" id="mobile-resources-sub">
-        <a href="/learning.html">Learning</a>
-        <a href="/documentation.html">Documentation</a>
-        <a href="/blog/index.html">Blog</a>
-        <a href="/affiliate.html">Affiliate Program</a>
-    </div>
-    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-feedback-sub" aria-controls="mobile-feedback-sub" aria-expanded="false">Feedback &amp; Support</button>
-    <div class="mobile-nav-sub" id="mobile-feedback-sub">
-        <a href="/help.html">Help Center</a>
-        <a href="/faq.html">FAQs</a>
-        <a href="/request-feature.html">Request a Feature</a>
-        <a href="/contact.html#contact-form">Report a Bug</a>
-        <a href="/contact.html">Contact Us</a>
-    </div>
-    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-product-updates-sub" aria-controls="mobile-product-updates-sub" aria-expanded="false">Status &amp; Updates</button>
-    <div class="mobile-nav-sub" id="mobile-product-updates-sub">
-        <a href="/changelog.html">Changelog</a>
-        <a href="/roadmap-public.html">Roadmap</a>
-        <a href="/status.html">Status Page</a>
-    </div>
-    <div class="mobile-nav-actions">
-        <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
-        <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
-    </div>
-</nav>
+            .badge-latest {
+                display: inline-flex;
+                align-items: center;
+                padding: 0.1rem 0.5rem;
+                border-radius: 9999px;
+                background: #111827;
+                color: #fff;
+                font-size: 0.625rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+            }
 
-<div class="hero">
-    <h1>Changelog</h1>
-    <p>Every release, every improvement. VaultLister ships fast — here's what's new.</p>
-</div>
+            .release-title {
+                font-size: 1rem;
+                font-weight: 600;
+                color: var(--text-primary);
+                margin-bottom: 0.875rem;
+                line-height: 1.4;
+            }
 
-<main class="main" id="main-content">
-    <div class="controls-bar">
-        <div role="search"><label class="search-shell">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
-            <input id="changelog-search" class="search-input" type="search" aria-label="Search releases" title="Search releases" placeholder="Search releases, versions, and change notes">
-        </label></div>
-        <div class="filter-bar" role="group" aria-label="Filter by type">
-            <button type="button" class="filter-btn active" data-filter="all">All</button>
-            <button type="button" class="filter-btn" data-filter="new" style="--filter-bg: var(--badge-new-bg); --filter-text: var(--badge-new-text);">New</button>
-            <button type="button" class="filter-btn" data-filter="fix" style="--filter-bg: var(--badge-fix-bg); --filter-text: var(--badge-fix-text);">Fix</button>
-            <button type="button" class="filter-btn" data-filter="security" style="--filter-bg: var(--badge-security-bg); --filter-text: var(--badge-security-text);">Security</button>
-            <button type="button" class="filter-btn" data-filter="ai" style="--filter-bg: var(--badge-ai-bg); --filter-text: var(--badge-ai-text);">AI</button>
-        </div>
-        <div class="results-meta" id="results-meta" aria-live="polite"></div>
-    </div>
-    <h2 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;">Releases</h2>
-    <div class="timeline" role="feed" aria-label="Release history">
+            /* ── Change list ─────────────────────────────────── */
+            .change-list {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 0.4375rem;
+            }
 
-        <!-- v1.7.0 -->
-        <article class="release release--latest" aria-label="Version 1.7.0">
-            <div class="release-meta">
-                <span class="release-version">v1.7.0</span>
-                <span class="release-date">April 2026</span>
-            </div>
-            <div class="release-dot" aria-hidden="true"></div>
-            <div class="release-card">
-                <div class="release-header">
-                    <span class="badge-latest">Latest</span>
+            .change-item {
+                display: flex;
+                align-items: baseline;
+                gap: 0.5rem;
+                font-size: 0.9375rem;
+                color: var(--text-secondary);
+                line-height: 1.5;
+            }
+
+            .change-item code {
+                font-size: 0.8125rem;
+                background: #f3f4f6;
+                padding: 0.1em 0.35em;
+                border-radius: 4px;
+                color: #374151;
+            }
+
+            /* ── Badges ──────────────────────────────────────── */
+            .badge {
+                display: inline-flex;
+                align-items: center;
+                padding: 0.15rem 0.5rem;
+                border-radius: 9999px;
+                font-size: 0.6875rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                white-space: nowrap;
+                flex-shrink: 0;
+                line-height: 1.4;
+            }
+
+            .badge-new {
+                background: var(--badge-new-bg);
+                color: var(--badge-new-text);
+            }
+            .badge-fix {
+                background: var(--badge-fix-bg);
+                color: var(--badge-fix-text);
+            }
+            .badge-security {
+                background: var(--badge-security-bg);
+                color: var(--badge-security-text);
+            }
+            .badge-ai {
+                background: var(--badge-ai-bg);
+                color: var(--badge-ai-text);
+            }
+
+            @media (max-width: 860px) {
+                .main {
+                    max-width: 760px;
+                }
+                .timeline {
+                    padding-left: 0.5rem;
+                }
+                .timeline::before {
+                    left: 0.4375rem;
+                }
+                .release {
+                    grid-template-columns: 1rem minmax(0, 1fr);
+                    column-gap: 1rem;
+                }
+                .release-meta {
+                    grid-column: 1 / -1;
+                    align-items: flex-start;
+                    text-align: left;
+                    padding-left: 1.75rem;
+                    padding-bottom: 0.2rem;
+                }
+                .release-dot {
+                    grid-column: 1;
+                    grid-row: 2;
+                }
+                .release-card {
+                    grid-column: 2;
+                    grid-row: 2;
+                }
+            }
+        </style>
+        <link rel="stylesheet" href="/styles/public-base.css" />
+    </head>
+    <body>
+        <a href="#main-content" class="skip-link">Skip to main content</a>
+
+        <!-- Navigation -->
+        <nav class="nav" aria-label="Main navigation">
+            <a class="nav-logo" href="/">
+                <img
+                    src="/assets/logo/lockups/horizontal-2048.svg"
+                    alt="VaultLister"
+                    width="348"
+                    height="87"
+                    style="display: block"
+                />
+            </a>
+            <div class="nav-links">
+                <div class="nav-dropdown">
+                    <button
+                        type="button"
+                        class="nav-link nav-dropdown-btn"
+                        data-dropdown="features-menu"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                    >
+                        Features &#9662;
+                    </button>
+                    <div id="features-menu" class="nav-dropdown-menu" role="menu" inert>
+                        <a href="#cross-listing" role="menuitem">Cross-Listing</a>
+                        <a href="#inventory-management" role="menuitem">Inventory Management</a>
+                        <a href="#sale-purchase-sync" role="menuitem">Sale &amp; Purchase Sync</a>
+                        <a href="#analytics" role="menuitem">Analytics</a>
+                        <a href="#offer-management" role="menuitem">Offer Management</a>
+                        <a href="#marketplace-sharing" role="menuitem">Marketplace Sharing</a>
+                        <a href="#bulk-actions" role="menuitem">Bulk Actions</a>
+                        <a href="#photo-tools" role="menuitem">Photo Tools</a>
+                        <a href="#ai-listing-generation" role="menuitem">AI Listing Generation</a>
+                        <a href="#financial-management" role="menuitem">Financial Management</a>
+                        <a href="#productivity-tools" role="menuitem">Productivity Tools</a>
+                    </div>
                 </div>
-                <div class="release-title">Launch readiness, security hardening &amp; cleanup</div>
-                <ul class="change-list">
-                    <li class="change-item"><span class="badge badge-security">Security</span>Auth lockout re-enabled for production — brute-force protection active</li>
-                    <li class="change-item"><span class="badge badge-security">Security</span>OAUTH_MODE startup assertion — warns if marketplace connections use mock tokens</li>
-                    <li class="change-item"><span class="badge badge-fix">Fix</span>Privacy policy and terms of service corrected for cloud-hosted deployment</li>
-                    <li class="change-item"><span class="badge badge-fix">Fix</span>All placeholder data replaced with proper empty states across financials, analytics, and settings</li>
-                    <li class="change-item"><span class="badge badge-new">New</span>SKU uniqueness constraint — prevents duplicate inventory SKUs</li>
-                    <li class="change-item"><span class="badge badge-new">New</span>8 pages added to sidebar navigation (Plans, Account, Calendar, Reports, Community, Roadmap, Import, Receipts)</li>
-                    <li class="change-item"><span class="badge badge-new">New</span>Centralized platform list — consistent 9-platform count across all surfaces</li>
-                    <li class="change-item"><span class="badge badge-fix">Fix</span>Window exposures for richTextEditor, focusMode, sessionMonitor — fixes ReferenceErrors on hash-navigated pages</li>
-                    <li class="change-item"><span class="badge badge-fix">Fix</span>RELEASE.md and ARCHITECTURE.md corrected (PostgreSQL, AES-256-GCM, Railway+Cloudflare)</li>
-                    <li class="change-item"><span class="badge badge-fix">Fix</span>178 stale files archived (legacy PostgreSQL migrations, evidence docs, nginx configs)</li>
-                </ul>
+                <a class="nav-link" href="/platforms.html">Marketplaces</a>
+                <a class="nav-link" href="/pricing.html">Pricing</a>
+                <div class="nav-dropdown">
+                    <button
+                        type="button"
+                        class="nav-link nav-dropdown-btn"
+                        data-dropdown="resources-menu"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                    >
+                        Resources &#9662;
+                    </button>
+                    <div id="resources-menu" class="nav-dropdown-menu" role="menu" inert>
+                        <a href="/learning.html" role="menuitem">Learning</a>
+                        <a href="/documentation.html" role="menuitem">Documentation</a>
+                        <a href="/blog/index.html" role="menuitem">Blog</a>
+                        <a href="/affiliate.html" role="menuitem">Affiliate Program</a>
+                    </div>
+                </div>
+                <div class="nav-dropdown">
+                    <button
+                        type="button"
+                        class="nav-link nav-dropdown-btn"
+                        data-dropdown="feedback-menu"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                    >
+                        Feedback &amp; Support &#9662;
+                    </button>
+                    <div id="feedback-menu" class="nav-dropdown-menu" role="menu" inert>
+                        <a href="/help.html" role="menuitem">Help Center</a>
+                        <a href="/faq.html" role="menuitem">FAQs</a>
+                        <a href="/request-feature.html" role="menuitem">Request a Feature</a>
+                        <a href="/contact.html#contact-form" role="menuitem">Report a Bug</a>
+                        <a href="/contact.html" role="menuitem">Contact Us</a>
+                    </div>
+                </div>
+                <div class="nav-dropdown">
+                    <button
+                        type="button"
+                        class="nav-link nav-dropdown-btn"
+                        data-dropdown="product-updates-menu"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                    >
+                        Status &amp; Updates &#9662;
+                    </button>
+                    <div id="product-updates-menu" class="nav-dropdown-menu" role="menu" inert>
+                        <a href="/changelog.html" role="menuitem">Changelog</a>
+                        <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
+                        <a href="/status.html" role="menuitem">Status Page</a>
+                    </div>
+                </div>
             </div>
-        </article>
+            <button type="button" class="nav-hamburger" aria-label="Open menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="nav-actions">
+                <div class="currency-selector">
+                    <button
+                        type="button"
+                        class="currency-btn"
+                        title="Change currency"
+                        aria-expanded="false"
+                        aria-haspopup="listbox"
+                    >
+                        <span id="current-currency-code">CAD</span>
+                        <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path d="M6 9l6 6 6-6" />
+                        </svg>
+                    </button>
+                    <div class="currency-dropdown" id="currency-dropdown">
+                        <div
+                            style="
+                                padding: 0.375rem 0.75rem;
+                                font-size: 0.7rem;
+                                color: #a1a1aa;
+                                text-align: center;
+                                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                                margin-bottom: 0.25rem;
+                            "
+                        >
+                            Coming Soon
+                        </div>
+                        <button type="button" class="currency-option" data-currency="CAD" data-symbol="$">$ CAD</button>
+                        <button type="button" class="currency-option" data-currency="USD" data-symbol="$">$ USD</button>
+                        <button type="button" class="currency-option" data-currency="GBP" data-symbol="£">£ GBP</button>
+                        <button type="button" class="currency-option" data-currency="EUR" data-symbol="€">€ EUR</button>
+                        <button type="button" class="currency-option" data-currency="AUD" data-symbol="$">$ AUD</button>
+                    </div>
+                </div>
+                <div class="lang-selector">
+                    <button
+                        type="button"
+                        class="lang-btn"
+                        title="Change language"
+                        aria-expanded="false"
+                        aria-haspopup="listbox"
+                    >
+                        <span class="lang-code" id="current-lang-code">EN</span>
+                        <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path d="M6 9l6 6 6-6" />
+                        </svg>
+                    </button>
+                    <div class="lang-dropdown" id="lang-dropdown">
+                        <div
+                            style="
+                                padding: 0.375rem 0.75rem;
+                                font-size: 0.7rem;
+                                color: #a1a1aa;
+                                text-align: center;
+                                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                                margin-bottom: 0.25rem;
+                            "
+                        >
+                            Coming Soon
+                        </div>
+                        <button type="button" class="lang-option" data-lang="en">English (U.S)</button>
+                        <button type="button" class="lang-option" data-lang="en-ca">English (CA)</button>
+                        <button type="button" class="lang-option" data-lang="es">Español</button>
+                        <button type="button" class="lang-option" data-lang="fr">Français</button>
+                        <button type="button" class="lang-option" data-lang="de">Deutsch</button>
+                        <button type="button" class="lang-option" data-lang="it">Italiano</button>
+                        <button type="button" class="lang-option" data-lang="pt">Português</button>
+                        <button type="button" class="lang-option" data-lang="ja">日本語</button>
+                        <button type="button" class="lang-option" data-lang="zh">中文</button>
+                        <button type="button" class="lang-option" data-lang="ko">한국어</button>
+                        <button type="button" class="lang-option" data-lang="ar">العربية</button>
+                    </div>
+                </div>
 
-        <!-- v1.6.0 -->
-        <article class="release" aria-label="Version 1.6.0">
-            <div class="release-meta">
-                <span class="release-version">v1.6.0</span>
-                <span class="release-date">April 2026</span>
+                <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
+                <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
             </div>
-            <div class="release-dot" aria-hidden="true"></div>
-            <div class="release-card">
-                <div class="release-title">Landing page, admin dashboard, bundle splitting &amp; SSL</div>
-                <ul class="change-list">
-                    <li class="change-item"><span class="badge badge-new">New</span>Public landing page with feature highlights and pricing tiers</li>
-                    <li class="change-item"><span class="badge badge-new">New</span>Admin dashboard with system health, active sessions, and audit log viewer</li>
-                    <li class="change-item"><span class="badge badge-new">New</span>Changelog page (you are here)</li>
-                    <li class="change-item"><span class="badge badge-new">New</span>Route-group chunk splitting — core bundle down 40%, lazy loads per page</li>
-                    <li class="change-item"><span class="badge badge-security">Security</span>SSL/TLS configured with Let's Encrypt + Nginx; HSTS enabled</li>
-                    <li class="change-item"><span class="badge badge-new">New</span>Custom domain routing with www redirect and HTTPS enforcement</li>
-                </ul>
-            </div>
-        </article>
+        </nav>
 
-        <!-- v1.5.0 -->
-        <article class="release" aria-label="Version 1.5.0">
-            <div class="release-meta">
-                <span class="release-version">v1.5.0</span>
-                <span class="release-date">April 2026</span>
+        <!-- Mobile nav drawer -->
+        <nav class="mobile-nav-drawer" inert id="mobile-nav-drawer" aria-label="Mobile navigation">
+            <button
+                type="button"
+                class="mobile-nav-section-btn"
+                data-mobile-section="mobile-features-sub"
+                aria-controls="mobile-features-sub"
+                aria-expanded="false"
+            >
+                Features
+            </button>
+            <div class="mobile-nav-sub" id="mobile-features-sub">
+                <a href="#cross-listing">Cross-Listing</a>
+                <a href="#inventory-management">Inventory Management</a>
+                <a href="#sale-purchase-sync">Sale &amp; Purchase Sync</a>
+                <a href="#analytics">Analytics</a>
+                <a href="#offer-management">Offer Management</a>
+                <a href="#marketplace-sharing">Marketplace Sharing</a>
+                <a href="#bulk-actions">Bulk Actions</a>
+                <a href="#photo-tools">Photo Tools</a>
+                <a href="#ai-listing-generation">AI Listing Generation</a>
+                <a href="#financial-management">Financial Management</a>
+                <a href="#productivity-tools">Productivity Tools</a>
             </div>
-            <div class="release-dot" aria-hidden="true"></div>
-            <div class="release-card">
-                <div class="release-title">eBay OAuth production, staging deploy &amp; QA walkthrough</div>
-                <ul class="change-list">
-                    <li class="change-item"><span class="badge badge-new">New</span>eBay OAuth 2.0 promoted to production credentials with full token refresh flow</li>
-                    <li class="change-item"><span class="badge badge-new">New</span>Staging environment on dedicated server with environment-parity config</li>
-                    <li class="change-item"><span class="badge badge-fix">Fix</span>QA walkthrough pass — 14 UI/UX issues resolved from structured test session</li>
-                    <li class="change-item"><span class="badge badge-fix">Fix</span>OAuth popup callback race condition eliminated with storage event debounce</li>
-                    <li class="change-item"><span class="badge badge-new">New</span>Automated smoke test run on every staging deploy via GitHub Actions</li>
-                </ul>
-            </div>
-        </article>
-
-        <!-- v1.4.0 -->
-        <article class="release" aria-label="Version 1.4.0">
-            <div class="release-meta">
-                <span class="release-version">v1.4.0</span>
-                <span class="release-date">April 2026</span>
-            </div>
-            <div class="release-dot" aria-hidden="true"></div>
-            <div class="release-card">
-                <div class="release-title">Security hardening, monitoring &amp; backup system</div>
-                <ul class="change-list">
-                    <li class="change-item"><span class="badge badge-security">Security</span>OWASP hardening pass — tightened CSP, removed unused response headers</li>
-                    <li class="change-item"><span class="badge badge-security">Security</span>Rate limiting applied to all auth and public-facing endpoints</li>
-                    <li class="change-item"><span class="badge badge-new">New</span>Prometheus + Grafana monitoring stack deployed; latency and error-rate dashboards</li>
-                    <li class="change-item"><span class="badge badge-new">New</span>Automated daily PostgreSQL backups with 7-day retention</li>
-                    <li class="change-item"><span class="badge badge-new">New</span>Backup restore script at <code>/opt/vaultlister-staging/restore.sh</code></li>
-                    <li class="change-item"><span class="badge badge-fix">Fix</span>Health check endpoint now returns DB read latency for faster triage</li>
-                </ul>
-            </div>
-        </article>
-
-        <!-- v1.3.0 -->
-        <article class="release" aria-label="Version 1.3.0">
-            <div class="release-meta">
-                <span class="release-version">v1.3.0</span>
-                <span class="release-date">April 2026</span>
-            </div>
-            <div class="release-dot" aria-hidden="true"></div>
-            <div class="release-card">
-                <div class="release-title">7 marketplace integrations &amp; Playwright automations</div>
-                <ul class="change-list">
-                    <li class="change-item"><span class="badge badge-new">New</span>Cross-lister supports 7 live platforms: Poshmark, eBay, Depop, Shopify, Facebook Marketplace, Whatnot, Grailed (Mercari, Etsy coming soon)</li>
-                    <li class="change-item"><span class="badge badge-new">New</span>Playwright automation bots: closet sharing, follow-back, and offer rules</li>
-                    <li class="change-item"><span class="badge badge-new">New</span>Automation audit log — every bot action recorded to <code>data/automation-audit.log</code></li>
-                    <li class="change-item"><span class="badge badge-new">New</span>Platform rate-limit config with per-platform minimum action delays</li>
-                    <li class="change-item"><span class="badge badge-security">Security</span>OAuth tokens encrypted with AES-256-GCM before database storage</li>
-                </ul>
-            </div>
-        </article>
-
-        <!-- v1.2.0 -->
-        <article class="release" aria-label="Version 1.2.0">
-            <div class="release-meta">
-                <span class="release-version">v1.2.0</span>
-                <span class="release-date">April 2026</span>
-            </div>
-            <div class="release-dot" aria-hidden="true"></div>
-            <div class="release-card">
-                <div class="release-title">AI features &amp; Chrome extension</div>
-                <ul class="change-list">
-                    <li class="change-item"><span class="badge badge-ai">AI</span>AI listing generation via Claude — title, description, tags, and price suggestion from photos</li>
-                    <li class="change-item"><span class="badge badge-ai">AI</span>Vault Buddy chat assistant for reseller Q&amp;A and workflow guidance</li>
-                    <li class="change-item"><span class="badge badge-ai">AI</span>Image analysis with automatic tagging and condition detection</li>
-                    <li class="change-item"><span class="badge badge-new">New</span>Chrome extension (Chromium) for one-click listing capture from marketplace pages</li>
-                    <li class="change-item"><span class="badge badge-new">New</span>AR preview feature for item visualization</li>
-                    <li class="change-item"><span class="badge badge-new">New</span>Blockchain verification for high-value item provenance</li>
-                </ul>
-            </div>
-        </article>
-
-        <!-- v1.1.0 -->
-        <article class="release" aria-label="Version 1.1.0">
-            <div class="release-meta">
-                <span class="release-version">v1.1.0</span>
-                <span class="release-date">April 2026</span>
-            </div>
-            <div class="release-dot" aria-hidden="true"></div>
-            <div class="release-card">
-                <div class="release-title">E2E test suite &amp; Docker setup</div>
-                <ul class="change-list">
-                    <li class="change-item"><span class="badge badge-new">New</span>Playwright E2E test suite covering all primary user workflows</li>
-                    <li class="change-item"><span class="badge badge-new">New</span>Bun:test unit test suite with auth, security, and route coverage</li>
-                    <li class="change-item"><span class="badge badge-new">New</span>Docker multi-stage build with non-root user and health check at <code>/api/health</code></li>
-                    <li class="change-item"><span class="badge badge-new">New</span>Docker Compose stack: web + redis + Nginx reverse proxy</li>
-                    <li class="change-item"><span class="badge badge-new">New</span>GitHub Actions CI with blocking test gate before any deploy</li>
-                    <li class="change-item"><span class="badge badge-fix">Fix</span>Pre-commit hooks enforcing test runs and conventional commit format</li>
-                </ul>
-            </div>
-        </article>
-
-        <!-- v1.0.0 -->
-        <article class="release" aria-label="Version 1.0.0">
-            <div class="release-meta">
-                <span class="release-version">v1.0.0</span>
-                <span class="release-date">April 2026</span>
-            </div>
-            <div class="release-dot" aria-hidden="true"></div>
-            <div class="release-card">
-                <div class="release-title">Initial release</div>
-                <ul class="change-list">
-                    <li class="change-item"><span class="badge badge-new">New</span>Inventory management with full-text search across all fields</li>
-                    <li class="change-item"><span class="badge badge-new">New</span>Sales tracking and analytics dashboard with revenue breakdowns</li>
-                    <li class="change-item"><span class="badge badge-new">New</span>Offer management with accept/counter/decline flows</li>
-                    <li class="change-item"><span class="badge badge-new">New</span>Image bank with batch upload and per-item photo management</li>
-                    <li class="change-item"><span class="badge badge-new">New</span>JWT auth with 15-min access tokens, 7-day refresh, and TOTP MFA</li>
-                    <li class="change-item"><span class="badge badge-new">New</span>PostgreSQL database with TSVECTOR full-text search and automated backups</li>
-                    <li class="change-item"><span class="badge badge-new">New</span>WebSocket real-time updates for listings and offer state changes</li>
-                </ul>
-            </div>
-        </article>
-
-    </div>
-</main>
-
-<footer class="footer" aria-label="Footer">
-    <div class="footer-social-bar">
-        <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" width="144" height="36" style="display:block;"></a>
-        <div class="footer-social-links">
-            <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg></a>
-            <a href="https://www.facebook.com/profile.php?id=61570865723233" aria-label="Facebook"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
-            <a href="https://x.com/VaultListerCo" aria-label="X"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
-            <a href="https://www.tiktok.com/@vaultlister.co" aria-label="TikTok"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.92a8.24 8.24 0 0 0 4.83 1.56v-3.5a4.84 4.84 0 0 1-1.07-.29z"/></svg></a>
-            <a href="https://www.reddit.com/user/VaultLister/" aria-label="Reddit"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg></a>
-            <a href="https://www.youtube.com/@VaultLister" aria-label="YouTube"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
-        </div>
-    </div>
-    <div class="footer-inner">
-                <div class="footer-cols">
-            <div class="footer-col">
-                <h3 class="footer-col-label">Resources</h3>
-                <a href="/blog/index.html">Blog</a>
-                <a href="/changelog.html">Changelog</a>
+            <a class="mobile-nav-item" href="/platforms.html">Marketplaces</a>
+            <a class="mobile-nav-item" href="/pricing.html">Pricing</a>
+            <button
+                type="button"
+                class="mobile-nav-section-btn"
+                data-mobile-section="mobile-resources-sub"
+                aria-controls="mobile-resources-sub"
+                aria-expanded="false"
+            >
+                Resources
+            </button>
+            <div class="mobile-nav-sub" id="mobile-resources-sub">
+                <a href="/learning.html">Learning</a>
                 <a href="/documentation.html">Documentation</a>
-                <a href="/faq.html">FAQs</a>
-                <a href="/help.html">Help Center</a>
-            </div>
-            <div class="footer-col">
-                <h3 class="footer-col-label">Company</h3>
-                <a href="/about.html">About Us</a>
-                <a href="/careers.html">Careers</a>
-                <a href="/documentation.html#media-kit">Media Kit</a>
+                <a href="/blog/index.html">Blog</a>
                 <a href="/affiliate.html">Affiliate Program</a>
             </div>
-            <div class="footer-col">
-                <h3 class="footer-col-label">Legal</h3>
-                <a href="/privacy.html">Privacy Policy</a>
-                <a href="/terms.html">Terms of Service</a>
-                <a href="/cookies.html">Cookie Policy</a>
+            <button
+                type="button"
+                class="mobile-nav-section-btn"
+                data-mobile-section="mobile-feedback-sub"
+                aria-controls="mobile-feedback-sub"
+                aria-expanded="false"
+            >
+                Feedback &amp; Support
+            </button>
+            <div class="mobile-nav-sub" id="mobile-feedback-sub">
+                <a href="/help.html">Help Center</a>
+                <a href="/faq.html">FAQs</a>
+                <a href="/request-feature.html">Request a Feature</a>
+                <a href="/contact.html#contact-form">Report a Bug</a>
+                <a href="/contact.html">Contact Us</a>
             </div>
-            <div class="footer-col">
-                <h3 class="footer-col-label">Compare</h3>
-                <a href="/compare/crosslist.html">Crosslist</a>
-                <a href="/compare/crosslist-magic.html">Crosslist Magic</a>
-                <a href="/compare/flyp.html">Flyp</a>
-                <a href="/compare/list-perfectly.html">List Perfectly</a>
-                <a href="/compare/nifty.html">Nifty</a>
-                <a href="/compare/oneshop.html">OneShop</a>
-                <a href="/compare/primelister.html">Primelister</a>
-                <a href="/compare/vendoo.html">Vendoo</a>
+            <button
+                type="button"
+                class="mobile-nav-section-btn"
+                data-mobile-section="mobile-product-updates-sub"
+                aria-controls="mobile-product-updates-sub"
+                aria-expanded="false"
+            >
+                Status &amp; Updates
+            </button>
+            <div class="mobile-nav-sub" id="mobile-product-updates-sub">
+                <a href="/changelog.html">Changelog</a>
+                <a href="/roadmap-public.html">Roadmap</a>
+                <a href="/status.html">Status Page</a>
+            </div>
+            <div class="mobile-nav-actions">
+                <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
+                <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
+            </div>
+        </nav>
+
+        <div class="hero" role="region" aria-label="Hero">
+            <h1>Changelog</h1>
+            <p>Every release, every improvement. VaultLister ships fast — here's what's new.</p>
+        </div>
+
+        <main class="main" id="main-content">
+            <div class="controls-bar">
+                <div role="search">
+                    <label class="search-shell">
+                        <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            aria-hidden="true"
+                        >
+                            <circle cx="11" cy="11" r="7"></circle>
+                            <path d="M20 20l-3.5-3.5"></path>
+                        </svg>
+                        <input
+                            id="changelog-search"
+                            class="search-input"
+                            type="search"
+                            aria-label="Search releases"
+                            title="Search releases"
+                            placeholder="Search releases, versions, and change notes"
+                        />
+                    </label>
+                </div>
+                <div class="filter-bar" role="group" aria-label="Filter by type">
+                    <button type="button" class="filter-btn active" data-filter="all">All</button>
+                    <button
+                        type="button"
+                        class="filter-btn"
+                        data-filter="new"
+                        style="--filter-bg: var(--badge-new-bg); --filter-text: var(--badge-new-text)"
+                    >
+                        New
+                    </button>
+                    <button
+                        type="button"
+                        class="filter-btn"
+                        data-filter="fix"
+                        style="--filter-bg: var(--badge-fix-bg); --filter-text: var(--badge-fix-text)"
+                    >
+                        Fix
+                    </button>
+                    <button
+                        type="button"
+                        class="filter-btn"
+                        data-filter="security"
+                        style="--filter-bg: var(--badge-security-bg); --filter-text: var(--badge-security-text)"
+                    >
+                        Security
+                    </button>
+                    <button
+                        type="button"
+                        class="filter-btn"
+                        data-filter="ai"
+                        style="--filter-bg: var(--badge-ai-bg); --filter-text: var(--badge-ai-text)"
+                    >
+                        AI
+                    </button>
+                </div>
+                <div class="results-meta" id="results-meta" aria-live="polite"></div>
+            </div>
+            <h2
+                style="
+                    position: absolute;
+                    width: 1px;
+                    height: 1px;
+                    overflow: hidden;
+                    clip: rect(0, 0, 0, 0);
+                    white-space: nowrap;
+                "
+            >
+                Releases
+            </h2>
+            <div class="timeline" role="feed" aria-label="Release history">
+                <!-- v1.7.0 -->
+                <article class="release release--latest" aria-label="Version 1.7.0">
+                    <div class="release-meta">
+                        <span class="release-version">v1.7.0</span>
+                        <span class="release-date">April 2026</span>
+                    </div>
+                    <div class="release-dot" aria-hidden="true"></div>
+                    <div class="release-card">
+                        <div class="release-header">
+                            <span class="badge-latest">Latest</span>
+                        </div>
+                        <div class="release-title">Launch readiness, security hardening &amp; cleanup</div>
+                        <ul class="change-list">
+                            <li class="change-item">
+                                <span class="badge badge-security">Security</span>Auth lockout re-enabled for production
+                                — brute-force protection active
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-security">Security</span>OAUTH_MODE startup assertion — warns
+                                if marketplace connections use mock tokens
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-fix">Fix</span>Privacy policy and terms of service corrected
+                                for cloud-hosted deployment
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-fix">Fix</span>All placeholder data replaced with proper empty
+                                states across financials, analytics, and settings
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>SKU uniqueness constraint — prevents duplicate
+                                inventory SKUs
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>8 pages added to sidebar navigation (Plans,
+                                Account, Calendar, Reports, Community, Roadmap, Import, Receipts)
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>Centralized platform list — consistent
+                                9-platform count across all surfaces
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-fix">Fix</span>Window exposures for richTextEditor, focusMode,
+                                sessionMonitor — fixes ReferenceErrors on hash-navigated pages
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-fix">Fix</span>RELEASE.md and ARCHITECTURE.md corrected
+                                (PostgreSQL, AES-256-GCM, Railway+Cloudflare)
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-fix">Fix</span>178 stale files archived (legacy PostgreSQL
+                                migrations, evidence docs, nginx configs)
+                            </li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- v1.6.0 -->
+                <article class="release" aria-label="Version 1.6.0">
+                    <div class="release-meta">
+                        <span class="release-version">v1.6.0</span>
+                        <span class="release-date">April 2026</span>
+                    </div>
+                    <div class="release-dot" aria-hidden="true"></div>
+                    <div class="release-card">
+                        <div class="release-title">Landing page, admin dashboard, bundle splitting &amp; SSL</div>
+                        <ul class="change-list">
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>Public landing page with feature highlights and
+                                pricing tiers
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>Admin dashboard with system health, active
+                                sessions, and audit log viewer
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>Changelog page (you are here)
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>Route-group chunk splitting — core bundle down
+                                40%, lazy loads per page
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-security">Security</span>SSL/TLS configured with Let's Encrypt
+                                + Nginx; HSTS enabled
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>Custom domain routing with www redirect and
+                                HTTPS enforcement
+                            </li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- v1.5.0 -->
+                <article class="release" aria-label="Version 1.5.0">
+                    <div class="release-meta">
+                        <span class="release-version">v1.5.0</span>
+                        <span class="release-date">April 2026</span>
+                    </div>
+                    <div class="release-dot" aria-hidden="true"></div>
+                    <div class="release-card">
+                        <div class="release-title">eBay OAuth production, staging deploy &amp; QA walkthrough</div>
+                        <ul class="change-list">
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>eBay OAuth 2.0 promoted to production
+                                credentials with full token refresh flow
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>Staging environment on dedicated server with
+                                environment-parity config
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-fix">Fix</span>QA walkthrough pass — 14 UI/UX issues resolved
+                                from structured test session
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-fix">Fix</span>OAuth popup callback race condition eliminated
+                                with storage event debounce
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>Automated smoke test run on every staging deploy
+                                via GitHub Actions
+                            </li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- v1.4.0 -->
+                <article class="release" aria-label="Version 1.4.0">
+                    <div class="release-meta">
+                        <span class="release-version">v1.4.0</span>
+                        <span class="release-date">April 2026</span>
+                    </div>
+                    <div class="release-dot" aria-hidden="true"></div>
+                    <div class="release-card">
+                        <div class="release-title">Security hardening, monitoring &amp; backup system</div>
+                        <ul class="change-list">
+                            <li class="change-item">
+                                <span class="badge badge-security">Security</span>OWASP hardening pass — tightened CSP,
+                                removed unused response headers
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-security">Security</span>Rate limiting applied to all auth and
+                                public-facing endpoints
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>Prometheus + Grafana monitoring stack deployed;
+                                latency and error-rate dashboards
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>Automated daily PostgreSQL backups with 7-day
+                                retention
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>Backup restore script at
+                                <code>/opt/vaultlister-staging/restore.sh</code>
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-fix">Fix</span>Health check endpoint now returns DB read
+                                latency for faster triage
+                            </li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- v1.3.0 -->
+                <article class="release" aria-label="Version 1.3.0">
+                    <div class="release-meta">
+                        <span class="release-version">v1.3.0</span>
+                        <span class="release-date">April 2026</span>
+                    </div>
+                    <div class="release-dot" aria-hidden="true"></div>
+                    <div class="release-card">
+                        <div class="release-title">7 marketplace integrations &amp; Playwright automations</div>
+                        <ul class="change-list">
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>Cross-lister supports 7 live platforms:
+                                Poshmark, eBay, Depop, Shopify, Facebook Marketplace, Whatnot, Grailed (Mercari, Etsy
+                                coming soon)
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>Playwright automation bots: closet sharing,
+                                follow-back, and offer rules
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>Automation audit log — every bot action recorded
+                                to <code>data/automation-audit.log</code>
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>Platform rate-limit config with per-platform
+                                minimum action delays
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-security">Security</span>OAuth tokens encrypted with
+                                AES-256-GCM before database storage
+                            </li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- v1.2.0 -->
+                <article class="release" aria-label="Version 1.2.0">
+                    <div class="release-meta">
+                        <span class="release-version">v1.2.0</span>
+                        <span class="release-date">April 2026</span>
+                    </div>
+                    <div class="release-dot" aria-hidden="true"></div>
+                    <div class="release-card">
+                        <div class="release-title">AI features &amp; Chrome extension</div>
+                        <ul class="change-list">
+                            <li class="change-item">
+                                <span class="badge badge-ai">AI</span>AI listing generation via Claude — title,
+                                description, tags, and price suggestion from photos
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-ai">AI</span>Vault Buddy chat assistant for reseller Q&amp;A
+                                and workflow guidance
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-ai">AI</span>Image analysis with automatic tagging and
+                                condition detection
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>Chrome extension (Chromium) for one-click
+                                listing capture from marketplace pages
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>AR preview feature for item visualization
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>Blockchain verification for high-value item
+                                provenance
+                            </li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- v1.1.0 -->
+                <article class="release" aria-label="Version 1.1.0">
+                    <div class="release-meta">
+                        <span class="release-version">v1.1.0</span>
+                        <span class="release-date">April 2026</span>
+                    </div>
+                    <div class="release-dot" aria-hidden="true"></div>
+                    <div class="release-card">
+                        <div class="release-title">E2E test suite &amp; Docker setup</div>
+                        <ul class="change-list">
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>Playwright E2E test suite covering all primary
+                                user workflows
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>Bun:test unit test suite with auth, security,
+                                and route coverage
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>Docker multi-stage build with non-root user and
+                                health check at <code>/api/health</code>
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>Docker Compose stack: web + redis + Nginx
+                                reverse proxy
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>GitHub Actions CI with blocking test gate before
+                                any deploy
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-fix">Fix</span>Pre-commit hooks enforcing test runs and
+                                conventional commit format
+                            </li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- v1.0.0 -->
+                <article class="release" aria-label="Version 1.0.0">
+                    <div class="release-meta">
+                        <span class="release-version">v1.0.0</span>
+                        <span class="release-date">April 2026</span>
+                    </div>
+                    <div class="release-dot" aria-hidden="true"></div>
+                    <div class="release-card">
+                        <div class="release-title">Initial release</div>
+                        <ul class="change-list">
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>Inventory management with full-text search
+                                across all fields
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>Sales tracking and analytics dashboard with
+                                revenue breakdowns
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>Offer management with accept/counter/decline
+                                flows
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>Image bank with batch upload and per-item photo
+                                management
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>JWT auth with 15-min access tokens, 7-day
+                                refresh, and TOTP MFA
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>PostgreSQL database with TSVECTOR full-text
+                                search and automated backups
+                            </li>
+                            <li class="change-item">
+                                <span class="badge badge-new">New</span>WebSocket real-time updates for listings and
+                                offer state changes
+                            </li>
+                        </ul>
+                    </div>
+                </article>
+            </div>
+        </main>
+
+        <footer class="footer" aria-label="Footer">
+            <div class="footer-social-bar">
+                <a href="/" class="footer-logo"
+                    ><img
+                        src="/assets/logo/lockups/horizontal-512.svg"
+                        alt="VaultLister"
+                        width="144"
+                        height="36"
+                        style="display: block"
+                /></a>
+                <div class="footer-social-links">
+                    <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"
+                        ><svg
+                            width="22"
+                            height="22"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <rect x="2" y="2" width="20" height="20" rx="5" />
+                            <circle cx="12" cy="12" r="5" />
+                            <circle cx="17.5" cy="6.5" r="1.5" /></svg
+                    ></a>
+                    <a href="https://www.facebook.com/profile.php?id=61570865723233" aria-label="Facebook"
+                        ><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></svg
+                    ></a>
+                    <a href="https://x.com/VaultListerCo" aria-label="X"
+                        ><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+                            /></svg
+                    ></a>
+                    <a href="https://www.tiktok.com/@vaultlister.co" aria-label="TikTok"
+                        ><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.92a8.24 8.24 0 0 0 4.83 1.56v-3.5a4.84 4.84 0 0 1-1.07-.29z"
+                            /></svg
+                    ></a>
+                    <a href="https://www.reddit.com/user/VaultLister/" aria-label="Reddit"
+                        ><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"
+                            /></svg
+                    ></a>
+                    <a href="https://www.youtube.com/@VaultLister" aria-label="YouTube"
+                        ><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"
+                            /></svg
+                    ></a>
+                </div>
+            </div>
+            <div class="footer-inner">
+                <div class="footer-cols">
+                    <div class="footer-col">
+                        <h3 class="footer-col-label">Resources</h3>
+                        <a href="/blog/index.html">Blog</a>
+                        <a href="/changelog.html">Changelog</a>
+                        <a href="/documentation.html">Documentation</a>
+                        <a href="/faq.html">FAQs</a>
+                        <a href="/help.html">Help Center</a>
+                    </div>
+                    <div class="footer-col">
+                        <h3 class="footer-col-label">Company</h3>
+                        <a href="/about.html">About Us</a>
+                        <a href="/careers.html">Careers</a>
+                        <a href="/documentation.html#media-kit">Media Kit</a>
+                        <a href="/affiliate.html">Affiliate Program</a>
+                    </div>
+                    <div class="footer-col">
+                        <h3 class="footer-col-label">Legal</h3>
+                        <a href="/privacy.html">Privacy Policy</a>
+                        <a href="/terms.html">Terms of Service</a>
+                        <a href="/cookies.html">Cookie Policy</a>
+                    </div>
+                    <div class="footer-col">
+                        <h3 class="footer-col-label">Compare</h3>
+                        <a href="/compare/crosslist.html">Crosslist</a>
+                        <a href="/compare/crosslist-magic.html">Crosslist Magic</a>
+                        <a href="/compare/flyp.html">Flyp</a>
+                        <a href="/compare/list-perfectly.html">List Perfectly</a>
+                        <a href="/compare/nifty.html">Nifty</a>
+                        <a href="/compare/oneshop.html">OneShop</a>
+                        <a href="/compare/primelister.html">Primelister</a>
+                        <a href="/compare/vendoo.html">Vendoo</a>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>© 2026 VaultLister, Inc. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Cookie Consent Banner -->
+        <div
+            id="cookie-banner"
+            role="region"
+            aria-label="Cookie consent"
+            style="
+                display: none;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 9999;
+                background: #18181b;
+                color: #fef3c7;
+                padding: 1rem 1.5rem;
+                align-items: center;
+                justify-content: space-between;
+                gap: 1rem;
+                flex-wrap: wrap;
+                box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.18);
+                font-family: Inter, system-ui, sans-serif;
+                font-size: 0.9rem;
+            "
+        >
+            <p style="margin: 0; flex: 1; min-width: 200px">
+                We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are
+                used.
+            </p>
+            <div style="display: flex; gap: 0.625rem; flex-shrink: 0">
+                <button
+                    type="button"
+                    id="cookie-decline"
+                    style="
+                        min-height: 44px;
+                        padding: 0.5rem 1.125rem;
+                        border-radius: 0.5rem;
+                        border: 1.5px solid rgba(224, 231, 255, 0.4);
+                        background: transparent;
+                        color: #fef3c7;
+                        font-size: 0.875rem;
+                        font-weight: 600;
+                        cursor: pointer;
+                    "
+                >
+                    Decline
+                </button>
+                <button
+                    type="button"
+                    id="cookie-accept"
+                    style="
+                        min-height: 44px;
+                        padding: 0.5rem 1.25rem;
+                        border-radius: 0.5rem;
+                        border: none;
+                        background: linear-gradient(135deg, #b45309, #92400e);
+                        color: #fff;
+                        font-size: 0.875rem;
+                        font-weight: 600;
+                        cursor: pointer;
+                    "
+                >
+                    Accept
+                </button>
             </div>
         </div>
-        <div class="footer-bottom">
-            <p>© 2026 VaultLister, Inc. All rights reserved.</p>
-            </div>
-    </div>
-</footer>
-
-<!-- Cookie Consent Banner -->
-<div id="cookie-banner" role="region" aria-label="Cookie consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#18181B;color:#fef3c7;padding:1rem 1.5rem;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;">
-    <p style="margin:0;flex:1;min-width:200px;">We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are used.</p>
-    <div style="display:flex;gap:0.625rem;flex-shrink:0;">
-        <button type="button" id="cookie-decline" style="min-height:44px;padding:0.5rem 1.125rem;border-radius:0.5rem;border:1.5px solid rgba(224,231,255,0.4);background:transparent;color:#fef3c7;font-size:0.875rem;font-weight:600;cursor:pointer;">Decline</button>
-        <button type="button" id="cookie-accept" style="min-height:44px;padding:0.5rem 1.25rem;border-radius:0.5rem;border:none;background:linear-gradient(135deg,#b45309,#92400e);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;">Accept</button>
-    </div>
-</div>
-<script>
-(function() {
-    var banner = document.getElementById('cookie-banner');
-    if (!banner) return;
-    if (localStorage.getItem('cookie_consent')) { banner.style.display = 'none'; return; }
-    banner.style.display = 'flex';
-    document.getElementById('cookie-accept').addEventListener('click', function() {
-        localStorage.setItem('cookie_consent', 'accepted');
-        if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'granted' });
-        banner.style.display = 'none';
-    });
-    document.getElementById('cookie-decline').addEventListener('click', function() {
-        localStorage.setItem('cookie_consent', 'declined');
-        if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'denied' });
-        banner.style.display = 'none';
-    });
-})();
-</script>
-<script>
-(function() {
-    const filterButtons = Array.from(document.querySelectorAll('.filter-btn'));
-    const searchInput = document.getElementById('changelog-search');
-    const resultsMeta = document.getElementById('results-meta');
-    const releases = Array.from(document.querySelectorAll('.release'));
-
-    function getActiveFilter() {
-        const active = document.querySelector('.filter-btn.active');
-        return active ? active.dataset.filter : 'all';
-    }
-
-    function updateResultsMeta(visibleReleases, totalReleases, query, filter) {
-        const bits = [];
-        bits.push(visibleReleases === totalReleases ? 'Showing all releases' : 'Showing ' + visibleReleases + ' of ' + totalReleases + ' releases');
-        if (filter !== 'all') {
-            bits.push('filtered by ' + filter);
-        }
-        if (query) {
-            bits.push('matching "' + query + '"');
-        }
-        resultsMeta.textContent = bits.join(' ');
-    }
-
-    function applyFilters() {
-        const filter = getActiveFilter();
-        const query = (searchInput.value || '').trim().toLowerCase();
-        let visibleCount = 0;
-
-        releases.forEach(release => {
-            const title = (release.querySelector('.release-title')?.textContent || '').toLowerCase();
-            const meta = (release.querySelector('.release-meta')?.textContent || '').toLowerCase();
-            let releaseVisible = false;
-
-            release.querySelectorAll('.change-item').forEach(item => {
-                const matchesFilter = filter === 'all' || !!item.querySelector('.badge-' + filter);
-                const itemText = item.textContent.toLowerCase();
-                const matchesQuery = !query || title.includes(query) || meta.includes(query) || itemText.includes(query);
-                const showItem = matchesFilter && matchesQuery;
-                item.style.display = showItem ? '' : 'none';
-                if (showItem) {
-                    releaseVisible = true;
+        <script>
+            (function () {
+                var banner = document.getElementById('cookie-banner');
+                if (!banner) return;
+                if (localStorage.getItem('cookie_consent')) {
+                    banner.style.display = 'none';
+                    return;
                 }
-            });
+                banner.style.display = 'flex';
+                document.getElementById('cookie-accept').addEventListener('click', function () {
+                    localStorage.setItem('cookie_consent', 'accepted');
+                    if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'granted' });
+                    banner.style.display = 'none';
+                });
+                document.getElementById('cookie-decline').addEventListener('click', function () {
+                    localStorage.setItem('cookie_consent', 'declined');
+                    if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'denied' });
+                    banner.style.display = 'none';
+                });
+            })();
+        </script>
+        <script>
+            (function () {
+                const filterButtons = Array.from(document.querySelectorAll('.filter-btn'));
+                const searchInput = document.getElementById('changelog-search');
+                const resultsMeta = document.getElementById('results-meta');
+                const releases = Array.from(document.querySelectorAll('.release'));
 
-            const releaseMatchesQuery = !query || title.includes(query) || meta.includes(query);
-            if (!releaseVisible && releaseMatchesQuery) {
-                const anyFilterMatch = filter === 'all' || !!release.querySelector('.badge-' + filter);
-                if (anyFilterMatch) {
-                    release.querySelectorAll('.change-item').forEach(item => {
-                        const matchesFilter = filter === 'all' || !!item.querySelector('.badge-' + filter);
-                        item.style.display = matchesFilter ? '' : 'none';
+                function getActiveFilter() {
+                    const active = document.querySelector('.filter-btn.active');
+                    return active ? active.dataset.filter : 'all';
+                }
+
+                function updateResultsMeta(visibleReleases, totalReleases, query, filter) {
+                    const bits = [];
+                    bits.push(
+                        visibleReleases === totalReleases
+                            ? 'Showing all releases'
+                            : 'Showing ' + visibleReleases + ' of ' + totalReleases + ' releases',
+                    );
+                    if (filter !== 'all') {
+                        bits.push('filtered by ' + filter);
+                    }
+                    if (query) {
+                        bits.push('matching "' + query + '"');
+                    }
+                    resultsMeta.textContent = bits.join(' ');
+                }
+
+                function applyFilters() {
+                    const filter = getActiveFilter();
+                    const query = (searchInput.value || '').trim().toLowerCase();
+                    let visibleCount = 0;
+
+                    releases.forEach((release) => {
+                        const title = (release.querySelector('.release-title')?.textContent || '').toLowerCase();
+                        const meta = (release.querySelector('.release-meta')?.textContent || '').toLowerCase();
+                        let releaseVisible = false;
+
+                        release.querySelectorAll('.change-item').forEach((item) => {
+                            const matchesFilter = filter === 'all' || !!item.querySelector('.badge-' + filter);
+                            const itemText = item.textContent.toLowerCase();
+                            const matchesQuery =
+                                !query || title.includes(query) || meta.includes(query) || itemText.includes(query);
+                            const showItem = matchesFilter && matchesQuery;
+                            item.style.display = showItem ? '' : 'none';
+                            if (showItem) {
+                                releaseVisible = true;
+                            }
+                        });
+
+                        const releaseMatchesQuery = !query || title.includes(query) || meta.includes(query);
+                        if (!releaseVisible && releaseMatchesQuery) {
+                            const anyFilterMatch = filter === 'all' || !!release.querySelector('.badge-' + filter);
+                            if (anyFilterMatch) {
+                                release.querySelectorAll('.change-item').forEach((item) => {
+                                    const matchesFilter = filter === 'all' || !!item.querySelector('.badge-' + filter);
+                                    item.style.display = matchesFilter ? '' : 'none';
+                                });
+                                releaseVisible = true;
+                            }
+                        }
+
+                        release.style.display = releaseVisible ? '' : 'none';
+                        if (releaseVisible) {
+                            visibleCount += 1;
+                        }
                     });
-                    releaseVisible = true;
+
+                    updateResultsMeta(visibleCount, releases.length, query, filter);
                 }
-            }
 
-            release.style.display = releaseVisible ? '' : 'none';
-            if (releaseVisible) {
-                visibleCount += 1;
-            }
-        });
+                filterButtons.forEach((btn) => {
+                    btn.addEventListener('click', () => {
+                        filterButtons.forEach((b) => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        applyFilters();
+                    });
+                });
 
-        updateResultsMeta(visibleCount, releases.length, query, filter);
-    }
+                if (searchInput) {
+                    searchInput.addEventListener('input', applyFilters);
+                }
 
-    filterButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            filterButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            applyFilters();
-        });
-    });
+                applyFilters();
+            })();
 
-    if (searchInput) {
-        searchInput.addEventListener('input', applyFilters);
-    }
-
-    applyFilters();
-})();
-
-// Desktop dropdown toggle
-document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        var menuId = btn.getAttribute('data-dropdown');
-        var menu = document.getElementById(menuId);
-        if (!menu) return;
-        var isOpen = menu.classList.contains('open');
-        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('inert', ''); });
-        document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
-        if (!isOpen) {
-            menu.classList.add('open');
-            menu.removeAttribute('inert');
-            btn.setAttribute('aria-expanded', 'true');
-        }
-    });
-});
-
-// Close all dropdowns on outside click
-document.addEventListener('click', function() {
-    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('inert', ''); });
-    document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
-});
-
-// Prevent dropdown menu clicks from closing immediately
-document.querySelectorAll('.nav-dropdown-menu').forEach(function(menu) {
-    menu.addEventListener('click', function(e) { e.stopPropagation(); });
-});
-
-// Mobile hamburger toggle
-var hamburger = document.querySelector('.nav-hamburger');
-var mobileDrawer = document.getElementById('mobile-nav-drawer');
-if (hamburger && mobileDrawer) {
-    hamburger.addEventListener('click', function(e) {
-        e.stopPropagation();
-        var isOpen = mobileDrawer.classList.toggle('open');
-        hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-        if (isOpen) { mobileDrawer.removeAttribute('inert'); } else { mobileDrawer.setAttribute('inert', ''); }
-    });
-    document.addEventListener('click', function(e) {
-        if (!mobileDrawer.contains(e.target) && !hamburger.contains(e.target)) {
-            mobileDrawer.classList.remove('open');
-            hamburger.setAttribute('aria-expanded', 'false');
-            mobileDrawer.setAttribute('inert', '');
-        }
-    });
-}
-
-// Mobile expandable sections
-document.querySelectorAll('.mobile-nav-section-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-        var subId = btn.getAttribute('data-mobile-section');
-        var sub = document.getElementById(subId);
-        if (!sub) return;
-        var isOpen = sub.classList.toggle('open');
-        btn.classList.toggle('open', isOpen);
-        btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-    });
-});
-
-// Close mobile drawer when a link inside it is clicked
-if (mobileDrawer) {
-    mobileDrawer.querySelectorAll('a').forEach(function(a) {
-        a.addEventListener('click', function() {
-            mobileDrawer.classList.remove('open');
-            mobileDrawer.setAttribute('inert', '');
-            if (hamburger) { hamburger.setAttribute('aria-expanded', 'false'); }
-        });
-    });
-}
-
-// Desktop dropdown toggle
-document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        var menuId = btn.getAttribute('data-dropdown');
-        var menu = document.getElementById(menuId);
-        if (!menu) return;
-        var isOpen = menu.classList.contains('open');
-        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('inert', ''); });
-        document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
-        if (!isOpen) {
-            menu.classList.add('open');
-            menu.removeAttribute('inert');
-            btn.setAttribute('aria-expanded', 'true');
-        }
-    });
-});
-
-// Close all dropdowns on outside click
-document.addEventListener('click', function() {
-    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('inert', ''); });
-    document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
-});
-
-// Prevent dropdown menu clicks from closing immediately
-document.querySelectorAll('.nav-dropdown-menu').forEach(function(menu) {
-    menu.addEventListener('click', function(e) { e.stopPropagation(); });
-});
-
-// Mobile hamburger toggle
-var hamburger = document.querySelector('.nav-hamburger');
-var mobileDrawer = document.getElementById('mobile-nav-drawer');
-if (hamburger && mobileDrawer) {
-    hamburger.addEventListener('click', function(e) {
-        e.stopPropagation();
-        var isOpen = mobileDrawer.classList.toggle('open');
-        hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-        if (isOpen) { mobileDrawer.removeAttribute('inert'); } else { mobileDrawer.setAttribute('inert', ''); }
-    });
-    document.addEventListener('click', function(e) {
-        if (!mobileDrawer.contains(e.target) && !hamburger.contains(e.target)) {
-            mobileDrawer.classList.remove('open');
-            hamburger.setAttribute('aria-expanded', 'false');
-            mobileDrawer.setAttribute('inert', '');
-        }
-    });
-}
-
-// Mobile expandable sections
-document.querySelectorAll('.mobile-nav-section-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-        var subId = btn.getAttribute('data-mobile-section');
-        var sub = document.getElementById(subId);
-        if (!sub) return;
-        var isOpen = sub.classList.toggle('open');
-        btn.classList.toggle('open', isOpen);
-        btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-    });
-});
-
-// Close mobile drawer when a link inside it is clicked
-if (mobileDrawer) {
-    mobileDrawer.querySelectorAll('a').forEach(function(a) {
-        a.addEventListener('click', function() {
-            mobileDrawer.classList.remove('open');
-            mobileDrawer.setAttribute('inert', '');
-            if (hamburger) { hamburger.setAttribute('aria-expanded', 'false'); }
-        });
-    });
-}
-
-// Desktop dropdown toggle
-document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        var menuId = btn.getAttribute('data-dropdown');
-        var menu = document.getElementById(menuId);
-        if (!menu) return;
-        var isOpen = menu.classList.contains('open');
-        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('inert', ''); });
-        document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
-        if (!isOpen) {
-            menu.classList.add('open');
-            menu.removeAttribute('inert');
-            btn.setAttribute('aria-expanded', 'true');
-        }
-    });
-});
-
-// Close all dropdowns on outside click
-document.addEventListener('click', function() {
-    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('inert', ''); });
-    document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
-});
-
-// Prevent dropdown menu clicks from closing immediately
-document.querySelectorAll('.nav-dropdown-menu').forEach(function(menu) {
-    menu.addEventListener('click', function(e) { e.stopPropagation(); });
-});
-
-// Mobile hamburger toggle
-var hamburger = document.querySelector('.nav-hamburger');
-var mobileDrawer = document.getElementById('mobile-nav-drawer');
-if (hamburger && mobileDrawer) {
-    hamburger.addEventListener('click', function(e) {
-        e.stopPropagation();
-        var isOpen = mobileDrawer.classList.toggle('open');
-        hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-        if (isOpen) { mobileDrawer.removeAttribute('inert'); } else { mobileDrawer.setAttribute('inert', ''); }
-    });
-    document.addEventListener('click', function(e) {
-        if (!mobileDrawer.contains(e.target) && !hamburger.contains(e.target)) {
-            mobileDrawer.classList.remove('open');
-            hamburger.setAttribute('aria-expanded', 'false');
-            mobileDrawer.setAttribute('inert', '');
-        }
-    });
-}
-
-// Mobile expandable sections
-document.querySelectorAll('.mobile-nav-section-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-        var subId = btn.getAttribute('data-mobile-section');
-        var sub = document.getElementById(subId);
-        if (!sub) return;
-        var isOpen = sub.classList.toggle('open');
-        btn.classList.toggle('open', isOpen);
-        btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-    });
-});
-
-// Close mobile drawer when a link inside it is clicked
-if (mobileDrawer) {
-    mobileDrawer.querySelectorAll('a').forEach(function(a) {
-        a.addEventListener('click', function() {
-            mobileDrawer.classList.remove('open');
-            mobileDrawer.setAttribute('inert', '');
-            if (hamburger) { hamburger.setAttribute('aria-expanded', 'false'); }
-        });
-    });
-}
-
-// Lang selector
-(function() {
-    var LANGS = {
-        en: { code: "EN" },
-        'en-ca': { code: "EN" },
-        es: { code: "ES" },
-        fr: { code: "FR" },
-        de: { code: "DE" },
-        it: { code: "IT" },
-        pt: { code: "PT" },
-        ja: { code: "JA" },
-        zh: { code: "ZH" },
-        ko: { code: "KO" },
-        ar: { code: "AR" }
-    };
-    function setLang(lang) {
-        var info = LANGS[lang] || LANGS["en"];
-        var codeEl = document.getElementById("current-lang-code");
-        if (codeEl) codeEl.textContent = info.code;
-        document.querySelectorAll(".lang-option").forEach(function(btn) {
-            btn.classList.toggle("active", btn.getAttribute("data-lang") === lang);
-        });
-        try { localStorage.setItem("vaultlister_locale", lang); } catch(e) {}
-    }
-    function detectLang() {
-        try {
-            var stored = localStorage.getItem("vaultlister_locale");
-            if (stored && LANGS[stored]) return stored;
-        } catch(e) {}
-        var nav = (navigator.language || "").toLowerCase();
-        if (nav === "en-ca" || nav.startsWith("en-ca")) return "en-ca";
-        var base = nav.split("-")[0];
-        return LANGS[base] ? base : "en";
-    }
-    document.addEventListener("DOMContentLoaded", function() {
-        var btn = document.querySelector(".lang-btn");
-        var dropdown = document.getElementById("lang-dropdown");
-        if (!btn || !dropdown) return;
-        setLang(detectLang());
-        btn.addEventListener("click", function(e) {
-            e.stopPropagation();
-            var open = dropdown.classList.toggle("open");
-            btn.setAttribute("aria-expanded", open ? "true" : "false");
-        });
-        document.addEventListener("click", function(e) {
-            if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
-                dropdown.classList.remove("open");
-                btn.setAttribute("aria-expanded", "false");
-            }
-        });
-        dropdown.querySelectorAll(".lang-option").forEach(function(opt) {
-            opt.addEventListener("click", function() {
-                setLang(opt.getAttribute("data-lang"));
-                dropdown.classList.remove("open");
-                btn.setAttribute("aria-expanded", "false");
+            // Desktop dropdown toggle
+            document.querySelectorAll('.nav-dropdown-btn').forEach(function (btn) {
+                btn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    var menuId = btn.getAttribute('data-dropdown');
+                    var menu = document.getElementById(menuId);
+                    if (!menu) return;
+                    var isOpen = menu.classList.contains('open');
+                    document.querySelectorAll('.nav-dropdown-menu').forEach(function (m) {
+                        m.classList.remove('open');
+                        m.setAttribute('inert', '');
+                    });
+                    document.querySelectorAll('.nav-dropdown-btn').forEach(function (b) {
+                        b.setAttribute('aria-expanded', 'false');
+                    });
+                    if (!isOpen) {
+                        menu.classList.add('open');
+                        menu.removeAttribute('inert');
+                        btn.setAttribute('aria-expanded', 'true');
+                    }
+                });
             });
-        });
-    });
-})();
 
-// Currency selector
-(function() {
-    var saved = localStorage.getItem('vl_currency') || 'CAD';
-    var el = document.getElementById('current-currency-code');
-    if (el) el.textContent = saved;
-    document.querySelectorAll('.currency-option').forEach(function(btn) {
-        if (btn.dataset.currency === saved) btn.classList.add('active');
-        btn.addEventListener('click', function() {
-            var c = this.dataset.currency;
-            localStorage.setItem('vl_currency', c);
-            document.querySelectorAll('.currency-option').forEach(function(b){ b.classList.remove('active'); });
-            this.classList.add('active');
-            var codeEl = document.getElementById('current-currency-code');
-            if (codeEl) codeEl.textContent = c;
-            var dd = document.getElementById('currency-dropdown');
-            if (dd) dd.classList.remove('open');
-        });
-    });
-    var btn = document.querySelector('.currency-btn');
-    if (btn) {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            var dd = document.getElementById('currency-dropdown');
-            dd.classList.toggle('open');
-            btn.setAttribute('aria-expanded', dd.classList.contains('open'));
-        });
-    }
-    document.addEventListener('click', function() {
-        var dd = document.getElementById('currency-dropdown');
-        if (dd) { dd.classList.remove('open'); }
-        if (btn) btn.setAttribute('aria-expanded', 'false');
-    });
-})();
-</script>
-<script>
-(function() {
-    var hasCurrency = !!localStorage.getItem('vl_currency');
-    var hasLang = !!localStorage.getItem('vaultlister_locale');
-    if (hasCurrency && hasLang) return;
-    fetch('/api/geo')
-        .then(function(r) { return r.json(); })
-        .then(function(d) {
-            var cc = d.country_code || '';
-            if (!hasCurrency) {
-                var CURR = {CA:'CAD',US:'USD',GB:'GBP',AU:'AUD',NZ:'AUD',
-                    FR:'EUR',DE:'EUR',IT:'EUR',ES:'EUR',NL:'EUR',BE:'EUR',
-                    AT:'EUR',FI:'EUR',IE:'EUR',PT:'EUR',GR:'EUR',LU:'EUR',
-                    SK:'EUR',SI:'EUR',EE:'EUR',LV:'EUR',LT:'EUR',CY:'EUR',MT:'EUR'};
-                var curr = CURR[cc];
-                if (curr) {
-                    var btn = document.querySelector('.currency-option[data-currency="' + curr + '"]');
-                    if (btn) btn.click();
-                }
+            // Close all dropdowns on outside click
+            document.addEventListener('click', function () {
+                document.querySelectorAll('.nav-dropdown-menu').forEach(function (m) {
+                    m.classList.remove('open');
+                    m.setAttribute('inert', '');
+                });
+                document.querySelectorAll('.nav-dropdown-btn').forEach(function (b) {
+                    b.setAttribute('aria-expanded', 'false');
+                });
+            });
+
+            // Prevent dropdown menu clicks from closing immediately
+            document.querySelectorAll('.nav-dropdown-menu').forEach(function (menu) {
+                menu.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                });
+            });
+
+            // Mobile hamburger toggle
+            var hamburger = document.querySelector('.nav-hamburger');
+            var mobileDrawer = document.getElementById('mobile-nav-drawer');
+            if (hamburger && mobileDrawer) {
+                hamburger.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    var isOpen = mobileDrawer.classList.toggle('open');
+                    hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                    if (isOpen) {
+                        mobileDrawer.removeAttribute('inert');
+                    } else {
+                        mobileDrawer.setAttribute('inert', '');
+                    }
+                });
+                document.addEventListener('click', function (e) {
+                    if (!mobileDrawer.contains(e.target) && !hamburger.contains(e.target)) {
+                        mobileDrawer.classList.remove('open');
+                        hamburger.setAttribute('aria-expanded', 'false');
+                        mobileDrawer.setAttribute('inert', '');
+                    }
+                });
             }
-            if (!hasLang) {
-                var LANG = {
-                    CA:'en-ca', US:'en', GB:'en', AU:'en', NZ:'en', IE:'en',
-                    FR:'fr', BE:'fr', CH:'fr', LU:'fr',
-                    DE:'de', AT:'de',
-                    IT:'it', ES:'es', MX:'es', AR:'es', CO:'es', CL:'es',
-                    PT:'pt', BR:'pt',
-                    JP:'ja', CN:'zh', TW:'zh', HK:'zh',
-                    KR:'ko', SA:'ar', AE:'ar', EG:'ar', MA:'ar'
+
+            // Mobile expandable sections
+            document.querySelectorAll('.mobile-nav-section-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var subId = btn.getAttribute('data-mobile-section');
+                    var sub = document.getElementById(subId);
+                    if (!sub) return;
+                    var isOpen = sub.classList.toggle('open');
+                    btn.classList.toggle('open', isOpen);
+                    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                });
+            });
+
+            // Close mobile drawer when a link inside it is clicked
+            if (mobileDrawer) {
+                mobileDrawer.querySelectorAll('a').forEach(function (a) {
+                    a.addEventListener('click', function () {
+                        mobileDrawer.classList.remove('open');
+                        mobileDrawer.setAttribute('inert', '');
+                        if (hamburger) {
+                            hamburger.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+                });
+            }
+
+            // Desktop dropdown toggle
+            document.querySelectorAll('.nav-dropdown-btn').forEach(function (btn) {
+                btn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    var menuId = btn.getAttribute('data-dropdown');
+                    var menu = document.getElementById(menuId);
+                    if (!menu) return;
+                    var isOpen = menu.classList.contains('open');
+                    document.querySelectorAll('.nav-dropdown-menu').forEach(function (m) {
+                        m.classList.remove('open');
+                        m.setAttribute('inert', '');
+                    });
+                    document.querySelectorAll('.nav-dropdown-btn').forEach(function (b) {
+                        b.setAttribute('aria-expanded', 'false');
+                    });
+                    if (!isOpen) {
+                        menu.classList.add('open');
+                        menu.removeAttribute('inert');
+                        btn.setAttribute('aria-expanded', 'true');
+                    }
+                });
+            });
+
+            // Close all dropdowns on outside click
+            document.addEventListener('click', function () {
+                document.querySelectorAll('.nav-dropdown-menu').forEach(function (m) {
+                    m.classList.remove('open');
+                    m.setAttribute('inert', '');
+                });
+                document.querySelectorAll('.nav-dropdown-btn').forEach(function (b) {
+                    b.setAttribute('aria-expanded', 'false');
+                });
+            });
+
+            // Prevent dropdown menu clicks from closing immediately
+            document.querySelectorAll('.nav-dropdown-menu').forEach(function (menu) {
+                menu.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                });
+            });
+
+            // Mobile hamburger toggle
+            var hamburger = document.querySelector('.nav-hamburger');
+            var mobileDrawer = document.getElementById('mobile-nav-drawer');
+            if (hamburger && mobileDrawer) {
+                hamburger.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    var isOpen = mobileDrawer.classList.toggle('open');
+                    hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                    if (isOpen) {
+                        mobileDrawer.removeAttribute('inert');
+                    } else {
+                        mobileDrawer.setAttribute('inert', '');
+                    }
+                });
+                document.addEventListener('click', function (e) {
+                    if (!mobileDrawer.contains(e.target) && !hamburger.contains(e.target)) {
+                        mobileDrawer.classList.remove('open');
+                        hamburger.setAttribute('aria-expanded', 'false');
+                        mobileDrawer.setAttribute('inert', '');
+                    }
+                });
+            }
+
+            // Mobile expandable sections
+            document.querySelectorAll('.mobile-nav-section-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var subId = btn.getAttribute('data-mobile-section');
+                    var sub = document.getElementById(subId);
+                    if (!sub) return;
+                    var isOpen = sub.classList.toggle('open');
+                    btn.classList.toggle('open', isOpen);
+                    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                });
+            });
+
+            // Close mobile drawer when a link inside it is clicked
+            if (mobileDrawer) {
+                mobileDrawer.querySelectorAll('a').forEach(function (a) {
+                    a.addEventListener('click', function () {
+                        mobileDrawer.classList.remove('open');
+                        mobileDrawer.setAttribute('inert', '');
+                        if (hamburger) {
+                            hamburger.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+                });
+            }
+
+            // Desktop dropdown toggle
+            document.querySelectorAll('.nav-dropdown-btn').forEach(function (btn) {
+                btn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    var menuId = btn.getAttribute('data-dropdown');
+                    var menu = document.getElementById(menuId);
+                    if (!menu) return;
+                    var isOpen = menu.classList.contains('open');
+                    document.querySelectorAll('.nav-dropdown-menu').forEach(function (m) {
+                        m.classList.remove('open');
+                        m.setAttribute('inert', '');
+                    });
+                    document.querySelectorAll('.nav-dropdown-btn').forEach(function (b) {
+                        b.setAttribute('aria-expanded', 'false');
+                    });
+                    if (!isOpen) {
+                        menu.classList.add('open');
+                        menu.removeAttribute('inert');
+                        btn.setAttribute('aria-expanded', 'true');
+                    }
+                });
+            });
+
+            // Close all dropdowns on outside click
+            document.addEventListener('click', function () {
+                document.querySelectorAll('.nav-dropdown-menu').forEach(function (m) {
+                    m.classList.remove('open');
+                    m.setAttribute('inert', '');
+                });
+                document.querySelectorAll('.nav-dropdown-btn').forEach(function (b) {
+                    b.setAttribute('aria-expanded', 'false');
+                });
+            });
+
+            // Prevent dropdown menu clicks from closing immediately
+            document.querySelectorAll('.nav-dropdown-menu').forEach(function (menu) {
+                menu.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                });
+            });
+
+            // Mobile hamburger toggle
+            var hamburger = document.querySelector('.nav-hamburger');
+            var mobileDrawer = document.getElementById('mobile-nav-drawer');
+            if (hamburger && mobileDrawer) {
+                hamburger.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    var isOpen = mobileDrawer.classList.toggle('open');
+                    hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                    if (isOpen) {
+                        mobileDrawer.removeAttribute('inert');
+                    } else {
+                        mobileDrawer.setAttribute('inert', '');
+                    }
+                });
+                document.addEventListener('click', function (e) {
+                    if (!mobileDrawer.contains(e.target) && !hamburger.contains(e.target)) {
+                        mobileDrawer.classList.remove('open');
+                        hamburger.setAttribute('aria-expanded', 'false');
+                        mobileDrawer.setAttribute('inert', '');
+                    }
+                });
+            }
+
+            // Mobile expandable sections
+            document.querySelectorAll('.mobile-nav-section-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var subId = btn.getAttribute('data-mobile-section');
+                    var sub = document.getElementById(subId);
+                    if (!sub) return;
+                    var isOpen = sub.classList.toggle('open');
+                    btn.classList.toggle('open', isOpen);
+                    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                });
+            });
+
+            // Close mobile drawer when a link inside it is clicked
+            if (mobileDrawer) {
+                mobileDrawer.querySelectorAll('a').forEach(function (a) {
+                    a.addEventListener('click', function () {
+                        mobileDrawer.classList.remove('open');
+                        mobileDrawer.setAttribute('inert', '');
+                        if (hamburger) {
+                            hamburger.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+                });
+            }
+
+            // Lang selector
+            (function () {
+                var LANGS = {
+                    en: { code: 'EN' },
+                    'en-ca': { code: 'EN' },
+                    es: { code: 'ES' },
+                    fr: { code: 'FR' },
+                    de: { code: 'DE' },
+                    it: { code: 'IT' },
+                    pt: { code: 'PT' },
+                    ja: { code: 'JA' },
+                    zh: { code: 'ZH' },
+                    ko: { code: 'KO' },
+                    ar: { code: 'AR' },
                 };
-                var nav = (navigator.language || '').toLowerCase();
-                var lang = (cc === 'CA' && nav.startsWith('fr')) ? 'fr' : LANG[cc];
-                if (lang) {
-                    var btn = document.querySelector('.lang-option[data-lang="' + lang + '"]');
-                    if (btn) btn.click();
+                function setLang(lang) {
+                    var info = LANGS[lang] || LANGS['en'];
+                    var codeEl = document.getElementById('current-lang-code');
+                    if (codeEl) codeEl.textContent = info.code;
+                    document.querySelectorAll('.lang-option').forEach(function (btn) {
+                        btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+                    });
+                    try {
+                        localStorage.setItem('vaultlister_locale', lang);
+                    } catch (e) {}
                 }
-            }
-        })
-        .catch(function() {});
-})();
-</script>
-<script src="/public-auth-nav.js" defer></script>
-</body>
+                function detectLang() {
+                    try {
+                        var stored = localStorage.getItem('vaultlister_locale');
+                        if (stored && LANGS[stored]) return stored;
+                    } catch (e) {}
+                    var nav = (navigator.language || '').toLowerCase();
+                    if (nav === 'en-ca' || nav.startsWith('en-ca')) return 'en-ca';
+                    var base = nav.split('-')[0];
+                    return LANGS[base] ? base : 'en';
+                }
+                document.addEventListener('DOMContentLoaded', function () {
+                    var btn = document.querySelector('.lang-btn');
+                    var dropdown = document.getElementById('lang-dropdown');
+                    if (!btn || !dropdown) return;
+                    setLang(detectLang());
+                    btn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        var open = dropdown.classList.toggle('open');
+                        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                    });
+                    document.addEventListener('click', function (e) {
+                        if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
+                            dropdown.classList.remove('open');
+                            btn.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+                    dropdown.querySelectorAll('.lang-option').forEach(function (opt) {
+                        opt.addEventListener('click', function () {
+                            setLang(opt.getAttribute('data-lang'));
+                            dropdown.classList.remove('open');
+                            btn.setAttribute('aria-expanded', 'false');
+                        });
+                    });
+                });
+            })();
+
+            // Currency selector
+            (function () {
+                var saved = localStorage.getItem('vl_currency') || 'CAD';
+                var el = document.getElementById('current-currency-code');
+                if (el) el.textContent = saved;
+                document.querySelectorAll('.currency-option').forEach(function (btn) {
+                    if (btn.dataset.currency === saved) btn.classList.add('active');
+                    btn.addEventListener('click', function () {
+                        var c = this.dataset.currency;
+                        localStorage.setItem('vl_currency', c);
+                        document.querySelectorAll('.currency-option').forEach(function (b) {
+                            b.classList.remove('active');
+                        });
+                        this.classList.add('active');
+                        var codeEl = document.getElementById('current-currency-code');
+                        if (codeEl) codeEl.textContent = c;
+                        var dd = document.getElementById('currency-dropdown');
+                        if (dd) dd.classList.remove('open');
+                    });
+                });
+                var btn = document.querySelector('.currency-btn');
+                if (btn) {
+                    btn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        var dd = document.getElementById('currency-dropdown');
+                        dd.classList.toggle('open');
+                        btn.setAttribute('aria-expanded', dd.classList.contains('open'));
+                    });
+                }
+                document.addEventListener('click', function () {
+                    var dd = document.getElementById('currency-dropdown');
+                    if (dd) {
+                        dd.classList.remove('open');
+                    }
+                    if (btn) btn.setAttribute('aria-expanded', 'false');
+                });
+            })();
+        </script>
+        <script>
+            (function () {
+                var hasCurrency = !!localStorage.getItem('vl_currency');
+                var hasLang = !!localStorage.getItem('vaultlister_locale');
+                if (hasCurrency && hasLang) return;
+                fetch('/api/geo')
+                    .then(function (r) {
+                        return r.json();
+                    })
+                    .then(function (d) {
+                        var cc = d.country_code || '';
+                        if (!hasCurrency) {
+                            var CURR = {
+                                CA: 'CAD',
+                                US: 'USD',
+                                GB: 'GBP',
+                                AU: 'AUD',
+                                NZ: 'AUD',
+                                FR: 'EUR',
+                                DE: 'EUR',
+                                IT: 'EUR',
+                                ES: 'EUR',
+                                NL: 'EUR',
+                                BE: 'EUR',
+                                AT: 'EUR',
+                                FI: 'EUR',
+                                IE: 'EUR',
+                                PT: 'EUR',
+                                GR: 'EUR',
+                                LU: 'EUR',
+                                SK: 'EUR',
+                                SI: 'EUR',
+                                EE: 'EUR',
+                                LV: 'EUR',
+                                LT: 'EUR',
+                                CY: 'EUR',
+                                MT: 'EUR',
+                            };
+                            var curr = CURR[cc];
+                            if (curr) {
+                                var btn = document.querySelector('.currency-option[data-currency="' + curr + '"]');
+                                if (btn) btn.click();
+                            }
+                        }
+                        if (!hasLang) {
+                            var LANG = {
+                                CA: 'en-ca',
+                                US: 'en',
+                                GB: 'en',
+                                AU: 'en',
+                                NZ: 'en',
+                                IE: 'en',
+                                FR: 'fr',
+                                BE: 'fr',
+                                CH: 'fr',
+                                LU: 'fr',
+                                DE: 'de',
+                                AT: 'de',
+                                IT: 'it',
+                                ES: 'es',
+                                MX: 'es',
+                                AR: 'es',
+                                CO: 'es',
+                                CL: 'es',
+                                PT: 'pt',
+                                BR: 'pt',
+                                JP: 'ja',
+                                CN: 'zh',
+                                TW: 'zh',
+                                HK: 'zh',
+                                KR: 'ko',
+                                SA: 'ar',
+                                AE: 'ar',
+                                EG: 'ar',
+                                MA: 'ar',
+                            };
+                            var nav = (navigator.language || '').toLowerCase();
+                            var lang = cc === 'CA' && nav.startsWith('fr') ? 'fr' : LANG[cc];
+                            if (lang) {
+                                var btn = document.querySelector('.lang-option[data-lang="' + lang + '"]');
+                                if (btn) btn.click();
+                            }
+                        }
+                    })
+                    .catch(function () {});
+            })();
+        </script>
+        <script src="/public-auth-nav.js" defer></script>
+    </body>
 </html>

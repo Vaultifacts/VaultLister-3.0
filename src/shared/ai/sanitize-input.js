@@ -10,7 +10,7 @@ const BIDI_CONTROL_CHARS = /[\u200F\u200E\u202A-\u202E\u2066-\u2069\uFEFF]/g;
 // Normalizes fullwidth, halfwidth, and mathematical alphanumeric variants
 function normalizePunctuation(str) {
     return str
-        .replace(/[\uFF01-\uFF5E]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)) // fullwidth ASCII → ASCII
+        .replace(/[\uFF01-\uFF5E]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0)) // fullwidth ASCII → ASCII
         .normalize('NFKC'); // compatibility decomposition + canonical composition
 }
 
@@ -64,10 +64,22 @@ export function sanitizeForAI(text, maxLength = 500) {
     sanitized = sanitized.replace(/([a-zA-Z])[.·•*_\-]+(?=[a-zA-Z])/g, '$1');
 
     // Strip common prompt injection patterns (expanded blocklist)
-    sanitized = sanitized.replace(/\b(ignore|disregard|forget|override|bypass|disregard)\s+(all\s+)?(previous|prior|above|earlier)\s+(instructions?|rules?|prompts?|context)/gi, '');
-    sanitized = sanitized.replace(/\b(you\s+are\s+now|act\s+as|pretend\s+to\s+be|roleplay\s+as|switch\s+to|behave\s+as|become|simulate)\b/gi, '');
-    sanitized = sanitized.replace(/\b(system\s*prompt|system\s*message|instructions?\s*:|hidden\s+instructions?|admin\s+commands?|developer\s+mode)\b/gi, '');
-    sanitized = sanitized.replace(/\b(new\s+instructions?|additional\s+instructions?|ignore\s+previous|forget\s+everything|disregard\s+everything)\b/gi, '');
+    sanitized = sanitized.replace(
+        /\b(ignore|disregard|forget|override|bypass|disregard)\s+(all\s+)?(previous|prior|above|earlier)\s+(instructions?|rules?|prompts?|context)/gi,
+        '',
+    );
+    sanitized = sanitized.replace(
+        /\b(you\s+are\s+now|act\s+as|pretend\s+to\s+be|roleplay\s+as|switch\s+to|behave\s+as|become|simulate)\b/gi,
+        '',
+    );
+    sanitized = sanitized.replace(
+        /\b(system\s*prompt|system\s*message|instructions?\s*:|hidden\s+instructions?|admin\s+commands?|developer\s+mode)\b/gi,
+        '',
+    );
+    sanitized = sanitized.replace(
+        /\b(new\s+instructions?|additional\s+instructions?|ignore\s+previous|forget\s+everything|disregard\s+everything)\b/gi,
+        '',
+    );
     sanitized = sanitized.replace(/```[\s\S]*?```/g, '');
 
     // Collapse excessive whitespace
@@ -83,7 +95,7 @@ export function sanitizeForAI(text, maxLength = 500) {
         logger.warn('[AI] sanitizeForAI modified input', null, {
             originalLength: original.length,
             sanitizedLength: sanitized.length,
-            truncated: original.length > maxLength
+            truncated: original.length > maxLength,
         });
     }
 

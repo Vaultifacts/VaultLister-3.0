@@ -116,11 +116,16 @@
 
 /* Print Styles */
 @media print {
-    .sidebar, .header, .bulk-toolbar, .back-to-top, .fab {
+    .sidebar,
+    .header,
+    .bulk-toolbar,
+    .back-to-top,
+    .fab {
         display: none !important;
     }
 
-    .main-wrapper, .main-content {
+    .main-wrapper,
+    .main-content {
         margin: 0 !important;
         padding: 0 !important;
     }
@@ -204,4 +209,3 @@ body.dark-mode .smart-counter {
 body.dark-mode .quick-stats-bar {
     background: #111827;
 }
-

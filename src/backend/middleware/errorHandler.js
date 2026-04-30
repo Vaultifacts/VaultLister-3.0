@@ -84,7 +84,7 @@ export class RateLimitError extends AppError {
 export function formatErrorResponse(error, includeStack = false) {
     const errorObj = {
         message: error.message || 'An unexpected error occurred',
-        code: error.code || ErrorCodes.INTERNAL_ERROR
+        code: error.code || ErrorCodes.INTERNAL_ERROR,
     };
 
     if (error.field) errorObj.field = error.field;
@@ -103,23 +103,26 @@ async function logErrorToDb(error, context = {}) {
     try {
         const { method = 'UNKNOWN', path = 'UNKNOWN', userId = null, ip = 'UNKNOWN' } = context;
 
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO error_logs (
                 id, error_type, message, stack_trace, method, path,
                 user_id, ip_address, context, created_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, [
-            crypto.randomUUID(),
-            error.code || error.name || 'UnknownError',
-            error.message,
-            error.stack || null,
-            method,
-            path,
-            userId,
-            ip,
-            JSON.stringify(context),
-            now()
-        ]);
+        `,
+            [
+                crypto.randomUUID(),
+                error.code || error.name || 'UnknownError',
+                error.message,
+                error.stack || null,
+                method,
+                path,
+                userId,
+                ip,
+                JSON.stringify(context),
+                now(),
+            ],
+        );
     } catch (dbError) {
         // Silently fail - don't let logging errors break the app
         logger.error('[ErrorHandler] Failed to log error to database', null, { detail: dbError.message });
@@ -141,7 +144,7 @@ export function handleError(error, ctx = {}) {
         path: ctx.path,
         userId: ctx.user?.id,
         ip: ctx.ip,
-        requestId: ctx.requestId
+        requestId: ctx.requestId,
     };
 
     // Log error
@@ -152,12 +155,10 @@ export function handleError(error, ctx = {}) {
         try {
             const sanitized = sanitizeBody(ctx.body);
             const serialized = JSON.stringify(sanitized);
-            const truncated = serialized.length > 1024
-                ? serialized.substring(0, 1024) + '...[truncated]'
-                : serialized;
+            const truncated = serialized.length > 1024 ? serialized.substring(0, 1024) + '...[truncated]' : serialized;
             logger.error('[ErrorHandler] Request body at time of 500', null, {
                 requestId: ctx.requestId,
-                body: truncated
+                body: truncated,
             });
         } catch {
             // Silently skip body logging if serialization fails
@@ -181,7 +182,7 @@ export function handleError(error, ctx = {}) {
 
     return {
         status: statusCode,
-        data: response
+        data: response,
     };
 }
 
@@ -241,7 +242,7 @@ export const ErrorMessages = {
 
     // Rate limiting
     RATE_LIMITED: 'Too many requests. Please wait a moment and try again.',
-    BLOCKED: 'Your access has been temporarily restricted'
+    BLOCKED: 'Your access has been temporarily restricted',
 };
 
 /**

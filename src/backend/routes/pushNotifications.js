@@ -7,7 +7,6 @@ import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import { safeJsonParse } from '../shared/utils.js';
 
-
 // Configure VAPID for Web Push delivery
 (function configureVapid() {
     const publicKey = process.env.VAPID_PUBLIC_KEY;
@@ -17,7 +16,9 @@ import { safeJsonParse } from '../shared/utils.js';
     if (publicKey && privateKey) {
         webpush.setVapidDetails(subject, publicKey, privateKey);
     } else {
-        logger.warn('[PushNotifications] VAPID keys not configured — web push delivery disabled. Set VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY in .env');
+        logger.warn(
+            '[PushNotifications] VAPID keys not configured — web push delivery disabled. Set VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY in .env',
+        );
     }
 })();
 
@@ -40,44 +41,47 @@ export async function pushNotificationsRouter(ctx) {
             }
 
             // Check if device already registered
-            const existing = await query.get(
-                'SELECT id FROM push_devices WHERE token = ?',
-                [token]
-            );
+            const existing = await query.get('SELECT id FROM push_devices WHERE token = ?', [token]);
 
             if (existing) {
                 // Only update if device belongs to current user (prevent takeover)
-                const ownedDevice = await query.get(
-                    'SELECT id FROM push_devices WHERE token = ? AND user_id = ?',
-                    [token, user?.id]
-                );
+                const ownedDevice = await query.get('SELECT id FROM push_devices WHERE token = ? AND user_id = ?', [
+                    token,
+                    user?.id,
+                ]);
                 if (!ownedDevice) {
                     return { status: 409, data: { error: 'Device token already registered to another user' } };
                 }
-                await query.run(`
+                await query.run(
+                    `
                     UPDATE push_devices SET
                         device_name = COALESCE(?, device_name),
                         updated_at = NOW(),
                         last_active_at = NOW()
                     WHERE id = ? AND user_id = ?
-                `, [deviceName, existing.id, user?.id]);
+                `,
+                    [deviceName, existing.id, user?.id],
+                );
 
                 return {
                     status: 200,
-                    data: { message: 'Device updated', deviceId: existing.id }
+                    data: { message: 'Device updated', deviceId: existing.id },
                 };
             }
 
             // Register new device
             const id = uuidv4();
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO push_devices (id, user_id, token, platform, device_id, device_name, created_at, updated_at, last_active_at)
                 VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW(), NOW())
-            `, [id, user?.id || null, token, platform, deviceId, deviceName]);
+            `,
+                [id, user?.id || null, token, platform, deviceId, deviceName],
+            );
 
             return {
                 status: 201,
-                data: { message: 'Device registered', deviceId: id }
+                data: { message: 'Device registered', deviceId: id },
             };
         } catch (error) {
             logger.error('[PushNotifications] Error registering device', user?.id, { detail: error.message });
@@ -115,12 +119,15 @@ export async function pushNotificationsRouter(ctx) {
     // GET /api/notifications/devices - List user's registered devices
     if (method === 'GET' && path === '/devices') {
         try {
-            const devices = await query.all(`
+            const devices = await query.all(
+                `
                 SELECT id, platform, device_name, created_at, last_active_at
                 FROM push_devices
                 WHERE user_id = ?
                 ORDER BY last_active_at DESC
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             return { status: 200, data: { devices: devices || [] } };
         } catch (error) {
@@ -134,10 +141,7 @@ export async function pushNotificationsRouter(ctx) {
         try {
             const deviceId = path.split('/')[2];
 
-            await query.run(
-                'DELETE FROM push_devices WHERE id = ? AND user_id = ?',
-                [deviceId, user.id]
-            );
+            await query.run('DELETE FROM push_devices WHERE id = ? AND user_id = ?', [deviceId, user.id]);
 
             return { status: 200, data: { message: 'Device removed' } };
         } catch (error) {
@@ -159,13 +163,13 @@ export async function pushNotificationsRouter(ctx) {
                 weekly_digest: true,
                 quiet_hours_enabled: false,
                 quiet_hours_start: '22:00',
-                quiet_hours_end: '08:00'
+                quiet_hours_end: '08:00',
             };
 
-            const row = await query.get(
-                'SELECT settings FROM user_preferences WHERE user_id = ? AND key = ?',
-                [user.id, NOTIF_PREFS_KEY]
-            );
+            const row = await query.get('SELECT settings FROM user_preferences WHERE user_id = ? AND key = ?', [
+                user.id,
+                NOTIF_PREFS_KEY,
+            ]);
 
             let preferences = defaults;
             if (row?.settings) {
@@ -174,10 +178,12 @@ export async function pushNotificationsRouter(ctx) {
 
             return {
                 status: 200,
-                data: { preferences }
+                data: { preferences },
             };
         } catch (error) {
-            logger.error('[PushNotifications] Error fetching notification preferences', user?.id, { detail: error.message });
+            logger.error('[PushNotifications] Error fetching notification preferences', user?.id, {
+                detail: error.message,
+            });
             return { status: 500, data: { error: 'Internal server error' } };
         }
     }
@@ -187,8 +193,15 @@ export async function pushNotificationsRouter(ctx) {
         try {
             const NOTIF_PREFS_KEY = 'notification_preferences';
             const {
-                sales, offers, messages, inventory_alerts, marketing,
-                weekly_digest, quiet_hours_enabled, quiet_hours_start, quiet_hours_end
+                sales,
+                offers,
+                messages,
+                inventory_alerts,
+                marketing,
+                weekly_digest,
+                quiet_hours_enabled,
+                quiet_hours_start,
+                quiet_hours_end,
             } = body;
 
             const settings = JSON.stringify({
@@ -200,20 +213,25 @@ export async function pushNotificationsRouter(ctx) {
                 weekly_digest: weekly_digest !== undefined ? Boolean(weekly_digest) : true,
                 quiet_hours_enabled: quiet_hours_enabled !== undefined ? Boolean(quiet_hours_enabled) : false,
                 quiet_hours_start: quiet_hours_start || '22:00',
-                quiet_hours_end: quiet_hours_end || '08:00'
+                quiet_hours_end: quiet_hours_end || '08:00',
             });
 
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO user_preferences (id, user_id, key, settings, created_at, updated_at)
                 VALUES (?, ?, ?, ?, NOW(), NOW())
                 ON CONFLICT(user_id, key) DO UPDATE SET
                     settings = excluded.settings,
                     updated_at = NOW()
-            `, [uuidv4(), user.id, NOTIF_PREFS_KEY, settings]);
+            `,
+                [uuidv4(), user.id, NOTIF_PREFS_KEY, settings],
+            );
 
             return { status: 200, data: { message: 'Preferences updated' } };
         } catch (error) {
-            logger.error('[PushNotifications] Error updating notification preferences', user?.id, { detail: error.message });
+            logger.error('[PushNotifications] Error updating notification preferences', user?.id, {
+                detail: error.message,
+            });
             return { status: 500, data: { error: 'Internal server error' } };
         }
     }
@@ -243,7 +261,7 @@ export async function pushNotificationsRouter(ctx) {
 
             const subscriptions = await query.all(
                 'SELECT * FROM push_subscriptions WHERE user_id = ? AND is_active = TRUE',
-                [targetUserId]
+                [targetUserId],
             );
 
             if (!subscriptions || subscriptions.length === 0) {
@@ -254,7 +272,7 @@ export async function pushNotificationsRouter(ctx) {
                 title,
                 body: notificationBody,
                 data: data || {},
-                timestamp: Date.now()
+                timestamp: Date.now(),
             });
 
             let sent = 0;
@@ -262,31 +280,41 @@ export async function pushNotificationsRouter(ctx) {
                 try {
                     await webpush.sendNotification(
                         { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh_key, auth: sub.auth_key } },
-                        payload
+                        payload,
                     );
-                    await query.run(
-                        'UPDATE push_subscriptions SET last_used_at = NOW() WHERE id = ?',
-                        [sub.id]
-                    );
+                    await query.run('UPDATE push_subscriptions SET last_used_at = NOW() WHERE id = ?', [sub.id]);
                     sent++;
                 } catch (pushError) {
                     logger.error('[PushNotifications] Delivery failed', targetUserId, { detail: pushError.message });
                     if (pushError.statusCode === 410 || pushError.statusCode === 404) {
                         await query.run(
                             'UPDATE push_subscriptions SET is_active = FALSE, updated_at = NOW() WHERE id = ?',
-                            [sub.id]
+                            [sub.id],
                         );
                     }
                 }
             }
 
             const notificationId = uuidv4();
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO push_notification_log (id, user_id, title, body, data, channel, status, created_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
-            `, [notificationId, targetUserId, title, notificationBody, JSON.stringify(data || {}), channel || 'general', sent > 0 ? 'sent' : 'failed']);
+            `,
+                [
+                    notificationId,
+                    targetUserId,
+                    title,
+                    notificationBody,
+                    JSON.stringify(data || {}),
+                    channel || 'general',
+                    sent > 0 ? 'sent' : 'failed',
+                ],
+            );
 
-            logger.info(`[Push] Notification dispatched to ${sent}/${subscriptions.length} subscription(s) for user ${targetUserId}`);
+            logger.info(
+                `[Push] Notification dispatched to ${sent}/${subscriptions.length} subscription(s) for user ${targetUserId}`,
+            );
 
             return {
                 status: 200,
@@ -294,8 +322,8 @@ export async function pushNotificationsRouter(ctx) {
                     message: `Notification sent to ${sent} subscription(s)`,
                     notificationId,
                     sent,
-                    total: subscriptions.length
-                }
+                    total: subscriptions.length,
+                },
             };
         } catch (error) {
             logger.error('[PushNotifications] Error sending push notification', user?.id, { detail: error.message });
@@ -317,7 +345,7 @@ export async function pushNotificationsRouter(ctx) {
             }
 
             // Restrict to own user ID only — prevent cross-user notification injection
-            const allowedIds = userIds.filter(id => id === user.id);
+            const allowedIds = userIds.filter((id) => id === user.id);
             if (allowedIds.length === 0) {
                 return { status: 403, data: { error: 'Can only send notifications to your own devices' } };
             }
@@ -326,14 +354,14 @@ export async function pushNotificationsRouter(ctx) {
                 title,
                 body: notificationBody,
                 data: data || {},
-                timestamp: Date.now()
+                timestamp: Date.now(),
             });
 
             let usersNotified = 0;
             for (const userId of allowedIds) {
                 const subscriptions = await query.all(
                     'SELECT * FROM push_subscriptions WHERE user_id = ? AND is_active = TRUE LIMIT 20',
-                    [userId]
+                    [userId],
                 );
 
                 if (!subscriptions || subscriptions.length === 0) continue;
@@ -343,19 +371,18 @@ export async function pushNotificationsRouter(ctx) {
                     try {
                         await webpush.sendNotification(
                             { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh_key, auth: sub.auth_key } },
-                            payload
+                            payload,
                         );
-                        await query.run(
-                            'UPDATE push_subscriptions SET last_used_at = NOW() WHERE id = ?',
-                            [sub.id]
-                        );
+                        await query.run('UPDATE push_subscriptions SET last_used_at = NOW() WHERE id = ?', [sub.id]);
                         userSent++;
                     } catch (pushError) {
-                        logger.error('[PushNotifications] Batch delivery failed', userId, { detail: pushError.message });
+                        logger.error('[PushNotifications] Batch delivery failed', userId, {
+                            detail: pushError.message,
+                        });
                         if (pushError.statusCode === 410 || pushError.statusCode === 404) {
                             await query.run(
                                 'UPDATE push_subscriptions SET is_active = FALSE, updated_at = NOW() WHERE id = ?',
-                                [sub.id]
+                                [sub.id],
                             );
                         }
                     }
@@ -363,20 +390,32 @@ export async function pushNotificationsRouter(ctx) {
 
                 if (userSent > 0) {
                     const notificationId = uuidv4();
-                    await query.run(`
+                    await query.run(
+                        `
                         INSERT INTO push_notification_log (id, user_id, title, body, data, channel, status, created_at)
                         VALUES (?, ?, ?, ?, ?, ?, 'sent', NOW())
-                    `, [notificationId, userId, title, notificationBody, JSON.stringify(data || {}), channel || 'general']);
+                    `,
+                        [
+                            notificationId,
+                            userId,
+                            title,
+                            notificationBody,
+                            JSON.stringify(data || {}),
+                            channel || 'general',
+                        ],
+                    );
                     usersNotified++;
                 }
             }
 
             return {
                 status: 200,
-                data: { message: `Notifications sent to ${usersNotified} user(s)` }
+                data: { message: `Notifications sent to ${usersNotified} user(s)` },
             };
         } catch (error) {
-            logger.error('[PushNotifications] Error sending batch push notifications', user?.id, { detail: error.message });
+            logger.error('[PushNotifications] Error sending batch push notifications', user?.id, {
+                detail: error.message,
+            });
             return { status: 500, data: { error: 'Internal server error' } };
         }
     }

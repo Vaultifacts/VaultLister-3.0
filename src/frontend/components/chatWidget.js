@@ -83,7 +83,7 @@ const ChatWidget = {
         this.messages.push({
             role: 'user',
             content: message,
-            created_at: new Date().toISOString()
+            created_at: new Date().toISOString(),
         });
         this.render();
 
@@ -93,7 +93,7 @@ const ChatWidget = {
             role: 'assistant',
             content: '',
             _streaming: true,
-            created_at: new Date().toISOString()
+            created_at: new Date().toISOString(),
         });
         this.render();
         const chatContainer = document.querySelector('.chat-messages');
@@ -103,58 +103,62 @@ const ChatWidget = {
 
         try {
             await api.ensureCSRFToken();
-            await api.stream('/chatbot/message', {
-                conversation_id: this.activeConversationId,
-                message
-            }, {
-                onChunk: (text) => {
-                    accumulated += text;
-                    const widgetEl = document.getElementById('chat-widget-container');
-                    const bubble = widgetEl?.querySelector('[data-streaming="true"]');
-                    if (bubble) {
-                        bubble.textContent += text;
-                        const c = document.querySelector('.chat-messages');
-                        if (c) c.scrollTop = c.scrollHeight;
-                    }
+            await api.stream(
+                '/chatbot/message',
+                {
+                    conversation_id: this.activeConversationId,
+                    message,
                 },
-                onDone: (event) => {
-                    this.isStreaming = false;
-                    // Replace placeholder with final message object, re-render once
-                    const idx = this.messages.findIndex(m => m._streaming);
-                    if (idx !== -1) {
-                        this.messages[idx] = {
-                            id: event.messageId,
-                            role: 'assistant',
-                            content: accumulated,
-                            metadata: { quickActions: event.quickActions || [] },
-                            created_at: new Date().toISOString()
-                        };
-                    }
-                    this.render();
-                    setTimeout(() => {
-                        const c = document.querySelector('.chat-messages');
-                        if (c) c.scrollTop = c.scrollHeight;
-                    }, 50);
+                {
+                    onChunk: (text) => {
+                        accumulated += text;
+                        const widgetEl = document.getElementById('chat-widget-container');
+                        const bubble = widgetEl?.querySelector('[data-streaming="true"]');
+                        if (bubble) {
+                            bubble.textContent += text;
+                            const c = document.querySelector('.chat-messages');
+                            if (c) c.scrollTop = c.scrollHeight;
+                        }
+                    },
+                    onDone: (event) => {
+                        this.isStreaming = false;
+                        // Replace placeholder with final message object, re-render once
+                        const idx = this.messages.findIndex((m) => m._streaming);
+                        if (idx !== -1) {
+                            this.messages[idx] = {
+                                id: event.messageId,
+                                role: 'assistant',
+                                content: accumulated,
+                                metadata: { quickActions: event.quickActions || [] },
+                                created_at: new Date().toISOString(),
+                            };
+                        }
+                        this.render();
+                        setTimeout(() => {
+                            const c = document.querySelector('.chat-messages');
+                            if (c) c.scrollTop = c.scrollHeight;
+                        }, 50);
+                    },
+                    onError: (err) => {
+                        this.isStreaming = false;
+                        console.error('[ChatWidget] Stream error:', err);
+                        const idx = this.messages.findIndex((m) => m._streaming);
+                        if (idx !== -1) {
+                            this.messages[idx] = {
+                                id: '_error_' + Date.now(),
+                                role: 'assistant',
+                                content: 'Sorry, something went wrong. Please try again.',
+                                created_at: new Date().toISOString(),
+                            };
+                        }
+                        this.render();
+                    },
                 },
-                onError: (err) => {
-                    this.isStreaming = false;
-                    console.error('[ChatWidget] Stream error:', err);
-                    const idx = this.messages.findIndex(m => m._streaming);
-                    if (idx !== -1) {
-                        this.messages[idx] = {
-                            id: '_error_' + Date.now(),
-                            role: 'assistant',
-                            content: 'Sorry, something went wrong. Please try again.',
-                            created_at: new Date().toISOString()
-                        };
-                    }
-                    this.render();
-                }
-            });
+            );
         } catch (error) {
             this.isStreaming = false;
             console.error('Failed to send message:', error);
-            const idx = this.messages.findIndex(m => m._streaming);
+            const idx = this.messages.findIndex((m) => m._streaming);
             if (idx !== -1) this.messages.splice(idx, 1);
             toast.error('Failed to send message');
             this.render();
@@ -171,8 +175,8 @@ const ChatWidget = {
             this.render();
         } else if (action.action) {
             // Dispatch action by parsing — no code evaluation
-            const routeMatch = action.action.match(/^router\.navigate\(['"]([^'"<>]+)['"]\)$/);  // nosemgrep: javascript.browser.security.eval-detected.eval-detected
-            const hashMatch = action.action.match(/^window\.location\.hash\s*=\s*['"]([^'"<>]+)['"]$/);  // nosemgrep: javascript.browser.security.eval-detected.eval-detected
+            const routeMatch = action.action.match(/^router\.navigate\(['"]([^'"<>]+)['"]\)$/); // nosemgrep: javascript.browser.security.eval-detected.eval-detected
+            const hashMatch = action.action.match(/^window\.location\.hash\s*=\s*['"]([^'"<>]+)['"]$/); // nosemgrep: javascript.browser.security.eval-detected.eval-detected
             if (routeMatch) {
                 router.navigate(routeMatch[1]);
                 this.isOpen = false;
@@ -192,11 +196,11 @@ const ChatWidget = {
         try {
             await api.post('/chatbot/rate', {
                 message_id: messageId,
-                rating: rating
+                rating: rating,
             });
 
             // Update message in UI
-            const message = this.messages.find(m => m.id === messageId);
+            const message = this.messages.find((m) => m.id === messageId);
             if (message) {
                 message.helpful_rating = rating;
                 this.render();
@@ -223,7 +227,9 @@ const ChatWidget = {
             </button>
 
             <!-- Chat Modal -->
-            ${this.isOpen ? `
+            ${
+                this.isOpen
+                    ? `
                 <div class="chat-widget-modal">
                     <!-- Header -->
                     <div class="chat-widget-header">
@@ -239,9 +245,11 @@ const ChatWidget = {
 
                     <!-- Messages -->
                     <div class="chat-messages">
-                        ${this.messages.map(msg => this.renderMessage(msg)).join('')}
+                        ${this.messages.map((msg) => this.renderMessage(msg)).join('')}
 
-                        ${this.isTyping ? `
+                        ${
+                            this.isTyping
+                                ? `
                             <div class="chat-message assistant">
                                 <div class="chat-message-avatar">🤖</div>
                                 <div class="chat-message-bubble">
@@ -252,7 +260,9 @@ const ChatWidget = {
                                     </div>
                                 </div>
                             </div>
-                        ` : ''}
+                        `
+                                : ''
+                        }
                     </div>
 
                     <!-- Input -->
@@ -268,7 +278,9 @@ const ChatWidget = {
                         </button>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
         `);
     },
 
@@ -286,31 +298,47 @@ const ChatWidget = {
                         ${escapeHtml(msg.content).replace(/\n/g, '<br>')}
                     </div>
 
-                    ${!isUser && quickActions.length > 0 ? `
+                    ${
+                        !isUser && quickActions.length > 0
+                            ? `
                         <div class="chat-quick-actions">
-                            ${quickActions.map(action => `
+                            ${quickActions
+                                .map(
+                                    (action) => `
                                 <button class="chat-quick-action-btn"
                                         onclick='ChatWidget.executeQuickAction(${JSON.stringify(action).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/'/g, '&#39;')})'>
                                     ${escapeHtml(action.label)}
                                 </button>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
 
-                    ${!isUser && msg.id ? `
+                    ${
+                        !isUser && msg.id
+                            ? `
                         <div class="chat-message-actions">
-                            ${msg.helpful_rating ? `
+                            ${
+                                msg.helpful_rating
+                                    ? `
                                 <span class="text-xs text-success">✓ Rated ${msg.helpful_rating}/5</span>
-                            ` : `
+                            `
+                                    : `
                                 <button class="chat-rate-btn" onclick="ChatWidget.rateMessage('${msg.id}', 5)" title="Helpful">
                                     👍
                                 </button>
                                 <button class="chat-rate-btn" onclick="ChatWidget.rateMessage('${msg.id}', 1)" title="Not helpful">
                                     👎
                                 </button>
-                            `}
+                            `
+                            }
                         </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                 </div>
             </div>
         `;
@@ -327,7 +355,7 @@ const ChatWidget = {
         this.sendMessage(message);
         input.value = '';
         input.style.height = 'auto';
-    }
+    },
 };
 
 // Initialize when DOM is ready

@@ -10,7 +10,6 @@ import { logger } from '../shared/logger.js';
 import redis from '../services/redis.js';
 import { safeJsonParse } from '../shared/utils.js';
 
-
 // Apple JWKS cache for signature verification
 let appleJwksCache = null;
 let appleJwksCacheTime = 0;
@@ -23,18 +22,24 @@ async function getApplePublicKey(kid) {
         appleJwksCache = await res.json();
         appleJwksCacheTime = Date.now();
     }
-    const key = appleJwksCache.keys.find(k => k.kid === kid);
+    const key = appleJwksCache.keys.find((k) => k.kid === kid);
     if (!key) throw new Error('Apple signing key not found');
     return crypto.createPublicKey({ key, format: 'jwk' });
 }
 
-const USER_SELECT_COLUMNS = 'id, email, username, full_name, avatar_url, subscription_tier, is_active, email_verified, created_at, updated_at, last_login_at';
-const USER_SELECT_ALIASED = 'u.id, u.email, u.username, u.full_name, u.avatar_url, u.subscription_tier, u.is_active, u.email_verified, u.created_at, u.updated_at, u.last_login_at';
+const USER_SELECT_COLUMNS =
+    'id, email, username, full_name, avatar_url, subscription_tier, is_active, email_verified, created_at, updated_at, last_login_at';
+const USER_SELECT_ALIASED =
+    'u.id, u.email, u.username, u.full_name, u.avatar_url, u.subscription_tier, u.is_active, u.email_verified, u.created_at, u.updated_at, u.last_login_at';
 
 // OAuth configuration
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || (process.env.NODE_ENV === 'production' ? 'https://vaultlister.com/api/social-auth/google/callback' : 'http://localhost:3000/api/social-auth/google/callback');
+const GOOGLE_REDIRECT_URI =
+    process.env.GOOGLE_REDIRECT_URI ||
+    (process.env.NODE_ENV === 'production'
+        ? 'https://vaultlister.com/api/social-auth/google/callback'
+        : 'http://localhost:3000/api/social-auth/google/callback');
 
 const APPLE_CLIENT_ID = process.env.APPLE_CLIENT_ID;
 const APPLE_TEAM_ID = process.env.APPLE_TEAM_ID;
@@ -64,11 +69,14 @@ async function findOrCreateUser(provider, profile) {
     const { id: providerId, email, name, picture } = profile;
 
     // Check if user exists with this OAuth provider
-    let user = await query.get(`
+    let user = await query.get(
+        `
         SELECT ${USER_SELECT_ALIASED} FROM users u
         JOIN oauth_accounts oa ON u.id = oa.user_id
         WHERE oa.provider = ? AND oa.provider_user_id = ?
-    `, [provider, providerId]);
+    `,
+        [provider, providerId],
+    );
 
     if (user) {
         // Update last login
@@ -77,14 +85,19 @@ async function findOrCreateUser(provider, profile) {
     }
 
     // Check if user exists with this email
-    user = email ? await query.get(`SELECT ${USER_SELECT_COLUMNS} FROM users WHERE email = ?`, [email.toLowerCase()]) : null;
+    user = email
+        ? await query.get(`SELECT ${USER_SELECT_COLUMNS} FROM users WHERE email = ?`, [email.toLowerCase()])
+        : null;
 
     if (user) {
         // Link OAuth account to existing user
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO oauth_accounts (id, user_id, provider, provider_user_id, provider_email, created_at)
             VALUES (?, ?, ?, ?, ?, NOW())
-        `, [uuidv4(), user.id, provider, providerId, email ?? null]);
+        `,
+            [uuidv4(), user.id, provider, providerId, email ?? null],
+        );
 
         await query.run('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]);
         return user;
@@ -92,18 +105,26 @@ async function findOrCreateUser(provider, profile) {
 
     // Create new user
     const userId = uuidv4();
-    const username = email ? email.split('@')[0] + '_' + crypto.randomUUID().split('-')[0] : 'user_' + uuidv4().substring(0, 8);
+    const username = email
+        ? email.split('@')[0] + '_' + crypto.randomUUID().split('-')[0]
+        : 'user_' + uuidv4().substring(0, 8);
 
-    await query.run(`
+    await query.run(
+        `
         INSERT INTO users (id, email, username, full_name, avatar_url, email_verified, email_verified_at, created_at, updated_at, last_login_at)
         VALUES (?, ?, ?, ?, ?, 1, NOW(), NOW(), NOW(), NOW())
-    `, [userId, email?.toLowerCase() ?? null, username, name ?? null, picture ?? null]);
+    `,
+        [userId, email?.toLowerCase() ?? null, username, name ?? null, picture ?? null],
+    );
 
     // Link OAuth account
-    await query.run(`
+    await query.run(
+        `
         INSERT INTO oauth_accounts (id, user_id, provider, provider_user_id, provider_email, created_at)
         VALUES (?, ?, ?, ?, ?, NOW())
-    `, [uuidv4(), userId, provider, providerId, email ?? null]);
+    `,
+        [uuidv4(), userId, provider, providerId, email ?? null],
+    );
 
     return await query.get(`SELECT ${USER_SELECT_COLUMNS} FROM users WHERE id = ?`, [userId]);
 }
@@ -129,15 +150,15 @@ export async function socialAuthRouter(ctx) {
             scope: 'openid email profile',
             state,
             access_type: 'offline',
-            prompt: 'consent'
+            prompt: 'consent',
         });
 
         return {
             status: 302,
             headers: {
-                'Location': `https://accounts.google.com/o/oauth2/v2/auth?${params}`
+                Location: `https://accounts.google.com/o/oauth2/v2/auth?${params}`,
             },
-            data: {}
+            data: {},
         };
     }
 
@@ -148,16 +169,16 @@ export async function socialAuthRouter(ctx) {
         if (error) {
             return {
                 status: 302,
-                headers: { 'Location': '/?app=1#login?error=oauth_denied' },
-                data: {}
+                headers: { Location: '/?app=1#login?error=oauth_denied' },
+                data: {},
             };
         }
 
         if (!(await verifyStateToken(state))) {
             return {
                 status: 302,
-                headers: { 'Location': '/?app=1#login?error=invalid_state' },
-                data: {}
+                headers: { Location: '/?app=1#login?error=invalid_state' },
+                data: {},
             };
         }
 
@@ -172,20 +193,22 @@ export async function socialAuthRouter(ctx) {
                     client_id: GOOGLE_CLIENT_ID,
                     client_secret: GOOGLE_CLIENT_SECRET,
                     redirect_uri: GOOGLE_REDIRECT_URI,
-                    grant_type: 'authorization_code'
-                })
+                    grant_type: 'authorization_code',
+                }),
             });
 
             const tokens = await tokenResponse.json();
 
             if (!tokens.access_token) {
-                throw new Error(`Google token exchange failed: ${tokens.error || 'no access_token'} — ${tokens.error_description || '(no description)'}`);
+                throw new Error(
+                    `Google token exchange failed: ${tokens.error || 'no access_token'} — ${tokens.error_description || '(no description)'}`,
+                );
             }
 
             // Get user info
             const userResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
                 signal: AbortSignal.timeout(10000),
-                headers: { 'Authorization': `Bearer ${tokens.access_token}` }
+                headers: { Authorization: `Bearer ${tokens.access_token}` },
             });
 
             const profile = await userResponse.json();
@@ -196,13 +219,15 @@ export async function socialAuthRouter(ctx) {
                     await query.run(
                         `INSERT INTO security_logs (id, event_type, ip_or_user, details, created_at)
                          VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`,
-                        [uuidv4(), 'oauth_missing_email', 'google_callback', JSON.stringify({ profileId: profile.id })]
+                        [uuidv4(), 'oauth_missing_email', 'google_callback', JSON.stringify({ profileId: profile.id })],
                     );
-                } catch (_) { /* best-effort logging */ }
+                } catch (_) {
+                    /* best-effort logging */
+                }
                 return {
                     status: 302,
-                    headers: { 'Location': '/?app=1#login?error=email_required' },
-                    data: {}
+                    headers: { Location: '/?app=1#login?error=email_required' },
+                    data: {},
                 };
             }
 
@@ -211,7 +236,7 @@ export async function socialAuthRouter(ctx) {
                 id: profile.id,
                 email: profile.email,
                 name: profile.name,
-                picture: profile.picture
+                picture: profile.picture,
             });
 
             // Generate tokens
@@ -221,24 +246,30 @@ export async function socialAuthRouter(ctx) {
 
             // Store session — session ID doubles as the one-time exchange token
             const sessionId = uuidv4();
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO sessions (id, user_id, refresh_token, expires_at)
                 VALUES (?, ?, ?, NOW() + INTERVAL '30 days')
-            `, [sessionId, user.id, refreshToken]);
+            `,
+                [sessionId, user.id, refreshToken],
+            );
 
             return {
                 status: 302,
                 headers: {
-                    'Location': `/?app=1#auth-callback?ott=${sessionId}`
+                    Location: `/?app=1#auth-callback?ott=${sessionId}`,
                 },
-                data: {}
+                data: {},
             };
         } catch (error) {
-            logger.error('[SocialAuth] Google OAuth error', null, { detail: error?.message || 'Unknown error', redirectUri: GOOGLE_REDIRECT_URI });
+            logger.error('[SocialAuth] Google OAuth error', null, {
+                detail: error?.message || 'Unknown error',
+                redirectUri: GOOGLE_REDIRECT_URI,
+            });
             return {
                 status: 302,
-                headers: { 'Location': '/?app=1#login?error=oauth_failed' },
-                data: {}
+                headers: { Location: '/?app=1#login?error=oauth_failed' },
+                data: {},
             };
         }
     }
@@ -260,15 +291,15 @@ export async function socialAuthRouter(ctx) {
             response_type: 'code id_token',
             scope: 'name email',
             state,
-            response_mode: 'form_post'
+            response_mode: 'form_post',
         });
 
         return {
             status: 302,
             headers: {
-                'Location': `https://appleid.apple.com/auth/authorize?${params}`
+                Location: `https://appleid.apple.com/auth/authorize?${params}`,
             },
-            data: {}
+            data: {},
         };
     }
 
@@ -279,27 +310,27 @@ export async function socialAuthRouter(ctx) {
         if (error) {
             return {
                 status: 302,
-                headers: { 'Location': '/?app=1#login?error=oauth_denied' },
-                data: {}
+                headers: { Location: '/?app=1#login?error=oauth_denied' },
+                data: {},
             };
         }
 
         if (!(await verifyStateToken(state))) {
             return {
                 status: 302,
-                headers: { 'Location': '/?app=1#login?error=invalid_state' },
-                data: {}
+                headers: { Location: '/?app=1#login?error=invalid_state' },
+                data: {},
             };
         }
 
         try {
             // Verify the id_token (JWT) signature using Apple's public keys
             if (!id_token || typeof id_token !== 'string') {
-                return { status: 302, headers: { 'Location': '/?app=1#login?error=missing_token' }, data: {} };
+                return { status: 302, headers: { Location: '/?app=1#login?error=missing_token' }, data: {} };
             }
             const tokenParts = id_token.split('.');
             if (tokenParts.length !== 3 || !tokenParts[0]) {
-                return { status: 302, headers: { 'Location': '/?app=1#login?error=invalid_token' }, data: {} };
+                return { status: 302, headers: { Location: '/?app=1#login?error=invalid_token' }, data: {} };
             }
 
             // Decode header to get kid, then verify signature with Apple's public key
@@ -308,7 +339,7 @@ export async function socialAuthRouter(ctx) {
             const payload = jwt.verify(id_token, publicKey, {
                 algorithms: ['RS256'],
                 issuer: 'https://appleid.apple.com',
-                audience: APPLE_CLIENT_ID
+                audience: APPLE_CLIENT_ID,
             });
 
             // Parse user info if provided (only on first authorization)
@@ -317,14 +348,18 @@ export async function socialAuthRouter(ctx) {
                 try {
                     userInfo = JSON.parse(userJson);
                 } catch (e) {
-                    logger.error('[SocialAuth] Failed to parse Apple user info', null, { detail: e?.message || 'Unknown error' });
+                    logger.error('[SocialAuth] Failed to parse Apple user info', null, {
+                        detail: e?.message || 'Unknown error',
+                    });
                     try {
                         await query.run(
                             `INSERT INTO security_logs (id, event_type, ip_or_user, details, created_at)
                              VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`,
-                            [uuidv4(), 'oauth_parse_error', 'apple_callback', JSON.stringify({ error: e.message })]
+                            [uuidv4(), 'oauth_parse_error', 'apple_callback', JSON.stringify({ error: e.message })],
                         );
-                    } catch (_) { /* best-effort logging */ }
+                    } catch (_) {
+                        /* best-effort logging */
+                    }
                     userInfo = {};
                 }
             }
@@ -335,13 +370,15 @@ export async function socialAuthRouter(ctx) {
                     await query.run(
                         `INSERT INTO security_logs (id, event_type, ip_or_user, details, created_at)
                          VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`,
-                        [uuidv4(), 'oauth_missing_email', 'apple_callback', JSON.stringify({ sub: payload.sub })]
+                        [uuidv4(), 'oauth_missing_email', 'apple_callback', JSON.stringify({ sub: payload.sub })],
                     );
-                } catch (_) { /* best-effort logging */ }
+                } catch (_) {
+                    /* best-effort logging */
+                }
                 return {
                     status: 302,
-                    headers: { 'Location': '/?app=1#login?error=email_required' },
-                    data: {}
+                    headers: { Location: '/?app=1#login?error=email_required' },
+                    data: {},
                 };
             }
 
@@ -350,7 +387,7 @@ export async function socialAuthRouter(ctx) {
                 id: payload.sub,
                 email: payload.email,
                 name: userInfo.name ? `${userInfo.name.firstName || ''} ${userInfo.name.lastName || ''}`.trim() : null,
-                picture: null
+                picture: null,
             });
 
             // Generate tokens
@@ -360,24 +397,27 @@ export async function socialAuthRouter(ctx) {
 
             // Store session — session ID doubles as the one-time exchange token
             const sessionId = uuidv4();
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO sessions (id, user_id, refresh_token, expires_at)
                 VALUES (?, ?, ?, NOW() + INTERVAL '30 days')
-            `, [sessionId, user.id, refreshToken]);
+            `,
+                [sessionId, user.id, refreshToken],
+            );
 
             return {
                 status: 302,
                 headers: {
-                    'Location': `/?app=1#auth-callback?ott=${sessionId}`
+                    Location: `/?app=1#auth-callback?ott=${sessionId}`,
                 },
-                data: {}
+                data: {},
             };
         } catch (error) {
             logger.error('[SocialAuth] Apple OAuth error', null, { detail: error?.message || 'Unknown error' });
             return {
                 status: 302,
-                headers: { 'Location': '/?app=1#login?error=oauth_failed' },
-                data: {}
+                headers: { Location: '/?app=1#login?error=oauth_failed' },
+                data: {},
             };
         }
     }
@@ -389,9 +429,9 @@ export async function socialAuthRouter(ctx) {
             data: {
                 providers: [
                     { id: 'google', name: 'Google', enabled: !!GOOGLE_CLIENT_ID },
-                    { id: 'apple', name: 'Apple', enabled: !!APPLE_CLIENT_ID }
-                ]
-            }
+                    { id: 'apple', name: 'Apple', enabled: !!APPLE_CLIENT_ID },
+                ],
+            },
         };
     }
 
@@ -401,7 +441,9 @@ export async function socialAuthRouter(ctx) {
 
         // Check if user has password or other OAuth accounts
         const user = await query.get('SELECT password_hash FROM users WHERE id = ?', [ctx.user.id]);
-        const oauthCount = await query.get('SELECT COUNT(*) as count FROM oauth_accounts WHERE user_id = ?', [ctx.user.id]);
+        const oauthCount = await query.get('SELECT COUNT(*) as count FROM oauth_accounts WHERE user_id = ?', [
+            ctx.user.id,
+        ]);
 
         if (!user.password_hash && oauthCount.count <= 1) {
             return { status: 400, data: { error: 'Cannot unlink last authentication method. Set a password first.' } };

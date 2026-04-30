@@ -10,10 +10,18 @@ function isPrivateSupplierUrl(urlStr) {
         const parsed = new URL(urlStr);
         if (!['https:', 'http:'].includes(parsed.protocol)) return true;
         const h = parsed.hostname.toLowerCase();
-        return h === 'localhost' || h === '::1' || h === '0.0.0.0' ||
+        return (
+            h === 'localhost' ||
+            h === '::1' ||
+            h === '0.0.0.0' ||
             /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.|127\.)/.test(h) ||
-            h.startsWith('fe80:') || h.startsWith('fc00:') || h.startsWith('fd00:') ||
-            h.startsWith('::ffff:') || h.endsWith('.internal') || h.endsWith('.local');
+            h.startsWith('fe80:') ||
+            h.startsWith('fc00:') ||
+            h.startsWith('fd00:') ||
+            h.startsWith('::ffff:') ||
+            h.endsWith('.internal') ||
+            h.endsWith('.local')
+        );
     } catch {
         return true;
     }
@@ -72,8 +80,10 @@ export async function suppliersRouter(ctx) {
             return { status: 400, data: { error: 'Name and type are required' } };
         }
         if (name.length > 200) return { status: 400, data: { error: 'Name must be 200 characters or less' } };
-        if (address && address.length > 500) return { status: 400, data: { error: 'Address must be 500 characters or less' } };
-        if (notes && notes.length > 2000) return { status: 400, data: { error: 'Notes must be 2000 characters or less' } };
+        if (address && address.length > 500)
+            return { status: 400, data: { error: 'Address must be 500 characters or less' } };
+        if (notes && notes.length > 2000)
+            return { status: 400, data: { error: 'Notes must be 2000 characters or less' } };
 
         const validTypes = ['wholesale', 'thrift', 'estate', 'online', 'auction', 'other'];
         if (!validTypes.includes(type)) {
@@ -101,12 +111,25 @@ export async function suppliersRouter(ctx) {
         }
 
         const supplierId = uuidv4();
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO suppliers (id, user_id, name, type, website, contact_email, contact_phone,
                 address, notes, rating, is_active, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())
-        `, [supplierId, user.id, name, type, website || null, contact_email || null,
-            contact_phone || null, address || null, notes || null, rating || null]);
+        `,
+            [
+                supplierId,
+                user.id,
+                name,
+                type,
+                website || null,
+                contact_email || null,
+                contact_phone || null,
+                address || null,
+                notes || null,
+                rating || null,
+            ],
+        );
 
         const supplier = await query.get('SELECT * FROM suppliers WHERE id = ?', [supplierId]);
         return { status: 201, data: supplier };
@@ -114,15 +137,19 @@ export async function suppliersRouter(ctx) {
 
     // GET /suppliers/:id - Get supplier details
     const supplierIdMatch = path.match(/^\/([^/]+)$/);
-    if (method === 'GET' && supplierIdMatch && !path.startsWith('/items') && !path.startsWith('/alerts') && path !== '/stats' && path !== '/types') {
+    if (
+        method === 'GET' &&
+        supplierIdMatch &&
+        !path.startsWith('/items') &&
+        !path.startsWith('/alerts') &&
+        path !== '/stats' &&
+        path !== '/types'
+    ) {
         const authError = requireAuth();
         if (authError) return authError;
 
         const supplierId = supplierIdMatch[1];
-        const supplier = await query.get(
-            'SELECT * FROM suppliers WHERE id = ? AND user_id = ?',
-            [supplierId, user.id]
-        );
+        const supplier = await query.get('SELECT * FROM suppliers WHERE id = ? AND user_id = ?', [supplierId, user.id]);
 
         if (!supplier) {
             return { status: 404, data: { error: 'Supplier not found' } };
@@ -132,7 +159,7 @@ export async function suppliersRouter(ctx) {
         try {
             const itemCount = await query.get(
                 'SELECT COUNT(*) as count FROM supplier_items WHERE supplier_id = ? AND user_id = ?',
-                [supplierId, user.id]
+                [supplierId, user.id],
             );
             supplier.item_count = itemCount?.count || 0;
         } catch (error) {
@@ -149,10 +176,10 @@ export async function suppliersRouter(ctx) {
         if (authError) return authError;
 
         const supplierId = supplierIdMatch[1];
-        const existing = await query.get(
-            'SELECT id FROM suppliers WHERE id = ? AND user_id = ?',
-            [supplierId, user.id]
-        );
+        const existing = await query.get('SELECT id FROM suppliers WHERE id = ? AND user_id = ?', [
+            supplierId,
+            user.id,
+        ]);
 
         if (!existing) {
             return { status: 404, data: { error: 'Supplier not found' } };
@@ -174,7 +201,8 @@ export async function suppliersRouter(ctx) {
             return { status: 400, data: { error: 'Rating must be between 1 and 5' } };
         }
 
-        await query.run(`
+        await query.run(
+            `
             UPDATE suppliers SET
                 name = COALESCE(?, name),
                 type = COALESCE(?, type),
@@ -187,7 +215,9 @@ export async function suppliersRouter(ctx) {
                 is_active = COALESCE(?, is_active),
                 updated_at = NOW()
             WHERE id = ? AND user_id = ?
-        `, [name, type, website, contact_email, contact_phone, address, notes, rating, is_active, supplierId, user.id]);
+        `,
+            [name, type, website, contact_email, contact_phone, address, notes, rating, is_active, supplierId, user.id],
+        );
 
         const updated = await query.get('SELECT * FROM suppliers WHERE id = ?', [supplierId]);
         return { status: 200, data: updated };
@@ -217,14 +247,17 @@ export async function suppliersRouter(ctx) {
         const supplierId = supplierItemsMatch[1];
 
         try {
-            const items = await query.all(`
+            const items = await query.all(
+                `
                 SELECT si.*, s.name as supplier_name
                 FROM supplier_items si
                 JOIN suppliers s ON si.supplier_id = s.id
                 WHERE si.supplier_id = ? AND si.user_id = ?
                 ORDER BY si.updated_at DESC
                 LIMIT 500
-            `, [supplierId, user.id]);
+            `,
+                [supplierId, user.id],
+            );
 
             return { status: 200, data: items };
         } catch (error) {
@@ -249,23 +282,42 @@ export async function suppliersRouter(ctx) {
             return { status: 400, data: { error: 'Supplier item URL must be a public HTTP/HTTPS address' } };
         }
 
-        const ownedSupplier = await query.get('SELECT id FROM suppliers WHERE id = ? AND user_id = ?', [supplierId, user.id]);
+        const ownedSupplier = await query.get('SELECT id FROM suppliers WHERE id = ? AND user_id = ?', [
+            supplierId,
+            user.id,
+        ]);
         if (!ownedSupplier) return { status: 404, data: { error: 'Supplier not found' } };
 
         const itemId = uuidv4();
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO supplier_items (id, user_id, supplier_id, name, sku, url, current_price,
                 target_price, alert_threshold, notes, alert_enabled, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())
-        `, [itemId, user.id, supplierId, name, sku || null, url || null,
-            current_price || null, target_price || null, alert_threshold || 0.10, notes || null]);
+        `,
+            [
+                itemId,
+                user.id,
+                supplierId,
+                name,
+                sku || null,
+                url || null,
+                current_price || null,
+                target_price || null,
+                alert_threshold || 0.1,
+                notes || null,
+            ],
+        );
 
         // Record initial price
         if (current_price) {
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO supplier_price_history (id, supplier_item_id, price, recorded_at)
                 VALUES (?, ?, ?, NOW())
-            `, [uuidv4(), itemId, current_price]);
+            `,
+                [uuidv4(), itemId, current_price],
+            );
         }
 
         const item = await query.get('SELECT * FROM supplier_items WHERE id = ?', [itemId]);
@@ -279,12 +331,15 @@ export async function suppliersRouter(ctx) {
         if (authError) return authError;
 
         const itemId = itemIdMatch[1];
-        const item = await query.get(`
+        const item = await query.get(
+            `
             SELECT si.*, s.name as supplier_name
             FROM supplier_items si
             JOIN suppliers s ON si.supplier_id = s.id
             WHERE si.id = ? AND si.user_id = ?
-        `, [itemId, user.id]);
+        `,
+            [itemId, user.id],
+        );
 
         if (!item) {
             return { status: 404, data: { error: 'Item not found' } };
@@ -292,13 +347,16 @@ export async function suppliersRouter(ctx) {
 
         // Get price history
         try {
-            const history = await query.all(`
+            const history = await query.all(
+                `
                 SELECT price, recorded_at
                 FROM supplier_price_history
                 WHERE supplier_item_id = ?
                 ORDER BY recorded_at DESC
                 LIMIT 30
-            `, [itemId]);
+            `,
+                [itemId],
+            );
 
             item.price_history = history;
         } catch (error) {
@@ -315,10 +373,10 @@ export async function suppliersRouter(ctx) {
         if (authError) return authError;
 
         const itemId = itemIdMatch[1];
-        const existing = await query.get(
-            'SELECT id, current_price FROM supplier_items WHERE id = ? AND user_id = ?',
-            [itemId, user.id]
-        );
+        const existing = await query.get('SELECT id, current_price FROM supplier_items WHERE id = ? AND user_id = ?', [
+            itemId,
+            user.id,
+        ]);
 
         if (!existing) {
             return { status: 404, data: { error: 'Item not found' } };
@@ -332,20 +390,27 @@ export async function suppliersRouter(ctx) {
 
         // If price changed, record history
         if (current_price !== undefined && current_price !== existing.current_price) {
-            await query.run(`
+            await query.run(
+                `
                 UPDATE supplier_items SET
                     last_price = current_price,
                     price_change = ? - current_price
                 WHERE id = ?
-            `, [current_price, itemId]);
+            `,
+                [current_price, itemId],
+            );
 
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO supplier_price_history (id, supplier_item_id, price, recorded_at)
                 VALUES (?, ?, ?, NOW())
-            `, [uuidv4(), itemId, current_price]);
+            `,
+                [uuidv4(), itemId, current_price],
+            );
         }
 
-        await query.run(`
+        await query.run(
+            `
             UPDATE supplier_items SET
                 name = COALESCE(?, name),
                 sku = COALESCE(?, sku),
@@ -358,7 +423,9 @@ export async function suppliersRouter(ctx) {
                 last_checked_at = NOW(),
                 updated_at = NOW()
             WHERE id = ? AND user_id = ?
-        `, [name, sku, url, current_price, target_price, alert_threshold, alert_enabled, notes, itemId, user.id]);
+        `,
+            [name, sku, url, current_price, target_price, alert_threshold, alert_enabled, notes, itemId, user.id],
+        );
 
         const updated = await query.get('SELECT * FROM supplier_items WHERE id = ?', [itemId]);
         return { status: 200, data: updated };
@@ -370,7 +437,10 @@ export async function suppliersRouter(ctx) {
         if (authError) return authError;
 
         const itemId = itemIdMatch[1];
-        const supplierItem = await query.get('SELECT id FROM supplier_items WHERE id = ? AND user_id = ?', [itemId, user.id]);
+        const supplierItem = await query.get('SELECT id FROM supplier_items WHERE id = ? AND user_id = ?', [
+            itemId,
+            user.id,
+        ]);
         if (!supplierItem) return { status: 404, data: { error: 'Item not found' } };
         await query.run('DELETE FROM supplier_price_history WHERE supplier_item_id = ?', [itemId]);
         await query.run('DELETE FROM supplier_items WHERE id = ? AND user_id = ?', [itemId, user.id]);
@@ -384,7 +454,8 @@ export async function suppliersRouter(ctx) {
 
         try {
             // Items where price dropped below target or by threshold percentage
-            const alerts = await query.all(`
+            const alerts = await query.all(
+                `
                 SELECT si.*, s.name as supplier_name,
                        (si.last_price - si.current_price) as price_drop,
                        ROUND((si.last_price - si.current_price) / si.last_price * 100, 1) as drop_percent
@@ -401,7 +472,9 @@ export async function suppliersRouter(ctx) {
                 )
                 ORDER BY drop_percent DESC
                 LIMIT 200
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             return { status: 200, data: alerts };
         } catch (error) {
@@ -416,7 +489,8 @@ export async function suppliersRouter(ctx) {
         if (authError) return authError;
 
         try {
-            const stats = await query.get(`
+            const stats = await query.get(
+                `
                 SELECT
                     COUNT(DISTINCT s.id) as supplier_count,
                     COUNT(si.id) as item_count,
@@ -425,21 +499,26 @@ export async function suppliersRouter(ctx) {
                 FROM suppliers s
                 LEFT JOIN supplier_items si ON s.id = si.supplier_id
                 WHERE s.user_id = ? AND s.is_active = TRUE
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
-            const byType = await query.all(`
+            const byType = await query.all(
+                `
                 SELECT type, COUNT(*) as count
                 FROM suppliers
                 WHERE user_id = ? AND is_active = TRUE
                 GROUP BY type
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             return {
                 status: 200,
                 data: {
                     ...stats,
-                    by_type: byType
-                }
+                    by_type: byType,
+                },
             };
         } catch (error) {
             return {
@@ -449,8 +528,8 @@ export async function suppliersRouter(ctx) {
                     item_count: 0,
                     price_drops: 0,
                     at_target: 0,
-                    by_type: []
-                }
+                    by_type: [],
+                },
             };
         }
     }
@@ -465,8 +544,8 @@ export async function suppliersRouter(ctx) {
                 { value: 'estate', label: 'Estate Sale', description: 'Estate sales and auctions' },
                 { value: 'online', label: 'Online Marketplace', description: 'eBay, Amazon, etc.' },
                 { value: 'auction', label: 'Auction House', description: 'Live and online auctions' },
-                { value: 'other', label: 'Other', description: 'Other sourcing channels' }
-            ]
+                { value: 'other', label: 'Other', description: 'Other sourcing channels' },
+            ],
         };
     }
 

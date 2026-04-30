@@ -71,10 +71,18 @@
     transition: width 0.5s ease-out;
 }
 
-.funnel-bar.views { background: var(--blue-500); }
-.funnel-bar.likes { background: var(--purple-500); }
-.funnel-bar.offers { background: var(--yellow-500); }
-.funnel-bar.sales { background: var(--green-500); }
+.funnel-bar.views {
+    background: var(--blue-500);
+}
+.funnel-bar.likes {
+    background: var(--purple-500);
+}
+.funnel-bar.offers {
+    background: var(--yellow-500);
+}
+.funnel-bar.sales {
+    background: var(--green-500);
+}
 
 .funnel-label {
     width: 60px;
@@ -158,8 +166,12 @@
 }
 
 @keyframes tickerScroll {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
 }
 
 .ticker-item {
@@ -170,8 +182,12 @@
     font-size: 14px;
 }
 
-.ticker-item.income { color: var(--green-400); }
-.ticker-item.expense { color: var(--red-400); }
+.ticker-item.income {
+    color: var(--green-400);
+}
+.ticker-item.expense {
+    color: var(--red-400);
+}
 
 /* Today's Tasks Widget */
 .tasks-widget {
@@ -384,4 +400,3 @@ body.dark-mode .suggestion-item {
     background: white;
     box-shadow: var(--shadow-sm);
 }
-

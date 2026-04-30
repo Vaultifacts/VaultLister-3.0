@@ -9,12 +9,12 @@ import {
     fetchRecentEmails as fetchGmailEmails,
     getEmailContent as getGmailContent,
     getAttachment as getGmailAttachment,
-    base64UrlToBase64
+    base64UrlToBase64,
 } from '../services/gmailService.js';
 import {
     refreshOutlookToken,
     fetchRecentEmails as fetchOutlookEmails,
-    getEmailContent as getOutlookContent
+    getEmailContent as getOutlookContent,
 } from '../services/outlookService.js';
 import { detectReceipt, extractVendorName, inferReceiptType } from '../services/receiptDetector.js';
 import { createNotification } from '../services/notificationService.js';
@@ -23,8 +23,7 @@ import { acquireRedisLock } from '../services/redisLock.js';
 import { logger } from '../shared/logger.js';
 
 // Truncate account IDs in logs for PII safety
-const redactId = (id) => id ? id.slice(0, 8) + '...' : 'unknown';
-
+const redactId = (id) => (id ? id.slice(0, 8) + '...' : 'unknown');
 
 // Configuration
 const POLL_INTERVAL_MS = parseInt(process.env.EMAIL_POLL_INTERVAL) || 5 * 60 * 1000; // 5 minutes
@@ -46,14 +45,14 @@ async function writeHeartbeat() {
     await setRedisValue(
         HEARTBEAT_KEY,
         JSON.stringify({ lastRun: new Date(heartbeatTime).toISOString(), status: 'running' }),
-        HEARTBEAT_TTL_SECONDS
+        HEARTBEAT_TTL_SECONDS,
     );
 }
 
 function scheduleStartupHeartbeats() {
     lastRun = Date.now();
     const writeStartupHeartbeat = () => {
-        writeHeartbeat().catch(heartbeatError => {
+        writeHeartbeat().catch((heartbeatError) => {
             logger.warn('[EmailPolling] Failed to write startup heartbeat', null, { detail: heartbeatError.message });
         });
     };
@@ -108,11 +107,9 @@ async function pollEmailAccounts() {
 
     isRunning = true;
     lastRun = Date.now();
-    const lock = await acquireRedisLock(
-        EMAIL_POLLING_LOCK_KEY,
-        EMAIL_POLLING_LOCK_TTL_MS,
-        { name: 'email polling worker' }
-    );
+    const lock = await acquireRedisLock(EMAIL_POLLING_LOCK_KEY, EMAIL_POLLING_LOCK_TTL_MS, {
+        name: 'email polling worker',
+    });
 
     if (!lock.acquired) {
         isRunning = false;
@@ -121,7 +118,8 @@ async function pollEmailAccounts() {
 
     try {
         // Find accounts due for sync (not syncing, enabled, with refresh token)
-        const accounts = await query.all(`
+        const accounts = await query.all(
+            `
             SELECT * FROM email_accounts
             WHERE is_enabled = TRUE
             AND sync_status != 'syncing'
@@ -129,7 +127,9 @@ async function pollEmailAccounts() {
             AND consecutive_failures < ?
             ORDER BY last_sync_at ASC NULLS FIRST
             LIMIT ?
-        `, [MAX_CONSECUTIVE_FAILURES, MAX_ACCOUNTS_PER_CYCLE]);
+        `,
+            [MAX_CONSECUTIVE_FAILURES, MAX_ACCOUNTS_PER_CYCLE],
+        );
 
         if (accounts.length === 0) {
             return;
@@ -146,9 +146,8 @@ async function pollEmailAccounts() {
             }
 
             // Small delay between accounts
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise((resolve) => setTimeout(resolve, 1000));
         }
-
     } catch (error) {
         logger.error('[EmailPolling] Error in poll cycle:', error);
     } finally {
@@ -170,17 +169,18 @@ export async function syncEmailAccount(account) {
     const now = new Date().toISOString();
 
     // Mark as syncing
-    await query.run(`
+    await query.run(
+        `
         UPDATE email_accounts SET sync_status = 'syncing', updated_at = ?
         WHERE id = ?
-    `, [now, account.id]);
+    `,
+        [now, account.id],
+    );
 
     try {
         // Refresh token if needed
         let accessToken = decryptToken(account.oauth_token);
-        const tokenExpiry = account.oauth_token_expires_at
-            ? new Date(account.oauth_token_expires_at)
-            : new Date(0);
+        const tokenExpiry = account.oauth_token_expires_at ? new Date(account.oauth_token_expires_at) : new Date(0);
 
         const provider = account.provider || 'gmail';
 
@@ -198,18 +198,16 @@ export async function syncEmailAccount(account) {
             accessToken = newTokens.access_token;
             const newExpiry = new Date(Date.now() + (newTokens.expires_in || 3600) * 1000);
 
-            await query.run(`
+            await query.run(
+                `
                 UPDATE email_accounts SET
                     oauth_token = ?,
                     oauth_token_expires_at = ?,
                     updated_at = ?
                 WHERE id = ?
-            `, [
-                encryptToken(accessToken),
-                newExpiry.toISOString(),
-                new Date().toISOString(),
-                account.id
-            ]);
+            `,
+                [encryptToken(accessToken), newExpiry.toISOString(), new Date().toISOString(), account.id],
+            );
         }
 
         // Parse filter senders
@@ -221,17 +219,19 @@ export async function syncEmailAccount(account) {
             messages = await fetchOutlookEmails(accessToken, {
                 sinceMessageId: account.last_message_id,
                 senderFilters: filterSenders,
-                maxResults: MAX_EMAILS_PER_SYNC
+                maxResults: MAX_EMAILS_PER_SYNC,
             });
         } else {
             messages = await fetchGmailEmails(accessToken, {
                 sinceMessageId: account.last_message_id,
                 senderFilters: filterSenders,
-                maxResults: MAX_EMAILS_PER_SYNC
+                maxResults: MAX_EMAILS_PER_SYNC,
             });
         }
 
-        logger.info(`[EmailPolling] Found ${messages.length} new ${provider} email(s) for account ${redactId(account.id)}`);
+        logger.info(
+            `[EmailPolling] Found ${messages.length} new ${provider} email(s) for account ${redactId(account.id)}`,
+        );
 
         let receiptsFound = 0;
         let lastMessageId = account.last_message_id;
@@ -262,15 +262,15 @@ export async function syncEmailAccount(account) {
                 }
 
                 // Small delay to avoid rate limits
-                await new Promise(resolve => setTimeout(resolve, 200));
-
+                await new Promise((resolve) => setTimeout(resolve, 200));
             } catch (emailError) {
                 logger.error(`[EmailPolling] Error processing email ${msg.id}:`, emailError.message);
             }
         }
 
         // Update account with success
-        await query.run(`
+        await query.run(
+            `
             UPDATE email_accounts SET
                 sync_status = 'idle',
                 last_sync_at = ?,
@@ -279,7 +279,9 @@ export async function syncEmailAccount(account) {
                 last_error = NULL,
                 updated_at = ?
             WHERE id = ?
-        `, [now, lastMessageId, now, account.id]);
+        `,
+            [now, lastMessageId, now, account.id],
+        );
 
         // Notify user if receipts found
         if (receiptsFound > 0) {
@@ -287,17 +289,17 @@ export async function syncEmailAccount(account) {
                 type: 'email_receipts_found',
                 title: 'New Receipts Found',
                 message: `Found ${receiptsFound} receipt(s) in your ${account.provider} inbox`,
-                data: { accountId: account.id, count: receiptsFound }
+                data: { accountId: account.id, count: receiptsFound },
             });
         }
 
         return { success: true, receiptsFound };
-
     } catch (error) {
         // Record failure
         const failures = (account.consecutive_failures || 0) + 1;
 
-        await query.run(`
+        await query.run(
+            `
             UPDATE email_accounts SET
                 sync_status = 'error',
                 consecutive_failures = ?,
@@ -305,22 +307,27 @@ export async function syncEmailAccount(account) {
                 last_error_at = ?,
                 updated_at = ?
             WHERE id = ?
-        `, [failures, error.message, now, now, account.id]);
+        `,
+            [failures, error.message, now, now, account.id],
+        );
 
         // Disable account after too many failures
         if (failures >= MAX_CONSECUTIVE_FAILURES) {
             logger.info(`[EmailPolling] Disabling account ${redactId(account.id)} after ${failures} failures`);
 
-            await query.run(`
+            await query.run(
+                `
                 UPDATE email_accounts SET is_enabled = FALSE, updated_at = ?
                 WHERE id = ?
-            `, [now, account.id]);
+            `,
+                [now, account.id],
+            );
 
             createNotification(account.user_id, {
                 type: 'email_account_disabled',
                 title: 'Email Account Disabled',
                 message: `Your ${account.provider} account was disabled due to repeated sync failures. Please reconnect.`,
-                data: { accountId: account.id, error: error.message }
+                data: { accountId: account.id, error: error.message },
             });
         }
 
@@ -343,10 +350,8 @@ async function queueEmailReceipt(account, email, detection, accessToken) {
 
     // Get image attachments if any
     let imageData = null;
-    const imageAttachments = email.attachments?.filter(a =>
-        a.mimeType?.startsWith('image/') ||
-        a.mimeType === 'application/pdf'
-    ) || [];
+    const imageAttachments =
+        email.attachments?.filter((a) => a.mimeType?.startsWith('image/') || a.mimeType === 'application/pdf') || [];
 
     if (imageAttachments.length > 0) {
         // Get the first image/PDF attachment
@@ -371,7 +376,7 @@ async function queueEmailReceipt(account, email, detection, accessToken) {
         receiptType,
         vendor: {
             name: vendorName,
-            email: email.fromEmail
+            email: email.fromEmail,
         },
         date: email.dateISO?.split('T')[0] || now.split('T')[0],
         items: [],
@@ -383,32 +388,35 @@ async function queueEmailReceipt(account, email, detection, accessToken) {
         orderNumber: null,
         confidence: detection.confidence >= 80 ? 'high' : detection.confidence >= 60 ? 'medium' : 'low',
         rawEmailSubject: email.subject,
-        rawEmailBody: email.body?.text?.substring(0, 5000) // Limit body size
+        rawEmailBody: email.body?.text?.substring(0, 5000), // Limit body size
     };
 
     // Insert into email_parse_queue
-    await query.run(`
+    await query.run(
+        `
         INSERT INTO email_parse_queue (
             id, user_id, email_subject, email_from, email_body, email_date,
             parsed_data, status, receipt_type, confidence_score, source_file,
             file_type, image_data, created_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, [
-        receiptId,
-        account.user_id,
-        email.subject,
-        email.from,
-        email.body?.text?.substring(0, 10000) || '',
-        email.dateISO,
-        JSON.stringify(parsedData),
-        imageData ? 'pending' : 'parsed', // If has image, needs AI parsing
-        receiptType,
-        detection.confidence / 100,
-        `${email.id}@${account.provider || 'gmail'}`,
-        'email',
-        imageData,
-        now
-    ]);
+    `,
+        [
+            receiptId,
+            account.user_id,
+            email.subject,
+            email.from,
+            email.body?.text?.substring(0, 10000) || '',
+            email.dateISO,
+            JSON.stringify(parsedData),
+            imageData ? 'pending' : 'parsed', // If has image, needs AI parsing
+            receiptType,
+            detection.confidence / 100,
+            `${email.id}@${account.provider || 'gmail'}`,
+            'email',
+            imageData,
+            now,
+        ],
+    );
 
     logger.info(`[EmailPolling] Queued receipt: ${email.subject} (${receiptType})`);
 
@@ -432,6 +440,6 @@ export async function getEmailPollingStatus() {
         running: pollingInterval !== null,
         intervalMs: POLL_INTERVAL_MS,
         lastRun: lastRun ? new Date(lastRun).toISOString() : null,
-        ...stats
+        ...stats,
     };
 }

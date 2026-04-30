@@ -44,7 +44,7 @@ export async function sendEmail(to, subject, html, text) {
         subject,
         html,
         text: text || html.replace(/<[^>]*(>|$)/g, '').replace(/&#?[a-z0-9]+;/gi, ' '),
-        replyTo: 'support@vaultlister.com'
+        replyTo: 'support@vaultlister.com',
     };
 
     if (resend) {
@@ -60,7 +60,11 @@ export async function sendEmail(to, subject, html, text) {
     }
 
     // Development mode - log email details via structured logger
-    logger.info('[Email] DEV MODE', null, { to: to.replace(/(.{2}).*(@.*)/, '$1***$2'), subject, body: (text || html).slice(0, 200) });
+    logger.info('[Email] DEV MODE', null, {
+        to: to.replace(/(.{2}).*(@.*)/, '$1***$2'),
+        subject,
+        body: (text || html).slice(0, 200),
+    });
 
     return { success: true, messageId: 'dev-' + Date.now() };
 }
@@ -177,10 +181,10 @@ export async function sendMFADisabledEmail(user) {
  */
 export async function sendSecurityAlertEmail(user, alertType, details) {
     const alertMessages = {
-        'new_login': 'New login detected on your account',
-        'password_changed': 'Your password was changed',
-        'suspicious_activity': 'Suspicious activity detected',
-        'backup_code_used': 'A backup code was used to access your account'
+        new_login: 'New login detected on your account',
+        password_changed: 'Your password was changed',
+        suspicious_activity: 'Suspicious activity detected',
+        backup_code_used: 'A backup code was used to access your account',
     };
 
     const safeUsername = escapeHtml(user.username || user.email);
@@ -190,14 +194,20 @@ export async function sendSecurityAlertEmail(user, alertType, details) {
             <h2 style="color: #DC2626;">Security Alert</h2>
             <p>Hi ${safeUsername},</p>
             <p><strong>${safeAlertMessage}</strong></p>
-            ${details ? `
+            ${
+                details
+                    ? `
                 <div style="background-color: #F3F4F6; padding: 16px; border-radius: 6px; margin: 20px 0;">
                     <p style="margin: 0; color: #374151;">
                         <strong>Details:</strong><br>
-                        ${Object.entries(details).map(([key, value]) => `${escapeHtml(key)}: ${escapeHtml(value)}`).join('<br>')}
+                        ${Object.entries(details)
+                            .map(([key, value]) => `${escapeHtml(key)}: ${escapeHtml(value)}`)
+                            .join('<br>')}
                     </p>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
             <p>If this wasn't you, please secure your account immediately by changing your password.</p>
             <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 20px 0;">
             <p style="color: #9CA3AF; font-size: 12px;">
@@ -222,7 +232,9 @@ export async function sendAutomationNotificationEmail(user, notification) {
             <h2 style="color: ${color};">${safeTitle}</h2>
             <p>Hi ${safeUser},</p>
             <p>${safeMessage}</p>
-            ${notification.data ? `
+            ${
+                notification.data
+                    ? `
                 <div style="background-color: #F3F4F6; padding: 16px; border-radius: 6px; margin: 20px 0;">
                     <p style="margin: 0; color: #374151;">
                         <strong>Details:</strong><br>
@@ -230,7 +242,9 @@ export async function sendAutomationNotificationEmail(user, notification) {
                         Rule: ${escapeHtml(notification.data.ruleName || 'N/A')}
                     </p>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
             <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 20px 0;">
             <p style="color: #9CA3AF; font-size: 12px;">
                 This is an automated notification from VaultLister.
@@ -247,11 +261,14 @@ export async function sendDailySummaryEmail(user, stats) {
     const successRate = totalRuns > 0 ? Math.round((successRuns / totalRuns) * 100) : 0;
     const safeUser = escapeHtml(user.username || user.email);
 
-    const topRulesHtml = (topRules || []).map(r =>
-        `<tr><td style="padding:6px 12px;border-bottom:1px solid #E5E7EB;">${escapeHtml(r.automation_name)}</td>` +
-        `<td style="padding:6px 12px;border-bottom:1px solid #E5E7EB;text-align:center;">${r.runs}</td>` +
-        `<td style="padding:6px 12px;border-bottom:1px solid #E5E7EB;text-align:center;color:${r.successes === r.runs ? '#059669' : '#D97706'};">${r.runs > 0 ? Math.round((r.successes / r.runs) * 100) : 0}%</td></tr>`
-    ).join('');
+    const topRulesHtml = (topRules || [])
+        .map(
+            (r) =>
+                `<tr><td style="padding:6px 12px;border-bottom:1px solid #E5E7EB;">${escapeHtml(r.automation_name)}</td>` +
+                `<td style="padding:6px 12px;border-bottom:1px solid #E5E7EB;text-align:center;">${r.runs}</td>` +
+                `<td style="padding:6px 12px;border-bottom:1px solid #E5E7EB;text-align:center;color:${r.successes === r.runs ? '#059669' : '#D97706'};">${r.runs > 0 ? Math.round((r.successes / r.runs) * 100) : 0}%</td></tr>`,
+        )
+        .join('');
 
     const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -276,7 +293,9 @@ export async function sendDailySummaryEmail(user, stats) {
                     <div style="font-size:12px;color:#6B7280;">Success Rate</div>
                 </div>
             </div>
-            ${topRulesHtml ? `
+            ${
+                topRulesHtml
+                    ? `
                 <h3 style="color:#374151;font-size:16px;margin-top:24px;">Top Automations</h3>
                 <table style="width:100%;border-collapse:collapse;font-size:14px;">
                     <thead><tr style="background:#F9FAFB;">
@@ -286,7 +305,9 @@ export async function sendDailySummaryEmail(user, stats) {
                     </tr></thead>
                     <tbody>${topRulesHtml}</tbody>
                 </table>
-            ` : ''}
+            `
+                    : ''
+            }
             <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 20px 0;">
             <p style="color: #9CA3AF; font-size: 12px;">
                 This is your daily automation summary from VaultLister. Manage preferences in Settings.
@@ -306,5 +327,5 @@ export default {
     sendMFADisabledEmail,
     sendSecurityAlertEmail,
     sendAutomationNotificationEmail,
-    sendDailySummaryEmail
+    sendDailySummaryEmail,
 };

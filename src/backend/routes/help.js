@@ -11,7 +11,6 @@ import { safeJsonParse } from '../shared/utils.js';
 const ALLOWED_TICKET_FIELDS = new Set(['status', 'priority']);
 // TECH-DEBT: Migrate error responses to AppError classes (errorHandler.js)
 
-
 /**
  * Help router
  */
@@ -48,7 +47,7 @@ export async function helpRouter(ctx) {
             logger.error('[Help] error fetching videos', user?.id, { detail: error?.message || 'Unknown error' });
             return {
                 status: 500,
-                data: { error: 'Failed to fetch videos' }
+                data: { error: 'Failed to fetch videos' },
             };
         }
     }
@@ -63,19 +62,19 @@ export async function helpRouter(ctx) {
             if (!video) {
                 return {
                     status: 404,
-                    data: { error: 'Video not found' }
+                    data: { error: 'Video not found' },
                 };
             }
 
             return {
                 status: 200,
-                data: { video }
+                data: { video },
             };
         } catch (error) {
             logger.error('[Help] error fetching video', user?.id, { detail: error?.message || 'Unknown error' });
             return {
                 status: 500,
-                data: { error: 'Failed to fetch video' }
+                data: { error: 'Failed to fetch video' },
             };
         }
     }
@@ -115,7 +114,7 @@ export async function helpRouter(ctx) {
             logger.error('[Help] error fetching FAQs', user?.id, { detail: error?.message || 'Unknown error' });
             return {
                 status: 500,
-                data: { error: 'Failed to fetch FAQs' }
+                data: { error: 'Failed to fetch FAQs' },
             };
         }
     }
@@ -130,19 +129,19 @@ export async function helpRouter(ctx) {
             if (!faq) {
                 return {
                     status: 404,
-                    data: { error: 'FAQ not found' }
+                    data: { error: 'FAQ not found' },
                 };
             }
 
             return {
                 status: 200,
-                data: { faq }
+                data: { faq },
             };
         } catch (error) {
             logger.error('[Help] error fetching FAQ', user?.id, { detail: error?.message || 'Unknown error' });
             return {
                 status: 500,
-                data: { error: 'Failed to fetch FAQ' }
+                data: { error: 'Failed to fetch FAQ' },
             };
         }
     }
@@ -159,7 +158,7 @@ export async function helpRouter(ctx) {
         if (typeof helpful !== 'boolean') {
             return {
                 status: 400,
-                data: { error: 'helpful must be true or false' }
+                data: { error: 'helpful must be true or false' },
             };
         }
 
@@ -170,20 +169,20 @@ export async function helpRouter(ctx) {
             if (!faq) {
                 return {
                     status: 404,
-                    data: { error: 'FAQ not found' }
+                    data: { error: 'FAQ not found' },
                 };
             }
 
             // Check if already voted
-            const existing = await query.get(
-                `SELECT * FROM help_faq_votes WHERE faq_id = ? AND user_id = ?`,
-                [faqId, user.id]
-            );
+            const existing = await query.get(`SELECT * FROM help_faq_votes WHERE faq_id = ? AND user_id = ?`, [
+                faqId,
+                user.id,
+            ]);
 
             if (existing) {
                 return {
                     status: 400,
-                    data: { error: 'You have already voted on this FAQ' }
+                    data: { error: 'You have already voted on this FAQ' },
                 };
             }
 
@@ -192,7 +191,7 @@ export async function helpRouter(ctx) {
             await query.run(
                 `INSERT INTO help_faq_votes (id, faq_id, user_id, is_helpful, created_at)
                  VALUES (?, ?, ?, ?, NOW())`,
-                [voteId, faqId, user.id, helpful ? 1 : 0]
+                [voteId, faqId, user.id, helpful ? 1 : 0],
             );
 
             // Update counts
@@ -204,13 +203,13 @@ export async function helpRouter(ctx) {
 
             return {
                 status: 200,
-                data: { success: true }
+                data: { success: true },
             };
         } catch (error) {
             logger.error('[Help] error voting on FAQ', user?.id, { detail: error?.message || 'Unknown error' });
             return {
                 status: 500,
-                data: { error: 'Failed to record vote' }
+                data: { error: 'Failed to record vote' },
             };
         }
     }
@@ -242,7 +241,10 @@ export async function helpRouter(ctx) {
                     LIMIT ?
                 `;
                 // Sanitize: strip quotes, operators, special chars
-                params = [search.replace(/['"*(){}[\]^~\\]/g, '').replace(/\b(AND|OR|NOT|NEAR)\b/gi, ''), parseIntSafe(limit, { min: 1, max: 200, fallback: 50 })];
+                params = [
+                    search.replace(/['"*(){}[\]^~\\]/g, '').replace(/\b(AND|OR|NOT|NEAR)\b/gi, ''),
+                    parseIntSafe(limit, { min: 1, max: 200, fallback: 50 }),
+                ];
             } else {
                 sql = `SELECT * FROM help_articles WHERE is_published = 1`;
                 params = [];
@@ -259,7 +261,7 @@ export async function helpRouter(ctx) {
             const articles = await query.all(sql, params);
 
             // Parse tags
-            articles.forEach(article => {
+            articles.forEach((article) => {
                 article.tags = safeJsonParse(article.tags, []);
             });
 
@@ -272,7 +274,7 @@ export async function helpRouter(ctx) {
             logger.error('[Help] error fetching articles', user?.id, { detail: error?.message || 'Unknown error' });
             return {
                 status: 500,
-                data: { error: 'Failed to fetch articles' }
+                data: { error: 'Failed to fetch articles' },
             };
         }
     }
@@ -287,7 +289,7 @@ export async function helpRouter(ctx) {
             if (!article) {
                 return {
                     status: 404,
-                    data: { error: 'Article not found' }
+                    data: { error: 'Article not found' },
                 };
             }
 
@@ -296,13 +298,13 @@ export async function helpRouter(ctx) {
 
             return {
                 status: 200,
-                data: { article }
+                data: { article },
             };
         } catch (error) {
             logger.error('[Help] error fetching article', user?.id, { detail: error?.message || 'Unknown error' });
             return {
                 status: 500,
-                data: { error: 'Failed to fetch article' }
+                data: { error: 'Failed to fetch article' },
             };
         }
     }
@@ -319,7 +321,7 @@ export async function helpRouter(ctx) {
         if (typeof helpful !== 'boolean') {
             return {
                 status: 400,
-                data: { error: 'helpful must be true or false' }
+                data: { error: 'helpful must be true or false' },
             };
         }
 
@@ -330,20 +332,20 @@ export async function helpRouter(ctx) {
             if (!article) {
                 return {
                     status: 404,
-                    data: { error: 'Article not found' }
+                    data: { error: 'Article not found' },
                 };
             }
 
             // Check if already voted
-            const existing = await query.get(
-                `SELECT * FROM help_article_votes WHERE article_id = ? AND user_id = ?`,
-                [articleId, user.id]
-            );
+            const existing = await query.get(`SELECT * FROM help_article_votes WHERE article_id = ? AND user_id = ?`, [
+                articleId,
+                user.id,
+            ]);
 
             if (existing) {
                 return {
                     status: 400,
-                    data: { error: 'You have already voted on this article' }
+                    data: { error: 'You have already voted on this article' },
                 };
             }
 
@@ -352,7 +354,7 @@ export async function helpRouter(ctx) {
             await query.run(
                 `INSERT INTO help_article_votes (id, article_id, user_id, is_helpful, created_at)
                  VALUES (?, ?, ?, ?, NOW())`,
-                [voteId, articleId, user.id, helpful ? 1 : 0]
+                [voteId, articleId, user.id, helpful ? 1 : 0],
             );
 
             // Update counts
@@ -362,13 +364,13 @@ export async function helpRouter(ctx) {
 
             return {
                 status: 200,
-                data: { success: true }
+                data: { success: true },
             };
         } catch (error) {
             logger.error('[Help] error voting on article', user?.id, { detail: error?.message || 'Unknown error' });
             return {
                 status: 500,
-                data: { error: 'Failed to record vote' }
+                data: { error: 'Failed to record vote' },
             };
         }
     }
@@ -387,14 +389,14 @@ export async function helpRouter(ctx) {
         if (!type || !subject || !description) {
             return {
                 status: 400,
-                data: { error: 'type, subject, and description are required' }
+                data: { error: 'type, subject, and description are required' },
             };
         }
 
         if (!['contact', 'bug', 'feature_request'].includes(type)) {
             return {
                 status: 400,
-                data: { error: 'type must be contact, bug, or feature_request' }
+                data: { error: 'type must be contact, bug, or feature_request' },
             };
         }
 
@@ -412,21 +414,21 @@ export async function helpRouter(ctx) {
                     description,
                     screenshots ? JSON.stringify(screenshots) : '[]',
                     page_context || null,
-                    browser_info || null
-                ]
+                    browser_info || null,
+                ],
             );
 
             const ticket = await query.get(`SELECT * FROM support_tickets WHERE id = ?`, [ticketId]);
 
             return {
                 status: 201,
-                data: { success: true, ticket }
+                data: { success: true, ticket },
             };
         } catch (error) {
             logger.error('[Help] error creating ticket', user?.id, { detail: error?.message || 'Unknown error' });
             return {
                 status: 500,
-                data: { error: 'Failed to create ticket' }
+                data: { error: 'Failed to create ticket' },
             };
         }
     }
@@ -449,19 +451,19 @@ export async function helpRouter(ctx) {
             const tickets = await query.all(sql, params);
 
             // Parse JSON fields
-            tickets.forEach(ticket => {
+            tickets.forEach((ticket) => {
                 ticket.screenshots = safeJsonParse(ticket.screenshots, []);
             });
 
             return {
                 status: 200,
-                data: { tickets }
+                data: { tickets },
             };
         } catch (error) {
             logger.error('[Help] error fetching tickets', user?.id, { detail: error?.message || 'Unknown error' });
             return {
                 status: 500,
-                data: { error: 'Failed to fetch tickets' }
+                data: { error: 'Failed to fetch tickets' },
             };
         }
     }
@@ -471,15 +473,15 @@ export async function helpRouter(ctx) {
         const ticketId = path.split('/')[2];
 
         try {
-            const ticket = await query.get(
-                `SELECT * FROM support_tickets WHERE id = ? AND user_id = ?`,
-                [ticketId, user.id]
-            );
+            const ticket = await query.get(`SELECT * FROM support_tickets WHERE id = ? AND user_id = ?`, [
+                ticketId,
+                user.id,
+            ]);
 
             if (!ticket) {
                 return {
                     status: 404,
-                    data: { error: 'Ticket not found' }
+                    data: { error: 'Ticket not found' },
                 };
             }
 
@@ -493,18 +495,18 @@ export async function helpRouter(ctx) {
                  LEFT JOIN users u ON r.user_id = u.id
                  WHERE r.ticket_id = ?
                  ORDER BY r.created_at ASC`,
-                [ticketId]
+                [ticketId],
             );
 
             return {
                 status: 200,
-                data: { ticket, replies }
+                data: { ticket, replies },
             };
         } catch (error) {
             logger.error('[Help] error fetching ticket', user?.id, { detail: error?.message || 'Unknown error' });
             return {
                 status: 500,
-                data: { error: 'Failed to fetch ticket' }
+                data: { error: 'Failed to fetch ticket' },
             };
         }
     }
@@ -517,21 +519,21 @@ export async function helpRouter(ctx) {
         if (!message || !message.trim()) {
             return {
                 status: 400,
-                data: { error: 'message is required' }
+                data: { error: 'message is required' },
             };
         }
 
         try {
             // Verify ticket ownership
-            const ticket = await query.get(
-                `SELECT id FROM support_tickets WHERE id = ? AND user_id = ?`,
-                [ticketId, user.id]
-            );
+            const ticket = await query.get(`SELECT id FROM support_tickets WHERE id = ? AND user_id = ?`, [
+                ticketId,
+                user.id,
+            ]);
 
             if (!ticket) {
                 return {
                     status: 404,
-                    data: { error: 'Ticket not found' }
+                    data: { error: 'Ticket not found' },
                 };
             }
 
@@ -540,32 +542,29 @@ export async function helpRouter(ctx) {
             await query.run(
                 `INSERT INTO support_ticket_replies (id, ticket_id, user_id, message, is_staff_reply, created_at)
                  VALUES (?, ?, ?, ?, 0, NOW())`,
-                [replyId, ticketId, user.id, message]
+                [replyId, ticketId, user.id, message],
             );
 
             // Update ticket timestamp
-            await query.run(
-                `UPDATE support_tickets SET updated_at = NOW() WHERE id = ?`,
-                [ticketId]
-            );
+            await query.run(`UPDATE support_tickets SET updated_at = NOW() WHERE id = ?`, [ticketId]);
 
             const reply = await query.get(
                 `SELECT r.*, u.email as user_email
                  FROM support_ticket_replies r
                  LEFT JOIN users u ON r.user_id = u.id
                  WHERE r.id = ?`,
-                [replyId]
+                [replyId],
             );
 
             return {
                 status: 201,
-                data: { success: true, reply }
+                data: { success: true, reply },
             };
         } catch (error) {
             logger.error('[Help] error adding reply', user?.id, { detail: error?.message || 'Unknown error' });
             return {
                 status: 500,
-                data: { error: 'Failed to add reply' }
+                data: { error: 'Failed to add reply' },
             };
         }
     }
@@ -577,15 +576,15 @@ export async function helpRouter(ctx) {
 
         try {
             // Verify ticket ownership
-            const ticket = await query.get(
-                `SELECT id FROM support_tickets WHERE id = ? AND user_id = ?`,
-                [ticketId, user.id]
-            );
+            const ticket = await query.get(`SELECT id FROM support_tickets WHERE id = ? AND user_id = ?`, [
+                ticketId,
+                user.id,
+            ]);
 
             if (!ticket) {
                 return {
                     status: 404,
-                    data: { error: 'Ticket not found' }
+                    data: { error: 'Ticket not found' },
                 };
             }
 
@@ -609,30 +608,27 @@ export async function helpRouter(ctx) {
             if (updates.length === 0) {
                 return {
                     status: 400,
-                    data: { error: 'No valid updates provided' }
+                    data: { error: 'No valid updates provided' },
                 };
             }
 
             updates.push('updated_at = NOW()');
             params.push(ticketId);
 
-            await query.run(
-                `UPDATE support_tickets SET ${updates.join(', ')} WHERE id = ?`,
-                params
-            );
+            await query.run(`UPDATE support_tickets SET ${updates.join(', ')} WHERE id = ?`, params);
 
             const updatedTicket = await query.get(`SELECT * FROM support_tickets WHERE id = ?`, [ticketId]);
             updatedTicket.screenshots = safeJsonParse(updatedTicket.screenshots, []);
 
             return {
                 status: 200,
-                data: { success: true, ticket: updatedTicket }
+                data: { success: true, ticket: updatedTicket },
             };
         } catch (error) {
             logger.error('[Help] error updating ticket', user?.id, { detail: error?.message || 'Unknown error' });
             return {
                 status: 500,
-                data: { error: 'Failed to update ticket' }
+                data: { error: 'Failed to update ticket' },
             };
         }
     }
@@ -644,7 +640,7 @@ export async function helpRouter(ctx) {
         if (!searchQuery || searchQuery.trim().length < 2) {
             return {
                 status: 400,
-                data: { error: 'Search query must be at least 2 characters' }
+                data: { error: 'Search query must be at least 2 characters' },
             };
         }
 
@@ -655,7 +651,10 @@ export async function helpRouter(ctx) {
             }
 
             // Sanitize and wrap query for FTS5 (handle hyphens, operators, special chars)
-            const query_safe = searchQuery.replace(/['"*(){}[\]^~\\]/g, '').replace(/-/g, ' ').replace(/\b(AND|OR|NOT|NEAR)\b/gi, '');
+            const query_safe = searchQuery
+                .replace(/['"*(){}[\]^~\\]/g, '')
+                .replace(/-/g, ' ')
+                .replace(/\b(AND|OR|NOT|NEAR)\b/gi, '');
 
             // Search articles using FTS (wrap in quotes to treat as phrase)
             const articles = await query.all(
@@ -663,7 +662,7 @@ export async function helpRouter(ctx) {
                  FROM help_articles a
                  WHERE a.search_vector @@ plainto_tsquery('english', ?) AND a.is_published = 1
                  LIMIT 10`,
-                [query_safe]
+                [query_safe],
             );
 
             // Search FAQs
@@ -673,7 +672,7 @@ export async function helpRouter(ctx) {
                  FROM help_faq
                  WHERE question ILIKE ? ESCAPE '\\' OR answer ILIKE ? ESCAPE '\\'
                  LIMIT 10`,
-                [`%${escapedSearch}%`, `%${escapedSearch}%`]
+                [`%${escapedSearch}%`, `%${escapedSearch}%`],
             );
 
             // Search videos
@@ -682,11 +681,11 @@ export async function helpRouter(ctx) {
                  FROM help_videos
                  WHERE title ILIKE ? ESCAPE '\\' OR description ILIKE ? ESCAPE '\\'
                  LIMIT 5`,
-                [`%${escapedSearch}%`, `%${escapedSearch}%`]
+                [`%${escapedSearch}%`, `%${escapedSearch}%`],
             );
 
             // Parse tags for articles
-            articles.forEach(article => {
+            articles.forEach((article) => {
                 article.tags = safeJsonParse(article.tags, []);
             });
 
@@ -696,16 +695,18 @@ export async function helpRouter(ctx) {
                     results: {
                         articles,
                         faqs,
-                        videos
+                        videos,
                     },
-                    total: articles.length + faqs.length + videos.length
-                }
+                    total: articles.length + faqs.length + videos.length,
+                },
             };
         } catch (error) {
-            logger.error('[Help] error searching help content', user?.id, { detail: error?.message || 'Unknown error' });
+            logger.error('[Help] error searching help content', user?.id, {
+                detail: error?.message || 'Unknown error',
+            });
             return {
                 status: 500,
-                data: { error: 'Search failed' }
+                data: { error: 'Search failed' },
             };
         }
     }
@@ -724,7 +725,7 @@ export async function helpRouter(ctx) {
             if (!video) {
                 return {
                     status: 404,
-                    data: { error: 'Video not found' }
+                    data: { error: 'Video not found' },
                 };
             }
 
@@ -732,19 +733,21 @@ export async function helpRouter(ctx) {
 
             return {
                 status: 200,
-                data: { success: true }
+                data: { success: true },
             };
         } catch (error) {
-            logger.error('[Help] error incrementing view count', user?.id, { detail: error?.message || 'Unknown error' });
+            logger.error('[Help] error incrementing view count', user?.id, {
+                detail: error?.message || 'Unknown error',
+            });
             return {
                 status: 500,
-                data: { error: 'Failed to increment view count' }
+                data: { error: 'Failed to increment view count' },
             };
         }
     }
 
     return {
         status: 404,
-        data: { error: 'Not found' }
+        data: { error: 'Not found' },
     };
 }

@@ -1087,7 +1087,7 @@
 .masonry-item-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
     opacity: 0;
     transition: opacity 0.2s;
     display: flex;
@@ -1107,7 +1107,7 @@
 }
 
 .masonry-item-meta {
-    color: rgba(255,255,255,0.7);
+    color: rgba(255, 255, 255, 0.7);
     font-size: 11px;
 }
 
@@ -1171,7 +1171,7 @@ body.dark-mode .image-comparison-slider::before {
     position: absolute;
     top: 12px;
     padding: 4px 12px;
-    background: rgba(0,0,0,0.6);
+    background: rgba(0, 0, 0, 0.6);
     color: white;
     font-size: 12px;
     border-radius: var(--radius-full);
@@ -1618,7 +1618,7 @@ body.dark-mode .ai-tag-suggestion {
 .bulk-operations-actions button {
     padding: 6px 12px;
     border-radius: var(--radius-md);
-    border: 1px solid rgba(255,255,255,0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     background: transparent;
     color: white;
     font-size: 13px;
@@ -1627,7 +1627,7 @@ body.dark-mode .ai-tag-suggestion {
 }
 
 .bulk-operations-actions button:hover {
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 /* ----------------------------------------
@@ -1690,11 +1690,21 @@ body.dark-mode .calendar-view-btn.active {
     border-radius: 50%;
 }
 
-.calendar-legend-dot.sales { background: var(--success-500); }
-.calendar-legend-dot.shipments { background: var(--primary-500); }
-.calendar-legend-dot.restocks { background: var(--warning); }
-.calendar-legend-dot.lives { background: var(--error-500); }
-.calendar-legend-dot.custom { background: var(--gray-500); }
+.calendar-legend-dot.sales {
+    background: var(--success-500);
+}
+.calendar-legend-dot.shipments {
+    background: var(--primary-500);
+}
+.calendar-legend-dot.restocks {
+    background: var(--warning);
+}
+.calendar-legend-dot.lives {
+    background: var(--error-500);
+}
+.calendar-legend-dot.custom {
+    background: var(--gray-500);
+}
 
 /* Color-coded Calendar Events */
 .calendar-event-sale {
@@ -1919,9 +1929,15 @@ body.dark-mode .preset-btn.active {
     pointer-events: none;
 }
 
-.calendar-heatmap-day.revenue-high .heatmap-indicator { background: var(--success-500); }
-.calendar-heatmap-day.revenue-medium .heatmap-indicator { background: var(--success-300); }
-.calendar-heatmap-day.revenue-low .heatmap-indicator { background: var(--success-100); }
+.calendar-heatmap-day.revenue-high .heatmap-indicator {
+    background: var(--success-500);
+}
+.calendar-heatmap-day.revenue-medium .heatmap-indicator {
+    background: var(--success-300);
+}
+.calendar-heatmap-day.revenue-low .heatmap-indicator {
+    background: var(--success-100);
+}
 
 /* Timeline Sidebar */
 .calendar-timeline {
@@ -2590,7 +2606,9 @@ body.dark-mode .measurement-result {
 .tool-tip-highlight {
     position: relative;
     z-index: 10000;
-    box-shadow: 0 0 0 4px var(--primary-500), 0 0 0 9999px rgba(0, 0, 0, 0.5);
+    box-shadow:
+        0 0 0 4px var(--primary-500),
+        0 0 0 9999px rgba(0, 0, 0, 0.5);
     border-radius: var(--radius-md);
 }
 
@@ -2744,7 +2762,7 @@ body.dark-mode .conversion-result-card:hover {
 
 body.dark-mode .conversion-result-card.selected {
     border-color: var(--primary-500);
-    background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(180,83,9,0.08));
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(180, 83, 9, 0.08));
 }
 
 body.dark-mode .conversion-result-country {
@@ -2910,11 +2928,11 @@ body.dark-mode .week-preview-day.has-events {
 }
 
 body.dark-mode .masonry-item-overlay {
-    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
 }
 
 body.dark-mode .ai-tag-panel {
-    background: linear-gradient(135deg, #78350f, #18181B);
+    background: linear-gradient(135deg, #78350f, #18181b);
     border-color: #b45309;
 }
 

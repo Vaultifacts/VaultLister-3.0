@@ -1,446 +1,963 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Troubleshooting guide for VaultLister — fix marketplace connections, sync errors, rate limits, failed listings, and automation issues.">
-    <meta name="theme-color" content="#18181B">
-    <title>VaultLister Troubleshooting Guide — Fix Common Issues</title>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('consent', 'default', {
-        analytics_storage: localStorage.getItem('cookie_consent') === 'accepted' ? 'granted' : 'denied'
-      });
-      gtag('js', new Date());
-      gtag('config', 'G-LXETN4PYRM');
-    </script>
-    <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png">
-    <style>
-main { flex: 1; }
-.page-hero { padding: 3rem 2rem 2rem; max-width: 720px; margin: 0 auto; }
-        .breadcrumb { font-size: 0.875rem; color: var(--gray-500); margin-bottom: 1rem; }
-        .breadcrumb a { color: var(--amber-600); text-decoration: none; }
-        .breadcrumb a:hover { text-decoration: underline; }
-        .breadcrumb span { margin: 0 0.4rem; color: var(--gray-400); }
-        .page-hero h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1.1; color: var(--gray-900); margin-bottom: 0.75rem; }
-        .page-hero .subtitle { font-size: 1.0625rem; color: var(--gray-500); }
-        .faq-section { padding: 1rem 2rem 3rem; max-width: 720px; margin: 0 auto; }
-        .faq-item { border: 1.5px solid var(--gray-200); border-radius: 10px; margin-bottom: 0.75rem; overflow: hidden; }
-        .faq-question { width: 100%; text-align: left; padding: 1rem 1.25rem; background: none; border: none; cursor: pointer; font-size: 0.9375rem; font-weight: 600; color: var(--gray-900); font-family: inherit; line-height: 1.4; display: flex; align-items: center; justify-content: space-between; gap: 1rem; transition: background 0.15s; }
-        .faq-question:hover { background: var(--gray-50); }
-        .faq-question.open { background: var(--amber-50); color: var(--amber-700); }
-        .faq-icon { flex-shrink: 0; transition: transform 0.2s; font-style: normal; font-size: 1.1rem; color: var(--gray-400); }
-        .faq-question.open .faq-icon { transform: rotate(45deg); color: var(--amber-600); }
-        .faq-answer { display: none; padding: 0 1.25rem 1.125rem; font-size: 0.9375rem; color: var(--gray-600); line-height: 1.7; }
-        .faq-answer.open { display: block; }
-        .faq-answer a { color: var(--amber-700); text-decoration: underline; }
-        .faq-answer a:hover { text-decoration: underline; }
-        .help-cta-box {
-            background: var(--amber-50); border: 1.5px solid var(--amber-200);
-            border-radius: 12px; padding: 1.75rem 2rem;
-            margin: 2rem auto 3rem; max-width: 720px; text-align: center;
-        }
-        .help-cta-box h3 { font-size: 1.0625rem; font-weight: 700; color: var(--gray-900); margin-bottom: 0.4rem; }
-        .help-cta-box p { font-size: 0.9375rem; color: var(--gray-600); margin-bottom: 1rem; }
-        @media (max-width: 800px) { .help-cta-box { margin: 2rem 1rem 3rem; } }
-        .related-section { padding: 0 2rem 4rem; max-width: 720px; margin: 0 auto; }
-        .related-section h2 { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--amber-600); margin-bottom: 1rem; }
-        .related-grid {
-            display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem;
-        }
-        @media (max-width: 900px) { .related-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-        @media (max-width: 520px) { .related-grid { grid-template-columns: 1fr; } }
-        .related-card { border: 1.5px solid var(--gray-200); border-radius: 8px; padding: 0.875rem 1rem; text-decoration: none; color: var(--gray-700); font-size: 0.875rem; font-weight: 600; transition: border-color 0.15s, background 0.15s; }
-        .related-card:hover { border-color: var(--amber-400); background: var(--amber-50); color: var(--amber-700); }
-.lang-selector { position: relative; }
-        .lang-btn { background: transparent; color: #fff; display: flex; align-items: center; gap: 0.25rem; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); border-radius: 0.5rem; padding: 0.4rem 0.75rem; font-size: 0.875rem; font-weight: 500; transition: border-color 0.15s, background 0.15s; }
-        .lang-btn:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.08); }
-        .lang-dropdown { display: none; position: absolute; top: calc(100% + 6px); right: 0; background: #27272a; border: 1px solid #3f3f46; border-radius: 0.5rem; box-shadow: 0 8px 24px rgba(0,0,0,0.35); z-index: 100; min-width: 160px; padding: 0.25rem; }
-        .lang-dropdown.open { display: flex; flex-direction: column; }
-        .lang-option { text-align: left; padding: 0.5rem 1rem; background: transparent; border: none; color: #fff; cursor: pointer; font-size: 0.875rem; border-radius: 0.375rem; white-space: nowrap; }
-        .lang-option:hover { background: #3f3f46; }
-        .lang-option.active { color: #f59e0b; }
-    </style>
-    <link rel="preload" href="/styles/public-base.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="/styles/public-base.css"></noscript>
-</head>
-<body>
-<a href="#main-content" class="skip-link">Skip to main content</a>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="description"
+            content="Troubleshooting guide for VaultLister — fix marketplace connections, sync errors, rate limits, failed listings, and automation issues."
+        />
+        <meta name="theme-color" content="#18181B" />
+        <title>VaultLister Troubleshooting Guide — Fix Common Issues</title>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+                dataLayer.push(arguments);
+            }
+            gtag('consent', 'default', {
+                analytics_storage: localStorage.getItem('cookie_consent') === 'accepted' ? 'granted' : 'denied',
+            });
+            gtag('js', new Date());
+            gtag('config', 'G-LXETN4PYRM');
+        </script>
+        <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png" />
+        <style>
+            main {
+                flex: 1;
+            }
+            .page-hero {
+                padding: 3rem 2rem 2rem;
+                max-width: 720px;
+                margin: 0 auto;
+            }
+            .breadcrumb {
+                font-size: 0.875rem;
+                color: var(--gray-500);
+                margin-bottom: 1rem;
+            }
+            .breadcrumb a {
+                color: var(--amber-600);
+                text-decoration: none;
+            }
+            .breadcrumb a:hover {
+                text-decoration: underline;
+            }
+            .breadcrumb span {
+                margin: 0 0.4rem;
+                color: var(--gray-400);
+            }
+            .page-hero h1 {
+                font-size: clamp(1.75rem, 4vw, 2.5rem);
+                font-weight: 800;
+                letter-spacing: -0.04em;
+                line-height: 1.1;
+                color: var(--gray-900);
+                margin-bottom: 0.75rem;
+            }
+            .page-hero .subtitle {
+                font-size: 1.0625rem;
+                color: var(--gray-500);
+            }
+            .faq-section {
+                padding: 1rem 2rem 3rem;
+                max-width: 720px;
+                margin: 0 auto;
+            }
+            .faq-item {
+                border: 1.5px solid var(--gray-200);
+                border-radius: 10px;
+                margin-bottom: 0.75rem;
+                overflow: hidden;
+            }
+            .faq-question {
+                width: 100%;
+                text-align: left;
+                padding: 1rem 1.25rem;
+                background: none;
+                border: none;
+                cursor: pointer;
+                font-size: 0.9375rem;
+                font-weight: 600;
+                color: var(--gray-900);
+                font-family: inherit;
+                line-height: 1.4;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 1rem;
+                transition: background 0.15s;
+            }
+            .faq-question:hover {
+                background: var(--gray-50);
+            }
+            .faq-question.open {
+                background: var(--amber-50);
+                color: var(--amber-700);
+            }
+            .faq-icon {
+                flex-shrink: 0;
+                transition: transform 0.2s;
+                font-style: normal;
+                font-size: 1.1rem;
+                color: var(--gray-400);
+            }
+            .faq-question.open .faq-icon {
+                transform: rotate(45deg);
+                color: var(--amber-600);
+            }
+            .faq-answer {
+                display: none;
+                padding: 0 1.25rem 1.125rem;
+                font-size: 0.9375rem;
+                color: var(--gray-600);
+                line-height: 1.7;
+            }
+            .faq-answer.open {
+                display: block;
+            }
+            .faq-answer a {
+                color: var(--amber-700);
+                text-decoration: underline;
+            }
+            .faq-answer a:hover {
+                text-decoration: underline;
+            }
+            .help-cta-box {
+                background: var(--amber-50);
+                border: 1.5px solid var(--amber-200);
+                border-radius: 12px;
+                padding: 1.75rem 2rem;
+                margin: 2rem auto 3rem;
+                max-width: 720px;
+                text-align: center;
+            }
+            .help-cta-box h3 {
+                font-size: 1.0625rem;
+                font-weight: 700;
+                color: var(--gray-900);
+                margin-bottom: 0.4rem;
+            }
+            .help-cta-box p {
+                font-size: 0.9375rem;
+                color: var(--gray-600);
+                margin-bottom: 1rem;
+            }
+            @media (max-width: 800px) {
+                .help-cta-box {
+                    margin: 2rem 1rem 3rem;
+                }
+            }
+            .related-section {
+                padding: 0 2rem 4rem;
+                max-width: 720px;
+                margin: 0 auto;
+            }
+            .related-section h2 {
+                font-size: 0.75rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.07em;
+                color: var(--amber-600);
+                margin-bottom: 1rem;
+            }
+            .related-grid {
+                display: grid;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 0.75rem;
+            }
+            @media (max-width: 900px) {
+                .related-grid {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+            }
+            @media (max-width: 520px) {
+                .related-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+            .related-card {
+                border: 1.5px solid var(--gray-200);
+                border-radius: 8px;
+                padding: 0.875rem 1rem;
+                text-decoration: none;
+                color: var(--gray-700);
+                font-size: 0.875rem;
+                font-weight: 600;
+                transition:
+                    border-color 0.15s,
+                    background 0.15s;
+            }
+            .related-card:hover {
+                border-color: var(--amber-400);
+                background: var(--amber-50);
+                color: var(--amber-700);
+            }
+            .lang-selector {
+                position: relative;
+            }
+            .lang-btn {
+                background: transparent;
+                color: #fff;
+                display: flex;
+                align-items: center;
+                gap: 0.25rem;
+                cursor: pointer;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 0.5rem;
+                padding: 0.4rem 0.75rem;
+                font-size: 0.875rem;
+                font-weight: 500;
+                transition:
+                    border-color 0.15s,
+                    background 0.15s;
+            }
+            .lang-btn:hover {
+                border-color: rgba(255, 255, 255, 0.4);
+                background: rgba(255, 255, 255, 0.08);
+            }
+            .lang-dropdown {
+                display: none;
+                position: absolute;
+                top: calc(100% + 6px);
+                right: 0;
+                background: #27272a;
+                border: 1px solid #3f3f46;
+                border-radius: 0.5rem;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+                z-index: 100;
+                min-width: 160px;
+                padding: 0.25rem;
+            }
+            .lang-dropdown.open {
+                display: flex;
+                flex-direction: column;
+            }
+            .lang-option {
+                text-align: left;
+                padding: 0.5rem 1rem;
+                background: transparent;
+                border: none;
+                color: #fff;
+                cursor: pointer;
+                font-size: 0.875rem;
+                border-radius: 0.375rem;
+                white-space: nowrap;
+            }
+            .lang-option:hover {
+                background: #3f3f46;
+            }
+            .lang-option.active {
+                color: #f59e0b;
+            }
+        </style>
+        <link
+            rel="preload"
+            href="/styles/public-base.css"
+            as="style"
+            onload="
+                this.onload = null;
+                this.rel = 'stylesheet';
+            "
+        />
+        <noscript><link rel="stylesheet" href="/styles/public-base.css" /></noscript>
+    </head>
+    <body>
+        <a href="#main-content" class="skip-link">Skip to main content</a>
 
+        <nav class="nav" aria-label="Main navigation">
+            <a class="nav-logo" href="/"
+                ><img
+                    src="/assets/logo/lockups/horizontal-2048.svg"
+                    alt="VaultLister"
+                    width="300"
+                    height="75"
+                    style="display: block"
+            /></a>
+            <div class="nav-links">
+                <div class="nav-dropdown">
+                    <button
+                        type="button"
+                        class="nav-link nav-dropdown-btn"
+                        data-target="dropdown-features"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                    >
+                        Features &#9662;
+                    </button>
+                    <div class="nav-dropdown-menu" id="dropdown-features" role="menu" inert>
+                        <a href="/#cross-listing" role="menuitem">Cross-Listing</a>
+                        <a href="/#inventory-management" role="menuitem">Inventory Management</a>
+                        <a href="/#sale-purchase-sync" role="menuitem">Sale &amp; Purchase Sync</a>
+                        <a href="/#analytics" role="menuitem">Analytics</a>
+                        <a href="/#offer-management" role="menuitem">Offer Management</a>
+                        <a href="/#marketplace-sharing" role="menuitem">Marketplace Sharing</a>
+                        <a href="/#bulk-actions" role="menuitem">Bulk Actions</a>
+                        <a href="/#photo-tools" role="menuitem">Photo Tools</a>
+                        <a href="/#ai-listing-generation" role="menuitem">AI Listing Generation</a>
+                        <a href="/#financial-management" role="menuitem">Financial Management</a>
+                        <a href="/#productivity-tools" role="menuitem">Productivity Tools</a>
+                    </div>
+                </div>
+                <a class="nav-link" href="/platforms.html">Marketplaces</a>
+                <a class="nav-link" href="/pricing.html">Pricing</a>
+                <div class="nav-dropdown">
+                    <button
+                        type="button"
+                        class="nav-link nav-dropdown-btn"
+                        data-target="dropdown-resources"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                    >
+                        Resources &#9662;
+                    </button>
+                    <div class="nav-dropdown-menu" id="dropdown-resources" role="menu" inert>
+                        <a href="/learning.html" role="menuitem">Learning</a>
+                        <a href="/documentation.html" role="menuitem">Documentation</a>
+                        <a href="/blog/index.html" role="menuitem">Blog</a>
+                        <a href="/affiliate.html" role="menuitem">Affiliate Program</a>
+                    </div>
+                </div>
+                <div class="nav-dropdown">
+                    <button
+                        type="button"
+                        class="nav-link nav-dropdown-btn"
+                        data-target="dropdown-feedback"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                    >
+                        Feedback &amp; Support &#9662;
+                    </button>
+                    <div class="nav-dropdown-menu" id="dropdown-feedback" role="menu" inert>
+                        <a href="/help.html" role="menuitem">Help Center</a>
+                        <a href="/faq.html" role="menuitem">FAQs</a>
+                        <a href="/request-feature.html" role="menuitem">Request a Feature</a>
+                        <a href="/contact.html#contact-form" role="menuitem">Report a Bug</a>
+                        <a href="/contact.html" role="menuitem">Contact Us</a>
+                    </div>
+                </div>
+                <div class="nav-dropdown">
+                    <button
+                        type="button"
+                        class="nav-link nav-dropdown-btn"
+                        data-target="dropdown-product-updates"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                    >
+                        Status &amp; Updates &#9662;
+                    </button>
+                    <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu" inert>
+                        <a href="/changelog.html" role="menuitem">Changelog</a>
+                        <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
+                        <a href="/status.html" role="menuitem">Status Page</a>
+                    </div>
+                </div>
+            </div>
+            <div class="nav-actions">
+                <div class="currency-selector">
+                    <button
+                        type="button"
+                        class="currency-btn"
+                        title="Change currency"
+                        aria-expanded="false"
+                        aria-haspopup="listbox"
+                    >
+                        <span id="current-currency-code">CAD</span>
+                        <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path d="M6 9l6 6 6-6" />
+                        </svg>
+                    </button>
+                    <div class="currency-dropdown" id="currency-dropdown">
+                        <div
+                            style="
+                                padding: 0.375rem 0.75rem;
+                                font-size: 0.7rem;
+                                color: #a1a1aa;
+                                text-align: center;
+                                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                                margin-bottom: 0.25rem;
+                            "
+                        >
+                            Coming Soon
+                        </div>
+                        <button type="button" class="currency-option" data-currency="CAD" data-symbol="$">$ CAD</button>
+                        <button type="button" class="currency-option" data-currency="USD" data-symbol="$">$ USD</button>
+                        <button type="button" class="currency-option" data-currency="GBP" data-symbol="£">£ GBP</button>
+                        <button type="button" class="currency-option" data-currency="EUR" data-symbol="€">€ EUR</button>
+                        <button type="button" class="currency-option" data-currency="AUD" data-symbol="$">$ AUD</button>
+                    </div>
+                </div>
+                <div class="lang-selector">
+                    <button
+                        type="button"
+                        class="lang-btn"
+                        title="Change language"
+                        aria-expanded="false"
+                        aria-haspopup="listbox"
+                    >
+                        <span class="lang-code" id="current-lang-code">EN</span>
+                        <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path d="M6 9l6 6 6-6" />
+                        </svg>
+                    </button>
+                    <div class="lang-dropdown" id="lang-dropdown">
+                        <div
+                            style="
+                                padding: 0.375rem 0.75rem;
+                                font-size: 0.7rem;
+                                color: #a1a1aa;
+                                text-align: center;
+                                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                                margin-bottom: 0.25rem;
+                            "
+                        >
+                            Coming Soon
+                        </div>
+                        <button type="button" class="lang-option" data-lang="en">English (U.S)</button>
+                        <button type="button" class="lang-option" data-lang="en-ca">English (CA)</button>
+                        <button type="button" class="lang-option" data-lang="es">Español</button>
+                        <button type="button" class="lang-option" data-lang="fr">Français</button>
+                        <button type="button" class="lang-option" data-lang="de">Deutsch</button>
+                        <button type="button" class="lang-option" data-lang="it">Italiano</button>
+                        <button type="button" class="lang-option" data-lang="pt">Português</button>
+                        <button type="button" class="lang-option" data-lang="ja">日本語</button>
+                        <button type="button" class="lang-option" data-lang="zh">中文</button>
+                        <button type="button" class="lang-option" data-lang="ko">한국어</button>
+                        <button type="button" class="lang-option" data-lang="ar">العربية</button>
+                    </div>
+                </div>
+                <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
+                <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
+            </div>
+        </nav>
 
-<nav class="nav" aria-label="Main navigation">
-    <a class="nav-logo" href="/"><img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" width="300" height="75" style="display:block;"></a>
-    <div class="nav-links">
-        <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-features" aria-haspopup="menu" aria-expanded="false">Features &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-features" role="menu" inert>
-                <a href="/#cross-listing" role="menuitem">Cross-Listing</a>
-                <a href="/#inventory-management" role="menuitem">Inventory Management</a>
-                <a href="/#sale-purchase-sync" role="menuitem">Sale &amp; Purchase Sync</a>
-                <a href="/#analytics" role="menuitem">Analytics</a>
-                <a href="/#offer-management" role="menuitem">Offer Management</a>
-                <a href="/#marketplace-sharing" role="menuitem">Marketplace Sharing</a>
-                <a href="/#bulk-actions" role="menuitem">Bulk Actions</a>
-                <a href="/#photo-tools" role="menuitem">Photo Tools</a>
-                <a href="/#ai-listing-generation" role="menuitem">AI Listing Generation</a>
-                <a href="/#financial-management" role="menuitem">Financial Management</a>
-                <a href="/#productivity-tools" role="menuitem">Productivity Tools</a>
+        <main id="main-content">
+            <div class="page-hero">
+                <nav class="breadcrumb" aria-label="Breadcrumb">
+                    <span aria-hidden="true">/</span>
+                    <span>Troubleshooting</span>
+                </nav>
+                <h1>Troubleshooting</h1>
+                <p class="subtitle">
+                    Diagnose and fix common issues with connections, sync, listings, and automations.
+                </p>
+            </div>
+
+            <section aria-label="Troubleshooting FAQ" class="faq-section">
+                <div class="faq-item">
+                    <button type="button" class="faq-question" aria-expanded="false">
+                        A marketplace connection shows "disconnected." How do I fix it?
+                        <span class="faq-icon" aria-hidden="true">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        Go to <strong>Settings &rarr; Connected Marketplaces</strong> and find the platform showing as
+                        disconnected. The most common cause is an expired or revoked OAuth token — this happens when you
+                        change your marketplace password, revoke app permissions, or the token expires naturally. Click
+                        "Reconnect" and follow the authorization flow again to issue a fresh token. For credential-based
+                        connections (Poshmark, Facebook Marketplace), re-enter your credentials to update the stored
+                        encrypted values. If reconnection fails immediately, check the
+                        <a href="/status.html">Status Page</a> to confirm VaultLister's systems are healthy, and verify
+                        your marketplace account is in good standing.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button type="button" class="faq-question" aria-expanded="false">
+                        My listings aren't syncing. What should I check?
+                        <span class="faq-icon" aria-hidden="true">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        First, check that the marketplace connection is active (green status in Settings). Second, open
+                        the affected inventory item and look at the <strong>Listing Status</strong> panel — it shows the
+                        last sync time and any errors per platform. If a listing shows "Pending," a sync job may be
+                        queued but not yet processed; allow a few minutes and refresh. If it shows "Failed," click the
+                        error message for details — common issues include an expired token, a missing required field
+                        (e.g., eBay item category), or a platform-side API outage. Fixing the underlying issue and
+                        clicking "Retry" will resubmit the listing.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button type="button" class="faq-question" aria-expanded="false">
+                        I got a "rate limited" error — what does that mean?
+                        <span class="faq-icon" aria-hidden="true">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        A rate limit error means VaultLister or you have made too many requests to a marketplace API in
+                        a short period. Each platform enforces limits on how many API calls can be made per minute or
+                        per day. VaultLister manages this automatically for most operations, but during bulk actions
+                        (mass cross-listing, bulk price updates) or when many automations run simultaneously, limits can
+                        be reached. When this happens, affected operations are queued and retried automatically once the
+                        rate limit window resets — usually within a few minutes to an hour depending on the platform.
+                        You don't need to do anything; monitor the listing status panel and the operations will complete
+                        on retry.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button type="button" class="faq-question" aria-expanded="false">
+                        How do I re-authenticate a marketplace if OAuth expires?
+                        <span class="faq-icon" aria-hidden="true">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        OAuth tokens for eBay, Shopify, and Depop have expiry periods set by the platform (typically 18
+                        months to 2 years for long-lived tokens). When a token is near expiry, VaultLister will show a
+                        warning badge on the affected marketplace in Settings. To re-authenticate, go to
+                        <strong>Settings &rarr; Connected Marketplaces</strong>, click the platform's "Reconnect"
+                        button, and complete the OAuth flow — you'll be redirected to the marketplace's login page and
+                        back. Your existing listings and inventory data are preserved; only the access credential is
+                        refreshed. VaultLister stores the new token encrypted with AES-256-GCM.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button type="button" class="faq-question" aria-expanded="false">
+                        I imported items but some didn't come through — why?
+                        <span class="faq-icon" aria-hidden="true">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        Imports can be incomplete for a few reasons. Listings that are in a non-active state on the
+                        source platform (draft, sold, or delisted) are skipped by default — VaultLister only imports
+                        currently active listings. Listings missing required images are also skipped, since VaultLister
+                        requires at least one photo per item. If the source platform's API returns a paginated response
+                        and the import timed out, some items near the end of a large closet may not have been fetched.
+                        To re-run a partial import, go to <strong>Inventory &rarr; Import</strong>, select the platform,
+                        and run the import again — VaultLister checks for duplicates by external listing ID and will not
+                        create doubles for items already imported.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button type="button" class="faq-question" aria-expanded="false">
+                        Automations are paused. How do I resume them?
+                        <span class="faq-icon" aria-hidden="true">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        Go to <strong>Automations</strong> and check the status of each automation rule. A paused
+                        automation usually means one of the following: the marketplace connection it depends on is
+                        disconnected (reconnect in Settings first), the automation encountered a CAPTCHA or
+                        bot-detection challenge and stopped safely, or you manually paused it. Once the underlying issue
+                        is resolved, click "Resume" on the automation. If the pause was triggered by bot detection,
+                        review the automation's delay settings and consider increasing them before resuming — running
+                        with more conservative delays reduces the chance of re-triggering detection.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button type="button" class="faq-question" aria-expanded="false">
+                        The app is slow or unresponsive — how do I report it?
+                        <span class="faq-icon" aria-hidden="true">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        First check the <a href="/status.html">Status Page</a> — if there is an active incident, it will
+                        be posted there with a timeline. If the Status Page shows all systems operational, try a hard
+                        refresh (Ctrl+Shift+R / Cmd+Shift+R) to clear any cached resources. If the issue persists, note
+                        the page or action that is slow, your browser and operating system, and approximately when the
+                        problem started. Report this via the
+                        <a href="/contact.html" aria-label="Contact Us">Contact Us</a> — include as much detail as
+                        possible so the team can investigate server-side performance logs.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button type="button" class="faq-question" aria-expanded="false">
+                        How do I contact support or report a bug?
+                        <span class="faq-icon" aria-hidden="true">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        Use the <a href="/contact.html" aria-label="Contact Us">Contact Us</a> to reach the support
+                        team. For bugs, include: the steps to reproduce the issue, what you expected to happen, what
+                        actually happened, your browser and OS version, and any error messages you saw. Screenshots or
+                        screen recordings are extremely helpful. The support team typically responds within one business
+                        day. For urgent issues affecting active listings or sales, mark your message as "Urgent" in the
+                        subject line. Feature requests and general feedback are also welcome through the contact form.
+                    </div>
+                </div>
+            </section>
+
+            <section class="related-section" aria-label="Related Articles">
+                <h2>Related Articles</h2>
+                <div class="related-grid">
+                    <a class="related-card" href="/help/getting-started.html" aria-label="Getting Started"
+                        >Getting Started <span aria-hidden="true">&rarr;</span></a
+                    >
+                    <a class="related-card" href="/help/inventory-management.html" aria-label="Inventory Management"
+                        >Inventory Management <span aria-hidden="true">&rarr;</span></a
+                    >
+                    <a class="related-card" href="/help/cross-listing.html" aria-label="Cross-Listing"
+                        >Cross-Listing <span aria-hidden="true">&rarr;</span></a
+                    >
+                    <a class="related-card" href="/help/automations.html" aria-label="Automations"
+                        >Automations <span aria-hidden="true">&rarr;</span></a
+                    >
+                </div>
+            </section>
+
+            <div class="help-cta-box">
+                <h3>Still need help?</h3>
+                <p>
+                    Our support team typically responds within one business day. Describe your issue and we'll get back
+                    to you.
+                </p>
+                <a class="btn btn-primary" href="/contact.html">Contact Us</a>
+            </div>
+        </main>
+
+        <footer class="footer" aria-label="Footer">
+            <div class="footer-social-bar">
+                <a href="/" class="footer-logo"
+                    ><img
+                        src="/assets/logo/lockups/horizontal-512.svg"
+                        alt="VaultLister"
+                        width="144"
+                        height="36"
+                        style="display: block"
+                /></a>
+                <div class="footer-social-icons">
+                    <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"
+                        ><svg
+                            width="22"
+                            height="22"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <rect x="2" y="2" width="20" height="20" rx="5" />
+                            <circle cx="12" cy="12" r="5" />
+                            <circle cx="17.5" cy="6.5" r="1.5" /></svg
+                    ></a>
+                    <a href="https://www.facebook.com/profile.php?id=61570865723233" aria-label="Facebook"
+                        ><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></svg
+                    ></a>
+                    <a href="https://x.com/VaultListerCo" aria-label="X"
+                        ><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+                            /></svg
+                    ></a>
+                    <a href="https://www.tiktok.com/@vaultlister.co" aria-label="TikTok"
+                        ><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.92a8.24 8.24 0 0 0 4.83 1.56v-3.5a4.84 4.84 0 0 1-1.07-.29z"
+                            /></svg
+                    ></a>
+                    <a href="https://www.reddit.com/user/VaultLister/" aria-label="Reddit"
+                        ><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"
+                            /></svg
+                    ></a>
+                </div>
+            </div>
+            <div class="footer-inner">
+                <div class="footer-cols">
+                    <div class="footer-col">
+                        <h3 class="footer-col-label">Resources</h3>
+                        <a href="/blog/index.html">Blog</a>
+                        <a href="/changelog.html">Changelog</a>
+                        <a href="/documentation.html">Documentation</a>
+                        <a href="/faq.html">FAQs</a>
+                        <a href="/help.html">Help Center</a>
+                    </div>
+                    <div class="footer-col">
+                        <h3 class="footer-col-label">Company</h3>
+                        <a href="/about.html">About Us</a>
+                        <a href="/careers.html">Careers</a>
+                        <a href="/documentation.html#media-kit">Media Kit</a>
+                        <a href="/affiliate.html">Affiliate Program</a>
+                    </div>
+                    <div class="footer-col">
+                        <h3 class="footer-col-label">Legal</h3>
+                        <a href="/privacy.html">Privacy Policy</a>
+                        <a href="/terms.html">Terms of Service</a>
+                        <a href="/cookies.html">Cookie Policy</a>
+                    </div>
+                    <div class="footer-col">
+                        <h3 class="footer-col-label">Compare</h3>
+                        <a href="/compare/crosslist.html">Crosslist</a>
+                        <a href="/compare/crosslist-magic.html">Crosslist Magic</a>
+                        <a href="/compare/flyp.html">Flyp</a>
+                        <a href="/compare/list-perfectly.html">List Perfectly</a>
+                        <a href="/compare/nifty.html">Nifty</a>
+                        <a href="/compare/oneshop.html">OneShop</a>
+                        <a href="/compare/primelister.html">Primelister</a>
+                        <a href="/compare/vendoo.html">Vendoo</a>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>© 2026 VaultLister, Inc. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+
+        <script>
+            (function () {
+                document.querySelectorAll('.nav-dropdown-btn').forEach(function (btn) {
+                    btn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        var targetId = this.dataset.target;
+                        var menu = document.getElementById(targetId);
+                        if (!menu) return;
+                        var isOpen = menu.classList.contains('open');
+                        document.querySelectorAll('.nav-dropdown-menu').forEach(function (m) {
+                            m.classList.remove('open');
+                            m.setAttribute('inert', '');
+                        });
+                        document.querySelectorAll('.nav-dropdown-btn').forEach(function (b) {
+                            b.setAttribute('aria-expanded', 'false');
+                        });
+                        if (!isOpen) {
+                            menu.classList.add('open');
+                            menu.removeAttribute('inert');
+                            btn.setAttribute('aria-expanded', 'true');
+                        }
+                    });
+                });
+                document.addEventListener('click', function () {
+                    document.querySelectorAll('.nav-dropdown-menu').forEach(function (m) {
+                        m.classList.remove('open');
+                        m.setAttribute('inert', '');
+                    });
+                    document.querySelectorAll('.nav-dropdown-btn').forEach(function (b) {
+                        b.setAttribute('aria-expanded', 'false');
+                    });
+                });
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape') {
+                        document.querySelectorAll('.nav-dropdown-menu').forEach(function (m) {
+                            m.classList.remove('open');
+                            m.setAttribute('inert', '');
+                        });
+                        document.querySelectorAll('.nav-dropdown-btn').forEach(function (b) {
+                            b.setAttribute('aria-expanded', 'false');
+                        });
+                    }
+                });
+                document.querySelectorAll('.faq-question').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        var item = this.closest('.faq-item');
+                        var answer = item.querySelector('.faq-answer');
+                        var isOpen = answer.classList.contains('open');
+                        document.querySelectorAll('.faq-answer').forEach(function (a) {
+                            a.classList.remove('open');
+                        });
+                        document.querySelectorAll('.faq-question').forEach(function (q) {
+                            q.classList.remove('open');
+                            q.setAttribute('aria-expanded', 'false');
+                        });
+                        if (!isOpen) {
+                            answer.classList.add('open');
+                            this.classList.add('open');
+                            this.setAttribute('aria-expanded', 'true');
+                        }
+                    });
+                });
+            })();
+        </script>
+        <div
+            id="cookie-banner"
+            role="region"
+            aria-label="Cookie consent"
+            style="
+                display: none;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 9999;
+                background: #18181b;
+                color: #fef3c7;
+                padding: 1rem 1.5rem;
+                align-items: center;
+                justify-content: space-between;
+                gap: 1rem;
+                flex-wrap: wrap;
+                box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.18);
+                font-family: Inter, system-ui, sans-serif;
+                font-size: 0.9rem;
+            "
+        >
+            <p style="margin: 0; flex: 1; min-width: 200px">
+                We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are
+                used.
+            </p>
+            <div style="display: flex; gap: 0.625rem; flex-shrink: 0">
+                <button
+                    type="button"
+                    id="cookie-decline"
+                    style="
+                        min-height: 44px;
+                        padding: 0.5rem 1.125rem;
+                        border-radius: 0.5rem;
+                        border: 1.5px solid rgba(224, 231, 255, 0.4);
+                        background: transparent;
+                        color: #fef3c7;
+                        font-size: 0.875rem;
+                        font-weight: 600;
+                        cursor: pointer;
+                    "
+                >
+                    Decline
+                </button>
+                <button
+                    type="button"
+                    id="cookie-accept"
+                    style="
+                        min-height: 44px;
+                        padding: 0.5rem 1.25rem;
+                        border-radius: 0.5rem;
+                        border: none;
+                        background: linear-gradient(135deg, #b45309, #92400e);
+                        color: #fff;
+                        font-size: 0.875rem;
+                        font-weight: 600;
+                        cursor: pointer;
+                    "
+                >
+                    Accept
+                </button>
             </div>
         </div>
-        <a class="nav-link" href="/platforms.html">Marketplaces</a>
-        <a class="nav-link" href="/pricing.html">Pricing</a>
-        <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="menu" aria-expanded="false">Resources &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-resources" role="menu" inert>
-                <a href="/learning.html" role="menuitem">Learning</a>
-                <a href="/documentation.html" role="menuitem">Documentation</a>
-                <a href="/blog/index.html" role="menuitem">Blog</a>
-                <a href="/affiliate.html" role="menuitem">Affiliate Program</a>
-            </div>
-        </div>
-        <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-feedback" aria-haspopup="menu" aria-expanded="false">Feedback &amp; Support &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-feedback" role="menu" inert>
-                <a href="/help.html" role="menuitem">Help Center</a>
-                <a href="/faq.html" role="menuitem">FAQs</a>
-                <a href="/request-feature.html" role="menuitem">Request a Feature</a>
-                <a href="/contact.html#contact-form" role="menuitem">Report a Bug</a>
-                <a href="/contact.html" role="menuitem">Contact Us</a>
-            </div>
-        </div>
-        <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-product-updates" aria-haspopup="menu" aria-expanded="false">Status &amp; Updates &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu" inert>
-                <a href="/changelog.html" role="menuitem">Changelog</a>
-                <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
-                <a href="/status.html" role="menuitem">Status Page</a>
-            </div>
-        </div>
-    </div>
-    <div class="nav-actions">
-        <div class="currency-selector">
-            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false" aria-haspopup="listbox">
-                <span id="current-currency-code">CAD</span>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-            </button>
-            <div class="currency-dropdown" id="currency-dropdown">
-                <div style="padding:0.375rem 0.75rem;font-size:0.7rem;color:#a1a1aa;text-align:center;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:0.25rem;">Coming Soon</div>
-                <button type="button" class="currency-option" data-currency="CAD" data-symbol="$">$ CAD</button>
-                <button type="button" class="currency-option" data-currency="USD" data-symbol="$">$ USD</button>
-                <button type="button" class="currency-option" data-currency="GBP" data-symbol="£">£ GBP</button>
-                <button type="button" class="currency-option" data-currency="EUR" data-symbol="€">€ EUR</button>
-                <button type="button" class="currency-option" data-currency="AUD" data-symbol="$">$ AUD</button>
-            </div>
-        </div>
-        <div class="lang-selector">
-        <button type="button" class="lang-btn" title="Change language" aria-expanded="false" aria-haspopup="listbox">
-            <span class="lang-code" id="current-lang-code">EN</span>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-        </button>
-        <div class="lang-dropdown" id="lang-dropdown">
-                <div style="padding:0.375rem 0.75rem;font-size:0.7rem;color:#a1a1aa;text-align:center;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:0.25rem;">Coming Soon</div>
-            <button type="button" class="lang-option" data-lang="en">English (U.S)</button>
-            <button type="button" class="lang-option" data-lang="en-ca">English (CA)</button>
-            <button type="button" class="lang-option" data-lang="es">Español</button>
-            <button type="button" class="lang-option" data-lang="fr">Français</button>
-            <button type="button" class="lang-option" data-lang="de">Deutsch</button>
-            <button type="button" class="lang-option" data-lang="it">Italiano</button>
-            <button type="button" class="lang-option" data-lang="pt">Português</button>
-            <button type="button" class="lang-option" data-lang="ja">日本語</button>
-            <button type="button" class="lang-option" data-lang="zh">中文</button>
-            <button type="button" class="lang-option" data-lang="ko">한국어</button>
-            <button type="button" class="lang-option" data-lang="ar">العربية</button>
-        </div>
-    </div>
-        <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
-        <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
-    </div>
-</nav>
+        <script>
+            (function () {
+                var banner = document.getElementById('cookie-banner');
+                if (!banner) return;
+                if (localStorage.getItem('cookie_consent')) {
+                    banner.style.display = 'none';
+                    return;
+                }
+                banner.style.display = 'flex';
+                document.getElementById('cookie-accept').addEventListener('click', function () {
+                    localStorage.setItem('cookie_consent', 'accepted');
+                    if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'granted' });
+                    banner.style.display = 'none';
+                });
+                document.getElementById('cookie-decline').addEventListener('click', function () {
+                    localStorage.setItem('cookie_consent', 'declined');
+                    if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'denied' });
+                    banner.style.display = 'none';
+                });
+            })();
+            (function () {
+                var LANGS = {
+                    en: { code: 'EN' },
+                    'en-ca': { code: 'EN' },
+                    es: { code: 'ES' },
+                    fr: { code: 'FR' },
+                    de: { code: 'DE' },
+                    it: { code: 'IT' },
+                    pt: { code: 'PT' },
+                    ja: { code: 'JA' },
+                    zh: { code: 'ZH' },
+                    ko: { code: 'KO' },
+                    ar: { code: 'AR' },
+                };
+                function setLang(lang) {
+                    var info = LANGS[lang] || LANGS['en'];
+                    var c = document.getElementById('current-lang-code');
+                    if (c) c.textContent = info.code;
+                    document.querySelectorAll('.lang-option').forEach(function (b) {
+                        b.classList.toggle('active', b.getAttribute('data-lang') === lang);
+                    });
+                    try {
+                        localStorage.setItem('vaultlister_locale', lang);
+                    } catch (e) {}
+                }
+                function detectLang() {
+                    try {
+                        var s = localStorage.getItem('vaultlister_locale');
+                        if (s && LANGS[s]) return s;
+                    } catch (e) {}
+                    var nav = (navigator.language || '').toLowerCase();
+                    if (nav === 'en-ca' || nav.startsWith('en-ca')) return 'en-ca';
+                    var base = nav.split('-')[0];
+                    return LANGS[base] ? base : 'en';
+                }
+                document.addEventListener('DOMContentLoaded', function () {
+                    var btn = document.querySelector('.lang-btn');
+                    var dropdown = document.getElementById('lang-dropdown');
+                    if (!btn || !dropdown) return;
+                    setLang(detectLang());
+                    btn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        var open = dropdown.classList.toggle('open');
+                        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                    });
+                    document.addEventListener('click', function (e) {
+                        if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
+                            dropdown.classList.remove('open');
+                            btn.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+                    dropdown.querySelectorAll('.lang-option').forEach(function (opt) {
+                        opt.addEventListener('click', function () {
+                            setLang(opt.getAttribute('data-lang'));
+                            dropdown.classList.remove('open');
+                            btn.setAttribute('aria-expanded', 'false');
+                        });
+                    });
+                });
+            })();
 
-<main id="main-content">
-<div class="page-hero">
-    <nav class="breadcrumb" aria-label="Breadcrumb">
-        <span aria-hidden="true">/</span>
-        <span>Troubleshooting</span>
-    </nav>
-    <h1>Troubleshooting</h1>
-    <p class="subtitle">Diagnose and fix common issues with connections, sync, listings, and automations.</p>
-</div>
-
-<section aria-label="Troubleshooting FAQ" class="faq-section">
-
-    <div class="faq-item">
-        <button type="button" class="faq-question" aria-expanded="false">
-            A marketplace connection shows "disconnected." How do I fix it?
-            <span class="faq-icon" aria-hidden="true">+</span>
-        </button>
-        <div class="faq-answer">
-            Go to <strong>Settings &rarr; Connected Marketplaces</strong> and find the platform showing as disconnected. The most common cause is an expired or revoked OAuth token — this happens when you change your marketplace password, revoke app permissions, or the token expires naturally. Click "Reconnect" and follow the authorization flow again to issue a fresh token. For credential-based connections (Poshmark, Facebook Marketplace), re-enter your credentials to update the stored encrypted values. If reconnection fails immediately, check the <a href="/status.html">Status Page</a> to confirm VaultLister's systems are healthy, and verify your marketplace account is in good standing.
-        </div>
-    </div>
-
-    <div class="faq-item">
-        <button type="button" class="faq-question" aria-expanded="false">
-            My listings aren't syncing. What should I check?
-            <span class="faq-icon" aria-hidden="true">+</span>
-        </button>
-        <div class="faq-answer">
-            First, check that the marketplace connection is active (green status in Settings). Second, open the affected inventory item and look at the <strong>Listing Status</strong> panel — it shows the last sync time and any errors per platform. If a listing shows "Pending," a sync job may be queued but not yet processed; allow a few minutes and refresh. If it shows "Failed," click the error message for details — common issues include an expired token, a missing required field (e.g., eBay item category), or a platform-side API outage. Fixing the underlying issue and clicking "Retry" will resubmit the listing.
-        </div>
-    </div>
-
-    <div class="faq-item">
-        <button type="button" class="faq-question" aria-expanded="false">
-            I got a "rate limited" error — what does that mean?
-            <span class="faq-icon" aria-hidden="true">+</span>
-        </button>
-        <div class="faq-answer">
-            A rate limit error means VaultLister or you have made too many requests to a marketplace API in a short period. Each platform enforces limits on how many API calls can be made per minute or per day. VaultLister manages this automatically for most operations, but during bulk actions (mass cross-listing, bulk price updates) or when many automations run simultaneously, limits can be reached. When this happens, affected operations are queued and retried automatically once the rate limit window resets — usually within a few minutes to an hour depending on the platform. You don't need to do anything; monitor the listing status panel and the operations will complete on retry.
-        </div>
-    </div>
-
-    <div class="faq-item">
-        <button type="button" class="faq-question" aria-expanded="false">
-            How do I re-authenticate a marketplace if OAuth expires?
-            <span class="faq-icon" aria-hidden="true">+</span>
-        </button>
-        <div class="faq-answer">
-            OAuth tokens for eBay, Shopify, and Depop have expiry periods set by the platform (typically 18 months to 2 years for long-lived tokens). When a token is near expiry, VaultLister will show a warning badge on the affected marketplace in Settings. To re-authenticate, go to <strong>Settings &rarr; Connected Marketplaces</strong>, click the platform's "Reconnect" button, and complete the OAuth flow — you'll be redirected to the marketplace's login page and back. Your existing listings and inventory data are preserved; only the access credential is refreshed. VaultLister stores the new token encrypted with AES-256-GCM.
-        </div>
-    </div>
-
-    <div class="faq-item">
-        <button type="button" class="faq-question" aria-expanded="false">
-            I imported items but some didn't come through — why?
-            <span class="faq-icon" aria-hidden="true">+</span>
-        </button>
-        <div class="faq-answer">
-            Imports can be incomplete for a few reasons. Listings that are in a non-active state on the source platform (draft, sold, or delisted) are skipped by default — VaultLister only imports currently active listings. Listings missing required images are also skipped, since VaultLister requires at least one photo per item. If the source platform's API returns a paginated response and the import timed out, some items near the end of a large closet may not have been fetched. To re-run a partial import, go to <strong>Inventory &rarr; Import</strong>, select the platform, and run the import again — VaultLister checks for duplicates by external listing ID and will not create doubles for items already imported.
-        </div>
-    </div>
-
-    <div class="faq-item">
-        <button type="button" class="faq-question" aria-expanded="false">
-            Automations are paused. How do I resume them?
-            <span class="faq-icon" aria-hidden="true">+</span>
-        </button>
-        <div class="faq-answer">
-            Go to <strong>Automations</strong> and check the status of each automation rule. A paused automation usually means one of the following: the marketplace connection it depends on is disconnected (reconnect in Settings first), the automation encountered a CAPTCHA or bot-detection challenge and stopped safely, or you manually paused it. Once the underlying issue is resolved, click "Resume" on the automation. If the pause was triggered by bot detection, review the automation's delay settings and consider increasing them before resuming — running with more conservative delays reduces the chance of re-triggering detection.
-        </div>
-    </div>
-
-    <div class="faq-item">
-        <button type="button" class="faq-question" aria-expanded="false">
-            The app is slow or unresponsive — how do I report it?
-            <span class="faq-icon" aria-hidden="true">+</span>
-        </button>
-        <div class="faq-answer">
-            First check the <a href="/status.html">Status Page</a> — if there is an active incident, it will be posted there with a timeline. If the Status Page shows all systems operational, try a hard refresh (Ctrl+Shift+R / Cmd+Shift+R) to clear any cached resources. If the issue persists, note the page or action that is slow, your browser and operating system, and approximately when the problem started. Report this via the <a href="/contact.html" aria-label="Contact Us">Contact Us</a> — include as much detail as possible so the team can investigate server-side performance logs.
-        </div>
-    </div>
-
-    <div class="faq-item">
-        <button type="button" class="faq-question" aria-expanded="false">
-            How do I contact support or report a bug?
-            <span class="faq-icon" aria-hidden="true">+</span>
-        </button>
-        <div class="faq-answer">
-            Use the <a href="/contact.html" aria-label="Contact Us">Contact Us</a> to reach the support team. For bugs, include: the steps to reproduce the issue, what you expected to happen, what actually happened, your browser and OS version, and any error messages you saw. Screenshots or screen recordings are extremely helpful. The support team typically responds within one business day. For urgent issues affecting active listings or sales, mark your message as "Urgent" in the subject line. Feature requests and general feedback are also welcome through the contact form.
-        </div>
-    </div>
-
-</section>
-
-<section class="related-section" aria-label="Related Articles">
-    <h2>Related Articles</h2>
-    <div class="related-grid">
-        <a class="related-card" href="/help/getting-started.html">Getting Started &rarr;</a>
-        <a class="related-card" href="/help/inventory-management.html">Inventory Management &rarr;</a>
-        <a class="related-card" href="/help/cross-listing.html">Cross-Listing &rarr;</a>
-        <a class="related-card" href="/help/automations.html">Automations &rarr;</a>
-    </div>
-</section>
-
-<div class="help-cta-box">
-    <h3>Still need help?</h3>
-    <p>Our support team typically responds within one business day. Describe your issue and we'll get back to you.</p>
-    <a class="btn btn-primary" href="/contact.html">Contact Us</a>
-</div>
-</main>
-
-<footer class="footer" aria-label="Footer">
-    <div class="footer-social-bar">
-        <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" width="144" height="36" style="display:block;"></a>
-        <div class="footer-social-icons">
-            <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg></a>
-            <a href="https://www.facebook.com/profile.php?id=61570865723233" aria-label="Facebook"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
-            <a href="https://x.com/VaultListerCo" aria-label="X"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
-            <a href="https://www.tiktok.com/@vaultlister.co" aria-label="TikTok"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.92a8.24 8.24 0 0 0 4.83 1.56v-3.5a4.84 4.84 0 0 1-1.07-.29z"/></svg></a>
-            <a href="https://www.reddit.com/user/VaultLister/" aria-label="Reddit"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg></a>
-        </div>
-    </div>
-    <div class="footer-inner">
-        <div class="footer-cols">
-            <div class="footer-col">
-                <h3 class="footer-col-label">Resources</h3>
-                <a href="/blog/index.html">Blog</a>
-                <a href="/changelog.html">Changelog</a>
-                <a href="/documentation.html">Documentation</a>
-                <a href="/faq.html">FAQs</a>
-                <a href="/help.html">Help Center</a>
-            </div>
-            <div class="footer-col">
-                <h3 class="footer-col-label">Company</h3>
-                <a href="/about.html">About Us</a>
-                <a href="/careers.html">Careers</a>
-                <a href="/documentation.html#media-kit">Media Kit</a>
-                <a href="/affiliate.html">Affiliate Program</a>
-            </div>
-            <div class="footer-col">
-                <h3 class="footer-col-label">Legal</h3>
-                <a href="/privacy.html">Privacy Policy</a>
-                <a href="/terms.html">Terms of Service</a>
-                <a href="/cookies.html">Cookie Policy</a>
-            </div>
-            <div class="footer-col">
-                <h3 class="footer-col-label">Compare</h3>
-                <a href="/compare/crosslist.html">Crosslist</a>
-                <a href="/compare/crosslist-magic.html">Crosslist Magic</a>
-                <a href="/compare/flyp.html">Flyp</a>
-                <a href="/compare/list-perfectly.html">List Perfectly</a>
-                <a href="/compare/nifty.html">Nifty</a>
-                <a href="/compare/oneshop.html">OneShop</a>
-                <a href="/compare/primelister.html">Primelister</a>
-                <a href="/compare/vendoo.html">Vendoo</a>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>© 2026 VaultLister, Inc. All rights reserved.</p>
-            </div>
-    </div>
-</footer>
-
-<script>
-(function() {
-    document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            var targetId = this.dataset.target;
-            var menu = document.getElementById(targetId);
-            if (!menu) return;
-            var isOpen = menu.classList.contains('open');
-            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('inert', ''); });
-            document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
-            if (!isOpen) { menu.classList.add('open'); menu.removeAttribute('inert'); btn.setAttribute('aria-expanded', 'true'); }
-        });
-    });
-    document.addEventListener('click', function() {
-        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('inert', ''); });
-        document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
-    });
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('inert', ''); });
-            document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
-        }
-    });
-    document.querySelectorAll('.faq-question').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            var item = this.closest('.faq-item');
-            var answer = item.querySelector('.faq-answer');
-            var isOpen = answer.classList.contains('open');
-            document.querySelectorAll('.faq-answer').forEach(function(a) { a.classList.remove('open'); });
-            document.querySelectorAll('.faq-question').forEach(function(q) { q.classList.remove('open'); q.setAttribute('aria-expanded', 'false'); });
-            if (!isOpen) { answer.classList.add('open'); this.classList.add('open'); this.setAttribute('aria-expanded', 'true'); }
-        });
-    });
-})();
-</script>
-<div id="cookie-banner" role="region" aria-label="Cookie consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#18181B;color:#fef3c7;padding:1rem 1.5rem;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;">
-    <p style="margin:0;flex:1;min-width:200px;">We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are used.</p>
-    <div style="display:flex;gap:0.625rem;flex-shrink:0;">
-        <button type="button" id="cookie-decline" style="min-height:44px;padding:0.5rem 1.125rem;border-radius:0.5rem;border:1.5px solid rgba(224,231,255,0.4);background:transparent;color:#fef3c7;font-size:0.875rem;font-weight:600;cursor:pointer;">Decline</button>
-        <button type="button" id="cookie-accept" style="min-height:44px;padding:0.5rem 1.25rem;border-radius:0.5rem;border:none;background:linear-gradient(135deg,#b45309,#92400e);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;">Accept</button>
-    </div>
-</div>
-<script>
-(function() {
-    var banner = document.getElementById('cookie-banner');
-    if (!banner) return;
-    if (localStorage.getItem('cookie_consent')) { banner.style.display = 'none'; return; }
-    banner.style.display = 'flex';
-    document.getElementById('cookie-accept').addEventListener('click', function() {
-        localStorage.setItem('cookie_consent', 'accepted');
-        if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'granted' });
-        banner.style.display = 'none';
-    });
-    document.getElementById('cookie-decline').addEventListener('click', function() {
-        localStorage.setItem('cookie_consent', 'declined');
-        if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'denied' });
-        banner.style.display = 'none';
-    });
-})();
-(function() {
-        var LANGS = {
-        en: { code: "EN" },
-        'en-ca': { code: "EN" },
-        es: { code: "ES" },
-        fr: { code: "FR" },
-        de: { code: "DE" },
-        it: { code: "IT" },
-        pt: { code: "PT" },
-        ja: { code: "JA" },
-        zh: { code: "ZH" },
-        ko: { code: "KO" },
-        ar: { code: "AR" }
-    };
-    function setLang(lang) { var info=LANGS[lang]||LANGS["en"]; var c=document.getElementById("current-lang-code"); if(c)c.textContent=info.code; document.querySelectorAll(".lang-option").forEach(function(b){b.classList.toggle("active",b.getAttribute("data-lang")===lang);}); try{localStorage.setItem("vaultlister_locale",lang);}catch(e){} }
-    function detectLang() { try{var s=localStorage.getItem("vaultlister_locale");if(s&&LANGS[s])return s;}catch(e){} var nav=(navigator.language||"").toLowerCase(); if(nav==="en-ca"||nav.startsWith("en-ca"))return "en-ca"; var base=nav.split("-")[0]; return LANGS[base]?base:"en"; }
-    document.addEventListener("DOMContentLoaded", function() {
-        var btn=document.querySelector(".lang-btn"); var dropdown=document.getElementById("lang-dropdown");
-        if(!btn||!dropdown)return;
-        setLang(detectLang());
-        btn.addEventListener("click",function(e){e.stopPropagation();var open=dropdown.classList.toggle("open");btn.setAttribute("aria-expanded",open?"true":"false");});
-        document.addEventListener("click",function(e){if(!btn.contains(e.target)&&!dropdown.contains(e.target)){dropdown.classList.remove("open");btn.setAttribute("aria-expanded","false");}});
-        dropdown.querySelectorAll(".lang-option").forEach(function(opt){opt.addEventListener("click",function(){setLang(opt.getAttribute("data-lang"));dropdown.classList.remove("open");btn.setAttribute("aria-expanded","false");});});
-    });
-})();
-
-// Currency selector
-(function() {
-    var saved = localStorage.getItem('vl_currency') || 'CAD';
-    var el = document.getElementById('current-currency-code');
-    if (el) el.textContent = saved;
-    document.querySelectorAll('.currency-option').forEach(function(btn) {
-        if (btn.dataset.currency === saved) btn.classList.add('active');
-        btn.addEventListener('click', function() {
-            var c = this.dataset.currency;
-            localStorage.setItem('vl_currency', c);
-            document.querySelectorAll('.currency-option').forEach(function(b){ b.classList.remove('active'); });
-            this.classList.add('active');
-            var codeEl = document.getElementById('current-currency-code');
-            if (codeEl) codeEl.textContent = c;
-            var dd = document.getElementById('currency-dropdown');
-            if (dd) dd.classList.remove('open');
-        }.bind(this));
-    });
-    var btn = document.querySelector('.currency-btn');
-    if (btn) {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            var dd = document.getElementById('currency-dropdown');
-            dd.classList.toggle('open');
-            btn.setAttribute('aria-expanded', dd.classList.contains('open'));
-        });
-    }
-    document.addEventListener('click', function() {
-        var dd = document.getElementById('currency-dropdown');
-        if (dd) { dd.classList.remove('open'); }
-        if (btn) btn.setAttribute('aria-expanded', 'false');
-    });
-})();
-</script>
-<script src="/public-auth-nav.js" defer></script>
-</body>
+            // Currency selector
+            (function () {
+                var saved = localStorage.getItem('vl_currency') || 'CAD';
+                var el = document.getElementById('current-currency-code');
+                if (el) el.textContent = saved;
+                document.querySelectorAll('.currency-option').forEach(function (btn) {
+                    if (btn.dataset.currency === saved) btn.classList.add('active');
+                    btn.addEventListener(
+                        'click',
+                        function () {
+                            var c = this.dataset.currency;
+                            localStorage.setItem('vl_currency', c);
+                            document.querySelectorAll('.currency-option').forEach(function (b) {
+                                b.classList.remove('active');
+                            });
+                            this.classList.add('active');
+                            var codeEl = document.getElementById('current-currency-code');
+                            if (codeEl) codeEl.textContent = c;
+                            var dd = document.getElementById('currency-dropdown');
+                            if (dd) dd.classList.remove('open');
+                        }.bind(this),
+                    );
+                });
+                var btn = document.querySelector('.currency-btn');
+                if (btn) {
+                    btn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        var dd = document.getElementById('currency-dropdown');
+                        dd.classList.toggle('open');
+                        btn.setAttribute('aria-expanded', dd.classList.contains('open'));
+                    });
+                }
+                document.addEventListener('click', function () {
+                    var dd = document.getElementById('currency-dropdown');
+                    if (dd) {
+                        dd.classList.remove('open');
+                    }
+                    if (btn) btn.setAttribute('aria-expanded', 'false');
+                });
+            })();
+        </script>
+        <script src="/public-auth-nav.js" defer></script>
+    </body>
 </html>

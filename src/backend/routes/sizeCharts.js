@@ -26,7 +26,7 @@ export async function sizeChartsRouter(ctx) {
     if (!user) {
         return {
             status: 401,
-            data: { error: 'Authentication required' }
+            data: { error: 'Authentication required' },
         };
     }
 
@@ -67,23 +67,23 @@ export async function sizeChartsRouter(ctx) {
             const charts = await query.all(sql, params);
 
             // Parse JSON fields
-            const chartsWithParsed = charts.map(chart => ({
+            const chartsWithParsed = charts.map((chart) => ({
                 ...chart,
                 measurements: safeParse(chart.measurements || '[]', []),
                 sizes: safeParse(chart.sizes || '[]', []),
                 custom_fields: safeParse(chart.custom_fields || '[]', []),
-                linked_listings: safeParse(chart.linked_listings || '[]', [])
+                linked_listings: safeParse(chart.linked_listings || '[]', []),
             }));
 
             return {
                 status: 200,
-                data: { charts: chartsWithParsed }
+                data: { charts: chartsWithParsed },
             };
         } catch (error) {
             logger.error('Error fetching size charts:', error);
             return {
                 status: 500,
-                data: { error: 'Failed to fetch size charts' }
+                data: { error: 'Failed to fetch size charts' },
             };
         }
     }
@@ -102,14 +102,14 @@ export async function sizeChartsRouter(ctx) {
             custom_fields,
             notes,
             is_template,
-            linked_listings
+            linked_listings,
         } = body;
 
         // Validation
         if (!name || !category) {
             return {
                 status: 400,
-                data: { error: 'Name and category are required' }
+                data: { error: 'Name and category are required' },
             };
         }
 
@@ -117,7 +117,7 @@ export async function sizeChartsRouter(ctx) {
         if (gender && !validGenders.includes(gender)) {
             return {
                 status: 400,
-                data: { error: 'Invalid gender. Must be mens, womens, kids, or unisex' }
+                data: { error: 'Invalid gender. Must be mens, womens, kids, or unisex' },
             };
         }
 
@@ -142,8 +142,8 @@ export async function sizeChartsRouter(ctx) {
                     JSON.stringify(custom_fields || []),
                     notes || null,
                     is_template ? 1 : 0,
-                    JSON.stringify(linked_listings || [])
-                ]
+                    JSON.stringify(linked_listings || []),
+                ],
             );
 
             const chart = await query.get(`SELECT * FROM size_charts WHERE id = ?`, [chartId]);
@@ -156,33 +156,38 @@ export async function sizeChartsRouter(ctx) {
                         measurements: safeParse(chart.measurements, []),
                         sizes: safeParse(chart.sizes, []),
                         custom_fields: safeParse(chart.custom_fields, []),
-                        linked_listings: safeParse(chart.linked_listings, [])
-                    }
-                }
+                        linked_listings: safeParse(chart.linked_listings, []),
+                    },
+                },
             };
         } catch (error) {
             logger.error('Error creating size chart:', error);
             return {
                 status: 500,
-                data: { error: 'Failed to create size chart' }
+                data: { error: 'Failed to create size chart' },
             };
         }
     }
 
     // GET /api/size-charts/:id - Get single size chart
-    if (method === 'GET' && path.match(/^\/[a-zA-Z0-9_-]+$/) && !path.includes('/convert') && !path.includes('/conversions') && !path.includes('/brands') && !path.includes('/availability') && !path.includes('/recommend')) {
+    if (
+        method === 'GET' &&
+        path.match(/^\/[a-zA-Z0-9_-]+$/) &&
+        !path.includes('/convert') &&
+        !path.includes('/conversions') &&
+        !path.includes('/brands') &&
+        !path.includes('/availability') &&
+        !path.includes('/recommend')
+    ) {
         const chartId = path.substring(1);
 
         try {
-            const chart = await query.get(
-                `SELECT * FROM size_charts WHERE id = ? AND user_id = ?`,
-                [chartId, user.id]
-            );
+            const chart = await query.get(`SELECT * FROM size_charts WHERE id = ? AND user_id = ?`, [chartId, user.id]);
 
             if (!chart) {
                 return {
                     status: 404,
-                    data: { error: 'Size chart not found' }
+                    data: { error: 'Size chart not found' },
                 };
             }
 
@@ -194,15 +199,15 @@ export async function sizeChartsRouter(ctx) {
                         measurements: safeParse(chart.measurements, []),
                         sizes: safeParse(chart.sizes, []),
                         custom_fields: safeParse(chart.custom_fields, []),
-                        linked_listings: safeParse(chart.linked_listings, [])
-                    }
-                }
+                        linked_listings: safeParse(chart.linked_listings, []),
+                    },
+                },
             };
         } catch (error) {
             logger.error('Error fetching size chart:', error);
             return {
                 status: 500,
-                data: { error: 'Failed to fetch size chart' }
+                data: { error: 'Failed to fetch size chart' },
             };
         }
     }
@@ -212,15 +217,12 @@ export async function sizeChartsRouter(ctx) {
         const chartId = path.substring(1);
 
         try {
-            const chart = await query.get(
-                `SELECT * FROM size_charts WHERE id = ? AND user_id = ?`,
-                [chartId, user.id]
-            );
+            const chart = await query.get(`SELECT * FROM size_charts WHERE id = ? AND user_id = ?`, [chartId, user.id]);
 
             if (!chart) {
                 return {
                     status: 404,
-                    data: { error: 'Size chart not found' }
+                    data: { error: 'Size chart not found' },
                 };
             }
 
@@ -236,7 +238,7 @@ export async function sizeChartsRouter(ctx) {
                 custom_fields,
                 notes,
                 is_template,
-                linked_listings
+                linked_listings,
             } = body;
 
             await query.run(
@@ -268,8 +270,8 @@ export async function sizeChartsRouter(ctx) {
                     notes !== undefined ? notes : chart.notes,
                     is_template !== undefined ? (is_template ? 1 : 0) : chart.is_template,
                     linked_listings ? JSON.stringify(linked_listings) : chart.linked_listings,
-                    chartId
-                ]
+                    chartId,
+                ],
             );
 
             const updatedChart = await query.get(`SELECT * FROM size_charts WHERE id = ?`, [chartId]);
@@ -282,15 +284,15 @@ export async function sizeChartsRouter(ctx) {
                         measurements: safeParse(updatedChart.measurements, []),
                         sizes: safeParse(updatedChart.sizes, []),
                         custom_fields: safeParse(updatedChart.custom_fields, []),
-                        linked_listings: safeParse(updatedChart.linked_listings, [])
-                    }
-                }
+                        linked_listings: safeParse(updatedChart.linked_listings, []),
+                    },
+                },
             };
         } catch (error) {
             logger.error('Error updating size chart:', error);
             return {
                 status: 500,
-                data: { error: 'Failed to update size chart' }
+                data: { error: 'Failed to update size chart' },
             };
         }
     }
@@ -300,15 +302,12 @@ export async function sizeChartsRouter(ctx) {
         const chartId = path.substring(1);
 
         try {
-            const chart = await query.get(
-                `SELECT * FROM size_charts WHERE id = ? AND user_id = ?`,
-                [chartId, user.id]
-            );
+            const chart = await query.get(`SELECT * FROM size_charts WHERE id = ? AND user_id = ?`, [chartId, user.id]);
 
             if (!chart) {
                 return {
                     status: 404,
-                    data: { error: 'Size chart not found' }
+                    data: { error: 'Size chart not found' },
                 };
             }
 
@@ -316,13 +315,13 @@ export async function sizeChartsRouter(ctx) {
 
             return {
                 status: 200,
-                data: { message: 'Size chart deleted successfully' }
+                data: { message: 'Size chart deleted successfully' },
             };
         } catch (error) {
             logger.error('Error deleting size chart:', error);
             return {
                 status: 500,
-                data: { error: 'Failed to delete size chart' }
+                data: { error: 'Failed to delete size chart' },
             };
         }
     }
@@ -338,7 +337,7 @@ export async function sizeChartsRouter(ctx) {
         if (!from || !to || !size) {
             return {
                 status: 400,
-                data: { error: 'Parameters required: from, to, size' }
+                data: { error: 'Parameters required: from, to, size' },
             };
         }
 
@@ -359,14 +358,14 @@ export async function sizeChartsRouter(ctx) {
 
             // Map size system to column
             const sizeSystemMap = {
-                'US': 'us_size',
-                'UK': 'uk_size',
-                'EU': 'eu_size',
-                'JP': 'jp_size',
-                'CN': 'cn_size',
-                'IT': 'it_size',
-                'FR': 'fr_size',
-                'AU': 'au_size'
+                US: 'us_size',
+                UK: 'uk_size',
+                EU: 'eu_size',
+                JP: 'jp_size',
+                CN: 'cn_size',
+                IT: 'it_size',
+                FR: 'fr_size',
+                AU: 'au_size',
             };
 
             const fromColumn = sizeSystemMap[from.toUpperCase()];
@@ -375,7 +374,7 @@ export async function sizeChartsRouter(ctx) {
             if (!fromColumn || !toColumn) {
                 return {
                     status: 400,
-                    data: { error: 'Invalid size system. Supported: US, UK, EU, JP, CN, IT, FR, AU' }
+                    data: { error: 'Invalid size system. Supported: US, UK, EU, JP, CN, IT, FR, AU' },
                 };
             }
 
@@ -387,22 +386,22 @@ export async function sizeChartsRouter(ctx) {
             if (results.length === 0) {
                 return {
                     status: 404,
-                    data: { error: 'No conversion data found for specified parameters' }
+                    data: { error: 'No conversion data found for specified parameters' },
                 };
             }
 
             // Return conversion data with all size systems
-            const conversions = results.map(result => ({
+            const conversions = results.map((result) => ({
                 brand: result.brand,
                 garment_type: result.garment_type,
                 size_label: result.size_label,
                 from: {
                     system: from.toUpperCase(),
-                    size: result[fromColumn]
+                    size: result[fromColumn],
                 },
                 to: {
                     system: to.toUpperCase(),
-                    size: result[toColumn]
+                    size: result[toColumn],
                 },
                 all_sizes: {
                     US: result.us_size,
@@ -412,7 +411,7 @@ export async function sizeChartsRouter(ctx) {
                     CN: result.cn_size,
                     IT: result.it_size,
                     FR: result.fr_size,
-                    AU: result.au_size
+                    AU: result.au_size,
                 },
                 measurements: {
                     chest_cm: result.chest_cm,
@@ -422,19 +421,19 @@ export async function sizeChartsRouter(ctx) {
                     shoulder_cm: result.shoulder_cm,
                     sleeve_cm: result.sleeve_cm,
                     inseam_cm: result.inseam_cm,
-                    foot_length_cm: result.foot_length_cm
-                }
+                    foot_length_cm: result.foot_length_cm,
+                },
             }));
 
             return {
                 status: 200,
-                data: { conversions }
+                data: { conversions },
             };
         } catch (error) {
             logger.error('Error converting size:', error);
             return {
                 status: 500,
-                data: { error: 'Failed to convert size' }
+                data: { error: 'Failed to convert size' },
             };
         }
     }
@@ -450,18 +449,18 @@ export async function sizeChartsRouter(ctx) {
                 `SELECT DISTINCT brand, COUNT(*) as guide_count
                  FROM brand_size_guides
                  GROUP BY brand
-                 ORDER BY brand ASC`
+                 ORDER BY brand ASC`,
             );
 
             return {
                 status: 200,
-                data: { brands }
+                data: { brands },
             };
         } catch (error) {
             logger.error('Error fetching brands:', error);
             return {
                 status: 500,
-                data: { error: 'Failed to fetch brands' }
+                data: { error: 'Failed to fetch brands' },
             };
         }
     }
@@ -473,13 +472,13 @@ export async function sizeChartsRouter(ctx) {
         try {
             const guides = await query.all(
                 `SELECT * FROM brand_size_guides WHERE brand = ? ORDER BY garment_type, size_label`,
-                [brandName]
+                [brandName],
             );
 
             if (guides.length === 0) {
                 return {
                     status: 404,
-                    data: { error: 'Brand not found' }
+                    data: { error: 'Brand not found' },
                 };
             }
 
@@ -497,14 +496,14 @@ export async function sizeChartsRouter(ctx) {
                 status: 200,
                 data: {
                     brand: brandName,
-                    guides: groupedGuides
-                }
+                    guides: groupedGuides,
+                },
             };
         } catch (error) {
             logger.error('Error fetching brand guide:', error);
             return {
                 status: 500,
-                data: { error: 'Failed to fetch brand guide' }
+                data: { error: 'Failed to fetch brand guide' },
             };
         }
     }
@@ -518,13 +517,13 @@ export async function sizeChartsRouter(ctx) {
         try {
             const guides = await query.all(
                 `SELECT * FROM brand_size_guides WHERE brand = ? AND garment_type = ? ORDER BY size_label`,
-                [brandName, garmentType]
+                [brandName, garmentType],
             );
 
             if (guides.length === 0) {
                 return {
                     status: 404,
-                    data: { error: 'No guides found for specified brand and garment type' }
+                    data: { error: 'No guides found for specified brand and garment type' },
                 };
             }
 
@@ -533,14 +532,14 @@ export async function sizeChartsRouter(ctx) {
                 data: {
                     brand: brandName,
                     garment_type: garmentType,
-                    guides
-                }
+                    guides,
+                },
             };
         } catch (error) {
             logger.error('Error fetching brand garment guide:', error);
             return {
                 status: 500,
-                data: { error: 'Failed to fetch guide' }
+                data: { error: 'Failed to fetch guide' },
             };
         }
     }
@@ -556,7 +555,7 @@ export async function sizeChartsRouter(ctx) {
         if (!measurements) {
             return {
                 status: 400,
-                data: { error: 'Measurements are required' }
+                data: { error: 'Measurements are required' },
             };
         }
 
@@ -581,22 +580,28 @@ export async function sizeChartsRouter(ctx) {
             if (guides.length === 0) {
                 return {
                     status: 404,
-                    data: { error: 'No size guides found for specified criteria' }
+                    data: { error: 'No size guides found for specified criteria' },
                 };
             }
 
             // Find best matching size based on measurements
-            const recommendations = guides.map(guide => {
+            const recommendations = guides.map((guide) => {
                 let score = 0;
                 let matchCount = 0;
 
                 // Compare each measurement
                 const measurementFields = [
-                    'chest_cm', 'waist_cm', 'hips_cm', 'length_cm',
-                    'shoulder_cm', 'sleeve_cm', 'inseam_cm', 'foot_length_cm'
+                    'chest_cm',
+                    'waist_cm',
+                    'hips_cm',
+                    'length_cm',
+                    'shoulder_cm',
+                    'sleeve_cm',
+                    'inseam_cm',
+                    'foot_length_cm',
                 ];
 
-                measurementFields.forEach(field => {
+                measurementFields.forEach((field) => {
                     const userValue = measurements[field.replace('_cm', '')];
                     const guideValue = guide[field];
 
@@ -615,7 +620,7 @@ export async function sizeChartsRouter(ctx) {
                 return {
                     ...guide,
                     match_score: matchCount > 0 ? score / matchCount : 0,
-                    matched_fields: matchCount
+                    matched_fields: matchCount,
                 };
             });
 
@@ -629,14 +634,14 @@ export async function sizeChartsRouter(ctx) {
                 status: 200,
                 data: {
                     recommendations: topRecommendations,
-                    best_match: topRecommendations[0] || null
-                }
+                    best_match: topRecommendations[0] || null,
+                },
             };
         } catch (error) {
             logger.error('Error generating size recommendation:', error);
             return {
                 status: 500,
-                data: { error: 'Failed to generate recommendation' }
+                data: { error: 'Failed to generate recommendation' },
             };
         }
     }
@@ -653,20 +658,17 @@ export async function sizeChartsRouter(ctx) {
         if (!listing_ids || !Array.isArray(listing_ids)) {
             return {
                 status: 400,
-                data: { error: 'listing_ids array is required' }
+                data: { error: 'listing_ids array is required' },
             };
         }
 
         try {
-            const chart = await query.get(
-                `SELECT * FROM size_charts WHERE id = ? AND user_id = ?`,
-                [chartId, user.id]
-            );
+            const chart = await query.get(`SELECT * FROM size_charts WHERE id = ? AND user_id = ?`, [chartId, user.id]);
 
             if (!chart) {
                 return {
                     status: 404,
-                    data: { error: 'Size chart not found' }
+                    data: { error: 'Size chart not found' },
                 };
             }
 
@@ -677,24 +679,24 @@ export async function sizeChartsRouter(ctx) {
             const mergedLinked = [...new Set([...existingLinked, ...listing_ids])];
 
             // Update chart
-            await query.run(
-                `UPDATE size_charts SET linked_listings = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-                [JSON.stringify(mergedLinked), chartId]
-            );
+            await query.run(`UPDATE size_charts SET linked_listings = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [
+                JSON.stringify(mergedLinked),
+                chartId,
+            ]);
 
             return {
                 status: 200,
                 data: {
                     message: 'Listings linked successfully',
                     linked_count: mergedLinked.length,
-                    newly_linked: listing_ids.length
-                }
+                    newly_linked: listing_ids.length,
+                },
             };
         } catch (error) {
             logger.error('Error linking listings:', error);
             return {
                 status: 500,
-                data: { error: 'Failed to link listings' }
+                data: { error: 'Failed to link listings' },
             };
         }
     }
@@ -704,15 +706,12 @@ export async function sizeChartsRouter(ctx) {
         const chartId = path.split('/')[1];
 
         try {
-            const chart = await query.get(
-                `SELECT * FROM size_charts WHERE id = ? AND user_id = ?`,
-                [chartId, user.id]
-            );
+            const chart = await query.get(`SELECT * FROM size_charts WHERE id = ? AND user_id = ?`, [chartId, user.id]);
 
             if (!chart) {
                 return {
                     status: 404,
-                    data: { error: 'Size chart not found' }
+                    data: { error: 'Size chart not found' },
                 };
             }
 
@@ -721,7 +720,7 @@ export async function sizeChartsRouter(ctx) {
             if (linkedIds.length === 0) {
                 return {
                     status: 200,
-                    data: { listings: [] }
+                    data: { listings: [] },
                 };
             }
 
@@ -731,18 +730,18 @@ export async function sizeChartsRouter(ctx) {
                 `SELECT id, title, platform, status, price, sku
                  FROM listings
                  WHERE id IN (${placeholders}) AND user_id = ?`,
-                [...linkedIds, user.id]
+                [...linkedIds, user.id],
             );
 
             return {
                 status: 200,
-                data: { listings }
+                data: { listings },
             };
         } catch (error) {
             logger.error('Error fetching linked listings:', error);
             return {
                 status: 500,
-                data: { error: 'Failed to fetch linked listings' }
+                data: { error: 'Failed to fetch linked listings' },
             };
         }
     }
@@ -787,23 +786,23 @@ export async function sizeChartsRouter(ctx) {
             // Calculate total for percentage calculation
             const total = availability.reduce((sum, item) => sum + item.count, 0);
 
-            const availabilityWithPercentage = availability.map(item => ({
+            const availabilityWithPercentage = availability.map((item) => ({
                 ...item,
-                percentage: total > 0 ? ((item.count / total) * 100).toFixed(2) : 0
+                percentage: total > 0 ? ((item.count / total) * 100).toFixed(2) : 0,
             }));
 
             return {
                 status: 200,
                 data: {
                     availability: availabilityWithPercentage,
-                    total_items: total
-                }
+                    total_items: total,
+                },
             };
         } catch (error) {
             logger.error('Error fetching size availability:', error);
             return {
                 status: 500,
-                data: { error: 'Failed to fetch size availability' }
+                data: { error: 'Failed to fetch size availability' },
             };
         }
     }
@@ -811,7 +810,7 @@ export async function sizeChartsRouter(ctx) {
     // 404
     return {
         status: 404,
-        data: { error: 'Endpoint not found' }
+        data: { error: 'Endpoint not found' },
     };
 }
 
@@ -832,52 +831,432 @@ export async function seedBrandSizeGuides() {
 
         const guides = [
             // Nike - Mens Tops
-            { brand: 'Nike', garment_type: 'tops', size_label: 'XS', us_size: 'XS', uk_size: 'XS', eu_size: 'XS', jp_size: 'XS', cn_size: 'XS', chest_cm: 86, waist_cm: 71, length_cm: 71 },
-            { brand: 'Nike', garment_type: 'tops', size_label: 'S', us_size: 'S', uk_size: 'S', eu_size: 'S', jp_size: 'S', cn_size: 'S', chest_cm: 91, waist_cm: 76, length_cm: 73 },
-            { brand: 'Nike', garment_type: 'tops', size_label: 'M', us_size: 'M', uk_size: 'M', eu_size: 'M', jp_size: 'M', cn_size: 'M', chest_cm: 97, waist_cm: 81, length_cm: 76 },
-            { brand: 'Nike', garment_type: 'tops', size_label: 'L', us_size: 'L', uk_size: 'L', eu_size: 'L', jp_size: 'L', cn_size: 'L', chest_cm: 104, waist_cm: 89, length_cm: 78 },
-            { brand: 'Nike', garment_type: 'tops', size_label: 'XL', us_size: 'XL', uk_size: 'XL', eu_size: 'XL', jp_size: 'XL', cn_size: 'XL', chest_cm: 112, waist_cm: 97, length_cm: 81 },
-            { brand: 'Nike', garment_type: 'tops', size_label: '2XL', us_size: '2XL', uk_size: '2XL', eu_size: '2XL', jp_size: '2XL', cn_size: '2XL', chest_cm: 122, waist_cm: 106, length_cm: 84 },
+            {
+                brand: 'Nike',
+                garment_type: 'tops',
+                size_label: 'XS',
+                us_size: 'XS',
+                uk_size: 'XS',
+                eu_size: 'XS',
+                jp_size: 'XS',
+                cn_size: 'XS',
+                chest_cm: 86,
+                waist_cm: 71,
+                length_cm: 71,
+            },
+            {
+                brand: 'Nike',
+                garment_type: 'tops',
+                size_label: 'S',
+                us_size: 'S',
+                uk_size: 'S',
+                eu_size: 'S',
+                jp_size: 'S',
+                cn_size: 'S',
+                chest_cm: 91,
+                waist_cm: 76,
+                length_cm: 73,
+            },
+            {
+                brand: 'Nike',
+                garment_type: 'tops',
+                size_label: 'M',
+                us_size: 'M',
+                uk_size: 'M',
+                eu_size: 'M',
+                jp_size: 'M',
+                cn_size: 'M',
+                chest_cm: 97,
+                waist_cm: 81,
+                length_cm: 76,
+            },
+            {
+                brand: 'Nike',
+                garment_type: 'tops',
+                size_label: 'L',
+                us_size: 'L',
+                uk_size: 'L',
+                eu_size: 'L',
+                jp_size: 'L',
+                cn_size: 'L',
+                chest_cm: 104,
+                waist_cm: 89,
+                length_cm: 78,
+            },
+            {
+                brand: 'Nike',
+                garment_type: 'tops',
+                size_label: 'XL',
+                us_size: 'XL',
+                uk_size: 'XL',
+                eu_size: 'XL',
+                jp_size: 'XL',
+                cn_size: 'XL',
+                chest_cm: 112,
+                waist_cm: 97,
+                length_cm: 81,
+            },
+            {
+                brand: 'Nike',
+                garment_type: 'tops',
+                size_label: '2XL',
+                us_size: '2XL',
+                uk_size: '2XL',
+                eu_size: '2XL',
+                jp_size: '2XL',
+                cn_size: '2XL',
+                chest_cm: 122,
+                waist_cm: 106,
+                length_cm: 84,
+            },
 
             // Nike - Mens Bottoms
-            { brand: 'Nike', garment_type: 'bottoms', size_label: 'S', us_size: 'S', uk_size: 'S', eu_size: 'S', jp_size: 'S', waist_cm: 71, hips_cm: 89, inseam_cm: 81 },
-            { brand: 'Nike', garment_type: 'bottoms', size_label: 'M', us_size: 'M', uk_size: 'M', eu_size: 'M', jp_size: 'M', waist_cm: 76, hips_cm: 94, inseam_cm: 81 },
-            { brand: 'Nike', garment_type: 'bottoms', size_label: 'L', us_size: 'L', uk_size: 'L', eu_size: 'L', jp_size: 'L', waist_cm: 84, hips_cm: 102, inseam_cm: 81 },
-            { brand: 'Nike', garment_type: 'bottoms', size_label: 'XL', us_size: 'XL', uk_size: 'XL', eu_size: 'XL', jp_size: 'XL', waist_cm: 94, hips_cm: 112, inseam_cm: 81 },
+            {
+                brand: 'Nike',
+                garment_type: 'bottoms',
+                size_label: 'S',
+                us_size: 'S',
+                uk_size: 'S',
+                eu_size: 'S',
+                jp_size: 'S',
+                waist_cm: 71,
+                hips_cm: 89,
+                inseam_cm: 81,
+            },
+            {
+                brand: 'Nike',
+                garment_type: 'bottoms',
+                size_label: 'M',
+                us_size: 'M',
+                uk_size: 'M',
+                eu_size: 'M',
+                jp_size: 'M',
+                waist_cm: 76,
+                hips_cm: 94,
+                inseam_cm: 81,
+            },
+            {
+                brand: 'Nike',
+                garment_type: 'bottoms',
+                size_label: 'L',
+                us_size: 'L',
+                uk_size: 'L',
+                eu_size: 'L',
+                jp_size: 'L',
+                waist_cm: 84,
+                hips_cm: 102,
+                inseam_cm: 81,
+            },
+            {
+                brand: 'Nike',
+                garment_type: 'bottoms',
+                size_label: 'XL',
+                us_size: 'XL',
+                uk_size: 'XL',
+                eu_size: 'XL',
+                jp_size: 'XL',
+                waist_cm: 94,
+                hips_cm: 112,
+                inseam_cm: 81,
+            },
 
             // Adidas - Mens Tops
-            { brand: 'Adidas', garment_type: 'tops', size_label: 'XS', us_size: 'XS', uk_size: '32', eu_size: '42', jp_size: 'XS', chest_cm: 88, waist_cm: 72, length_cm: 70 },
-            { brand: 'Adidas', garment_type: 'tops', size_label: 'S', us_size: 'S', uk_size: '34', eu_size: '44', jp_size: 'S', chest_cm: 92, waist_cm: 76, length_cm: 72 },
-            { brand: 'Adidas', garment_type: 'tops', size_label: 'M', us_size: 'M', uk_size: '36', eu_size: '48', jp_size: 'M', chest_cm: 96, waist_cm: 80, length_cm: 74 },
-            { brand: 'Adidas', garment_type: 'tops', size_label: 'L', us_size: 'L', uk_size: '38', eu_size: '52', jp_size: 'L', chest_cm: 104, waist_cm: 88, length_cm: 76 },
-            { brand: 'Adidas', garment_type: 'tops', size_label: 'XL', us_size: 'XL', uk_size: '40', eu_size: '56', jp_size: 'XL', chest_cm: 112, waist_cm: 96, length_cm: 78 },
+            {
+                brand: 'Adidas',
+                garment_type: 'tops',
+                size_label: 'XS',
+                us_size: 'XS',
+                uk_size: '32',
+                eu_size: '42',
+                jp_size: 'XS',
+                chest_cm: 88,
+                waist_cm: 72,
+                length_cm: 70,
+            },
+            {
+                brand: 'Adidas',
+                garment_type: 'tops',
+                size_label: 'S',
+                us_size: 'S',
+                uk_size: '34',
+                eu_size: '44',
+                jp_size: 'S',
+                chest_cm: 92,
+                waist_cm: 76,
+                length_cm: 72,
+            },
+            {
+                brand: 'Adidas',
+                garment_type: 'tops',
+                size_label: 'M',
+                us_size: 'M',
+                uk_size: '36',
+                eu_size: '48',
+                jp_size: 'M',
+                chest_cm: 96,
+                waist_cm: 80,
+                length_cm: 74,
+            },
+            {
+                brand: 'Adidas',
+                garment_type: 'tops',
+                size_label: 'L',
+                us_size: 'L',
+                uk_size: '38',
+                eu_size: '52',
+                jp_size: 'L',
+                chest_cm: 104,
+                waist_cm: 88,
+                length_cm: 76,
+            },
+            {
+                brand: 'Adidas',
+                garment_type: 'tops',
+                size_label: 'XL',
+                us_size: 'XL',
+                uk_size: '40',
+                eu_size: '56',
+                jp_size: 'XL',
+                chest_cm: 112,
+                waist_cm: 96,
+                length_cm: 78,
+            },
 
             // Levi's - Mens Jeans (Waist sizes)
-            { brand: "Levi's", garment_type: 'jeans', size_label: '28', us_size: '28', uk_size: '28', eu_size: '38', jp_size: '28', waist_cm: 71, hips_cm: 86, inseam_cm: 81 },
-            { brand: "Levi's", garment_type: 'jeans', size_label: '30', us_size: '30', uk_size: '30', eu_size: '40', jp_size: '30', waist_cm: 76, hips_cm: 91, inseam_cm: 81 },
-            { brand: "Levi's", garment_type: 'jeans', size_label: '32', us_size: '32', uk_size: '32', eu_size: '42', jp_size: '32', waist_cm: 81, hips_cm: 96, inseam_cm: 81 },
-            { brand: "Levi's", garment_type: 'jeans', size_label: '34', us_size: '34', uk_size: '34', eu_size: '44', jp_size: '34', waist_cm: 86, hips_cm: 101, inseam_cm: 81 },
-            { brand: "Levi's", garment_type: 'jeans', size_label: '36', us_size: '36', uk_size: '36', eu_size: '46', jp_size: '36', waist_cm: 91, hips_cm: 106, inseam_cm: 81 },
-            { brand: "Levi's", garment_type: 'jeans', size_label: '38', us_size: '38', uk_size: '38', eu_size: '48', jp_size: '38', waist_cm: 96, hips_cm: 111, inseam_cm: 81 },
+            {
+                brand: "Levi's",
+                garment_type: 'jeans',
+                size_label: '28',
+                us_size: '28',
+                uk_size: '28',
+                eu_size: '38',
+                jp_size: '28',
+                waist_cm: 71,
+                hips_cm: 86,
+                inseam_cm: 81,
+            },
+            {
+                brand: "Levi's",
+                garment_type: 'jeans',
+                size_label: '30',
+                us_size: '30',
+                uk_size: '30',
+                eu_size: '40',
+                jp_size: '30',
+                waist_cm: 76,
+                hips_cm: 91,
+                inseam_cm: 81,
+            },
+            {
+                brand: "Levi's",
+                garment_type: 'jeans',
+                size_label: '32',
+                us_size: '32',
+                uk_size: '32',
+                eu_size: '42',
+                jp_size: '32',
+                waist_cm: 81,
+                hips_cm: 96,
+                inseam_cm: 81,
+            },
+            {
+                brand: "Levi's",
+                garment_type: 'jeans',
+                size_label: '34',
+                us_size: '34',
+                uk_size: '34',
+                eu_size: '44',
+                jp_size: '34',
+                waist_cm: 86,
+                hips_cm: 101,
+                inseam_cm: 81,
+            },
+            {
+                brand: "Levi's",
+                garment_type: 'jeans',
+                size_label: '36',
+                us_size: '36',
+                uk_size: '36',
+                eu_size: '46',
+                jp_size: '36',
+                waist_cm: 91,
+                hips_cm: 106,
+                inseam_cm: 81,
+            },
+            {
+                brand: "Levi's",
+                garment_type: 'jeans',
+                size_label: '38',
+                us_size: '38',
+                uk_size: '38',
+                eu_size: '48',
+                jp_size: '38',
+                waist_cm: 96,
+                hips_cm: 111,
+                inseam_cm: 81,
+            },
 
             // Supreme - Mens Tops
-            { brand: 'Supreme', garment_type: 'tops', size_label: 'S', us_size: 'S', uk_size: 'S', eu_size: 'S', jp_size: 'S', chest_cm: 94, waist_cm: 78, length_cm: 71 },
-            { brand: 'Supreme', garment_type: 'tops', size_label: 'M', us_size: 'M', uk_size: 'M', eu_size: 'M', jp_size: 'M', chest_cm: 99, waist_cm: 83, length_cm: 74 },
-            { brand: 'Supreme', garment_type: 'tops', size_label: 'L', us_size: 'L', uk_size: 'L', eu_size: 'L', jp_size: 'L', chest_cm: 107, waist_cm: 91, length_cm: 76 },
-            { brand: 'Supreme', garment_type: 'tops', size_label: 'XL', us_size: 'XL', uk_size: 'XL', eu_size: 'XL', jp_size: 'XL', chest_cm: 117, waist_cm: 99, length_cm: 79 },
+            {
+                brand: 'Supreme',
+                garment_type: 'tops',
+                size_label: 'S',
+                us_size: 'S',
+                uk_size: 'S',
+                eu_size: 'S',
+                jp_size: 'S',
+                chest_cm: 94,
+                waist_cm: 78,
+                length_cm: 71,
+            },
+            {
+                brand: 'Supreme',
+                garment_type: 'tops',
+                size_label: 'M',
+                us_size: 'M',
+                uk_size: 'M',
+                eu_size: 'M',
+                jp_size: 'M',
+                chest_cm: 99,
+                waist_cm: 83,
+                length_cm: 74,
+            },
+            {
+                brand: 'Supreme',
+                garment_type: 'tops',
+                size_label: 'L',
+                us_size: 'L',
+                uk_size: 'L',
+                eu_size: 'L',
+                jp_size: 'L',
+                chest_cm: 107,
+                waist_cm: 91,
+                length_cm: 76,
+            },
+            {
+                brand: 'Supreme',
+                garment_type: 'tops',
+                size_label: 'XL',
+                us_size: 'XL',
+                uk_size: 'XL',
+                eu_size: 'XL',
+                jp_size: 'XL',
+                chest_cm: 117,
+                waist_cm: 99,
+                length_cm: 79,
+            },
 
             // Ralph Lauren - Mens Tops
-            { brand: 'Ralph Lauren', garment_type: 'tops', size_label: 'XS', us_size: 'XS', uk_size: '32', eu_size: '42', jp_size: 'XS', chest_cm: 86, waist_cm: 71, length_cm: 72 },
-            { brand: 'Ralph Lauren', garment_type: 'tops', size_label: 'S', us_size: 'S', uk_size: '34-36', eu_size: '44-46', jp_size: 'S', chest_cm: 91, waist_cm: 76, length_cm: 74 },
-            { brand: 'Ralph Lauren', garment_type: 'tops', size_label: 'M', us_size: 'M', uk_size: '38-40', eu_size: '48-50', jp_size: 'M', chest_cm: 97, waist_cm: 81, length_cm: 76 },
-            { brand: 'Ralph Lauren', garment_type: 'tops', size_label: 'L', us_size: 'L', uk_size: '42-44', eu_size: '52-54', jp_size: 'L', chest_cm: 107, waist_cm: 91, length_cm: 78 },
-            { brand: 'Ralph Lauren', garment_type: 'tops', size_label: 'XL', us_size: 'XL', uk_size: '46-48', eu_size: '56-58', jp_size: 'XL', chest_cm: 117, waist_cm: 101, length_cm: 80 },
+            {
+                brand: 'Ralph Lauren',
+                garment_type: 'tops',
+                size_label: 'XS',
+                us_size: 'XS',
+                uk_size: '32',
+                eu_size: '42',
+                jp_size: 'XS',
+                chest_cm: 86,
+                waist_cm: 71,
+                length_cm: 72,
+            },
+            {
+                brand: 'Ralph Lauren',
+                garment_type: 'tops',
+                size_label: 'S',
+                us_size: 'S',
+                uk_size: '34-36',
+                eu_size: '44-46',
+                jp_size: 'S',
+                chest_cm: 91,
+                waist_cm: 76,
+                length_cm: 74,
+            },
+            {
+                brand: 'Ralph Lauren',
+                garment_type: 'tops',
+                size_label: 'M',
+                us_size: 'M',
+                uk_size: '38-40',
+                eu_size: '48-50',
+                jp_size: 'M',
+                chest_cm: 97,
+                waist_cm: 81,
+                length_cm: 76,
+            },
+            {
+                brand: 'Ralph Lauren',
+                garment_type: 'tops',
+                size_label: 'L',
+                us_size: 'L',
+                uk_size: '42-44',
+                eu_size: '52-54',
+                jp_size: 'L',
+                chest_cm: 107,
+                waist_cm: 91,
+                length_cm: 78,
+            },
+            {
+                brand: 'Ralph Lauren',
+                garment_type: 'tops',
+                size_label: 'XL',
+                us_size: 'XL',
+                uk_size: '46-48',
+                eu_size: '56-58',
+                jp_size: 'XL',
+                chest_cm: 117,
+                waist_cm: 101,
+                length_cm: 80,
+            },
 
             // Ralph Lauren - Mens Bottoms
-            { brand: 'Ralph Lauren', garment_type: 'bottoms', size_label: '30', us_size: '30', uk_size: '30', eu_size: '40', jp_size: 'S', waist_cm: 76, hips_cm: 94, inseam_cm: 81 },
-            { brand: 'Ralph Lauren', garment_type: 'bottoms', size_label: '32', us_size: '32', uk_size: '32', eu_size: '42', jp_size: 'M', waist_cm: 81, hips_cm: 99, inseam_cm: 81 },
-            { brand: 'Ralph Lauren', garment_type: 'bottoms', size_label: '34', us_size: '34', uk_size: '34', eu_size: '44', jp_size: 'L', waist_cm: 86, hips_cm: 104, inseam_cm: 81 },
-            { brand: 'Ralph Lauren', garment_type: 'bottoms', size_label: '36', us_size: '36', uk_size: '36', eu_size: '46', jp_size: 'XL', waist_cm: 91, hips_cm: 109, inseam_cm: 81 },
+            {
+                brand: 'Ralph Lauren',
+                garment_type: 'bottoms',
+                size_label: '30',
+                us_size: '30',
+                uk_size: '30',
+                eu_size: '40',
+                jp_size: 'S',
+                waist_cm: 76,
+                hips_cm: 94,
+                inseam_cm: 81,
+            },
+            {
+                brand: 'Ralph Lauren',
+                garment_type: 'bottoms',
+                size_label: '32',
+                us_size: '32',
+                uk_size: '32',
+                eu_size: '42',
+                jp_size: 'M',
+                waist_cm: 81,
+                hips_cm: 99,
+                inseam_cm: 81,
+            },
+            {
+                brand: 'Ralph Lauren',
+                garment_type: 'bottoms',
+                size_label: '34',
+                us_size: '34',
+                uk_size: '34',
+                eu_size: '44',
+                jp_size: 'L',
+                waist_cm: 86,
+                hips_cm: 104,
+                inseam_cm: 81,
+            },
+            {
+                brand: 'Ralph Lauren',
+                garment_type: 'bottoms',
+                size_label: '36',
+                us_size: '36',
+                uk_size: '36',
+                eu_size: '46',
+                jp_size: 'XL',
+                waist_cm: 91,
+                hips_cm: 109,
+                inseam_cm: 81,
+            },
         ];
 
         // Insert all guides
@@ -908,8 +1287,8 @@ export async function seedBrandSizeGuides() {
                     guide.shoulder_cm || null,
                     guide.sleeve_cm || null,
                     guide.inseam_cm || null,
-                    guide.foot_length_cm || null
-                ]
+                    guide.foot_length_cm || null,
+                ],
             );
         }
 

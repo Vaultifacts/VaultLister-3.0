@@ -1,162 +1,227 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Offline - VaultLister</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: Inter, system-ui, -apple-system, sans-serif;
-            background: #ffffff;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #111827;
-        }
-        .container {
-            text-align: center;
-            padding: 2rem;
-            max-width: 400px;
-        }
-        .icon {
-            width: 120px;
-            height: 120px;
-            margin: 0 auto 2rem;
-            background: #fef3c7;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .icon svg {
-            width: 60px;
-            height: 60px;
-            stroke: #f59e0b;
-        }
-        h1 {
-            font-size: 1.75rem;
-            margin-bottom: 1rem;
-            color: #111827;
-        }
-        p {
-            color: #4b5563;
-            line-height: 1.6;
-            margin-bottom: 1.5rem;
-        }
-        .btn {
-            display: inline-block;
-            padding: 0.75rem 1.5rem;
-            background: linear-gradient(135deg, #b45309, #92400e);
-            color: #fff;
-            border: none;
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            cursor: pointer;
-            text-decoration: none;
-            transition: background 0.2s;
-        }
-        .btn:hover {
-            background: linear-gradient(135deg, #d97706, #b45309);
-        }
-        .status {
-            margin-top: 2rem;
-            padding: 1rem;
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.5rem;
-            font-size: 0.875rem;
-        }
-        .status-online {
-            color: #15803d;
-        }
-        .status-offline {
-            color: #b45309;
-        }
-    </style>
-</head>
-<body>
-<main id="main-content">
-    <div class="container">
-        <div class="icon">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-            </svg>
-        </div>
-
-        <h1>You're Offline</h1>
-        <p>It looks like you've lost your internet connection. Some features may not be available until you're back online.</p>
-
-        <button type="button" class="btn" onclick="location.reload()">Try Again</button>
-
-        <div class="status">
-            <span id="status-text" class="status-offline">Currently offline</span>
-        </div>
-    </div>
-</main>
-
-    <script>
-        function setOfflineStatus() {
-            const statusText = document.getElementById('status-text');
-            statusText.textContent = 'Currently offline';
-            statusText.className = 'status-offline';
-        }
-
-        window.addEventListener('online', function() {
-            const statusText = document.getElementById('status-text');
-            statusText.textContent = 'Connection restored!';
-            statusText.className = 'status-online';
-            setTimeout(() => { window.location.href = '/'; }, 1000);
-        });
-
-        window.addEventListener('offline', setOfflineStatus);
-        setOfflineStatus();
-    </script>
-<script>
-(function() {
-    var hasCurrency = !!localStorage.getItem('vl_currency');
-    var hasLang = !!localStorage.getItem('vaultlister_locale');
-    if (hasCurrency && hasLang) return;
-    fetch('/api/geo')
-        .then(function(r) { return r.json(); })
-        .then(function(d) {
-            var cc = d.country_code || '';
-            if (!hasCurrency) {
-                var CURR = {CA:'CAD',US:'USD',GB:'GBP',AU:'AUD',NZ:'AUD',
-                    FR:'EUR',DE:'EUR',IT:'EUR',ES:'EUR',NL:'EUR',BE:'EUR',
-                    AT:'EUR',FI:'EUR',IE:'EUR',PT:'EUR',GR:'EUR',LU:'EUR',
-                    SK:'EUR',SI:'EUR',EE:'EUR',LV:'EUR',LT:'EUR',CY:'EUR',MT:'EUR'};
-                var curr = CURR[cc];
-                if (curr) {
-                    var btn = document.querySelector('.currency-option[data-currency="' + curr + '"]');
-                    if (btn) btn.click();
-                }
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Offline - VaultLister</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
             }
-            if (!hasLang) {
-                var LANG = {
-                    CA:'en-ca', US:'en', GB:'en', AU:'en', NZ:'en', IE:'en',
-                    FR:'fr', BE:'fr', CH:'fr', LU:'fr',
-                    DE:'de', AT:'de',
-                    IT:'it', ES:'es', MX:'es', AR:'es', CO:'es', CL:'es',
-                    PT:'pt', BR:'pt',
-                    JP:'ja', CN:'zh', TW:'zh', HK:'zh',
-                    KR:'ko', SA:'ar', AE:'ar', EG:'ar', MA:'ar'
-                };
-                var nav = (navigator.language || '').toLowerCase();
-                var lang = (cc === 'CA' && nav.startsWith('fr')) ? 'fr' : LANG[cc];
-                if (lang) {
-                    var btn = document.querySelector('.lang-option[data-lang="' + lang + '"]');
-                    if (btn) btn.click();
-                }
+            body {
+                font-family:
+                    Inter,
+                    system-ui,
+                    -apple-system,
+                    sans-serif;
+                background: #ffffff;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #111827;
             }
-        })
-        .catch(function() {});
-})();
-</script>
-</body>
+            .container {
+                text-align: center;
+                padding: 2rem;
+                max-width: 400px;
+            }
+            .icon {
+                width: 120px;
+                height: 120px;
+                margin: 0 auto 2rem;
+                background: #fef3c7;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .icon svg {
+                width: 60px;
+                height: 60px;
+                stroke: #f59e0b;
+            }
+            h1 {
+                font-size: 1.75rem;
+                margin-bottom: 1rem;
+                color: #111827;
+            }
+            p {
+                color: #4b5563;
+                line-height: 1.6;
+                margin-bottom: 1.5rem;
+            }
+            .btn {
+                display: inline-block;
+                padding: 0.75rem 1.5rem;
+                background: linear-gradient(135deg, #b45309, #92400e);
+                color: #fff;
+                border: none;
+                border-radius: 0.5rem;
+                font-size: 1rem;
+                cursor: pointer;
+                text-decoration: none;
+                transition: background 0.2s;
+            }
+            .btn:hover {
+                background: linear-gradient(135deg, #d97706, #b45309);
+            }
+            .status {
+                margin-top: 2rem;
+                padding: 1rem;
+                background: #f9fafb;
+                border: 1px solid #e5e7eb;
+                border-radius: 0.5rem;
+                font-size: 0.875rem;
+            }
+            .status-online {
+                color: #15803d;
+            }
+            .status-offline {
+                color: #b45309;
+            }
+        </style>
+    </head>
+    <body>
+        <main id="main-content">
+            <div class="container">
+                <div class="icon">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                        />
+                    </svg>
+                </div>
+
+                <h1>You're Offline</h1>
+                <p>
+                    It looks like you've lost your internet connection. Some features may not be available until you're
+                    back online.
+                </p>
+
+                <button type="button" class="btn" onclick="location.reload()">Try Again</button>
+
+                <div class="status">
+                    <span id="status-text" class="status-offline">Currently offline</span>
+                </div>
+            </div>
+        </main>
+
+        <script>
+            function setOfflineStatus() {
+                const statusText = document.getElementById('status-text');
+                statusText.textContent = 'Currently offline';
+                statusText.className = 'status-offline';
+            }
+
+            window.addEventListener('online', function () {
+                const statusText = document.getElementById('status-text');
+                statusText.textContent = 'Connection restored!';
+                statusText.className = 'status-online';
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 1000);
+            });
+
+            window.addEventListener('offline', setOfflineStatus);
+            setOfflineStatus();
+        </script>
+        <script>
+            (function () {
+                var hasCurrency = !!localStorage.getItem('vl_currency');
+                var hasLang = !!localStorage.getItem('vaultlister_locale');
+                if (hasCurrency && hasLang) return;
+                fetch('/api/geo')
+                    .then(function (r) {
+                        return r.json();
+                    })
+                    .then(function (d) {
+                        var cc = d.country_code || '';
+                        if (!hasCurrency) {
+                            var CURR = {
+                                CA: 'CAD',
+                                US: 'USD',
+                                GB: 'GBP',
+                                AU: 'AUD',
+                                NZ: 'AUD',
+                                FR: 'EUR',
+                                DE: 'EUR',
+                                IT: 'EUR',
+                                ES: 'EUR',
+                                NL: 'EUR',
+                                BE: 'EUR',
+                                AT: 'EUR',
+                                FI: 'EUR',
+                                IE: 'EUR',
+                                PT: 'EUR',
+                                GR: 'EUR',
+                                LU: 'EUR',
+                                SK: 'EUR',
+                                SI: 'EUR',
+                                EE: 'EUR',
+                                LV: 'EUR',
+                                LT: 'EUR',
+                                CY: 'EUR',
+                                MT: 'EUR',
+                            };
+                            var curr = CURR[cc];
+                            if (curr) {
+                                var btn = document.querySelector('.currency-option[data-currency="' + curr + '"]');
+                                if (btn) btn.click();
+                            }
+                        }
+                        if (!hasLang) {
+                            var LANG = {
+                                CA: 'en-ca',
+                                US: 'en',
+                                GB: 'en',
+                                AU: 'en',
+                                NZ: 'en',
+                                IE: 'en',
+                                FR: 'fr',
+                                BE: 'fr',
+                                CH: 'fr',
+                                LU: 'fr',
+                                DE: 'de',
+                                AT: 'de',
+                                IT: 'it',
+                                ES: 'es',
+                                MX: 'es',
+                                AR: 'es',
+                                CO: 'es',
+                                CL: 'es',
+                                PT: 'pt',
+                                BR: 'pt',
+                                JP: 'ja',
+                                CN: 'zh',
+                                TW: 'zh',
+                                HK: 'zh',
+                                KR: 'ko',
+                                SA: 'ar',
+                                AE: 'ar',
+                                EG: 'ar',
+                                MA: 'ar',
+                            };
+                            var nav = (navigator.language || '').toLowerCase();
+                            var lang = cc === 'CA' && nav.startsWith('fr') ? 'fr' : LANG[cc];
+                            if (lang) {
+                                var btn = document.querySelector('.lang-option[data-lang="' + lang + '"]');
+                                if (btn) btn.click();
+                            }
+                        }
+                    })
+                    .catch(function () {});
+            })();
+        </script>
+    </body>
 </html>

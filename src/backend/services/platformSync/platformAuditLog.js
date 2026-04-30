@@ -7,8 +7,8 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const LOG_PATH  = join(__dirname, '../../../../data/automation-audit.log');
-const LOG_DIR   = dirname(LOG_PATH);
+const LOG_PATH = join(__dirname, '../../../../data/automation-audit.log');
+const LOG_DIR = dirname(LOG_PATH);
 
 /**
  * Append a JSON-line record to the automation audit log.

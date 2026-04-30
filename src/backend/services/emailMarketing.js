@@ -12,36 +12,36 @@ import { INTERVALS } from '../shared/constants.js';
 const EMAIL_TEMPLATES = {
     welcome: {
         subject: 'Welcome to VaultLister! 🎉',
-        template: 'welcome'
+        template: 'welcome',
     },
     welcomeDay2: {
         subject: 'Get started with your first listing',
-        template: 'welcome-day2'
+        template: 'welcome-day2',
     },
     welcomeDay7: {
         subject: 'Pro tips to boost your sales',
-        template: 'welcome-day7'
+        template: 'welcome-day7',
     },
     saleNotification: {
         subject: '💰 You made a sale on {platform}!',
-        template: 'sale-notification'
+        template: 'sale-notification',
     },
     weeklyDigest: {
         subject: 'Your Weekly VaultLister Summary',
-        template: 'weekly-digest'
+        template: 'weekly-digest',
     },
     priceDropAlert: {
         subject: '📉 Price drop alert: {itemTitle}',
-        template: 'price-drop-alert'
+        template: 'price-drop-alert',
     },
     inactivityReminder: {
         subject: "We miss you! Here's what you've been missing",
-        template: 'inactivity-reminder'
+        template: 'inactivity-reminder',
     },
     offerReceived: {
         subject: 'New offer on {itemTitle}',
-        template: 'offer-received'
-    }
+        template: 'offer-received',
+    },
 };
 
 // Email marketing service
@@ -67,9 +67,18 @@ const emailMarketing = {
 
     // Stop scheduled jobs and release interval handles
     cleanup() {
-        if (this.welcomeInterval) { clearInterval(this.welcomeInterval); this.welcomeInterval = null; }
-        if (this.digestInterval) { clearInterval(this.digestInterval); this.digestInterval = null; }
-        if (this.inactivityInterval) { clearInterval(this.inactivityInterval); this.inactivityInterval = null; }
+        if (this.welcomeInterval) {
+            clearInterval(this.welcomeInterval);
+            this.welcomeInterval = null;
+        }
+        if (this.digestInterval) {
+            clearInterval(this.digestInterval);
+            this.digestInterval = null;
+        }
+        if (this.inactivityInterval) {
+            clearInterval(this.inactivityInterval);
+            this.inactivityInterval = null;
+        }
         logger.info('[EmailMarketing] Scheduled jobs stopped');
     },
 
@@ -77,29 +86,40 @@ const emailMarketing = {
     async sendWelcomeEmail(user) {
         await this.queueEmail(user.id, 'welcome', {
             name: user.full_name || user.username,
-            email: user.email
+            email: user.email,
         });
 
         // Queue follow-up emails
-        await this.queueEmail(user.id, 'welcomeDay2', {
-            name: user.full_name || user.username,
-            email: user.email
-        }, new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)); // 2 days
+        await this.queueEmail(
+            user.id,
+            'welcomeDay2',
+            {
+                name: user.full_name || user.username,
+                email: user.email,
+            },
+            new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+        ); // 2 days
 
-        await this.queueEmail(user.id, 'welcomeDay7', {
-            name: user.full_name || user.username,
-            email: user.email
-        }, new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)); // 7 days
+        await this.queueEmail(
+            user.id,
+            'welcomeDay7',
+            {
+                name: user.full_name || user.username,
+                email: user.email,
+            },
+            new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        ); // 7 days
     },
 
     // Send sale notification
     async sendSaleNotification(sale, user) {
         // Check if user has marketing consent
-        if (!await this.hasConsent(user.id, 'marketing_emails')) return;
+        if (!(await this.hasConsent(user.id, 'marketing_emails'))) return;
 
         const listing = await query.get('SELECT * FROM listings WHERE id = ?', [sale.listing_id]);
-        const inventory = listing?.inventory_id ?
-            await query.get('SELECT * FROM inventory WHERE id = ?', [listing.inventory_id]) : null;
+        const inventory = listing?.inventory_id
+            ? await query.get('SELECT * FROM inventory WHERE id = ?', [listing.inventory_id])
+            : null;
 
         await this.sendEmail(user.id, 'saleNotification', {
             name: user.full_name || user.username,
@@ -108,50 +128,66 @@ const emailMarketing = {
             itemTitle: inventory?.title || listing?.title || 'Your item',
             salePrice: sale.sale_price,
             profit: sale.net_profit,
-            buyerUsername: sale.buyer_username
+            buyerUsername: sale.buyer_username,
         });
     },
 
     // Generate and send weekly digest
     async sendWeeklyDigest(userId) {
-        const user = await query.get('SELECT id, email, username, full_name, display_name, avatar_url, subscription_tier, last_login_at FROM users WHERE id = ? AND is_active = TRUE', [userId]);
-        if (!user || !await this.hasConsent(userId, 'marketing_emails')) return;
+        const user = await query.get(
+            'SELECT id, email, username, full_name, display_name, avatar_url, subscription_tier, last_login_at FROM users WHERE id = ? AND is_active = TRUE',
+            [userId],
+        );
+        if (!user || !(await this.hasConsent(userId, 'marketing_emails'))) return;
 
         // Get stats for the week
         const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
-        const salesStats = await query.get(`
+        const salesStats = (await query.get(
+            `
             SELECT
                 COUNT(*) as total_sales,
                 SUM(sale_price) as total_revenue,
                 SUM(net_profit) as total_profit
             FROM sales
             WHERE user_id = ? AND created_at > ?
-        `, [userId, weekAgo]) || { total_sales: 0, total_revenue: 0, total_profit: 0 };
+        `,
+            [userId, weekAgo],
+        )) || { total_sales: 0, total_revenue: 0, total_profit: 0 };
 
-        const listingStats = await query.get(`
+        const listingStats = (await query.get(
+            `
             SELECT
                 COUNT(*) as new_listings,
                 SUM(views) as total_views,
                 SUM(likes) as total_likes
             FROM listings
             WHERE user_id = ? AND created_at > ?
-        `, [userId, weekAgo]) || { new_listings: 0, total_views: 0, total_likes: 0 };
+        `,
+            [userId, weekAgo],
+        )) || { new_listings: 0, total_views: 0, total_likes: 0 };
 
-        const inventoryStats = await query.get(`
+        const inventoryStats = (await query.get(
+            `
             SELECT COUNT(*) as active_items
             FROM inventory
             WHERE user_id = ? AND status = 'active'
-        `, [userId]) || { active_items: 0 };
+        `,
+            [userId],
+        )) || { active_items: 0 };
 
         // Top performing items
-        const topItems = await query.all(`
+        const topItems =
+            (await query.all(
+                `
             SELECT l.title, l.views, l.likes, l.platform
             FROM listings l
             WHERE l.user_id = ? AND l.status = 'active'
             ORDER BY l.views DESC
             LIMIT 3
-        `, [userId]) || [];
+        `,
+                [userId],
+            )) || [];
 
         await this.sendEmail(userId, 'weeklyDigest', {
             name: user.full_name || user.username,
@@ -163,7 +199,7 @@ const emailMarketing = {
             totalViews: listingStats.total_views || 0,
             totalLikes: listingStats.total_likes || 0,
             activeItems: inventoryStats.active_items,
-            topItems
+            topItems,
         });
     },
 
@@ -171,18 +207,25 @@ const emailMarketing = {
     async processWelcomeSequence() {
         const now = new Date().toISOString();
 
-        const pendingEmails = await query.all(`
+        const pendingEmails = await query.all(
+            `
             SELECT * FROM email_queue
             WHERE status = 'pending' AND scheduled_for <= ?
             LIMIT 50
-        `, [now]);
+        `,
+            [now],
+        );
 
         for (const email of pendingEmails || []) {
             try {
                 await this.sendEmail(email.user_id, email.template_key, JSON.parse(email.data));
                 await query.run('UPDATE email_queue SET status = ?, sent_at = NOW() WHERE id = ?', ['sent', email.id]);
             } catch (error) {
-                await query.run('UPDATE email_queue SET status = ?, error = ? WHERE id = ?', ['failed', error.message, email.id]);
+                await query.run('UPDATE email_queue SET status = ?, error = ? WHERE id = ?', [
+                    'failed',
+                    error.message,
+                    email.id,
+                ]);
             }
         }
     },
@@ -210,7 +253,8 @@ const emailMarketing = {
     async processInactivityReminders() {
         const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-        const inactiveUsers = await query.all(`
+        const inactiveUsers = await query.all(
+            `
             SELECT id, email, username, full_name, last_login_at FROM users
             WHERE is_active = TRUE
             AND last_login_at < ?
@@ -220,13 +264,15 @@ const emailMarketing = {
                 AND created_at > NOW() - INTERVAL '30 days'
             )
             LIMIT 20
-        `, [thirtyDaysAgo]);
+        `,
+            [thirtyDaysAgo],
+        );
 
         for (const user of inactiveUsers || []) {
             if (await this.hasConsent(user.id, 'marketing_emails')) {
                 await this.sendEmail(user.id, 'inactivityReminder', {
                     name: user.full_name || user.username,
-                    email: user.email
+                    email: user.email,
                 });
             }
         }
@@ -234,10 +280,13 @@ const emailMarketing = {
 
     // Queue an email for later
     async queueEmail(userId, templateKey, data, scheduledFor = new Date()) {
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO email_queue (id, user_id, template_key, data, scheduled_for, status, created_at)
             VALUES (?, ?, ?, ?, ?, 'pending', NOW())
-        `, [uuidv4(), userId, templateKey, JSON.stringify(data), scheduledFor.toISOString()]);
+        `,
+            [uuidv4(), userId, templateKey, JSON.stringify(data), scheduledFor.toISOString()],
+        );
     },
 
     // Send an email immediately
@@ -259,22 +308,28 @@ const emailMarketing = {
             to: data.email,
             subject,
             template: template.template,
-            data
+            data,
         });
 
         // Log the email
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO email_log (id, user_id, template_key, subject, created_at)
             VALUES (?, ?, ?, ?, NOW())
-        `, [uuidv4(), userId, templateKey, subject]);
+        `,
+            [uuidv4(), userId, templateKey, subject],
+        );
     },
 
     // Check if user has consent
     async hasConsent(userId, consentType) {
-        const consent = await query.get(`
+        const consent = await query.get(
+            `
             SELECT granted FROM user_consents
             WHERE user_id = ? AND consent_type = ?
-        `, [userId, consentType]);
+        `,
+            [userId, consentType],
+        );
 
         return consent?.granted === 1;
     },
@@ -284,18 +339,19 @@ const emailMarketing = {
         // Verify token using HMAC — throws if no secret is configured
         const secret = process.env.JWT_SECRET || process.env.UNSUBSCRIBE_SECRET;
         if (!secret) throw new Error('No secret configured for unsubscribe token verification');
-        const hash = createHmac('sha256', secret)
-            .update(`${userId}:${email}`)
-            .digest('hex');
+        const hash = createHmac('sha256', secret).update(`${userId}:${email}`).digest('hex');
 
         if (token !== hash.substring(0, 32)) {
             throw new Error('Invalid unsubscribe token');
         }
 
-        await query.run(`
+        await query.run(
+            `
             UPDATE user_consents SET granted = 0, updated_at = NOW()
             WHERE user_id = ? AND consent_type = 'marketing_emails'
-        `, [userId]);
+        `,
+            [userId],
+        );
 
         return true;
     },
@@ -304,13 +360,11 @@ const emailMarketing = {
     generateUnsubscribeLink(userId, email) {
         const secret = process.env.JWT_SECRET || process.env.UNSUBSCRIBE_SECRET;
         if (!secret) throw new Error('No secret configured for unsubscribe token generation');
-        const hash = createHmac('sha256', secret)
-            .update(`${userId}:${email}`)
-            .digest('hex');
+        const hash = createHmac('sha256', secret).update(`${userId}:${email}`).digest('hex');
 
         const token = hash.substring(0, 32);
         return `/api/email-marketing/unsubscribe?userId=${userId}&email=${encodeURIComponent(email)}&token=${token}`;
-    }
+    },
 };
 
 // Router
@@ -332,7 +386,7 @@ export async function emailMarketingRouter(ctx) {
                         <p>You will no longer receive marketing emails from VaultLister.</p>
                         <p><a href="/">Return to VaultLister</a></p>
                     </body>
-                    </html>`
+                    </html>`,
             };
         } catch (error) {
             return { status: 400, data: { error: error.message } };
@@ -370,7 +424,7 @@ export async function emailMarketingRouter(ctx) {
 
         return {
             status: 200,
-            data: { stats, queueStats }
+            data: { stats, queueStats },
         };
     }
 

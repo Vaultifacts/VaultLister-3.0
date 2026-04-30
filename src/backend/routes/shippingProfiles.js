@@ -4,7 +4,6 @@ import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import { safeJsonParse } from '../shared/utils.js';
 
-
 export async function shippingProfilesRouter(ctx) {
     const { method, path, body, user, query: queryParams } = ctx;
 
@@ -13,13 +12,13 @@ export async function shippingProfilesRouter(ctx) {
         try {
             const profiles = await query.all(
                 `SELECT * FROM shipping_profiles WHERE user_id = ? ORDER BY is_default DESC, name ASC`,
-                [user.id]
+                [user.id],
             );
 
             // Parse platforms JSON for each profile
-            const parsedProfiles = profiles.map(p => ({
+            const parsedProfiles = profiles.map((p) => ({
                 ...p,
-                platforms: safeJsonParse(p.platforms, [])
+                platforms: safeJsonParse(p.platforms, []),
             }));
 
             return { status: 200, data: { profiles: parsedProfiles } };
@@ -33,10 +32,10 @@ export async function shippingProfilesRouter(ctx) {
     if (method === 'GET' && path.match(/^\/[a-f0-9-]+$/)) {
         try {
             const profileId = path.slice(1);
-            const profile = await query.get(
-                `SELECT * FROM shipping_profiles WHERE id = ? AND user_id = ?`,
-                [profileId, user.id]
-            );
+            const profile = await query.get(`SELECT * FROM shipping_profiles WHERE id = ? AND user_id = ?`, [
+                profileId,
+                user.id,
+            ]);
 
             if (!profile) {
                 return { status: 404, data: { error: 'Shipping profile not found' } };
@@ -47,9 +46,9 @@ export async function shippingProfilesRouter(ctx) {
                 data: {
                     profile: {
                         ...profile,
-                        platforms: safeJsonParse(profile.platforms, [])
-                    }
-                }
+                        platforms: safeJsonParse(profile.platforms, []),
+                    },
+                },
             };
         } catch (error) {
             logger.error('[ShippingProfiles] Error fetching shipping profile', user?.id, { detail: error.message });
@@ -75,7 +74,7 @@ export async function shippingProfilesRouter(ctx) {
                 freeShippingThreshold,
                 isDefault,
                 platforms,
-                notes
+                notes,
             } = body;
 
             if (!name) {
@@ -87,10 +86,7 @@ export async function shippingProfilesRouter(ctx) {
 
             // If setting as default, clear existing default first
             if (isDefault) {
-                await query.run(
-                    `UPDATE shipping_profiles SET is_default = FALSE WHERE user_id = ?`,
-                    [user.id]
-                );
+                await query.run(`UPDATE shipping_profiles SET is_default = FALSE WHERE user_id = ?`, [user.id]);
             }
 
             await query.run(
@@ -100,12 +96,26 @@ export async function shippingProfilesRouter(ctx) {
                   is_default, platforms, notes, created_at, updated_at)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
-                    id, user.id, name, carrier || null, serviceType || null, packageType || null,
-                    weightOz || 0, length || 0, width || 0, height || 0,
-                    handlingTimeDays || 1, domesticCost || 0, internationalCost || null,
-                    freeShippingThreshold || null, isDefault ? 1 : 0,
-                    JSON.stringify(platforms || []), notes || null, now, now
-                ]
+                    id,
+                    user.id,
+                    name,
+                    carrier || null,
+                    serviceType || null,
+                    packageType || null,
+                    weightOz || 0,
+                    length || 0,
+                    width || 0,
+                    height || 0,
+                    handlingTimeDays || 1,
+                    domesticCost || 0,
+                    internationalCost || null,
+                    freeShippingThreshold || null,
+                    isDefault ? 1 : 0,
+                    JSON.stringify(platforms || []),
+                    notes || null,
+                    now,
+                    now,
+                ],
             );
 
             return {
@@ -113,8 +123,8 @@ export async function shippingProfilesRouter(ctx) {
                 data: {
                     id,
                     name,
-                    message: 'Shipping profile created successfully'
-                }
+                    message: 'Shipping profile created successfully',
+                },
             };
         } catch (error) {
             logger.error('[ShippingProfiles] Error creating shipping profile', user?.id, { detail: error.message });
@@ -128,10 +138,10 @@ export async function shippingProfilesRouter(ctx) {
             const profileId = path.slice(1);
 
             // Verify ownership
-            const existing = await query.get(
-                `SELECT id FROM shipping_profiles WHERE id = ? AND user_id = ?`,
-                [profileId, user.id]
-            );
+            const existing = await query.get(`SELECT id FROM shipping_profiles WHERE id = ? AND user_id = ?`, [
+                profileId,
+                user.id,
+            ]);
 
             if (!existing) {
                 return { status: 404, data: { error: 'Shipping profile not found' } };
@@ -152,15 +162,12 @@ export async function shippingProfilesRouter(ctx) {
                 freeShippingThreshold,
                 isDefault,
                 platforms,
-                notes
+                notes,
             } = body;
 
             // If setting as default, clear existing default first
             if (isDefault) {
-                await query.run(
-                    `UPDATE shipping_profiles SET is_default = FALSE WHERE user_id = ?`,
-                    [user.id]
-                );
+                await query.run(`UPDATE shipping_profiles SET is_default = FALSE WHERE user_id = ?`, [user.id]);
             }
 
             const now = new Date().toISOString();
@@ -173,13 +180,25 @@ export async function shippingProfilesRouter(ctx) {
                  free_shipping_threshold = ?, is_default = ?, platforms = ?, notes = ?, updated_at = ?
                  WHERE id = ? AND user_id = ?`,
                 [
-                    name, carrier || null, serviceType || null, packageType || null,
-                    weightOz || 0, length || 0, width || 0, height || 0,
-                    handlingTimeDays || 1, domesticCost || 0, internationalCost || null,
-                    freeShippingThreshold || null, isDefault ? 1 : 0,
-                    JSON.stringify(platforms || []), notes || null, now,
-                    profileId, user.id
-                ]
+                    name,
+                    carrier || null,
+                    serviceType || null,
+                    packageType || null,
+                    weightOz || 0,
+                    length || 0,
+                    width || 0,
+                    height || 0,
+                    handlingTimeDays || 1,
+                    domesticCost || 0,
+                    internationalCost || null,
+                    freeShippingThreshold || null,
+                    isDefault ? 1 : 0,
+                    JSON.stringify(platforms || []),
+                    notes || null,
+                    now,
+                    profileId,
+                    user.id,
+                ],
             );
 
             return { status: 200, data: { message: 'Shipping profile updated successfully' } };
@@ -195,30 +214,29 @@ export async function shippingProfilesRouter(ctx) {
             const profileId = path.match(/^\/([a-f0-9-]+)\/set-default$/)[1];
 
             // Verify ownership
-            const existing = await query.get(
-                `SELECT id FROM shipping_profiles WHERE id = ? AND user_id = ?`,
-                [profileId, user.id]
-            );
+            const existing = await query.get(`SELECT id FROM shipping_profiles WHERE id = ? AND user_id = ?`, [
+                profileId,
+                user.id,
+            ]);
 
             if (!existing) {
                 return { status: 404, data: { error: 'Shipping profile not found' } };
             }
 
             // Clear all defaults for this user
-            await query.run(
-                `UPDATE shipping_profiles SET is_default = FALSE WHERE user_id = ?`,
-                [user.id]
-            );
+            await query.run(`UPDATE shipping_profiles SET is_default = FALSE WHERE user_id = ?`, [user.id]);
 
             // Set this one as default
             await query.run(
                 `UPDATE shipping_profiles SET is_default = TRUE, updated_at = ? WHERE id = ? AND user_id = ?`,
-                [new Date().toISOString(), profileId, user.id]
+                [new Date().toISOString(), profileId, user.id],
             );
 
             return { status: 200, data: { message: 'Default shipping profile updated' } };
         } catch (error) {
-            logger.error('[ShippingProfiles] Error setting default shipping profile', user?.id, { detail: error.message });
+            logger.error('[ShippingProfiles] Error setting default shipping profile', user?.id, {
+                detail: error.message,
+            });
             return { status: 500, data: { error: 'Internal server error' } };
         }
     }
@@ -229,19 +247,16 @@ export async function shippingProfilesRouter(ctx) {
             const profileId = path.slice(1);
 
             // Verify ownership
-            const existing = await query.get(
-                `SELECT id FROM shipping_profiles WHERE id = ? AND user_id = ?`,
-                [profileId, user.id]
-            );
+            const existing = await query.get(`SELECT id FROM shipping_profiles WHERE id = ? AND user_id = ?`, [
+                profileId,
+                user.id,
+            ]);
 
             if (!existing) {
                 return { status: 404, data: { error: 'Shipping profile not found' } };
             }
 
-            await query.run(
-                `DELETE FROM shipping_profiles WHERE id = ? AND user_id = ?`,
-                [profileId, user.id]
-            );
+            await query.run(`DELETE FROM shipping_profiles WHERE id = ? AND user_id = ?`, [profileId, user.id]);
 
             return { status: 200, data: { message: 'Shipping profile deleted successfully' } };
         } catch (error) {

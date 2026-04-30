@@ -39,7 +39,7 @@ export const DEFAULT_RECEIPT_SENDERS = [
     // Office supplies (for reselling supplies)
     'staples.com',
     'officedepot.com',
-    'uline.com'
+    'uline.com',
 ];
 
 // Subject line patterns that indicate receipts
@@ -60,35 +60,35 @@ export const RECEIPT_SUBJECT_PATTERNS = [
     /you\s*sold/i,
     /congratulations.*sold/i,
     /payout/i,
-    /earnings/i
+    /earnings/i,
 ];
 
 // Platform-specific detection rules
 const PLATFORM_RULES = {
     'ebay.com': {
         subjectPatterns: [/item sold/i, /order received/i, /payment received/i, /your ebay order/i],
-        receiptType: 'sale'
+        receiptType: 'sale',
     },
     'paypal.com': {
         subjectPatterns: [/payment received/i, /money received/i, /receipt for your payment/i],
-        receiptType: 'sale'
+        receiptType: 'sale',
     },
     'poshmark.com': {
         subjectPatterns: [/you made a sale/i, /order.*ship/i, /earnings/i],
-        receiptType: 'sale'
+        receiptType: 'sale',
     },
     'mercari.com': {
         subjectPatterns: [/your item sold/i, /order confirmed/i],
-        receiptType: 'sale'
+        receiptType: 'sale',
     },
     'usps.com': {
         subjectPatterns: [/label/i, /shipping/i, /tracking/i],
-        receiptType: 'shipping'
+        receiptType: 'shipping',
     },
     'pirateship.com': {
         subjectPatterns: [/label/i, /shipment/i],
-        receiptType: 'shipping'
-    }
+        receiptType: 'shipping',
+    },
 };
 
 /**
@@ -104,7 +104,7 @@ export function detectReceipt(email, userFilters = []) {
         receiptType: 'purchase', // purchase, sale, shipping, expense
         matchedSender: null,
         matchedSubject: false,
-        platform: null
+        platform: null,
     };
 
     const fromEmail = email.fromEmail?.toLowerCase() || '';
@@ -159,7 +159,7 @@ export function detectReceipt(email, userFilters = []) {
     // Additional confidence boosts
     if (email.attachments?.length > 0) {
         // PDFs are often receipts
-        const hasPdf = email.attachments.some(a => a.mimeType === 'application/pdf');
+        const hasPdf = email.attachments.some((a) => a.mimeType === 'application/pdf');
         if (hasPdf) {
             result.confidence += 10;
         }
@@ -179,7 +179,7 @@ export function detectReceipt(email, userFilters = []) {
  */
 export function buildSenderQuery(senderFilters = []) {
     const filters = senderFilters.length > 0 ? senderFilters : DEFAULT_RECEIPT_SENDERS;
-    return filters.map(s => `from:${s}`).join(' OR ');
+    return filters.map((s) => `from:${s}`).join(' OR ');
 }
 
 /**

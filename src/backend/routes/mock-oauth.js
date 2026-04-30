@@ -18,7 +18,7 @@ export async function mockOAuthRouter(ctx) {
         if (!client_id || !redirect_uri || !state) {
             return {
                 status: 400,
-                data: { error: 'Missing required parameters' }
+                data: { error: 'Missing required parameters' },
             };
         }
 
@@ -233,7 +233,7 @@ export async function mockOAuthRouter(ctx) {
     </script>
 </body>
 </html>
-            `
+            `,
         };
     }
 
@@ -247,8 +247,8 @@ export async function mockOAuthRouter(ctx) {
                 refresh_token: `mock_refresh_${platform}_${Date.now()}_${crypto.randomUUID().replace(/-/g, '').substring(0, 12)}`,
                 token_type: 'Bearer',
                 expires_in: 3600,
-                scope: 'read write listings profile'
-            }
+                scope: 'read write listings profile',
+            },
         };
     }
 
@@ -265,8 +265,8 @@ export async function mockOAuthRouter(ctx) {
                 display_name: `Demo ${getPlatformName(platform)} Seller`,
                 avatar_url: null,
                 verified: true,
-                created_at: new Date().toISOString()
-            }
+                created_at: new Date().toISOString(),
+            },
         };
     }
 
@@ -277,8 +277,8 @@ export async function mockOAuthRouter(ctx) {
             status: 200,
             data: {
                 success: true,
-                message: 'Token revoked successfully'
-            }
+                message: 'Token revoked successfully',
+            },
         };
     }
 
@@ -296,9 +296,15 @@ function getPlatformName(platform) {
         shopify: 'Shopify',
         facebook: 'Facebook Marketplace',
         mercari: 'Mercari',
-        grailed: 'Grailed'
+        grailed: 'Grailed',
     };
-    return names[platform] || platform.replace(/[^a-zA-Z0-9 -]/g, '').charAt(0).toUpperCase() + platform.replace(/[^a-zA-Z0-9 -]/g, '').slice(1);
+    return (
+        names[platform] ||
+        platform
+            .replace(/[^a-zA-Z0-9 -]/g, '')
+            .charAt(0)
+            .toUpperCase() + platform.replace(/[^a-zA-Z0-9 -]/g, '').slice(1)
+    );
 }
 
 function getPlatformIcon(platform) {
@@ -310,7 +316,7 @@ function getPlatformIcon(platform) {
         shopify: '🛍️',
         facebook: '🏪',
         mercari: '📦',
-        grailed: '👔'
+        grailed: '👔',
     };
     return icons[platform] || '🏬';
 }
@@ -324,7 +330,7 @@ function getPlatformGradient(platform) {
         shopify: '#96bf48, #7ab55c',
         facebook: '#1877f2, #42a5f5',
         mercari: '#ea5c47, #ef7b6f',
-        grailed: '#000000, #4a4a4a'
+        grailed: '#000000, #4a4a4a',
     };
     return gradients[platform] || '#667eea, #764ba2';
 }

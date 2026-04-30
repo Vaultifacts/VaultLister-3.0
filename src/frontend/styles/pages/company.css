@@ -5,7 +5,7 @@
 /* About Us - Hero Section */
 .about-hero {
     position: relative;
-    background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 50%, #18181B 100%);
+    background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 50%, #18181b 100%);
     border-radius: var(--radius-2xl);
     padding: var(--space-16) var(--space-8);
     margin-bottom: var(--space-8);
@@ -55,8 +55,15 @@ body.dark-mode .hero-logo-icon {
 }
 
 @keyframes pulse-glow {
-    0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
-    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+    0%,
+    100% {
+        opacity: 0.5;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.1);
+    }
 }
 
 .about-hero-title {
@@ -121,7 +128,9 @@ body.dark-mode .hero-logo-icon {
     text-align: center;
     box-shadow: var(--shadow-md);
     border: 1px solid var(--gray-100);
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition:
+        transform 0.2s,
+        box-shadow 0.2s;
 }
 
 .about-stat-card:hover {
@@ -271,7 +280,9 @@ body.dark-mode .hero-logo-icon {
     border-radius: var(--radius-lg);
     padding: var(--space-5);
     text-align: center;
-    transition: transform 0.2s, background 0.2s;
+    transition:
+        transform 0.2s,
+        background 0.2s;
 }
 
 .about-feature-card:hover {
@@ -543,7 +554,9 @@ body.dark-mode .hero-logo-icon {
     background: var(--gray-50);
     border: 1px solid var(--gray-200);
     border-radius: 12px;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition:
+        transform 0.2s,
+        box-shadow 0.2s;
 }
 
 .team-member-card:hover {
@@ -564,10 +577,18 @@ body.dark-mode .hero-logo-icon {
     margin: 0 auto 12px;
 }
 
-.team-avatar.primary { background: var(--primary-600); }
-.team-avatar.success { background: var(--success); }
-.team-avatar.warning { background: var(--warning-600); }
-.team-avatar.info { background: var(--info, #3b82f6); }
+.team-avatar.primary {
+    background: var(--primary-600);
+}
+.team-avatar.success {
+    background: var(--success);
+}
+.team-avatar.warning {
+    background: var(--warning-600);
+}
+.team-avatar.info {
+    background: var(--info, #3b82f6);
+}
 
 .team-name {
     margin: 0 0 4px;
@@ -1313,7 +1334,7 @@ body.dark-mode .about-timeline::before {
    ============================================ */
 
 body.dark-mode .about-hero {
-    background: linear-gradient(135deg, var(--primary-700) 0%, #18181B 50%, #0f0d24 100%);
+    background: linear-gradient(135deg, var(--primary-700) 0%, #18181b 50%, #0f0d24 100%);
 }
 
 body.dark-mode .about-stat-card {
@@ -1413,7 +1434,7 @@ body.dark-mode .author-info strong {
 }
 
 body.dark-mode .about-cta-section {
-    background: linear-gradient(135deg, var(--primary-700) 0%, #18181B 100%);
+    background: linear-gradient(135deg, var(--primary-700) 0%, #18181b 100%);
 }
 
 body.dark-mode .about-contact-section {
@@ -1570,4 +1591,3 @@ body.dark-mode .right-card {
 body.dark-mode .right-card h4 {
     color: #e5e7eb;
 }
-

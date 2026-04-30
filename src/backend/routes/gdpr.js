@@ -66,23 +66,33 @@ async function exportUserData(userId) {
     const data = {
         exportDate: new Date().toISOString(),
         userId,
-        data: {}
+        data: {},
     };
 
     // Columns to strip from exports (secrets, tokens, hashes)
     const REDACTED_COLUMNS = new Set([
-        'password_hash', 'mfa_secret', 'mfa_backup_codes', 'oauth_token',
-        'oauth_refresh_token', 'oauth_token_expires_at', 'secret',
-        'phone_verification_code', 'token', 'code'
+        'password_hash',
+        'mfa_secret',
+        'mfa_backup_codes',
+        'oauth_token',
+        'oauth_refresh_token',
+        'oauth_token_expires_at',
+        'secret',
+        'phone_verification_code',
+        'token',
+        'code',
     ]);
 
     const EXPORT_ROW_LIMIT = 10000;
     for (const { table, idColumn } of USER_DATA_TABLES) {
         try {
-            const rows = await query.all(`SELECT * FROM ${table} WHERE ${idColumn} = ? LIMIT ?`, [userId, EXPORT_ROW_LIMIT]);
+            const rows = await query.all(`SELECT * FROM ${table} WHERE ${idColumn} = ? LIMIT ?`, [
+                userId,
+                EXPORT_ROW_LIMIT,
+            ]);
             if (rows && rows.length > 0) {
                 // Strip sensitive columns from exported data
-                data.data[table] = rows.map(row => {
+                data.data[table] = rows.map((row) => {
                     const cleaned = { ...row };
                     for (const col of REDACTED_COLUMNS) {
                         if (col in cleaned) delete cleaned[col];
@@ -106,36 +116,48 @@ async function scheduleAccountDeletion(userId, reason) {
     const deletionDate = new Date();
     deletionDate.setDate(deletionDate.getDate() + 30); // 30-day grace period
 
-    await query.run(`
+    await query.run(
+        `
         INSERT INTO account_deletion_requests (id, user_id, reason, scheduled_for, status, created_at)
         VALUES (?, ?, ?, ?, 'pending', NOW())
-    `, [uuidv4(), userId, reason, deletionDate.toISOString()]);
+    `,
+        [uuidv4(), userId, reason, deletionDate.toISOString()],
+    );
 
     // Mark user as pending deletion
-    await query.run(`
+    await query.run(
+        `
         UPDATE users SET
             deletion_scheduled_at = ?,
             updated_at = NOW()
         WHERE id = ?
-    `, [deletionDate.toISOString(), userId]);
+    `,
+        [deletionDate.toISOString(), userId],
+    );
 
     return deletionDate;
 }
 
 // Cancel account deletion
 async function cancelAccountDeletion(userId) {
-    await query.run(`
+    await query.run(
+        `
         UPDATE account_deletion_requests
         SET status = 'cancelled', updated_at = NOW()
         WHERE user_id = ? AND status = 'pending'
-    `, [userId]);
+    `,
+        [userId],
+    );
 
-    await query.run(`
+    await query.run(
+        `
         UPDATE users SET
             deletion_scheduled_at = NULL,
             updated_at = NOW()
         WHERE id = ?
-    `, [userId]);
+    `,
+        [userId],
+    );
 }
 
 // Execute account deletion
@@ -143,18 +165,23 @@ async function executeAccountDeletion(userId) {
     await query.transaction(async (tx) => {
         // Anonymize data that must be retained for legal/financial reasons
         // sales records kept for financial compliance; buyer PII stripped
-        await tx.run(`
+        await tx.run(
+            `
             UPDATE sales SET
                 buyer_username = 'DELETED',
                 buyer_address = NULL,
                 notes = NULL
             WHERE user_id = ?
-        `, [userId]);
+        `,
+            [userId],
+        );
 
         // transaction_audit_log — financial audit trail (legal retention); anonymize user reference
         try {
             await tx.run(`UPDATE transaction_audit_log SET user_id = NULL WHERE user_id = ?`, [userId]);
-        } catch (e) { /* table may not exist */ }
+        } catch (e) {
+            /* table may not exist */
+        }
 
         // Delete user data from all tables
         for (const { table, idColumn } of USER_DATA_TABLES) {
@@ -170,11 +197,14 @@ async function executeAccountDeletion(userId) {
         await tx.run('DELETE FROM users WHERE id = ?', [userId]);
 
         // Mark deletion request as completed
-        await tx.run(`
+        await tx.run(
+            `
             UPDATE account_deletion_requests
             SET status = 'completed', completed_at = NOW()
             WHERE user_id = ?
-        `, [userId]);
+        `,
+            [userId],
+        );
     });
 }
 
@@ -195,27 +225,33 @@ export async function gdprRouter(ctx) {
             // Create export request
             const requestId = uuidv4();
 
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO data_export_requests (id, user_id, status, created_at)
                 VALUES (?, ?, 'processing', NOW())
-            `, [requestId, user.id]);
+            `,
+                [requestId, user.id],
+            );
 
             // Export data
             const exportData = await exportUserData(user.id);
 
             // Store export
-            await query.run(`
+            await query.run(
+                `
                 UPDATE data_export_requests
                 SET status = 'completed', export_data = ?, completed_at = NOW()
                 WHERE id = ?
-            `, [JSON.stringify(exportData), requestId]);
+            `,
+                [JSON.stringify(exportData), requestId],
+            );
 
             // Send email notification
             await emailService.send({
                 to: user.email,
                 subject: 'Your VaultLister Data Export is Ready',
                 template: 'data-export-ready',
-                data: { name: user.full_name || user.username, requestId }
+                data: { name: user.full_name || user.username, requestId },
             });
 
             return {
@@ -223,8 +259,8 @@ export async function gdprRouter(ctx) {
                 data: {
                     requestId,
                     message: 'Data export completed. You will receive an email with download instructions.',
-                    downloadUrl: `/api/gdpr/export/${requestId}/download`
-                }
+                    downloadUrl: `/api/gdpr/export/${requestId}/download`,
+                },
             };
         } catch (error) {
             logger.error('[GDPR] Data export error', user?.id || null, { detail: error.message });
@@ -236,11 +272,14 @@ export async function gdprRouter(ctx) {
     if (method === 'GET' && path.startsWith('/export/') && path.endsWith('/download')) {
         const requestId = path.split('/')[2];
 
-        const request = await query.get(`
+        const request = await query.get(
+            `
             SELECT * FROM data_export_requests
             WHERE id = ? AND user_id = ? AND status = 'completed'
               AND completed_at > NOW() - INTERVAL '7 days'
-        `, [requestId, user.id]);
+        `,
+            [requestId, user.id],
+        );
 
         if (!request) {
             return { status: 404, data: { error: 'Export not found or not ready' } };
@@ -258,15 +297,16 @@ export async function gdprRouter(ctx) {
             status: 200,
             headers: {
                 'Content-Type': 'application/json',
-                'Content-Disposition': `attachment; filename="vaultlister-data-${user.id}-${new Date().toISOString().split('T')[0]}.json"`
+                'Content-Disposition': `attachment; filename="vaultlister-data-${user.id}-${new Date().toISOString().split('T')[0]}.json"`,
             },
-            data: exportData
+            data: exportData,
         };
     }
 
     // GET /api/gdpr/export/status - List user's data export requests
     if (method === 'GET' && path === '/export/status') {
-        const requests = await query.all(`
+        const requests = await query.all(
+            `
             SELECT id, status, created_at, completed_at,
                    CASE
                      WHEN status = 'completed' AND completed_at > NOW() - INTERVAL '7 days'
@@ -282,7 +322,9 @@ export async function gdprRouter(ctx) {
             WHERE user_id = ?
             ORDER BY created_at DESC
             LIMIT 10
-        `, [user.id]);
+        `,
+            [user.id],
+        );
 
         return { status: 200, data: { requests } };
     }
@@ -307,18 +349,21 @@ export async function gdprRouter(ctx) {
         }
 
         // Check for existing pending request
-        const existingRequest = await query.get(`
+        const existingRequest = await query.get(
+            `
             SELECT * FROM account_deletion_requests
             WHERE user_id = ? AND status = 'pending'
-        `, [user.id]);
+        `,
+            [user.id],
+        );
 
         if (existingRequest) {
             return {
                 status: 400,
                 data: {
                     error: 'Account deletion already scheduled',
-                    scheduledFor: existingRequest.scheduled_for
-                }
+                    scheduledFor: existingRequest.scheduled_for,
+                },
             };
         }
 
@@ -332,8 +377,8 @@ export async function gdprRouter(ctx) {
             data: {
                 name: user.full_name || user.username,
                 deletionDate: deletionDate.toLocaleDateString(),
-                cancelUrl: '/settings?action=cancel-deletion'
-            }
+                cancelUrl: '/settings?action=cancel-deletion',
+            },
         });
 
         return {
@@ -341,8 +386,8 @@ export async function gdprRouter(ctx) {
             data: {
                 message: 'Account deletion scheduled',
                 deletionDate: deletionDate.toISOString(),
-                note: 'You can cancel this request within 30 days by logging in.'
-            }
+                note: 'You can cancel this request within 30 days by logging in.',
+            },
         };
     }
 
@@ -352,16 +397,19 @@ export async function gdprRouter(ctx) {
 
         return {
             status: 200,
-            data: { message: 'Account deletion cancelled' }
+            data: { message: 'Account deletion cancelled' },
         };
     }
 
     // GET /api/gdpr/deletion-status - Check deletion status
     if (method === 'GET' && path === '/deletion-status') {
-        const request = await query.get(`
+        const request = await query.get(
+            `
             SELECT * FROM account_deletion_requests
             WHERE user_id = ? AND status = 'pending'
-        `, [user.id]);
+        `,
+            [user.id],
+        );
 
         if (!request) {
             return { status: 200, data: { scheduled: false } };
@@ -372,8 +420,8 @@ export async function gdprRouter(ctx) {
             data: {
                 scheduled: true,
                 scheduledFor: request.scheduled_for,
-                reason: request.reason
-            }
+                reason: request.reason,
+            },
         };
     }
 
@@ -383,11 +431,14 @@ export async function gdprRouter(ctx) {
 
     // GET /api/gdpr/consents - Get user consents
     if (method === 'GET' && path === '/consents') {
-        const consents = await query.all(`
+        const consents = await query.all(
+            `
             SELECT consent_type, granted, granted_at, updated_at
             FROM user_consents
             WHERE user_id = ?
-        `, [user.id]);
+        `,
+            [user.id],
+        );
 
         return {
             status: 200,
@@ -397,9 +448,9 @@ export async function gdprRouter(ctx) {
                     { type: 'marketing_emails', description: 'Receive marketing emails and newsletters' },
                     { type: 'analytics', description: 'Allow anonymous usage analytics' },
                     { type: 'third_party_sharing', description: 'Share data with integrated platforms' },
-                    { type: 'personalization', description: 'Personalized recommendations and content' }
-                ]
-            }
+                    { type: 'personalization', description: 'Personalized recommendations and content' },
+                ],
+            },
         };
     }
 
@@ -412,18 +463,24 @@ export async function gdprRouter(ctx) {
         }
 
         const VALID_CONSENT_TYPES = new Set([
-            'marketing_emails', 'analytics', 'third_party_sharing', 'personalization'
+            'marketing_emails',
+            'analytics',
+            'third_party_sharing',
+            'personalization',
         ]);
 
         for (const [type, granted] of Object.entries(consents)) {
             if (!VALID_CONSENT_TYPES.has(type)) continue;
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO user_consents (id, user_id, consent_type, granted, granted_at, updated_at)
                 VALUES (?, ?, ?, ?, NOW(), NOW())
                 ON CONFLICT(user_id, consent_type) DO UPDATE SET
                     granted = excluded.granted,
                     updated_at = NOW()
-            `, [uuidv4(), user.id, type, granted ? 1 : 0]);
+            `,
+                [uuidv4(), user.id, type, granted ? 1 : 0],
+            );
         }
 
         return { status: 200, data: { message: 'Consents updated' } };
@@ -438,17 +495,20 @@ export async function gdprRouter(ctx) {
         const { corrections } = body;
 
         // Log the rectification request
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO data_rectification_requests (id, user_id, corrections, status, created_at)
             VALUES (?, ?, ?, 'pending', NOW())
-        `, [uuidv4(), user.id, JSON.stringify(corrections)]);
+        `,
+            [uuidv4(), user.id, JSON.stringify(corrections)],
+        );
 
         // Apply corrections to user profile with strict field mapping
         const FIELD_MAP = {
-            'full_name': 'full_name',
-            'username': 'username',
-            'timezone': 'timezone',
-            'locale': 'locale'
+            full_name: 'full_name',
+            username: 'username',
+            timezone: 'timezone',
+            locale: 'locale',
         };
         const updates = [];
         const values = [];

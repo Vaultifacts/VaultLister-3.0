@@ -19,25 +19,28 @@ export async function relistingRouter(ctx) {
     // GET /api/relisting/rules - List all rules
     if (method === 'GET' && path === '/rules') {
         try {
-            const rules = await query.all(`
+            const rules = await query.all(
+                `
                 SELECT * FROM relisting_rules
                 WHERE user_id = ?
                 ORDER BY is_default DESC, created_at DESC
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             return {
                 status: 200,
                 data: {
-                    rules: rules.map(r => ({
+                    rules: rules.map((r) => ({
                         ...r,
                         tiered_reductions: safeJsonParse(r.tiered_reductions, null),
                         categories: safeJsonParse(r.categories, null),
                         exclude_categories: safeJsonParse(r.exclude_categories, null),
                         brands: safeJsonParse(r.brands, null),
                         platforms: safeJsonParse(r.platforms, null),
-                        relist_days: safeJsonParse(r.relist_days, null)
-                    }))
-                }
+                        relist_days: safeJsonParse(r.relist_days, null),
+                    })),
+                },
             };
         } catch (error) {
             logger.error('[Relisting] Error listing relisting rules', user?.id, { detail: error.message });
@@ -49,9 +52,12 @@ export async function relistingRouter(ctx) {
     const getRuleMatch = path.match(/^\/rules\/([a-f0-9-]+)$/i);
     if (method === 'GET' && getRuleMatch) {
         try {
-            const rule = await query.get(`
+            const rule = await query.get(
+                `
                 SELECT * FROM relisting_rules WHERE id = ? AND user_id = ?
-            `, [getRuleMatch[1], user.id]);
+            `,
+                [getRuleMatch[1], user.id],
+            );
 
             if (!rule) {
                 return { status: 404, data: { error: 'Rule not found' } };
@@ -64,9 +70,9 @@ export async function relistingRouter(ctx) {
                         ...rule,
                         tiered_reductions: safeJsonParse(rule.tiered_reductions, null),
                         categories: safeJsonParse(rule.categories, null),
-                        platforms: safeJsonParse(rule.platforms, null)
-                    }
-                }
+                        platforms: safeJsonParse(rule.platforms, null),
+                    },
+                },
             };
         } catch (error) {
             logger.error('[Relisting] Error fetching relisting rule', user?.id, { detail: error.message });
@@ -78,13 +84,32 @@ export async function relistingRouter(ctx) {
     if (method === 'POST' && path === '/rules') {
         try {
             const {
-                name, description, stale_days = 30, min_views = 0, max_views,
-                min_likes = 0, price_strategy = 'fixed', price_reduction_amount = 0,
-                price_floor_percentage = 50, use_ai_pricing = false, tiered_reductions,
-                refresh_photos = false, refresh_title = false, refresh_description = false,
-                add_sale_tag = false, auto_relist = false, relist_time, relist_days,
-                max_relists_per_day = 10, categories, exclude_categories, brands,
-                min_price, max_price, platforms, is_default = false
+                name,
+                description,
+                stale_days = 30,
+                min_views = 0,
+                max_views,
+                min_likes = 0,
+                price_strategy = 'fixed',
+                price_reduction_amount = 0,
+                price_floor_percentage = 50,
+                use_ai_pricing = false,
+                tiered_reductions,
+                refresh_photos = false,
+                refresh_title = false,
+                refresh_description = false,
+                add_sale_tag = false,
+                auto_relist = false,
+                relist_time,
+                relist_days,
+                max_relists_per_day = 10,
+                categories,
+                exclude_categories,
+                brands,
+                min_price,
+                max_price,
+                platforms,
+                is_default = false,
             } = body;
 
             if (!name) {
@@ -98,7 +123,8 @@ export async function relistingRouter(ctx) {
                 await query.run('UPDATE relisting_rules SET is_default = FALSE WHERE user_id = ?', [user.id]);
             }
 
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO relisting_rules (
                     id, user_id, name, description, stale_days, min_views, max_views,
                     min_likes, price_strategy, price_reduction_amount, price_floor_percentage,
@@ -107,26 +133,42 @@ export async function relistingRouter(ctx) {
                     max_relists_per_day, categories, exclude_categories, brands, min_price,
                     max_price, platforms, is_default
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `, [
-                id, user.id, name, description, stale_days, min_views, max_views,
-                min_likes, price_strategy, price_reduction_amount, price_floor_percentage,
-                use_ai_pricing ? 1 : 0,
-                tiered_reductions ? JSON.stringify(tiered_reductions) : null,
-                refresh_photos ? 1 : 0, refresh_title ? 1 : 0, refresh_description ? 1 : 0,
-                add_sale_tag ? 1 : 0, auto_relist ? 1 : 0, relist_time,
-                relist_days ? JSON.stringify(relist_days) : null,
-                max_relists_per_day,
-                categories ? JSON.stringify(categories) : null,
-                exclude_categories ? JSON.stringify(exclude_categories) : null,
-                brands ? JSON.stringify(brands) : null,
-                min_price, max_price,
-                platforms ? JSON.stringify(platforms) : null,
-                is_default ? 1 : 0
-            ]);
+            `,
+                [
+                    id,
+                    user.id,
+                    name,
+                    description,
+                    stale_days,
+                    min_views,
+                    max_views,
+                    min_likes,
+                    price_strategy,
+                    price_reduction_amount,
+                    price_floor_percentage,
+                    use_ai_pricing ? 1 : 0,
+                    tiered_reductions ? JSON.stringify(tiered_reductions) : null,
+                    refresh_photos ? 1 : 0,
+                    refresh_title ? 1 : 0,
+                    refresh_description ? 1 : 0,
+                    add_sale_tag ? 1 : 0,
+                    auto_relist ? 1 : 0,
+                    relist_time,
+                    relist_days ? JSON.stringify(relist_days) : null,
+                    max_relists_per_day,
+                    categories ? JSON.stringify(categories) : null,
+                    exclude_categories ? JSON.stringify(exclude_categories) : null,
+                    brands ? JSON.stringify(brands) : null,
+                    min_price,
+                    max_price,
+                    platforms ? JSON.stringify(platforms) : null,
+                    is_default ? 1 : 0,
+                ],
+            );
 
             return {
                 status: 201,
-                data: { message: 'Rule created', id }
+                data: { message: 'Rule created', id },
             };
         } catch (error) {
             logger.error('[Relisting] Error creating relisting rule', user?.id, { detail: error.message });
@@ -141,7 +183,10 @@ export async function relistingRouter(ctx) {
             const id = patchRuleMatch[1];
 
             // Verify ownership
-            const existing = await query.get('SELECT id FROM relisting_rules WHERE id = ? AND user_id = ?', [id, user.id]);
+            const existing = await query.get('SELECT id FROM relisting_rules WHERE id = ? AND user_id = ?', [
+                id,
+                user.id,
+            ]);
             if (!existing) {
                 return { status: 404, data: { error: 'Rule not found' } };
             }
@@ -150,13 +195,28 @@ export async function relistingRouter(ctx) {
             const params = [];
 
             const fields = [
-                'name', 'description', 'stale_days', 'min_views', 'max_views', 'min_likes',
-                'price_strategy', 'price_reduction_amount', 'price_floor_percentage',
-                'refresh_photos', 'refresh_title', 'refresh_description', 'add_sale_tag',
-                'auto_relist', 'relist_time', 'max_relists_per_day', 'min_price', 'max_price', 'is_active'
+                'name',
+                'description',
+                'stale_days',
+                'min_views',
+                'max_views',
+                'min_likes',
+                'price_strategy',
+                'price_reduction_amount',
+                'price_floor_percentage',
+                'refresh_photos',
+                'refresh_title',
+                'refresh_description',
+                'add_sale_tag',
+                'auto_relist',
+                'relist_time',
+                'max_relists_per_day',
+                'min_price',
+                'max_price',
+                'is_active',
             ];
 
-            fields.forEach(field => {
+            fields.forEach((field) => {
                 if (body[field] !== undefined) {
                     updates.push(`${field} = ?`);
                     params.push(typeof body[field] === 'boolean' ? (body[field] ? 1 : 0) : body[field]);
@@ -164,12 +224,14 @@ export async function relistingRouter(ctx) {
             });
 
             // Handle JSON fields
-            ['tiered_reductions', 'categories', 'exclude_categories', 'brands', 'platforms', 'relist_days'].forEach(field => {
-                if (body[field] !== undefined) {
-                    updates.push(`${field} = ?`);
-                    params.push(body[field] ? JSON.stringify(body[field]) : null);
-                }
-            });
+            ['tiered_reductions', 'categories', 'exclude_categories', 'brands', 'platforms', 'relist_days'].forEach(
+                (field) => {
+                    if (body[field] !== undefined) {
+                        updates.push(`${field} = ?`);
+                        params.push(body[field] ? JSON.stringify(body[field]) : null);
+                    }
+                },
+            );
 
             if (body.use_ai_pricing !== undefined) {
                 updates.push('use_ai_pricing = ?');
@@ -188,7 +250,10 @@ export async function relistingRouter(ctx) {
             updates.push('updated_at = CURRENT_TIMESTAMP');
             params.push(id);
 
-            await query.run(`UPDATE relisting_rules SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`, [...params, user.id]);
+            await query.run(`UPDATE relisting_rules SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`, [
+                ...params,
+                user.id,
+            ]);
 
             return { status: 200, data: { message: 'Rule updated' } };
         } catch (error) {
@@ -201,10 +266,10 @@ export async function relistingRouter(ctx) {
     const deleteRuleMatch = path.match(/^\/rules\/([a-f0-9-]+)$/i);
     if (method === 'DELETE' && deleteRuleMatch) {
         try {
-            const result = await query.run(
-                'DELETE FROM relisting_rules WHERE id = ? AND user_id = ?',
-                [deleteRuleMatch[1], user.id]
-            );
+            const result = await query.run('DELETE FROM relisting_rules WHERE id = ? AND user_id = ?', [
+                deleteRuleMatch[1],
+                user.id,
+            ]);
 
             if (result.changes === 0) {
                 return { status: 404, data: { error: 'Rule not found' } };
@@ -226,7 +291,8 @@ export async function relistingRouter(ctx) {
         try {
             const { days = 30, limit = 50, offset = 0 } = queryParams;
 
-            const staleListings = await query.all(`
+            const staleListings = await query.all(
+                `
                 SELECT l.*, i.title, i.brand, i.category, i.list_price, i.images,
                        EXTRACT(EPOCH FROM (NOW() - COALESCE(l.last_refreshed_at, l.created_at))) / 86400 as days_stale,
                        (SELECT COUNT(*) FROM listing_engagement WHERE listing_id = l.id) as total_views
@@ -236,25 +302,30 @@ export async function relistingRouter(ctx) {
                 AND EXTRACT(EPOCH FROM (NOW() - COALESCE(l.last_refreshed_at, l.created_at))) / 86400 >= ?
                 ORDER BY days_stale DESC
                 LIMIT ? OFFSET ?
-            `, [user.id, parseInt(days), parseInt(limit), parseInt(offset)]);
+            `,
+                [user.id, parseInt(days), parseInt(limit), parseInt(offset)],
+            );
 
-            const { count } = await query.get(`
+            const { count } = await query.get(
+                `
                 SELECT COUNT(*) as count FROM listings l
                 WHERE l.user_id = ? AND l.status = 'active'
                 AND EXTRACT(EPOCH FROM (NOW() - COALESCE(l.last_refreshed_at, l.created_at))) / 86400 >= ?
-            `, [user.id, parseInt(days)]);
+            `,
+                [user.id, parseInt(days)],
+            );
 
             return {
                 status: 200,
                 data: {
-                    listings: staleListings.map(l => ({
+                    listings: staleListings.map((l) => ({
                         ...l,
                         images: safeJsonParse(l.images, []),
-                        days_stale: Math.floor(l.days_stale)
+                        days_stale: Math.floor(l.days_stale),
                     })),
                     total: count,
-                    threshold_days: parseInt(days)
-                }
+                    threshold_days: parseInt(days),
+                },
             };
         } catch (error) {
             logger.error('[Relisting] Error fetching stale listings', user?.id, { detail: error.message });
@@ -274,17 +345,23 @@ export async function relistingRouter(ctx) {
             // Get rule if specified
             let rule = null;
             if (rule_id) {
-                rule = await query.get('SELECT * FROM relisting_rules WHERE id = ? AND user_id = ?', [rule_id, user.id]);
+                rule = await query.get('SELECT * FROM relisting_rules WHERE id = ? AND user_id = ?', [
+                    rule_id,
+                    user.id,
+                ]);
             }
 
             const queued = [];
             for (const listingId of listing_ids) {
-                const listing = await query.get(`
+                const listing = await query.get(
+                    `
                     SELECT l.*, i.title, i.brand, i.category, i.list_price, i.cost_price
                     FROM listings l
                     JOIN inventory i ON l.inventory_id = i.id
                     WHERE l.id = ? AND l.user_id = ?
-                `, [listingId, user.id]);
+                `,
+                    [listingId, user.id],
+                );
 
                 if (!listing) continue;
 
@@ -299,19 +376,30 @@ export async function relistingRouter(ctx) {
                 }
 
                 const id = uuidv4();
-                await query.run(`
+                await query.run(
+                    `
                     INSERT INTO relisting_queue (
                         id, user_id, listing_id, inventory_id, rule_id, platform,
                         scheduled_at, original_price, new_price, price_change_reason,
                         views_before, likes_before, days_listed
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                `, [
-                    id, user.id, listingId, listing.inventory_id, rule_id, listing.platform,
-                    scheduled_at || new Date().toISOString(),
-                    listing.list_price, newPrice, priceChangeReason,
-                    listing.views || 0, listing.likes || 0,
-                    Math.floor((Date.now() - new Date(listing.created_at).getTime()) / (1000 * 60 * 60 * 24))
-                ]);
+                `,
+                    [
+                        id,
+                        user.id,
+                        listingId,
+                        listing.inventory_id,
+                        rule_id,
+                        listing.platform,
+                        scheduled_at || new Date().toISOString(),
+                        listing.list_price,
+                        newPrice,
+                        priceChangeReason,
+                        listing.views || 0,
+                        listing.likes || 0,
+                        Math.floor((Date.now() - new Date(listing.created_at).getTime()) / (1000 * 60 * 60 * 24)),
+                    ],
+                );
 
                 queued.push({ id, listing_id: listingId, new_price: newPrice });
             }
@@ -320,8 +408,8 @@ export async function relistingRouter(ctx) {
                 status: 201,
                 data: {
                     message: `${queued.length} listing(s) queued for relisting`,
-                    queued
-                }
+                    queued,
+                },
             };
         } catch (error) {
             logger.error('[Relisting] Error adding listings to relist queue', user?.id, { detail: error.message });
@@ -355,12 +443,12 @@ export async function relistingRouter(ctx) {
             return {
                 status: 200,
                 data: {
-                    queue: queue.map(q => ({
+                    queue: queue.map((q) => ({
                         ...q,
                         images: safeJsonParse(q.images, []),
-                        changes_made: safeJsonParse(q.changes_made, null)
-                    }))
-                }
+                        changes_made: safeJsonParse(q.changes_made, null),
+                    })),
+                },
             };
         } catch (error) {
             logger.error('[Relisting] Error fetching relist queue', user?.id, { detail: error.message });
@@ -375,18 +463,24 @@ export async function relistingRouter(ctx) {
 
             let itemsToProcess;
             if (process_all) {
-                itemsToProcess = await query.all(`
+                itemsToProcess = await query.all(
+                    `
                     SELECT * FROM relisting_queue
                     WHERE user_id = ? AND status = 'pending'
                     AND (scheduled_at IS NULL OR scheduled_at <= NOW())
                     LIMIT 50
-                `, [user.id]);
+                `,
+                    [user.id],
+                );
             } else if (queue_ids && queue_ids.length > 0) {
                 const placeholders = queue_ids.map(() => '?').join(',');
-                itemsToProcess = await query.all(`
+                itemsToProcess = await query.all(
+                    `
                     SELECT * FROM relisting_queue
                     WHERE id IN (${placeholders}) AND user_id = ? AND status = 'pending'
-                `, [...queue_ids, user.id]);
+                `,
+                    [...queue_ids, user.id],
+                );
             } else {
                 return { status: 400, data: { error: 'Specify queue_ids or set process_all to true' } };
             }
@@ -398,41 +492,65 @@ export async function relistingRouter(ctx) {
                         // Update listing price if changed
                         const changes = [];
                         if (item.new_price && item.new_price !== item.original_price) {
-                            await tx.run('UPDATE inventory SET list_price = ? WHERE id = ? AND user_id = ?', [item.new_price, item.inventory_id, user.id]);
+                            await tx.run('UPDATE inventory SET list_price = ? WHERE id = ? AND user_id = ?', [
+                                item.new_price,
+                                item.inventory_id,
+                                user.id,
+                            ]);
                             changes.push({ field: 'price', from: item.original_price, to: item.new_price });
                         }
 
                         // Update listing refresh timestamp
-                        await tx.run(`
+                        await tx.run(
+                            `
                             UPDATE listings SET last_refreshed_at = NOW()
                             WHERE id = ? AND user_id = ?
-                        `, [item.listing_id, user.id]);
+                        `,
+                            [item.listing_id, user.id],
+                        );
 
                         // Mark as completed
-                        await tx.run(`
+                        await tx.run(
+                            `
                             UPDATE relisting_queue
                             SET status = 'completed', processed_at = NOW(), changes_made = ?
                             WHERE id = ? AND user_id = ?
-                        `, [JSON.stringify(changes), item.id, user.id]);
+                        `,
+                            [JSON.stringify(changes), item.id, user.id],
+                        );
 
                         // Track performance
                         const perfId = uuidv4();
-                        await tx.run(`
+                        await tx.run(
+                            `
                             INSERT INTO relisting_performance (
                                 id, user_id, listing_id, relist_queue_id,
                                 price_before, views_before, likes_before, days_without_sale, price_after
                             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                        `, [perfId, user.id, item.listing_id, item.id,
-                            item.original_price, item.views_before, item.likes_before,
-                            item.days_listed, item.new_price]);
+                        `,
+                            [
+                                perfId,
+                                user.id,
+                                item.listing_id,
+                                item.id,
+                                item.original_price,
+                                item.views_before,
+                                item.likes_before,
+                                item.days_listed,
+                                item.new_price,
+                            ],
+                        );
 
                         results.push({ id: item.id, status: 'completed', changes });
                     });
                 } catch (error) {
-                    await query.run(`
+                    await query.run(
+                        `
                         UPDATE relisting_queue SET status = 'failed', error_message = ?
                         WHERE id = ? AND user_id = ?
-                    `, [error.message, item.id, user.id]);
+                    `,
+                        [error.message, item.id, user.id],
+                    );
                     results.push({ id: item.id, status: 'failed', error: error.message });
                 }
             }
@@ -441,8 +559,8 @@ export async function relistingRouter(ctx) {
                 status: 200,
                 data: {
                     message: `Processed ${results.length} item(s)`,
-                    results
-                }
+                    results,
+                },
             };
         } catch (error) {
             logger.error('[Relisting] Error processing relist queue', user?.id, { detail: error.message });
@@ -454,10 +572,11 @@ export async function relistingRouter(ctx) {
     const deleteQueueMatch = path.match(/^\/queue\/([a-f0-9-]+)$/i);
     if (method === 'DELETE' && deleteQueueMatch) {
         try {
-            const result = await query.run(
-                'DELETE FROM relisting_queue WHERE id = ? AND user_id = ? AND status = ?',
-                [deleteQueueMatch[1], user.id, 'pending']
-            );
+            const result = await query.run('DELETE FROM relisting_queue WHERE id = ? AND user_id = ? AND status = ?', [
+                deleteQueueMatch[1],
+                user.id,
+                'pending',
+            ]);
 
             if (result.changes === 0) {
                 return { status: 404, data: { error: 'Queue item not found or already processed' } };
@@ -479,7 +598,8 @@ export async function relistingRouter(ctx) {
         try {
             const { days = 30 } = queryParams;
 
-            const stats = await query.get(`
+            const stats = await query.get(
+                `
                 SELECT
                     COUNT(*) as total_relisted,
                     SUM(CASE WHEN sold = 1 THEN 1 ELSE 0 END) as sold_after_relist,
@@ -489,9 +609,12 @@ export async function relistingRouter(ctx) {
                     AVG(views_after - views_before) as avg_view_increase
                 FROM relisting_performance
                 WHERE user_id = ? AND relisted_at >= NOW() - (?::text || ' days')::interval
-            `, [user.id, days]);
+            `,
+                [user.id, days],
+            );
 
-            const recentPerformance = await query.all(`
+            const recentPerformance = await query.all(
+                `
                 SELECT rp.*, i.title, i.brand
                 FROM relisting_performance rp
                 JOIN listings l ON rp.listing_id = l.id
@@ -499,7 +622,9 @@ export async function relistingRouter(ctx) {
                 WHERE rp.user_id = ?
                 ORDER BY rp.relisted_at DESC
                 LIMIT 20
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             return {
                 status: 200,
@@ -507,16 +632,17 @@ export async function relistingRouter(ctx) {
                     stats: {
                         total_relisted: stats.total_relisted || 0,
                         sold_after_relist: stats.sold_after_relist || 0,
-                        conversion_rate: stats.total_relisted > 0
-                            ? Math.round((stats.sold_after_relist / stats.total_relisted) * 100)
-                            : 0,
+                        conversion_rate:
+                            stats.total_relisted > 0
+                                ? Math.round((stats.sold_after_relist / stats.total_relisted) * 100)
+                                : 0,
                         avg_days_to_sale: Math.round(stats.avg_days_to_sale) || null,
                         avg_price_change: Math.round(stats.avg_price_change * 100) / 100 || 0,
                         price_reductions: stats.price_reductions || 0,
-                        avg_view_increase: Math.round(stats.avg_view_increase) || 0
+                        avg_view_increase: Math.round(stats.avg_view_increase) || 0,
                     },
-                    recent: recentPerformance
-                }
+                    recent: recentPerformance,
+                },
             };
         } catch (error) {
             logger.error('[Relisting] Error fetching relisting performance stats', user?.id, { detail: error.message });
@@ -529,12 +655,15 @@ export async function relistingRouter(ctx) {
         try {
             const { listing_id, rule_id } = body;
 
-            const listing = await query.get(`
+            const listing = await query.get(
+                `
                 SELECT l.*, i.title, i.brand, i.category, i.list_price, i.cost_price
                 FROM listings l
                 JOIN inventory i ON l.inventory_id = i.id
                 WHERE l.id = ? AND l.user_id = ?
-            `, [listing_id, user.id]);
+            `,
+                [listing_id, user.id],
+            );
 
             if (!listing) {
                 return { status: 404, data: { error: 'Listing not found' } };
@@ -542,7 +671,10 @@ export async function relistingRouter(ctx) {
 
             let rule = null;
             if (rule_id) {
-                rule = await query.get('SELECT * FROM relisting_rules WHERE id = ? AND user_id = ?', [rule_id, user.id]);
+                rule = await query.get('SELECT * FROM relisting_rules WHERE id = ? AND user_id = ?', [
+                    rule_id,
+                    user.id,
+                ]);
             }
 
             const result = calculateNewPrice(listing, rule);
@@ -551,7 +683,7 @@ export async function relistingRouter(ctx) {
             const aiPrice = predictPrice({
                 brand: listing.brand,
                 category: listing.category,
-                condition: listing.condition
+                condition: listing.condition,
             });
 
             return {
@@ -563,8 +695,8 @@ export async function relistingRouter(ctx) {
                     change_percent: Math.round(((result.price - listing.list_price) / listing.list_price) * 100),
                     reason: result.reason,
                     ai_suggested_price: aiPrice,
-                    price_floor: listing.cost ? listing.cost * 1.2 : listing.list_price * 0.5
-                }
+                    price_floor: listing.cost ? listing.cost * 1.2 : listing.list_price * 0.5,
+                },
             };
         } catch (error) {
             logger.error('[Relisting] Error previewing price adjustment', user?.id, { detail: error.message });
@@ -580,9 +712,14 @@ export async function relistingRouter(ctx) {
             // Get rule (or default)
             let rule;
             if (rule_id) {
-                rule = await query.get('SELECT * FROM relisting_rules WHERE id = ? AND user_id = ?', [rule_id, user.id]);
+                rule = await query.get('SELECT * FROM relisting_rules WHERE id = ? AND user_id = ?', [
+                    rule_id,
+                    user.id,
+                ]);
             } else {
-                rule = await query.get('SELECT * FROM relisting_rules WHERE user_id = ? AND is_default = TRUE', [user.id]);
+                rule = await query.get('SELECT * FROM relisting_rules WHERE user_id = ? AND is_default = TRUE', [
+                    user.id,
+                ]);
             }
 
             if (!rule) {
@@ -630,16 +767,20 @@ export async function relistingRouter(ctx) {
                     current_price: listing.list_price,
                     new_price: priceResult.price,
                     change: priceResult.price - listing.list_price,
-                    reason: priceResult.reason
+                    reason: priceResult.reason,
                 };
 
                 if (!dry_run && priceResult.price !== listing.list_price) {
                     // Apply the price change atomically
                     await query.transaction(async (tx) => {
-                        await tx.run('UPDATE listings SET price = ?, updated_at = NOW(), last_refreshed_at = NOW() WHERE id = ? AND user_id = ?',
-                            [priceResult.price, listing.id, user.id]);
-                        await tx.run('UPDATE inventory SET list_price = ?, updated_at = NOW() WHERE id = ? AND user_id = ?',
-                            [priceResult.price, listing.inventory_id, user.id]);
+                        await tx.run(
+                            'UPDATE listings SET price = ?, updated_at = NOW(), last_refreshed_at = NOW() WHERE id = ? AND user_id = ?',
+                            [priceResult.price, listing.id, user.id],
+                        );
+                        await tx.run(
+                            'UPDATE inventory SET list_price = ?, updated_at = NOW() WHERE id = ? AND user_id = ?',
+                            [priceResult.price, listing.inventory_id, user.id],
+                        );
                     });
                     entry.status = 'applied';
                     applied++;
@@ -661,8 +802,8 @@ export async function relistingRouter(ctx) {
                     total_eligible: staleListings.length,
                     applied,
                     skipped,
-                    results
-                }
+                    results,
+                },
             };
         } catch (error) {
             logger.error('[Relisting] Error running auto-schedule', user?.id, { detail: error.message });
@@ -673,10 +814,14 @@ export async function relistingRouter(ctx) {
     // GET /api/relisting/schedule-preview - Preview what auto-schedule would do
     if (method === 'GET' && path === '/schedule-preview') {
         try {
-            const defaultRule = await query.get('SELECT * FROM relisting_rules WHERE user_id = ? AND is_default = TRUE', [user.id]);
-            const threshold = defaultRule ? (defaultRule.stale_days || 30) : 30;
+            const defaultRule = await query.get(
+                'SELECT * FROM relisting_rules WHERE user_id = ? AND is_default = TRUE',
+                [user.id],
+            );
+            const threshold = defaultRule ? defaultRule.stale_days || 30 : 30;
 
-            const eligible = await query.all(`
+            const eligible = await query.all(
+                `
                 SELECT l.id, l.platform, l.price, i.title, i.list_price,
                        EXTRACT(EPOCH FROM (NOW() - COALESCE(l.last_refreshed_at, l.listed_at, l.created_at))) / 86400 as days_stale
                 FROM listings l
@@ -684,19 +829,23 @@ export async function relistingRouter(ctx) {
                 WHERE l.user_id = ? AND l.status = 'active'
                 AND EXTRACT(EPOCH FROM (NOW() - COALESCE(l.last_refreshed_at, l.listed_at, l.created_at))) / 86400 >= ?
                 ORDER BY days_stale DESC LIMIT 20
-            `, [user.id, threshold]);
+            `,
+                [user.id, threshold],
+            );
 
             return {
                 status: 200,
                 data: {
-                    rule: defaultRule ? { id: defaultRule.id, name: defaultRule.name, strategy: defaultRule.price_strategy } : null,
+                    rule: defaultRule
+                        ? { id: defaultRule.id, name: defaultRule.name, strategy: defaultRule.price_strategy }
+                        : null,
                     eligible_count: eligible.length,
                     threshold_days: threshold,
-                    preview: eligible.map(l => ({
+                    preview: eligible.map((l) => ({
                         ...l,
-                        days_stale: Math.round(l.days_stale)
-                    }))
-                }
+                        days_stale: Math.round(l.days_stale),
+                    })),
+                },
             };
         } catch (error) {
             logger.error('[Relisting] Error fetching schedule preview', user?.id, { detail: error.message });
@@ -734,12 +883,13 @@ function calculateNewPrice(listing, rule) {
 
         case 'tiered':
             if (rule.tiered_reductions) {
-                const tiers = typeof rule.tiered_reductions === 'string'
-                    ? safeJsonParse(rule.tiered_reductions, [])
-                    : rule.tiered_reductions;
+                const tiers =
+                    typeof rule.tiered_reductions === 'string'
+                        ? safeJsonParse(rule.tiered_reductions, [])
+                        : rule.tiered_reductions;
 
                 const daysListed = Math.floor(
-                    (Date.now() - new Date(listing.created_at).getTime()) / (1000 * 60 * 60 * 24)
+                    (Date.now() - new Date(listing.created_at).getTime()) / (1000 * 60 * 60 * 24),
                 );
 
                 let totalReduction = 0;
@@ -758,7 +908,7 @@ function calculateNewPrice(listing, rule) {
             newPrice = predictPrice({
                 brand: listing.brand,
                 category: listing.category,
-                condition: listing.condition
+                condition: listing.condition,
             });
             reason = 'AI-predicted optimal price';
             break;
@@ -778,6 +928,6 @@ function calculateNewPrice(listing, rule) {
 
     return {
         price: Math.round(newPrice * 100) / 100,
-        reason
+        reason,
     };
 }

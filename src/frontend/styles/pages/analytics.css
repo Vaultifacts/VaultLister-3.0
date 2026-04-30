@@ -32,12 +32,24 @@
     height: 4px;
 }
 
-.shop-health-card.poshmark::before { background: #7c3aed; }
-.shop-health-card.ebay::before { background: #0064d2; }
-.shop-health-card.mercari::before { background: #ff0211; }
-.shop-health-card.depop::before { background: #ff2300; }
-.shop-health-card.shopify::before { background: #96bf48; }
-.shop-health-card.facebook::before { background: #1877f2; }
+.shop-health-card.poshmark::before {
+    background: #7c3aed;
+}
+.shop-health-card.ebay::before {
+    background: #0064d2;
+}
+.shop-health-card.mercari::before {
+    background: #ff0211;
+}
+.shop-health-card.depop::before {
+    background: #ff2300;
+}
+.shop-health-card.shopify::before {
+    background: #96bf48;
+}
+.shop-health-card.facebook::before {
+    background: #1877f2;
+}
 
 .shop-health-header {
     display: flex;
@@ -130,8 +142,12 @@
 }
 
 @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .sync-status-text {
@@ -206,10 +222,18 @@
     transition: width 0.5s ease;
 }
 
-.platform-comparison-fill.poshmark { background: linear-gradient(90deg, #7c3aed, #9f7aea); }
-.platform-comparison-fill.ebay { background: linear-gradient(90deg, #0064d2, #4299e1); }
-.platform-comparison-fill.mercari { background: linear-gradient(90deg, #ff0211, #fc8181); }
-.platform-comparison-fill.depop { background: linear-gradient(90deg, #ff2300, #f6ad55); }
+.platform-comparison-fill.poshmark {
+    background: linear-gradient(90deg, #7c3aed, #9f7aea);
+}
+.platform-comparison-fill.ebay {
+    background: linear-gradient(90deg, #0064d2, #4299e1);
+}
+.platform-comparison-fill.mercari {
+    background: linear-gradient(90deg, #ff0211, #fc8181);
+}
+.platform-comparison-fill.depop {
+    background: linear-gradient(90deg, #ff2300, #f6ad55);
+}
 
 /* Shop Actions */
 .shop-actions-grid {
@@ -452,17 +476,47 @@
     font-weight: 500;
 }
 
-.transaction-tag.inventory { background: #dbeafe; color: #1e40af; }
-.transaction-tag.shipping { background: #fef3c7; color: #92400e; }
-.transaction-tag.supplies { background: #d1fae5; color: #065f46; }
-.transaction-tag.fees { background: #fee2e2; color: #991b1b; }
-.transaction-tag.sourcing { background: #fef3c7; color: #92400e; }
+.transaction-tag.inventory {
+    background: #dbeafe;
+    color: #1e40af;
+}
+.transaction-tag.shipping {
+    background: #fef3c7;
+    color: #92400e;
+}
+.transaction-tag.supplies {
+    background: #d1fae5;
+    color: #065f46;
+}
+.transaction-tag.fees {
+    background: #fee2e2;
+    color: #991b1b;
+}
+.transaction-tag.sourcing {
+    background: #fef3c7;
+    color: #92400e;
+}
 
-body.dark-mode .transaction-tag.inventory { background: rgba(30, 64, 175, 0.2); color: #93c5fd; }
-body.dark-mode .transaction-tag.shipping { background: rgba(146, 64, 14, 0.2); color: #fcd34d; }
-body.dark-mode .transaction-tag.supplies { background: rgba(6, 95, 70, 0.2); color: #6ee7b7; }
-body.dark-mode .transaction-tag.fees { background: rgba(153, 27, 27, 0.2); color: #fca5a5; }
-body.dark-mode .transaction-tag.sourcing { background: rgba(55, 48, 163, 0.2); color: #c4b5fd; }
+body.dark-mode .transaction-tag.inventory {
+    background: rgba(30, 64, 175, 0.2);
+    color: #93c5fd;
+}
+body.dark-mode .transaction-tag.shipping {
+    background: rgba(146, 64, 14, 0.2);
+    color: #fcd34d;
+}
+body.dark-mode .transaction-tag.supplies {
+    background: rgba(6, 95, 70, 0.2);
+    color: #6ee7b7;
+}
+body.dark-mode .transaction-tag.fees {
+    background: rgba(153, 27, 27, 0.2);
+    color: #fca5a5;
+}
+body.dark-mode .transaction-tag.sourcing {
+    background: rgba(55, 48, 163, 0.2);
+    color: #c4b5fd;
+}
 
 /* Receipt Thumbnail */
 .receipt-thumbnail {
@@ -546,10 +600,18 @@ body.dark-mode .transaction-tag.sourcing { background: rgba(55, 48, 163, 0.2); c
     height: 4px;
 }
 
-.financial-metric-card.revenue::after { background: var(--success-500); }
-.financial-metric-card.expenses::after { background: var(--error-500); }
-.financial-metric-card.profit::after { background: var(--primary-500); }
-.financial-metric-card.cashflow::after { background: var(--info-500); }
+.financial-metric-card.revenue::after {
+    background: var(--success-500);
+}
+.financial-metric-card.expenses::after {
+    background: var(--error-500);
+}
+.financial-metric-card.profit::after {
+    background: var(--primary-500);
+}
+.financial-metric-card.cashflow::after {
+    background: var(--info-500);
+}
 
 .financial-metric-label {
     font-size: 13px;
@@ -566,8 +628,12 @@ body.dark-mode .transaction-tag.sourcing { background: rgba(55, 48, 163, 0.2); c
     margin-bottom: 4px;
 }
 
-.financial-metric-value.positive { color: var(--success-600); }
-.financial-metric-value.negative { color: var(--error-600); }
+.financial-metric-value.positive {
+    color: var(--success-600);
+}
+.financial-metric-value.negative {
+    color: var(--error-600);
+}
 
 .financial-metric-change {
     display: flex;
@@ -576,8 +642,12 @@ body.dark-mode .transaction-tag.sourcing { background: rgba(55, 48, 163, 0.2); c
     font-size: 12px;
 }
 
-.financial-metric-change.up { color: var(--success-600); }
-.financial-metric-change.down { color: var(--error-600); }
+.financial-metric-change.up {
+    color: var(--success-600);
+}
+.financial-metric-change.down {
+    color: var(--error-600);
+}
 
 /* Profit Margin Gauge */
 .profit-margin-gauge {
@@ -705,11 +775,21 @@ body.dark-mode .transaction-tag.sourcing { background: rgba(55, 48, 163, 0.2); c
     font-weight: 700;
 }
 
-.treemap-item.assets { background: linear-gradient(135deg, #10b981, #059669); }
-.treemap-item.liabilities { background: linear-gradient(135deg, #ef4444, #dc2626); }
-.treemap-item.equity { background: linear-gradient(135deg, #f59e0b, #d97706); }
-.treemap-item.income { background: linear-gradient(135deg, #22c55e, #16a34a); }
-.treemap-item.expenses { background: linear-gradient(135deg, #f97316, #ea580c); }
+.treemap-item.assets {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+.treemap-item.liabilities {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+.treemap-item.equity {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+.treemap-item.income {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+.treemap-item.expenses {
+    background: linear-gradient(135deg, #f97316, #ea580c);
+}
 
 /* Period Comparison */
 .period-comparison {
@@ -787,9 +867,15 @@ body.dark-mode .transaction-tag.sourcing { background: rgba(55, 48, 163, 0.2); c
     transition: width 0.5s ease;
 }
 
-.budget-progress-fill.under { background: var(--success-500); }
-.budget-progress-fill.warning { background: var(--warning-500); }
-.budget-progress-fill.over { background: var(--error-500); }
+.budget-progress-fill.under {
+    background: var(--success-500);
+}
+.budget-progress-fill.warning {
+    background: var(--warning-500);
+}
+.budget-progress-fill.over {
+    background: var(--error-500);
+}
 
 .budget-progress-marker {
     position: absolute;
@@ -906,10 +992,18 @@ body.dark-mode .transaction-tag.sourcing { background: rgba(55, 48, 163, 0.2); c
     color: white;
 }
 
-.kpi-card-icon.sales { background: var(--success-500); }
-.kpi-card-icon.revenue { background: var(--primary-500); }
-.kpi-card-icon.orders { background: var(--info-500); }
-.kpi-card-icon.profit { background: var(--warning-500); }
+.kpi-card-icon.sales {
+    background: var(--success-500);
+}
+.kpi-card-icon.revenue {
+    background: var(--primary-500);
+}
+.kpi-card-icon.orders {
+    background: var(--info-500);
+}
+.kpi-card-icon.profit {
+    background: var(--warning-500);
+}
 
 .kpi-card-trend {
     display: flex;
@@ -973,10 +1067,22 @@ body.dark-mode .transaction-tag.sourcing { background: rgba(55, 48, 163, 0.2); c
     position: relative;
 }
 
-.funnel-stage-vertical:nth-child(1) { width: 100%; background: #f59e0b; }
-.funnel-stage-vertical:nth-child(2) { width: 85%; background: #8b5cf6; }
-.funnel-stage-vertical:nth-child(3) { width: 70%; background: #a855f7; }
-.funnel-stage-vertical:nth-child(4) { width: 55%; background: #d946ef; }
+.funnel-stage-vertical:nth-child(1) {
+    width: 100%;
+    background: #f59e0b;
+}
+.funnel-stage-vertical:nth-child(2) {
+    width: 85%;
+    background: #8b5cf6;
+}
+.funnel-stage-vertical:nth-child(3) {
+    width: 70%;
+    background: #a855f7;
+}
+.funnel-stage-vertical:nth-child(4) {
+    width: 55%;
+    background: #d946ef;
+}
 
 .funnel-stage-content {
     display: flex;
@@ -1065,12 +1171,24 @@ body.dark-mode .transaction-tag.sourcing { background: rgba(55, 48, 163, 0.2); c
     z-index: 1;
 }
 
-.time-heatmap-cell.level-0 { background: var(--gray-100); }
-.time-heatmap-cell.level-1 { background: #bbf7d0; }
-.time-heatmap-cell.level-2 { background: #86efac; }
-.time-heatmap-cell.level-3 { background: #4ade80; }
-.time-heatmap-cell.level-4 { background: #22c55e; }
-.time-heatmap-cell.level-5 { background: #16a34a; }
+.time-heatmap-cell.level-0 {
+    background: var(--gray-100);
+}
+.time-heatmap-cell.level-1 {
+    background: #bbf7d0;
+}
+.time-heatmap-cell.level-2 {
+    background: #86efac;
+}
+.time-heatmap-cell.level-3 {
+    background: #4ade80;
+}
+.time-heatmap-cell.level-4 {
+    background: #22c55e;
+}
+.time-heatmap-cell.level-5 {
+    background: #16a34a;
+}
 
 /* Platform Radar Chart */
 .radar-chart-container {
@@ -1456,4 +1574,3 @@ body.dark-mode .business-fab-menu {
 body.dark-mode .business-fab-item:hover {
     background: #374151;
 }
-

@@ -26,10 +26,8 @@ const i18n = {
     // Initialize i18n
     async init(locale = null) {
         // Detect locale from browser or user preference
-        const detectedLocale = locale ||
-            localStorage.getItem('vaultlister_locale') ||
-            navigator.language ||
-            this.fallbackLocale;
+        const detectedLocale =
+            locale || localStorage.getItem('vaultlister_locale') || navigator.language || this.fallbackLocale;
 
         // Find best matching locale
         this.currentLocale = this.findBestLocale(detectedLocale);
@@ -328,19 +326,21 @@ const i18n = {
 
     // Translate a key
     t(key, params = {}) {
-        let translation = this.translations[this.currentLocale]?.[key] ||
-            this.translations[this.fallbackLocale]?.[key] ||
-            key;
+        let translation =
+            this.translations[this.currentLocale]?.[key] || this.translations[this.fallbackLocale]?.[key] || key;
 
         // Handle pluralization (e.g., "{count} item | {count} items")
         if (translation.includes('|') && 'count' in params) {
-            const parts = translation.split('|').map(s => s.trim());
+            const parts = translation.split('|').map((s) => s.trim());
             translation = params.count === 1 ? parts[0] : parts[1] || parts[0];
         }
 
         // Replace placeholders
         for (const [param, value] of Object.entries(params)) {
-            translation = translation.replace(new RegExp(`\\{${param.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\}`, 'g'), value); // nosemgrep: javascript.lang.security.detect-non-literal-regexp
+            translation = translation.replace(
+                new RegExp(`\\{${param.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\}`, 'g'),
+                value,
+            ); // nosemgrep: javascript.lang.security.detect-non-literal-regexp
         }
 
         return translation;
@@ -355,7 +355,7 @@ const i18n = {
     formatCurrency(amount, currency = 'CAD') {
         return new Intl.NumberFormat(this.currentLocale, {
             style: 'currency',
-            currency
+            currency,
         }).format(amount);
     },
 
@@ -364,7 +364,7 @@ const i18n = {
         const d = date instanceof Date ? date : new Date(date);
         return new Intl.DateTimeFormat(this.currentLocale, {
             dateStyle: 'medium',
-            ...options
+            ...options,
         }).format(d);
     },
 
@@ -373,7 +373,7 @@ const i18n = {
         const d = date instanceof Date ? date : new Date(date);
         return new Intl.DateTimeFormat(this.currentLocale, {
             timeStyle: 'short',
-            ...options
+            ...options,
         }).format(d);
     },
 
@@ -408,9 +408,9 @@ const i18n = {
     getSupportedLocales() {
         return Object.entries(this.supportedLocales).map(([code, info]) => ({
             code,
-            ...info
+            ...info,
         }));
-    }
+    },
 };
 
 // Export for use in app

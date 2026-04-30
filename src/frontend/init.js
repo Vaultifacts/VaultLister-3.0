@@ -560,7 +560,7 @@ async function initApp() {
                         <input type="url" id="wh-url" class="form-input" placeholder="https://example.com/webhook" aria-label="URL">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Events</label>
+                        <p class="form-label">Events</p>
                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
                             ${eventTypes
                                 .map(
@@ -703,7 +703,7 @@ function renderApp(pageContent) {
         hideLoadingScreen();
 
         // Ensure all scrollable table containers are keyboard-reachable (WCAG SC 2.1.1)
-        document.querySelectorAll('.table-container:not([tabindex])').forEach(el => el.setAttribute('tabindex', '0'));
+        document.querySelectorAll('.table-container:not([tabindex])').forEach((el) => el.setAttribute('tabindex', '0'));
 
         // Update browser tab badge with unread notification count
         if (typeof handlers !== 'undefined' && handlers.updateTabBadge) {
@@ -1429,7 +1429,7 @@ handlers.syncBuyersFromOrders = async function () {
 handlers.rateBuyer = function (buyerId) {
     const ratingHtml = `
         <div style="text-align: center; padding: 20px;">
-            <label class="form-label">Rate this buyer (1-5 stars)</label>
+            <p class="form-label">Rate this buyer (1-5 stars)</p>
             <div style="display: flex; justify-content: center; gap: 12px; margin: 16px 0;">
                 ${[1, 2, 3, 4, 5]
                     .map(

@@ -19,10 +19,13 @@ export async function createNotification(userId, { type, title, message, data = 
     const id = uuidv4();
 
     try {
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO notifications (id, user_id, type, title, message, data)
             VALUES (?, ?, ?, ?, ?, ?)
-        `, [id, userId, type, title, message, data ? JSON.stringify(data) : null]);
+        `,
+            [id, userId, type, title, message, data ? JSON.stringify(data) : null],
+        );
 
         return {
             id,
@@ -32,7 +35,7 @@ export async function createNotification(userId, { type, title, message, data = 
             message,
             data,
             is_read: false,
-            created_at: new Date().toISOString()
+            created_at: new Date().toISOString(),
         };
     } catch (error) {
         logger.error('[NotificationService] Failed to create notification', null, { detail: error.message });
@@ -48,17 +51,20 @@ export async function createNotification(userId, { type, title, message, data = 
  */
 export async function getUnreadNotifications(userId, limit = 50) {
     try {
-        const notifications = await query.all(`
+        const notifications = await query.all(
+            `
             SELECT * FROM notifications
             WHERE user_id = ? AND is_read = FALSE
             ORDER BY created_at DESC
             LIMIT ?
-        `, [userId, limit]);
+        `,
+            [userId, limit],
+        );
 
-        return notifications.map(n => ({
+        return notifications.map((n) => ({
             ...n,
             data: n.data ? JSON.parse(n.data) : null,
-            is_read: Boolean(n.is_read)
+            is_read: Boolean(n.is_read),
         }));
     } catch (error) {
         logger.error('[NotificationService] Failed to get notifications', null, { detail: error.message });
@@ -76,29 +82,40 @@ export async function getNotifications(userId, { page = 1, limit = 20 } = {}) {
     try {
         const offset = (page - 1) * limit;
 
-        const notifications = await query.all(`
+        const notifications = await query.all(
+            `
             SELECT * FROM notifications
             WHERE user_id = ?
             ORDER BY created_at DESC
             LIMIT ? OFFSET ?
-        `, [userId, limit, offset]);
+        `,
+            [userId, limit, offset],
+        );
 
-        const total = Number((await query.get(`
+        const total =
+            Number(
+                (
+                    await query.get(
+                        `
             SELECT COUNT(*) as count FROM notifications WHERE user_id = ?
-        `, [userId]))?.count) || 0;
+        `,
+                        [userId],
+                    )
+                )?.count,
+            ) || 0;
 
         return {
-            notifications: notifications.map(n => ({
+            notifications: notifications.map((n) => ({
                 ...n,
                 data: n.data ? JSON.parse(n.data) : null,
-                is_read: Boolean(n.is_read)
+                is_read: Boolean(n.is_read),
             })),
             pagination: {
                 page,
                 limit,
                 total,
-                pages: Math.ceil(total / limit)
-            }
+                pages: Math.ceil(total / limit),
+            },
         };
     } catch (error) {
         logger.error('[NotificationService] Failed to get notifications', null, { detail: error.message });
@@ -114,11 +131,14 @@ export async function getNotifications(userId, { page = 1, limit = 20 } = {}) {
  */
 export async function markAsRead(notificationId, userId) {
     try {
-        const result = await query.run(`
+        const result = await query.run(
+            `
             UPDATE notifications
             SET is_read = TRUE, read_at = CURRENT_TIMESTAMP
             WHERE id = ? AND user_id = ?
-        `, [notificationId, userId]);
+        `,
+            [notificationId, userId],
+        );
 
         return result.changes > 0;
     } catch (error) {
@@ -134,11 +154,14 @@ export async function markAsRead(notificationId, userId) {
  */
 export async function markAllAsRead(userId) {
     try {
-        const result = await query.run(`
+        const result = await query.run(
+            `
             UPDATE notifications
             SET is_read = TRUE, read_at = CURRENT_TIMESTAMP
             WHERE user_id = ? AND is_read = FALSE
-        `, [userId]);
+        `,
+            [userId],
+        );
 
         return result.changes;
     } catch (error) {
@@ -155,9 +178,12 @@ export async function markAllAsRead(userId) {
  */
 export async function deleteNotification(notificationId, userId) {
     try {
-        const result = await query.run(`
+        const result = await query.run(
+            `
             DELETE FROM notifications WHERE id = ? AND user_id = ?
-        `, [notificationId, userId]);
+        `,
+            [notificationId, userId],
+        );
 
         return result.changes > 0;
     } catch (error) {
@@ -173,10 +199,13 @@ export async function deleteNotification(notificationId, userId) {
  */
 export async function cleanupOldNotifications(daysOld = 30) {
     try {
-        const result = await query.run(`
+        const result = await query.run(
+            `
             DELETE FROM notifications
             WHERE is_read = TRUE AND created_at < NOW() - (?::text || ' days')::interval
-        `, [daysOld]);
+        `,
+            [daysOld],
+        );
 
         return result.changes;
     } catch (error) {
@@ -192,10 +221,13 @@ export async function cleanupOldNotifications(daysOld = 30) {
  */
 export async function getUnreadCount(userId) {
     try {
-        const result = await query.get(`
+        const result = await query.get(
+            `
             SELECT COUNT(*) as count FROM notifications
             WHERE user_id = ? AND is_read = FALSE
-        `, [userId]);
+        `,
+            [userId],
+        );
 
         return result?.count || 0;
     } catch (error) {
@@ -214,7 +246,7 @@ export const NotificationTypes = {
     PLATFORM_ERROR: 'platform_error',
     AUTOMATION_COMPLETED: 'automation_completed',
     AUTOMATION_FAILED: 'automation_failed',
-    AUTOMATION_PARTIAL: 'automation_partial'
+    AUTOMATION_PARTIAL: 'automation_partial',
 };
 
 /**
@@ -226,66 +258,76 @@ export const NotificationTypes = {
  */
 export async function createOAuthNotification(userId, platform, notificationType, extraData = {}) {
     // Sanitize external values to prevent injection
-    const safePlatform = String(platform || '').replace(/[<>&"']/g, '').substring(0, 50);
-    const safeError = extraData.error ? String(extraData.error).replace(/[<>&"']/g, '').substring(0, 200) : '';
-    const safeMessage = extraData.message ? String(extraData.message).replace(/[<>&"']/g, '').substring(0, 200) : '';
+    const safePlatform = String(platform || '')
+        .replace(/[<>&"']/g, '')
+        .substring(0, 50);
+    const safeError = extraData.error
+        ? String(extraData.error)
+              .replace(/[<>&"']/g, '')
+              .substring(0, 200)
+        : '';
+    const safeMessage = extraData.message
+        ? String(extraData.message)
+              .replace(/[<>&"']/g, '')
+              .substring(0, 200)
+        : '';
 
     const messages = {
         [NotificationTypes.TOKEN_REFRESH_SUCCESS]: {
             type: 'success',
             title: `${safePlatform} token refreshed`,
-            message: `Your ${safePlatform} connection has been automatically refreshed.`
+            message: `Your ${safePlatform} connection has been automatically refreshed.`,
         },
         [NotificationTypes.TOKEN_REFRESH_FAILED]: {
             type: 'error',
             title: `${safePlatform} token refresh failed`,
-            message: `We couldn't refresh your ${safePlatform} connection. Please reconnect.`
+            message: `We couldn't refresh your ${safePlatform} connection. Please reconnect.`,
         },
         [NotificationTypes.OAUTH_DISCONNECTED]: {
             type: 'warning',
             title: `${safePlatform} disconnected`,
-            message: `Your ${safePlatform} connection was disconnected due to repeated failures.`
+            message: `Your ${safePlatform} connection was disconnected due to repeated failures.`,
         },
         [NotificationTypes.SYNC_COMPLETED]: {
             type: 'success',
             title: `${safePlatform} sync completed`,
-            message: `Successfully synced data from ${safePlatform}.`
+            message: `Successfully synced data from ${safePlatform}.`,
         },
         [NotificationTypes.SYNC_FAILED]: {
             type: 'error',
             title: `${safePlatform} sync failed`,
-            message: `Failed to sync data from ${safePlatform}. ${safeError}`
+            message: `Failed to sync data from ${safePlatform}. ${safeError}`,
         },
         [NotificationTypes.PLATFORM_ERROR]: {
             type: 'error',
             title: `${safePlatform} error`,
-            message: safeMessage || `An error occurred with your ${safePlatform} connection.`
+            message: safeMessage || `An error occurred with your ${safePlatform} connection.`,
         },
         [NotificationTypes.AUTOMATION_COMPLETED]: {
             type: 'success',
             title: `Automation completed`,
-            message: safeMessage || `Automation ran successfully.`
+            message: safeMessage || `Automation ran successfully.`,
         },
         [NotificationTypes.AUTOMATION_FAILED]: {
             type: 'error',
             title: `Automation failed`,
-            message: safeMessage || `An automation failed. ${safeError}`
+            message: safeMessage || `An automation failed. ${safeError}`,
         },
         [NotificationTypes.AUTOMATION_PARTIAL]: {
             type: 'warning',
             title: `Automation partially completed`,
-            message: safeMessage || `An automation completed with some failures.`
-        }
+            message: safeMessage || `An automation completed with some failures.`,
+        },
     };
 
     const notification = messages[notificationType] || {
         type: 'info',
         title: `${safePlatform} notification`,
-        message: 'Platform notification'
+        message: 'Platform notification',
     };
 
     return createNotification(userId, {
         ...notification,
-        data: { platform, notificationType, ...extraData }
+        data: { platform, notificationType, ...extraData },
     });
 }

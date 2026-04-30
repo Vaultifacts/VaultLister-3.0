@@ -7,7 +7,7 @@ import {
     SIGNAL_TYPES,
     isListingInvisibleSignal,
     isEngagementDropSignal,
-    isApiLatencyAnomalySignal
+    isApiLatencyAnomalySignal,
 } from '../../../shared/signal-contracts.js';
 import { logger } from '../../shared/logger.js';
 
@@ -42,7 +42,7 @@ export function trackApiLatency(platform, latencyMs) {
     const buf = _latencyBuffers.get(platform);
 
     // Drop samples older than 5 min
-    buf.samples = buf.samples.filter(s => now - s.ts < WINDOW_5MIN);
+    buf.samples = buf.samples.filter((s) => now - s.ts < WINDOW_5MIN);
     buf.samples.push({ ts: now, ms: latencyMs });
 
     // Update coarse 30-day baseline (in-memory only; acceptable for LOW_CONFIDENCE)
@@ -56,11 +56,10 @@ export function trackApiLatency(platform, latencyMs) {
     const requestCountInPeriod = buf.samples.length;
     if (requestCountInPeriod < 20) return;
 
-    const sorted5min = buf.samples.map(s => s.ms).sort((a, b) => a - b);
+    const sorted5min = buf.samples.map((s) => s.ms).sort((a, b) => a - b);
     const mid = Math.floor(sorted5min.length / 2);
-    const rolling5minMedianMs = sorted5min.length % 2 === 0
-        ? (sorted5min[mid - 1] + sorted5min[mid]) / 2
-        : sorted5min[mid];
+    const rolling5minMedianMs =
+        sorted5min.length % 2 === 0 ? (sorted5min[mid - 1] + sorted5min[mid]) / 2 : sorted5min[mid];
 
     const rolling30dayMedianMs = baseline.count > 0 ? baseline.total / baseline.count : 0;
 
@@ -73,9 +72,11 @@ export function trackApiLatency(platform, latencyMs) {
         recordDetectionEvent(platform, SIGNAL_TYPES.API_LATENCY_ANOMALY, {
             rolling5minMedianMs,
             rolling30dayMedianMs,
-            requestCountInPeriod
+            requestCountInPeriod,
         });
-        logger.warn(`[signalEmitter] ${platform}: API_LATENCY_ANOMALY emitted (5min median ${rolling5minMedianMs}ms vs 30d avg ${rolling30dayMedianMs}ms)`);
+        logger.warn(
+            `[signalEmitter] ${platform}: API_LATENCY_ANOMALY emitted (5min median ${rolling5minMedianMs}ms vs 30d avg ${rolling30dayMedianMs}ms)`,
+        );
     } catch (err) {
         logger.error('[signalEmitter] recordDetectionEvent failed:', err.message);
     }
@@ -124,13 +125,18 @@ export async function checkListingInvisibility(platform, expectedListings, obser
         const inObserved = observedIds instanceof Set ? observedIds.has(id) : false;
 
         if (inObserved) {
-            if (tracker[id]) { delete tracker[id]; dirty = true; }
+            if (tracker[id]) {
+                delete tracker[id];
+                dirty = true;
+            }
             continue;
         }
 
         const notSold = listing.status !== 'sold';
         const createdTs = listing.createdAt
-            ? (typeof listing.createdAt === 'number' ? listing.createdAt : Date.parse(listing.createdAt))
+            ? typeof listing.createdAt === 'number'
+                ? listing.createdAt
+                : Date.parse(listing.createdAt)
             : 0;
         const ageHours = createdTs > 0 ? (now - createdTs) / 3600000 : 0;
 
@@ -143,17 +149,20 @@ export async function checkListingInvisibility(platform, expectedListings, obser
         const firstMissTs = tracker[id].firstMissTs;
         const gapMs = now - firstMissTs;
 
-        if (gapMs >= TWO_HOURS && isListingInvisibleSignal({
-            inVaultlisterDb: true,
-            notInMarketplaceSearchTwiceIn2h: true,
-            notSold,
-            ageHours
-        })) {
+        if (
+            gapMs >= TWO_HOURS &&
+            isListingInvisibleSignal({
+                inVaultlisterDb: true,
+                notInMarketplaceSearchTwiceIn2h: true,
+                notSold,
+                ageHours,
+            })
+        ) {
             try {
                 recordDetectionEvent(platform, SIGNAL_TYPES.LISTING_INVISIBLE, {
                     listingId: id,
                     ageHours: Math.round(ageHours),
-                    gapMs
+                    gapMs,
                 });
                 logger.warn(`[signalEmitter] ${platform}: LISTING_INVISIBLE emitted for listing ${id}`);
             } catch (err) {
@@ -178,7 +187,9 @@ export function checkEngagementDrop(platform, aggregates) {
     if (!isEngagementDropSignal(aggregates)) return;
     try {
         recordDetectionEvent(platform, SIGNAL_TYPES.ENGAGEMENT_DROP, aggregates);
-        logger.warn(`[signalEmitter] ${platform}: ENGAGEMENT_DROP emitted (7d ${aggregates.rolling7dayPerListing} vs 30d ${aggregates.rolling30dayBaseline})`);
+        logger.warn(
+            `[signalEmitter] ${platform}: ENGAGEMENT_DROP emitted (7d ${aggregates.rolling7dayPerListing} vs 30d ${aggregates.rolling30dayBaseline})`,
+        );
     } catch (err) {
         logger.error('[signalEmitter] recordDetectionEvent failed:', err.message);
     }

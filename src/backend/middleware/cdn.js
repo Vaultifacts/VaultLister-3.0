@@ -10,14 +10,14 @@ const CACHE_DURATIONS = {
     immutable: 31536000, // 1 year
 
     // Static assets
-    css: 86400 * 7,      // 7 days
-    js: 86400 * 7,       // 7 days
-    images: 86400 * 30,  // 30 days
-    fonts: 86400 * 365,  // 1 year
+    css: 86400 * 7, // 7 days
+    js: 86400 * 7, // 7 days
+    images: 86400 * 30, // 30 days
+    fonts: 86400 * 365, // 1 year
 
     // Dynamic content
-    html: 0,             // No cache
-    api: 0,              // No cache
+    html: 0, // No cache
+    api: 0, // No cache
 };
 
 // Get cache duration based on file extension
@@ -65,10 +65,7 @@ function getCacheControl(path, isPrivate = false) {
         return 'no-store, no-cache, must-revalidate, proxy-revalidate';
     }
 
-    const directives = [
-        isPrivate ? 'private' : 'public',
-        `max-age=${duration}`,
-    ];
+    const directives = [isPrivate ? 'private' : 'public', `max-age=${duration}`];
 
     // Add immutable for long-cached assets
     if (duration >= CACHE_DURATIONS.immutable) {
@@ -112,7 +109,7 @@ function staticCacheMiddleware(ctx) {
 
     return {
         'Cache-Control': cacheControl,
-        'Vary': 'Accept-Encoding',
+        Vary: 'Accept-Encoding',
     };
 }
 
@@ -123,10 +120,12 @@ function getPreloadHints() {
         { path: '/core-bundle.js', as: 'script' },
     ];
 
-    return criticalAssets.map(asset => {
-        const url = cdnUrl(asset.path);
-        return `<${url}>; rel=preload; as=${asset.as}`;
-    }).join(', ');
+    return criticalAssets
+        .map((asset) => {
+            const url = cdnUrl(asset.path);
+            return `<${url}>; rel=preload; as=${asset.as}`;
+        })
+        .join(', ');
 }
 
 // CDN configuration for nginx
@@ -188,5 +187,5 @@ export {
     getPreloadHints,
     nginxCdnConfig,
     CDN_URL,
-    ASSET_VERSION
+    ASSET_VERSION,
 };

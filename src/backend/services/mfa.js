@@ -27,12 +27,12 @@ export function generateSecret(email) {
         secret: secret,
         algorithm: 'sha1',
         digits: 6,
-        period: 30
+        period: 30,
     });
 
     return {
         secret,
-        otpauth
+        otpauth,
     };
 }
 
@@ -46,8 +46,8 @@ export async function generateQRCode(otpauthUrl) {
             margin: 2,
             color: {
                 dark: '#000000',
-                light: '#FFFFFF'
-            }
+                light: '#FFFFFF',
+            },
         });
     } catch (error) {
         logger.error('[MFA] QR code generation failed', null, { detail: error.message });
@@ -66,7 +66,7 @@ export function verifyToken(token, secret) {
             algorithm: 'sha1',
             digits: 6,
             period: 30,
-            epochTolerance: 1 // Allow 1 step before/after for clock drift
+            epochTolerance: 1, // Allow 1 step before/after for clock drift
         });
         return result !== null;
     } catch (error) {
@@ -84,7 +84,10 @@ export function generateBackupCodes() {
 
     for (let i = 0; i < BACKUP_CODE_COUNT; i++) {
         // Generate random code
-        const code = crypto.randomBytes(BACKUP_CODE_LENGTH / 2).toString('hex').toUpperCase();
+        const code = crypto
+            .randomBytes(BACKUP_CODE_LENGTH / 2)
+            .toString('hex')
+            .toUpperCase();
         const formattedCode = `${code.slice(0, 4)}-${code.slice(4)}`;
 
         codes.push(formattedCode);
@@ -93,8 +96,8 @@ export function generateBackupCodes() {
     }
 
     return {
-        codes,        // Plain text codes to show user once
-        hashedCodes   // Hashed codes for storage
+        codes, // Plain text codes to show user once
+        hashedCodes, // Hashed codes for storage
     };
 }
 
@@ -106,7 +109,7 @@ export async function verifyBackupCode(code, hashedCodes) {
     const formattedCode = `${normalizedCode.slice(0, 4)}-${normalizedCode.slice(4)}`;
 
     for (let i = 0; i < hashedCodes.length; i++) {
-        if (hashedCodes[i] && await bcrypt.compare(formattedCode, hashedCodes[i])) {
+        if (hashedCodes[i] && (await bcrypt.compare(formattedCode, hashedCodes[i]))) {
             // Invalidate used code by setting to null
             hashedCodes[i] = null;
             return { valid: true, updatedCodes: hashedCodes, index: i };
@@ -126,10 +129,13 @@ export async function setupMFA(userId, email) {
     // Store setup token for verification
     const setupToken = crypto.randomBytes(32).toString('hex');
 
-    await query.run(`
+    await query.run(
+        `
         INSERT INTO verification_tokens (id, user_id, token, type, expires_at)
         VALUES (?, ?, ?, 'mfa_setup', NOW() + INTERVAL '10 minutes')
-    `, [uuidv4(), userId, setupToken]);
+    `,
+        [uuidv4(), userId, setupToken],
+    );
 
     // Store secret temporarily on user record (not yet activated — mfa_enabled stays 0)
     await query.run('UPDATE users SET mfa_secret = ? WHERE id = ?', [secret, userId]);
@@ -138,7 +144,7 @@ export async function setupMFA(userId, email) {
         setupToken,
         secret,
         qrCode,
-        manualEntry: secret // For manual entry if QR doesn't work
+        manualEntry: secret, // For manual entry if QR doesn't work
     };
 }
 
@@ -147,11 +153,14 @@ export async function setupMFA(userId, email) {
  */
 export async function enableMFA(userId, setupToken, totpCode) {
     // Get setup token
-    const tokenRecord = await query.get(`
+    const tokenRecord = await query.get(
+        `
         SELECT * FROM verification_tokens
         WHERE user_id = ? AND token = ? AND type = 'mfa_setup'
         AND expires_at > NOW() AND used_at IS NULL
-    `, [userId, setupToken]);
+    `,
+        [userId, setupToken],
+    );
 
     if (!tokenRecord) {
         return { success: false, error: 'Invalid or expired setup token' };
@@ -172,7 +181,7 @@ export async function enableMFA(userId, setupToken, totpCode) {
     return {
         success: true,
         backupCodes: codes,
-        hashedCodes
+        hashedCodes,
     };
 }
 
@@ -189,24 +198,30 @@ export async function completeSetup(userId, secret, totpCode, ip, userAgent) {
     const { codes, hashedCodes } = generateBackupCodes();
 
     // Store MFA settings
-    await query.run(`
+    await query.run(
+        `
         UPDATE users
         SET mfa_enabled = TRUE,
             mfa_secret = ?,
             mfa_backup_codes = ?,
             updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
-    `, [secret, JSON.stringify(hashedCodes), userId]);
+    `,
+        [secret, JSON.stringify(hashedCodes), userId],
+    );
 
     // Log MFA event
-    await query.run(`
+    await query.run(
+        `
         INSERT INTO mfa_events (user_id, event_type, ip_address, user_agent)
         VALUES (?, 'enabled', ?, ?)
-    `, [userId, ip, userAgent]);
+    `,
+        [userId, ip, userAgent],
+    );
 
     return {
         success: true,
-        backupCodes: codes // Return plain codes to show user once
+        backupCodes: codes, // Return plain codes to show user once
     };
 }
 
@@ -215,25 +230,31 @@ export async function completeSetup(userId, secret, totpCode, ip, userAgent) {
  */
 export async function disableMFA(userId, password, userPasswordHash, ip, userAgent) {
     // Verify password before disabling
-    if (!await bcrypt.compare(password, userPasswordHash)) {
+    if (!(await bcrypt.compare(password, userPasswordHash))) {
         return { success: false, error: 'Invalid password' };
     }
 
     // Clear MFA settings
-    await query.run(`
+    await query.run(
+        `
         UPDATE users
         SET mfa_enabled = FALSE,
             mfa_secret = NULL,
             mfa_backup_codes = NULL,
             updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
-    `, [userId]);
+    `,
+        [userId],
+    );
 
     // Log MFA event
-    await query.run(`
+    await query.run(
+        `
         INSERT INTO mfa_events (user_id, event_type, ip_address, user_agent)
         VALUES (?, 'disabled', ?, ?)
-    `, [userId, ip, userAgent]);
+    `,
+        [userId, ip, userAgent],
+    );
 
     return { success: true };
 }
@@ -245,10 +266,13 @@ export async function verifyMFA(userId, code, secret, backupCodesJson, ip, userA
     // Try TOTP first
     if (verifyToken(code, secret)) {
         // Log successful verification
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO mfa_events (user_id, event_type, ip_address, user_agent)
             VALUES (?, 'verified', ?, ?)
-        `, [userId, ip, userAgent]);
+        `,
+            [userId, ip, userAgent],
+        );
 
         return { success: true, method: 'totp' };
     }
@@ -264,32 +288,41 @@ export async function verifyMFA(userId, code, secret, backupCodesJson, ip, userA
 
     if (backupResult.valid) {
         // Update backup codes (mark used code as null)
-        await query.run(`
+        await query.run(
+            `
             UPDATE users SET mfa_backup_codes = ? WHERE id = ?
-        `, [JSON.stringify(backupResult.updatedCodes), userId]);
+        `,
+            [JSON.stringify(backupResult.updatedCodes), userId],
+        );
 
         // Log backup code usage
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO mfa_events (user_id, event_type, ip_address, user_agent)
             VALUES (?, 'backup_used', ?, ?)
-        `, [userId, ip, userAgent]);
+        `,
+            [userId, ip, userAgent],
+        );
 
         // Count remaining backup codes
-        const remaining = backupResult.updatedCodes.filter(c => c !== null).length;
+        const remaining = backupResult.updatedCodes.filter((c) => c !== null).length;
 
         return {
             success: true,
             method: 'backup',
             backupCodesRemaining: remaining,
-            warning: remaining <= 2 ? 'You have few backup codes remaining. Consider generating new ones.' : null
+            warning: remaining <= 2 ? 'You have few backup codes remaining. Consider generating new ones.' : null,
         };
     }
 
     // Log failed attempt
-    await query.run(`
+    await query.run(
+        `
         INSERT INTO mfa_events (user_id, event_type, ip_address, user_agent)
         VALUES (?, 'failed', ?, ?)
-    `, [userId, ip, userAgent]);
+    `,
+        [userId, ip, userAgent],
+    );
 
     return { success: false, error: 'Invalid verification code' };
 }
@@ -299,20 +332,23 @@ export async function verifyMFA(userId, code, secret, backupCodesJson, ip, userA
  */
 export async function regenerateBackupCodes(userId, password, userPasswordHash, ip, userAgent) {
     // Verify password
-    if (!await bcrypt.compare(password, userPasswordHash)) {
+    if (!(await bcrypt.compare(password, userPasswordHash))) {
         return { success: false, error: 'Invalid password' };
     }
 
     const { codes, hashedCodes } = generateBackupCodes();
 
     // Update backup codes
-    await query.run(`
+    await query.run(
+        `
         UPDATE users SET mfa_backup_codes = ? WHERE id = ?
-    `, [JSON.stringify(hashedCodes), userId]);
+    `,
+        [JSON.stringify(hashedCodes), userId],
+    );
 
     return {
         success: true,
-        backupCodes: codes
+        backupCodes: codes,
     };
 }
 
@@ -326,5 +362,5 @@ export default {
     completeSetup,
     disableMFA,
     verifyMFA,
-    regenerateBackupCodes
+    regenerateBackupCodes,
 };
