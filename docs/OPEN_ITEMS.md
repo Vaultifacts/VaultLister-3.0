@@ -2,12 +2,12 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-04-30T02:54:20.550Z
-Commit: cb9de1f6
+Generated at: 2026-04-30T04:03:32.086Z
+Commit: 697fc478
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
-Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrough/` status > live GitHub issues > explicit checklists > source scans.
+Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrough/` status > structural/refactor backlog > live GitHub issues > explicit checklists > source scans.
 
 ## Summary
 
@@ -17,6 +17,7 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 | Open walkthrough/product items | 2 |
 | Fixed pending live/manual verification | 26 |
 | Deferred/post-launch items | 10 |
+| Structural/refactor backlog items | 10 |
 | Open GitHub issues | 14 |
 | Explicit unchecked checklist items | 359 |
 | Source TODO/FIXME hits | 15 |
@@ -25,7 +26,7 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 
 | ID | Status | Priority | Area | Item | Source | Next Action | Blocker |
 |---|---|---|---|---|---|---|---|
-| CR-4 | OPEN / NOT VERIFIED — 2026-04-22 live GET /api/shipping-labels-mgmt/easypost/track/TEST123456789 returned 503 {"error":"EasyPost not configured"} | launch-blocker | Shipping / EasyPost | EasyPost not configured -- live GET /api/shipping-labels-mgmt/easypost/track/TEST123456789 returns 503 {"error":"EasyPost not configured"} | docs/walkthrough/environment.md:44<br>docs/walkthrough/shipping.md:7 | Configure EASYPOST_API_KEY in Railway, then run an authenticated EasyPost rates/buy/track verification and update docs/walkthrough/environment.md plus docs/walkthrough/shipping.md. | EasyPost account/API key availability and Railway production environment configuration. |
+| CR-4 | OPEN / NOT VERIFIED — 2026-04-30 local code fix routes default rates, explicit EasyPost rates/buy, and batch purchase through EasyPost with focused unit coverage; production EASYPOST_API_KEY and live authenticated verification still pending | launch-blocker | Shipping / EasyPost | EasyPost production key and authenticated rates/buy/track verification still pending | docs/walkthrough/environment.md:44<br>docs/walkthrough/shipping.md:7 | Deploy the EasyPost routing fix, configure EASYPOST_API_KEY in Railway, then run authenticated production EasyPost rates/buy/track verification and update docs/walkthrough/environment.md plus docs/walkthrough/shipping.md. | EasyPost account/API key availability, Railway production environment configuration, and live authenticated verification. |
 | CR-10 | OPEN -- verified 2026-04-24 | launch-blocker | Connections / Marketplace OAuth | Marketplace connection state is still incomplete: eBay and Shopify OAuth init are live, but Depop OAuth is unconfigured and several remaining marketplace connects still rely on manual / Playwright credential flows | docs/walkthrough/connections.md:7<br>docs/walkthrough/my-shops.md:7<br>docs/walkthrough/platform-readiness.md:21 | Run authenticated end-to-end verification for the remaining marketplace connect flows and update the specific walkthrough area files with the result. | Marketplace credentials, provider access, and live connect-flow verification. |
 
 ## Open Walkthrough / Product Items
@@ -80,6 +81,23 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 | Sentry-4 | DEFERRED |  | Infrastructure | Setup Session Replay | docs/walkthrough/environment.md:66 |  |  |
 | Sentry-5 | DEFERRED |  | Infrastructure | Setup Monitor MCP Servers | docs/walkthrough/environment.md:67 |  |  |
 | Sentry-6 | DEFERRED |  | Infrastructure | Setup Monitor AI Agents | docs/walkthrough/environment.md:68 |  |  |
+
+## Structural / Refactor Backlog
+
+These are read-only refactor risk items from `docs/reference/deep-dive-backlog.md`. They are not launch blockers unless separately promoted in `docs/open-items/items.json`.
+
+| ID | Priority | Area | Evidence | Required Inspection / Next Action | Blocker | Source |
+|---|---|---|---|---|---|---|
+| R-001 | refactor-p1 | src/backend/server.js (2087 lines, dispatch table with 15 inline async handlers) | server.js:577 — /api/health/platforms handler; server.js:237 — CORS config block; server.js:304 — in-process platform health cache | Identify which of the 15 inline handlers contain non-trivial business logic vs trivial delegation. /api/health/platforms (starts line 577) runs 4 parallel DB queries with bucket-building logic (~180 LOC). Determine whether any inline handler reads module-level mutable state (e.g., _platformHealthCache) that would break if moved to a separate file. | Required inspection steps are not complete. | docs/reference/deep-dive-backlog.md:15 |
+| R-003 | refactor-p2 | 4 service files that export HTTP routers alongside service logic | emailMarketing.js:317 — emailMarketingRouter; enhancedMFA.js:514 — enhancedMFARouter; auditLog.js:430 — auditLogRouter; outgoingWebhooks.js:265 — outgoingWebhooksRouter. Actual file lengths: emailMarketing.js 384 lines, enhancedMFA.js 657 lines, auditLog.js 557 lines, outgoingWebhooks.js 484 lines | Confirm that the router function in each file only calls service functions defined in the same file (not across service boundaries). Determine whether moving the router to src/backend/routes/ would create a circular import (router imports service; service imports route would be new). Verify that server.js mounts these routers by path prefix and that no path collision exists with any dedicated route file. |  | docs/reference/deep-dive-backlog.md:29 |
+| R-011 | refactor-p1 | src/backend/routes/auth.js (1153 lines, 11 imports spanning 6 concern domains) | auth.js:1–12 — imports: uuid, bcryptjs, crypto, direct SQL via query, mfa.js, email.js, rateLimiter, websocket.js, logger, redis.js, auth.js middleware | Count how many exported route handler functions exist. Identify which functions depend on Redis vs which depend only on DB. Determine whether WebSocket emission is fire-and-forget (safe to keep) or awaited (creates ordering dependency). Verify that MFA validation paths share no mutable state with password-reset paths. | Required inspection steps are not complete. | docs/reference/deep-dive-backlog.md:16 |
+| R-012 | refactor-p1 | src/backend/db/database.js (640 lines, 7+ distinct responsibilities) | database.js:1–640 — connection pool init, query.get / query.all / query.run wrappers, migration runner, seeder, metrics collection, pool monitoring, graceful shutdown | Map which exported symbols are imported by routes vs middleware vs workers. Verify that the migration array order is load-bearing (migrations run sequentially). Check whether pool monitoring (on('connect'), on('error')) is stateful — cannot be split without passing the pool reference. Confirm shutdown hook is registered once and not duplicated if the module is re-imported. | Required inspection steps are not complete. | docs/reference/deep-dive-backlog.md:17 |
+| R-015 | refactor-p1 | Authorization/ownership checks across src/backend/routes/* | All files under src/backend/routes/ — audit not yet completed; coverage is UNKNOWN | Route-by-route audit: for every route that reads or mutates a user-owned resource (InventoryItem, Listing, Sale, Offer, ImageAsset), verify that a WHERE user_id = $N clause or equivalent ownership check exists. Flag any route that accepts a resource ID from the request body/params without verifying ownership before the query executes. | Required inspection steps are not complete. | docs/reference/deep-dive-backlog.md:18 |
+| R-017 | refactor-p2 | CORS config embedded in server.js | server.js:237–265 — allowedOrigins array construction and getCORSHeaders() function | Determine whether CORS_ORIGINS env var parsing is done once at startup (safe to extract) or on every request (stateful). Verify that getCORSHeaders() is called only from the main request handler and not from any middleware. Check that the Access-Control-Allow-Credentials: true response is only sent for whitelisted origins — never for wildcard. |  | docs/reference/deep-dive-backlog.md:30 |
+| R-020 / R-021 | refactor-p2 | Playwright version drift + duplicate Dockerfile | Root package.json: playwright@1.59.1, @playwright/test@1.59.1. worker/package.json: playwright@1.58.2. Dockerfiles: Dockerfile.worker at repo root AND worker/Dockerfile both exist | Determine which Dockerfile is actually used by Railway for the worker service (check railway.json in worker/). Verify whether the 1.58.2 vs 1.59.1 difference affects any bot behavior in worker/bots/. Check if Dockerfile.worker at root is a legacy artifact or actively referenced. |  | docs/reference/deep-dive-backlog.md:31 |
+| R-027 | refactor-p2 | Upload/media route validation in imageBank.js, batchPhoto.js, receiptParser.js | src/backend/routes/imageBank.js, src/backend/routes/batchPhoto.js, src/backend/routes/receiptParser.js — not yet inspected | Audit each file for: (1) MIME type validation before file processing, (2) file size limits enforced server-side, (3) upload path sanitization (no path traversal), (4) ownership check before serving a stored asset, (5) whether escapeHtml() is called on any user-supplied filename before storage or logging. |  | docs/reference/deep-dive-backlog.md:32 |
+| R-028 | refactor-p2 | Background job schedulers split across two locations | src/backend/workers/ contains: emailPollingWorker.js, gdprWorker.js, priceCheckWorker.js, taskWorker.js, uptimeProbeWorker.js. worker/ contains: index.js, dlq-processor.js, bots/. | Determine whether any job type is scheduled in both locations (duplicate scheduler). Verify that src/backend/workers/ files are imported and started from server.js (in-process) while worker/index.js is the out-of-process BullMQ worker — these are distinct execution contexts and must not share the same queue consumer registration. |  | docs/reference/deep-dive-backlog.md:33 |
+| R-029 | refactor-p1 | Frontend/backend auth-session coupling | src/backend/routes/auth.js, src/backend/middleware/auth.js, src/frontend/core/api.js, src/frontend/core/store.js | Map the full token lifecycle: issue → store → refresh → revoke. Verify that store.persist() and store.hydrate() cover both token and refreshToken. Confirm api.refreshAccessToken() reads store.state.refreshToken (not localStorage directly). Check that the backend /api/auth/refresh route invalidates the old refresh token (rotation). Any change to these four files together requires the full auth chain to be re-verified. | Required inspection steps are not complete. | docs/reference/deep-dive-backlog.md:19 |
 
 ## GitHub Open Issues
 
@@ -576,6 +594,17 @@ These files are evidence only. They are not parsed as canonical open-item source
 - `docs/WALKTHROUGH_MASTER_FINDINGS.md`
 - `docs/MANUAL_INSPECTION.md`
 - `docs/OPEN_ISSUE_TRIAGE_2026-04-12.md`
-- `docs/CONSOLIDATED_OPEN_ITEMS_2026-04-29.md`
+- `docs/REMAINING_WORK_EXECUTION_SHEET_2026-04-21.md`
+- `docs/EXHAUSTIVE_AUDIT_LEDGER_2026-04-20.md`
+- `docs/LAUNCH_AUDIT_2026-04-03.md`
+- `docs/LAUNCH_AUDIT_FINDINGS_2026-04-05.md`
+- `docs/LAUNCH_READINESS_2026-04-05.md`
+- `docs/REPO_HARDENING_ACTION_PLAN_V2_3.md`
+- `docs/SNAPSHOT_CERTIFICATION_CHECKLIST.md`
+- `docs/SNAPSHOT_CERTIFICATION_REPORT_2026-04-20.md`
+- `docs/SNAPSHOT_CERTIFICATION_REPORT_2026-04-21.md`
+- `docs/SNAPSHOT_FREEZE_2026-04-21.md`
+- `docs/archive/CONSOLIDATED_OPEN_ITEMS_2026-04-29.md`
 - `docs/archive/**`
+- `docs/audits/**`
 - `qa/reports/**`

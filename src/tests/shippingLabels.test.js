@@ -440,8 +440,8 @@ describe('Shipping Labels - Rates', () => {
             })
         });
 
-        // 403 if feature is tier-gated on CI
-        expect([200, 403, 500]).toContain(response.status);
+        // 403 if feature is tier-gated on CI, 503 if EasyPost is not configured
+        expect([200, 403, 500, 503]).toContain(response.status);
         if (response.status === 200) {
             const data = await response.json();
             expect(data.rates).toBeDefined();

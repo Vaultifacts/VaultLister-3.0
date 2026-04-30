@@ -8,6 +8,7 @@ const ROOT = path.resolve(import.meta.dir, '..');
 const OUTPUT_PATH = path.join(ROOT, 'docs', 'OPEN_ITEMS.md');
 const REGISTRY_PATH = path.join(ROOT, 'docs', 'open-items', 'items.json');
 const WALKTHROUGH_DIR = path.join(ROOT, 'docs', 'walkthrough');
+const DEEP_DIVE_BACKLOG_PATH = path.join(ROOT, 'docs', 'reference', 'deep-dive-backlog.md');
 
 const args = new Set(process.argv.slice(2));
 const checkMode = args.has('--check');
@@ -42,8 +43,19 @@ const HISTORICAL_SOURCES = [
     'docs/WALKTHROUGH_MASTER_FINDINGS.md',
     'docs/MANUAL_INSPECTION.md',
     'docs/OPEN_ISSUE_TRIAGE_2026-04-12.md',
-    'docs/CONSOLIDATED_OPEN_ITEMS_2026-04-29.md',
+    'docs/REMAINING_WORK_EXECUTION_SHEET_2026-04-21.md',
+    'docs/EXHAUSTIVE_AUDIT_LEDGER_2026-04-20.md',
+    'docs/LAUNCH_AUDIT_2026-04-03.md',
+    'docs/LAUNCH_AUDIT_FINDINGS_2026-04-05.md',
+    'docs/LAUNCH_READINESS_2026-04-05.md',
+    'docs/REPO_HARDENING_ACTION_PLAN_V2_3.md',
+    'docs/SNAPSHOT_CERTIFICATION_CHECKLIST.md',
+    'docs/SNAPSHOT_CERTIFICATION_REPORT_2026-04-20.md',
+    'docs/SNAPSHOT_CERTIFICATION_REPORT_2026-04-21.md',
+    'docs/SNAPSHOT_FREEZE_2026-04-21.md',
+    'docs/archive/CONSOLIDATED_OPEN_ITEMS_2026-04-29.md',
     'docs/archive/**',
+    'docs/audits/**',
     'qa/reports/**'
 ];
 
@@ -338,6 +350,78 @@ function applyRegistryMetadata(items, registryItems) {
     return [...byId.values()].sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
 }
 
+function parseDeepDiveBacklog() {
+    if (!existsSync(DEEP_DIVE_BACKLOG_PATH)) return [];
+
+    const sourcePath = rel(DEEP_DIVE_BACKLOG_PATH);
+    const lines = readLines(DEEP_DIVE_BACKLOG_PATH);
+    const items = [];
+    let section = '';
+    let headers = null;
+
+    for (let index = 0; index < lines.length; index += 1) {
+        const line = lines[index];
+        const heading = line.match(/^(#{2,6})\s+(.+)$/);
+        if (heading) {
+            section = stripMarkdown(heading[2]);
+            headers = null;
+            continue;
+        }
+
+        if (!line.trim().startsWith('|')) {
+            headers = null;
+            continue;
+        }
+
+        if (index + 1 < lines.length && isSeparatorRow(lines[index + 1])) {
+            headers = splitTableRow(line);
+            index += 1;
+            continue;
+        }
+
+        if (!headers || isSeparatorRow(line)) continue;
+
+        const cells = splitTableRow(line);
+        if (!cells || cells.length < 2) continue;
+
+        const riskIndex = headerIndex(headers, ['risk id']);
+        const areaIndex = headerIndex(headers, ['area']);
+        const inspectIndex = headerIndex(headers, ['what to inspect']);
+        const evidenceIndex = headerIndex(headers, ['evidence path']);
+        const blockedIndex = headerIndex(headers, ['blocked until inspection complete']);
+
+        if (riskIndex < 0 || inspectIndex < 0) continue;
+
+        const id = stripMarkdown(cells[riskIndex] || '');
+        if (!/^R-\d+/i.test(id)) continue;
+
+        const blockedText = blockedIndex >= 0
+            ? stripMarkdown(cells[cells.length > headers.length ? cells.length - 1 : blockedIndex] || '')
+            : '';
+        const blocked = /^yes$/i.test(blockedText);
+        const priority = section.startsWith('P1') ? 'refactor-p1' : section.startsWith('P2') ? 'refactor-p2' : 'refactor';
+        const area = stripMarkdown(cells[areaIndex] || id);
+        const inspect = stripMarkdown(cells[inspectIndex] || '');
+        const evidence = stripMarkdown(cells[evidenceIndex] || '');
+        const statusText = blocked
+            ? 'BLOCKED UNTIL INSPECTION COMPLETE'
+            : 'OPEN — inspect before extraction/refactor';
+
+        items.push({
+            id,
+            priority,
+            area,
+            title: evidence || area,
+            statusText,
+            next_action: inspect,
+            blocker: blocked ? 'Required inspection steps are not complete.' : '',
+            source: { path: sourcePath, line: index + 1 }
+        });
+    }
+
+    return items.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
+}
+
 function parseUncheckedFile(filePath, group) {
     if (!existsSync(filePath)) return [];
     const sourcePath = rel(filePath);
@@ -484,6 +568,26 @@ function renderGithubTable(issues) {
     return `${rows.join('\n')}\n`;
 }
 
+function renderStructuralBacklogTable(items) {
+    if (!items.length) return '_No structural/refactor backlog items found._\n';
+    const rows = [
+        '| ID | Priority | Area | Evidence | Required Inspection / Next Action | Blocker | Source |',
+        '|---|---|---|---|---|---|---|'
+    ];
+    for (const item of items) {
+        rows.push([
+            escapeCell(item.id),
+            escapeCell(item.priority || ''),
+            escapeCell(item.area || ''),
+            escapeCell(item.title || ''),
+            escapeCell(item.next_action || ''),
+            escapeCell(item.blocker || ''),
+            escapeCell(sourceRef(item.source))
+        ].join(' | ').replace(/^/, '| ').replace(/$/, ' |'));
+    }
+    return `${rows.join('\n')}\n`;
+}
+
 function groupBy(items, keyFn) {
     const groups = new Map();
     for (const item of items) {
@@ -530,6 +634,7 @@ function renderReport(data) {
         commit,
         warnings,
         items,
+        structuralBacklog,
         githubIssues,
         githubIssuesAvailable,
         checklistItems,
@@ -554,7 +659,7 @@ function renderReport(data) {
     lines.push('Generator: `bun scripts/generate-open-items.mjs`');
     lines.push('Check: `bun run open-items:check`');
     lines.push('');
-    lines.push('Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrough/` status > live GitHub issues > explicit checklists > source scans.');
+    lines.push('Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrough/` status > structural/refactor backlog > live GitHub issues > explicit checklists > source scans.');
     lines.push('');
     lines.push('## Summary');
     lines.push('');
@@ -564,6 +669,7 @@ function renderReport(data) {
     lines.push(`| Open walkthrough/product items | ${openWalkthrough.length} |`);
     lines.push(`| Fixed pending live/manual verification | ${fixedPending.length} |`);
     lines.push(`| Deferred/post-launch items | ${deferred.length} |`);
+    lines.push(`| Structural/refactor backlog items | ${structuralBacklog.length} |`);
     lines.push(`| Open GitHub issues | ${githubIssuesAvailable ? githubIssues.length : 'unknown'} |`);
     lines.push(`| Explicit unchecked checklist items | ${checklistItems.length} |`);
     lines.push(`| Source TODO/FIXME hits | ${todos.length} |`);
@@ -588,6 +694,11 @@ function renderReport(data) {
     lines.push('## Deferred / Post-Launch Items');
     lines.push('');
     lines.push(renderItemsTable(deferred));
+    lines.push('## Structural / Refactor Backlog');
+    lines.push('');
+    lines.push('These are read-only refactor risk items from `docs/reference/deep-dive-backlog.md`. They are not launch blockers unless separately promoted in `docs/open-items/items.json`.');
+    lines.push('');
+    lines.push(renderStructuralBacklogTable(structuralBacklog));
     lines.push('## GitHub Open Issues');
     lines.push('');
     lines.push('Command: `gh issue list --state open --limit 200 --json number,title,labels,updatedAt,url`');
@@ -619,6 +730,7 @@ const registry = loadRegistry();
 const warnings = [...registry.warnings];
 const walkthroughItems = mergeWalkthroughItems(parseWalkthroughItems());
 const items = applyRegistryMetadata(walkthroughItems, registry.items);
+const structuralBacklog = parseDeepDiveBacklog();
 const githubResult = fetchGithubIssues(warnings);
 const checklistItems = parseChecklists();
 const todos = scanTodos(warnings);
@@ -627,6 +739,7 @@ const report = renderReport({
     commit: readCommit(),
     warnings,
     items,
+    structuralBacklog,
     githubIssues: githubResult.issues,
     githubIssuesAvailable: githubResult.available,
     checklistItems,
