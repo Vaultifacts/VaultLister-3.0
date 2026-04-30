@@ -617,6 +617,67 @@
         .catch(function() {});
 })();
 </script>
+<script>
+// Lang selector
+(function() {
+    var LANGS = {
+        en: { code: "EN" },
+        'en-ca': { code: "EN" },
+        es: { code: "ES" },
+        fr: { code: "FR" },
+        de: { code: "DE" },
+        it: { code: "IT" },
+        pt: { code: "PT" },
+        ja: { code: "JA" },
+        zh: { code: "ZH" },
+        ko: { code: "KO" },
+        ar: { code: "AR" }
+    };
+    function setLang(lang) {
+        var info = LANGS[lang] || LANGS["en"];
+        var codeEl = document.getElementById("current-lang-code");
+        if (codeEl) codeEl.textContent = info.code;
+        document.querySelectorAll(".lang-option").forEach(function(btn) {
+            btn.classList.toggle("active", btn.getAttribute("data-lang") === lang);
+        });
+        try { localStorage.setItem("vaultlister_locale", lang); } catch(e) {}
+    }
+    function detectLang() {
+        try {
+            var stored = localStorage.getItem("vaultlister_locale");
+            if (stored && LANGS[stored]) return stored;
+        } catch(e) {}
+        var nav = (navigator.language || "").toLowerCase();
+        if (nav === "en-ca" || nav.startsWith("en-ca")) return "en-ca";
+        var base = nav.split("-")[0];
+        return LANGS[base] ? base : "en";
+    }
+    document.addEventListener("DOMContentLoaded", function() {
+        var btn = document.querySelector(".lang-btn");
+        var dropdown = document.getElementById("lang-dropdown");
+        if (!btn || !dropdown) return;
+        setLang(detectLang());
+        btn.addEventListener("click", function(e) {
+            e.stopPropagation();
+            var open = dropdown.classList.toggle("open");
+            btn.setAttribute("aria-expanded", open ? "true" : "false");
+        });
+        document.addEventListener("click", function(e) {
+            if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove("open");
+                btn.setAttribute("aria-expanded", "false");
+            }
+        });
+        dropdown.querySelectorAll(".lang-option").forEach(function(opt) {
+            opt.addEventListener("click", function() {
+                setLang(opt.getAttribute("data-lang"));
+                dropdown.classList.remove("open");
+                btn.setAttribute("aria-expanded", "false");
+            });
+        });
+    });
+})();
+</script>
 <script src="/public-auth-nav.js" defer></script>
 </body>
 </html>

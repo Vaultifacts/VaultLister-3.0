@@ -615,7 +615,6 @@ body {
 }
 .currency-option:hover { background: var(--gray-50, #f9fafb); }
 .currency-option.active { font-weight: 700; color: var(--gray-900, #111827); }
-.currency-option img { vertical-align: middle; border-radius: 2px; display: inline-block; margin-right: 2px; }
 
 /* Skip link — visible on focus for keyboard/AT users */
 .skip-link {
