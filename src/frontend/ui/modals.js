@@ -342,7 +342,7 @@ const modals = {
                 <form id="add-item-form" onsubmit="(function(e){var t=e.target.querySelector('[name=title]');var p=e.target.querySelector('[name=listPrice]');if(!t||!t.value.trim()){e.preventDefault();toast.error('Title is required');t&&t.focus();return;}if(!p||!(parseFloat(p.value)>0)){e.preventDefault();toast.error('List Price must be greater than 0');p&&p.focus();return;}handlers.addItem(e);})(event)">
                     <div class="form-group" style="margin-bottom: 24px;">
                         <div class="flex justify-between items-center mb-2">
-                            <label class="form-label">Product Images & Video</label>
+                            <p class="form-label">Product Images & Video</p>
                             <select class="form-select" name="imageCropRatio" aria-label="Image crop ratio" style="width: auto; font-size: 13px; padding: 4px 8px;">
                                 <option value="1:1">Square (1:1)</option>
                                 <option value="4:5">Portrait (4:5)</option>
@@ -443,7 +443,7 @@ const modals = {
                             <input type="text" class="form-input" name="brand" id="add-item-brand" data-testid="add-item-brand" maxlength="50" aria-label="Add Item Brand">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Category</label>
+                            <label for="category-select" class="form-label">Category</label>
                             <select aria-label="Category" class="form-select" name="category" id="category-select" onchange="handlers.toggleCustomCategory(this.value)">
                                 <option value="">Select...</option>
                                 <option>Tops</option>
@@ -460,7 +460,7 @@ const modals = {
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Size Type</label>
+                            <label for="size-type-select" class="form-label">Size Type</label>
                             <select aria-label="Size type" class="form-select" name="sizeType" id="size-type-select" onchange="handlers.updateSizeOptions(this.value)">
                                 <option value="clothing">Clothing (XS-5XL)</option>
                                 <option value="shoes_us">Shoes (US)</option>
@@ -472,7 +472,7 @@ const modals = {
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Size</label>
+                            <label for="size-select" class="form-label">Size</label>
                             <select aria-label="Size" class="form-select" name="size" id="size-select">
                                 <option value="">Select size...</option>
                                 <option value="XXS">XXS</option>
@@ -496,8 +496,8 @@ const modals = {
                             <input type="text" class="form-input" name="color" id="add-item-color" data-testid="add-item-color" maxlength="50" aria-label="Add Item Color">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Condition</label>
-                            <select class="form-select" name="condition" aria-label="Item condition" required>
+                            <label for="add-item-condition" class="form-label">Condition</label>
+                            <select id="add-item-condition" class="form-select" name="condition" aria-label="Item condition" required>
                                 <option value="new">New with Tags</option>
                                 <option value="like_new">Like New</option>
                                 <option value="good" selected>Good</option>
@@ -519,22 +519,22 @@ const modals = {
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Cost Price</label>
-                            <input aria-label="Cost price" type="number" class="form-input" name="costPrice" step="0.01" min="0">
+                            <label for="add-item-cost-price" class="form-label">Cost Price</label>
+                            <input id="add-item-cost-price" aria-label="Cost price" type="number" class="form-input" name="costPrice" step="0.01" min="0">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">List Price *</label>
+                            <label for="base-list-price" class="form-label">List Price *</label>
                             <input aria-label="List price" type="number" class="form-input" name="listPrice" step="0.01" min="0" required id="base-list-price" oninput="handlers.syncPlatformPrices(this.value)">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Purchase Date</label>
-                            <input aria-label="Purchase date" type="date" class="form-input" name="purchaseDate">
+                            <label for="add-item-purchase-date" class="form-label">Purchase Date</label>
+                            <input id="add-item-purchase-date" aria-label="Purchase date" type="date" class="form-input" name="purchaseDate">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Supplier</label>
-                            <input aria-label="Goodwill, Estate Sale" type="text" class="form-input" name="supplier" placeholder="e.g., Goodwill, Estate Sale">
+                            <label for="add-item-supplier" class="form-label">Supplier</label>
+                            <input id="add-item-supplier" aria-label="Goodwill, Estate Sale" type="text" class="form-input" name="supplier" placeholder="e.g., Goodwill, Estate Sale">
                         </div>
                     </div>
 
@@ -642,12 +642,12 @@ const modals = {
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Quantity on Hand *</label>
-                            <input aria-label="Quantity" type="number" class="form-input" name="quantity" min="0" value="1" required>
+                            <label for="add-item-quantity" class="form-label">Quantity on Hand *</label>
+                            <input id="add-item-quantity" aria-label="Quantity" type="number" class="form-input" name="quantity" min="0" value="1" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Low Stock Threshold</label>
-                            <input aria-label="Alert when stock falls below this number" type="number" class="form-input" name="lowStockThreshold" min="0" value="1" placeholder="Alert when stock falls below this number">
+                            <label for="add-item-low-stock" class="form-label">Low Stock Threshold</label>
+                            <input id="add-item-low-stock" aria-label="Alert when stock falls below this number" type="number" class="form-input" name="lowStockThreshold" min="0" value="1" placeholder="Alert when stock falls below this number">
                         </div>
                     </div>
 
@@ -672,7 +672,7 @@ const modals = {
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Description</label>
+                        <p class="form-label">Description</p>
                         <div id="add-item-rich-editor"></div>
                         <input type="hidden" name="description" id="add-item-description">
                     </div>
@@ -1029,8 +1029,8 @@ const modals = {
                         <input type="hidden" id="removed-images" name="removedImages" value="">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Title *</label>
-                        <input aria-label="Title" type="text" class="form-input" name="title" value="${escapeHtml(item.title)}" required>
+                        <label for="edit-item-title" class="form-label">Title *</label>
+                        <input id="edit-item-title" aria-label="Title" type="text" class="form-input" name="title" value="${escapeHtml(item.title)}" required>
                     </div>
                     <div class="form-group">
                         <div class="flex justify-between items-center mb-2">
@@ -1043,22 +1043,22 @@ const modals = {
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Brand</label>
-                            <input aria-label="Brand" type="text" class="form-input" name="brand" value="${escapeHtml(item.brand || '')}">
+                            <label for="edit-item-brand" class="form-label">Brand</label>
+                            <input id="edit-item-brand" aria-label="Brand" type="text" class="form-input" name="brand" value="${escapeHtml(item.brand || '')}">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Category</label>
-                            <input aria-label="Category" type="text" class="form-input" name="category" value="${escapeHtml(item.category || '')}">
+                            <label for="edit-item-category" class="form-label">Category</label>
+                            <input id="edit-item-category" aria-label="Category" type="text" class="form-input" name="category" value="${escapeHtml(item.category || '')}">
                         </div>
                     </div>
                     <div class="grid grid-cols-3 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Size</label>
-                            <input aria-label="Size" type="text" class="form-input" name="size" value="${escapeHtml(item.size || '')}">
+                            <label for="edit-item-size" class="form-label">Size</label>
+                            <input id="edit-item-size" aria-label="Size" type="text" class="form-input" name="size" value="${escapeHtml(item.size || '')}">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Color</label>
-                            <input aria-label="Color" type="text" class="form-input" name="color" value="${escapeHtml(item.color || '')}">
+                            <label for="edit-item-color" class="form-label">Color</label>
+                            <input id="edit-item-color" aria-label="Color" type="text" class="form-input" name="color" value="${escapeHtml(item.color || '')}">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Condition</label>
@@ -1072,22 +1072,22 @@ const modals = {
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Cost Price</label>
-                            <input aria-label="Cost price" type="number" class="form-input" name="costPrice" step="0.01" value="${item.cost_price || ''}">
+                            <label for="edit-item-cost-price" class="form-label">Cost Price</label>
+                            <input id="edit-item-cost-price" aria-label="Cost price" type="number" class="form-input" name="costPrice" step="0.01" value="${item.cost_price || ''}">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">List Price *</label>
-                            <input aria-label="List price" type="number" class="form-input" name="listPrice" step="0.01" value="${item.list_price}" required>
+                            <label for="edit-item-list-price" class="form-label">List Price *</label>
+                            <input id="edit-item-list-price" aria-label="List price" type="number" class="form-input" name="listPrice" step="0.01" value="${item.list_price}" required>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Quantity on Hand *</label>
-                            <input aria-label="Quantity" type="number" class="form-input" name="quantity" min="0" value="${item.quantity != null ? item.quantity : 1}" required>
+                            <label for="edit-item-quantity" class="form-label">Quantity on Hand *</label>
+                            <input id="edit-item-quantity" aria-label="Quantity" type="number" class="form-input" name="quantity" min="0" value="${item.quantity != null ? item.quantity : 1}" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Low Stock Threshold</label>
-                            <input aria-label="Alert when stock falls below this number" type="number" class="form-input" name="lowStockThreshold" min="1" value="${item.low_stock_threshold || 5}" placeholder="Alert when stock falls below this number">
+                            <label for="edit-item-low-stock" class="form-label">Low Stock Threshold</label>
+                            <input id="edit-item-low-stock" aria-label="Alert when stock falls below this number" type="number" class="form-input" name="lowStockThreshold" min="1" value="${item.low_stock_threshold || 5}" placeholder="Alert when stock falls below this number">
                         </div>
                     </div>
 
@@ -1112,20 +1112,20 @@ const modals = {
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Status</label>
-                        <select aria-label="Status" class="form-select" name="status" required>
+                        <label for="edit-item-status" class="form-label">Status</label>
+                        <select id="edit-item-status" aria-label="Status" class="form-select" name="status" required>
                             <option value="active" ${item.status === 'active' ? 'selected' : ''}>Active</option>
                             <option value="archived" ${item.status === 'archived' ? 'selected' : ''}>Archived</option>
                             <option value="draft" ${item.status === 'draft' ? 'selected' : ''}>Draft</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Description</label>
-                        <textarea aria-label="Description" class="form-textarea" name="description" rows="3">${escapeHtml(item.description || '')}</textarea>
+                        <label for="edit-item-description" class="form-label">Description</label>
+                        <textarea id="edit-item-description" aria-label="Description" class="form-textarea" name="description" rows="3">${escapeHtml(item.description || '')}</textarea>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Seller Notes</label>
-                        <textarea aria-label="Notes" class="form-textarea" name="notes" rows="3">${escapeHtml(item.notes || '')}</textarea>
+                        <label for="edit-item-notes" class="form-label">Seller Notes</label>
+                        <textarea id="edit-item-notes" aria-label="Notes" class="form-textarea" name="notes" rows="3">${escapeHtml(item.notes || '')}</textarea>
                     </div>
                 </form>
             </div>
@@ -1145,8 +1145,8 @@ const modals = {
             <form id="bulk-edit-form" onsubmit="handlers.submitBulkEdit(event, ${JSON.stringify(ids).replace(/"/g, '&quot;')})">
                 <div class="modal-body">
                     <div class="form-group">
-                        <label class="form-label">Action</label>
-                        <select aria-label="Bulk action" class="form-select" name="action" required onchange="handlers.showBulkFields(this.value)">
+                        <label for="bulk-edit-action" class="form-label">Action</label>
+                        <select id="bulk-edit-action" aria-label="Bulk action" class="form-select" name="action" required onchange="handlers.showBulkFields(this.value)">
                             <option value="">Select action...</option>
                             <option value="updateStatus">Update Status</option>
                             <option value="updatePrice">Update Price</option>
@@ -1254,8 +1254,8 @@ const modals = {
                         <p style="font-size: 11px; color: var(--gray-500); margin-top: 8px; line-height: 1.4;">Extension uses your logged-in browser session (recommended for Poshmark, Depop, Facebook, Whatnot). Bot is automated and may be slower.</p>
                     </div>
                     <div style="margin-top: 16px;">
-                        <label class="form-label">Price Adjustment (%)</label>
-                        <input aria-label="+10 for 10% increase" type="number" name="priceAdjust" class="form-input" value="0" step="5" placeholder="e.g., +10 for 10% increase">
+                        <label for="crosslist-price-adjust" class="form-label">Price Adjustment (%)</label>
+                        <input id="crosslist-price-adjust" aria-label="+10 for 10% increase" type="number" name="priceAdjust" class="form-input" value="0" step="5" placeholder="e.g., +10 for 10% increase">
                     </div>
                 </form>
             </div>
@@ -1371,19 +1371,19 @@ const modals = {
             <div class="modal-body">
                 <form id="create-template-form" onsubmit="handlers.submitCreateTemplate(event)">
                     <div class="form-group">
-                        <label class="form-label">Template Name *</label>
-                        <input aria-label="Designer Handbag Template" type="text" name="name" class="form-input" required placeholder="e.g., Designer Handbag Template">
+                        <label for="create-template-name" class="form-label">Template Name *</label>
+                        <input id="create-template-name" aria-label="Designer Handbag Template" type="text" name="name" class="form-input" required placeholder="e.g., Designer Handbag Template">
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Description</label>
-                        <input aria-label="Optional description" type="text" name="description" class="form-input" placeholder="Optional description">
+                        <label for="create-template-description" class="form-label">Description</label>
+                        <input id="create-template-description" aria-label="Optional description" type="text" name="description" class="form-input" placeholder="Optional description">
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Category</label>
-                            <select aria-label="Category" name="category" class="form-select">
+                            <label for="create-template-category" class="form-label">Category</label>
+                            <select id="create-template-category" aria-label="Category" name="category" class="form-select">
                                 <option value="">Select category...</option>
                                 <option value="Tops">Tops</option>
                                 <option value="Bottoms">Bottoms</option>
@@ -1396,8 +1396,8 @@ const modals = {
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Default Condition</label>
-                            <select name="conditionDefault" class="form-select" aria-label="Default condition">
+                            <label for="create-template-condition" class="form-label">Default Condition</label>
+                            <select id="create-template-condition" name="conditionDefault" class="form-select" aria-label="Default condition">
                                 <option value="">Select condition...</option>
                                 <option value="new">New with Tags</option>
                                 <option value="like_new">Like New</option>
@@ -1408,25 +1408,25 @@ const modals = {
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Title Pattern</label>
-                        <input aria-label="{Brand} {Category} - {Color}" type="text" name="titlePattern" class="form-input" placeholder="e.g., {Brand} {Category} - {Color}">
+                        <label for="create-template-title-pattern" class="form-label">Title Pattern</label>
+                        <input id="create-template-title-pattern" aria-label="{Brand} {Category} - {Color}" type="text" name="titlePattern" class="form-input" placeholder="e.g., {Brand} {Category} - {Color}">
                         <p class="text-xs text-gray-500 mt-1">Use {Brand}, {Category}, {Color}, {Size} as placeholders</p>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Description Template</label>
-                        <textarea aria-label="Enter your default description template..." name="descriptionTemplate" class="form-input" rows="4" placeholder="Enter your default description template..."></textarea>
+                        <label for="create-template-desc-template" class="form-label">Description Template</label>
+                        <textarea id="create-template-desc-template" aria-label="Enter your default description template..." name="descriptionTemplate" class="form-input" rows="4" placeholder="Enter your default description template..."></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Default Tags</label>
-                        <input aria-label="Comma-separated tags" type="text" name="tags" class="form-input" placeholder="Comma-separated tags">
+                        <label for="create-template-tags" class="form-label">Default Tags</label>
+                        <input id="create-template-tags" aria-label="Comma-separated tags" type="text" name="tags" class="form-input" placeholder="Comma-separated tags">
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Pricing Strategy</label>
-                            <select aria-label="Pricing strategy" name="pricingStrategy" class="form-select">
+                            <label for="create-template-pricing-strategy" class="form-label">Pricing Strategy</label>
+                            <select id="create-template-pricing-strategy" aria-label="Pricing strategy" name="pricingStrategy" class="form-select">
                                 <option value="fixed">Fixed Price</option>
                                 <option value="cost_plus">Cost Plus Markup</option>
                                 <option value="market">Market Based</option>
@@ -1434,8 +1434,8 @@ const modals = {
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Markup %</label>
-                            <input aria-label="Markup percentage" type="number" name="markupPercentage" class="form-input" value="0" min="0" max="500" step="5">
+                            <label for="create-template-markup" class="form-label">Markup %</label>
+                            <input id="create-template-markup" aria-label="Markup percentage" type="number" name="markupPercentage" class="form-input" value="0" min="0" max="500" step="5">
                         </div>
                     </div>
 
@@ -1471,19 +1471,19 @@ const modals = {
             <div class="modal-body">
                 <form id="edit-template-form" onsubmit="handlers.submitEditTemplate(event, '${templateId}')">
                     <div class="form-group">
-                        <label class="form-label">Template Name *</label>
-                        <input aria-label="Name" type="text" name="name" class="form-input" required value="${escapeHtml(template.name)}">
+                        <label for="edit-template-name" class="form-label">Template Name *</label>
+                        <input id="edit-template-name" aria-label="Name" type="text" name="name" class="form-input" required value="${escapeHtml(template.name)}">
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Description</label>
-                        <input aria-label="Description" type="text" name="description" class="form-input" value="${escapeHtml(template.description || '')}">
+                        <label for="edit-template-description" class="form-label">Description</label>
+                        <input id="edit-template-description" aria-label="Description" type="text" name="description" class="form-input" value="${escapeHtml(template.description || '')}">
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Category</label>
-                            <select aria-label="Category" name="category" class="form-select">
+                            <label for="create-template-category" class="form-label">Category</label>
+                            <select id="create-template-category" aria-label="Category" name="category" class="form-select">
                                 <option value="">Select category...</option>
                                 <option value="Tops" ${template.category === 'Tops' ? 'selected' : ''}>Tops</option>
                                 <option value="Bottoms" ${template.category === 'Bottoms' ? 'selected' : ''}>Bottoms</option>
@@ -1496,8 +1496,8 @@ const modals = {
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Default Condition</label>
-                            <select name="conditionDefault" class="form-select" aria-label="Default condition">
+                            <label for="edit-template-condition" class="form-label">Default Condition</label>
+                            <select id="edit-template-condition" name="conditionDefault" class="form-select" aria-label="Default condition">
                                 <option value="">Select condition...</option>
                                 <option value="new" ${template.condition_default === 'new' ? 'selected' : ''}>New with Tags</option>
                                 <option value="like_new" ${template.condition_default === 'like_new' ? 'selected' : ''}>Like New</option>
@@ -1508,25 +1508,25 @@ const modals = {
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Title Pattern</label>
-                        <input aria-label="{Brand} {Category} - {Color}" type="text" name="titlePattern" class="form-input" value="${escapeHtml(template.title_pattern || '')}" placeholder="e.g., {Brand} {Category} - {Color}">
+                        <label for="edit-template-title-pattern" class="form-label">Title Pattern</label>
+                        <input id="edit-template-title-pattern" aria-label="{Brand} {Category} - {Color}" type="text" name="titlePattern" class="form-input" value="${escapeHtml(template.title_pattern || '')}" placeholder="e.g., {Brand} {Category} - {Color}">
                         <p class="text-xs text-gray-500 mt-1">Use {Brand}, {Category}, {Color}, {Size} as placeholders</p>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Description Template</label>
-                        <textarea aria-label="Description Template" name="descriptionTemplate" class="form-input" rows="4">${escapeHtml(template.description_template || '')}</textarea>
+                        <label for="edit-template-desc-template" class="form-label">Description Template</label>
+                        <textarea id="edit-template-desc-template" aria-label="Description Template" name="descriptionTemplate" class="form-input" rows="4">${escapeHtml(template.description_template || '')}</textarea>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Default Tags</label>
-                        <input aria-label="Tags" type="text" name="tags" class="form-input" value="${template.tags ? template.tags.join(', ') : ''}">
+                        <label for="edit-template-tags" class="form-label">Default Tags</label>
+                        <input id="edit-template-tags" aria-label="Tags" type="text" name="tags" class="form-input" value="${template.tags ? template.tags.join(', ') : ''}">
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Pricing Strategy</label>
-                            <select aria-label="Pricing strategy" name="pricingStrategy" class="form-select">
+                            <label for="edit-template-pricing-strategy" class="form-label">Pricing Strategy</label>
+                            <select id="edit-template-pricing-strategy" aria-label="Pricing strategy" name="pricingStrategy" class="form-select">
                                 <option value="fixed" ${template.pricing_strategy === 'fixed' ? 'selected' : ''}>Fixed Price</option>
                                 <option value="cost_plus" ${template.pricing_strategy === 'cost_plus' ? 'selected' : ''}>Cost Plus Markup</option>
                                 <option value="market" ${template.pricing_strategy === 'market' ? 'selected' : ''}>Market Based</option>
@@ -1534,8 +1534,8 @@ const modals = {
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Markup %</label>
-                            <input aria-label="Markup percentage" type="number" name="markupPercentage" class="form-input" value="${template.markup_percentage || 0}" min="0" max="500" step="5">
+                            <label for="edit-template-markup" class="form-label">Markup %</label>
+                            <input id="edit-template-markup" aria-label="Markup percentage" type="number" name="markupPercentage" class="form-input" value="${template.markup_percentage || 0}" min="0" max="500" step="5">
                         </div>
                     </div>
 
@@ -1690,25 +1690,25 @@ const modals = {
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Title *</label>
-                            <input aria-label="Base title" type="text" name="baseTitle" class="form-input" value="${escapeHtml(baseItem.title)}" required maxlength="80">
+                            <label for="crosslist-base-title" class="form-label">Title *</label>
+                            <input id="crosslist-base-title" aria-label="Base title" type="text" name="baseTitle" class="form-input" value="${escapeHtml(baseItem.title)}" required maxlength="80">
                             <p class="text-xs text-gray-500 mt-1">Maximum 80 characters</p>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Description *</label>
-                            <textarea aria-label="Base Description" name="baseDescription" class="form-input" rows="6" required>${escapeHtml(baseItem.description || '')}</textarea>
+                            <label for="crosslist-base-description" class="form-label">Description *</label>
+                            <textarea id="crosslist-base-description" aria-label="Base Description" name="baseDescription" class="form-input" rows="6" required>${escapeHtml(baseItem.description || '')}</textarea>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
                             <div class="form-group">
-                                <label class="form-label">Price *</label>
-                                <input aria-label="Base price" type="number" name="basePrice" class="form-input" value="${baseItem.list_price}" step="0.01" min="0" required>
+                                <label for="crosslist-base-price" class="form-label">Price *</label>
+                                <input id="crosslist-base-price" aria-label="Base price" type="number" name="basePrice" class="form-input" value="${baseItem.list_price}" step="0.01" min="0" required>
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label">Shipping</label>
-                                <select aria-label="Shipping method" name="baseShipping" class="form-select">
+                                <label for="crosslist-base-shipping" class="form-label">Shipping</label>
+                                <select id="crosslist-base-shipping" aria-label="Shipping method" name="baseShipping" class="form-select">
                                     <option value="seller">Seller Pays</option>
                                     <option value="buyer">Buyer Pays</option>
                                 </select>
@@ -1716,8 +1716,8 @@ const modals = {
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Tags</label>
-                            <input aria-label="Comma-separated tags" type="text" name="baseTags" class="form-input" value="${escapeHtml(tagsString)}" placeholder="Comma-separated tags">
+                            <label for="crosslist-base-tags" class="form-label">Tags</label>
+                            <input id="crosslist-base-tags" aria-label="Comma-separated tags" type="text" name="baseTags" class="form-input" value="${escapeHtml(tagsString)}" placeholder="Comma-separated tags">
                         </div>
                     </div>
 
@@ -1741,25 +1741,25 @@ const modals = {
                                     </div>
 
                                     <div class="form-group">
-                                        <label class="form-label">Title *</label>
-                                        <input aria-label="Title" type="text" name="${platform}Title" class="form-input platform-title-input" value="${escapeHtml(baseItem.title)}" maxlength="80">
+                                        <label for="crosslist-${platform}-title" class="form-label">Title *</label>
+                                        <input id="crosslist-${platform}-title" aria-label="Title" type="text" name="${platform}Title" class="form-input platform-title-input" value="${escapeHtml(baseItem.title)}" maxlength="80">
                                         <p class="text-xs text-gray-500 mt-1">Optimize for ${platform} search</p>
                                     </div>
 
                                     <div class="form-group">
-                                        <label class="form-label">Description *</label>
-                                        <textarea aria-label="${Platform}Description" name="${platform}Description" class="form-input platform-description-input" rows="5">${escapeHtml(baseItem.description || '')}</textarea>
+                                        <label for="crosslist-${platform}-description" class="form-label">Description *</label>
+                                        <textarea id="crosslist-${platform}-description" aria-label="${Platform}Description" name="${platform}Description" class="form-input platform-description-input" rows="5">${escapeHtml(baseItem.description || '')}</textarea>
                                     </div>
 
                                     <div class="grid grid-cols-2 gap-4">
                                         <div class="form-group">
-                                            <label class="form-label">Price *</label>
-                                            <input aria-label="Price" type="number" name="${platform}Price" class="form-input platform-price-input" value="${baseItem.list_price}" step="0.01" min="0">
+                                            <label for="crosslist-${platform}-price" class="form-label">Price *</label>
+                                            <input id="crosslist-${platform}-price" aria-label="Price" type="number" name="${platform}Price" class="form-input platform-price-input" value="${baseItem.list_price}" step="0.01" min="0">
                                         </div>
 
                                         <div class="form-group">
-                                            <label class="form-label">Price Adjustment</label>
-                                            <select aria-label="Price adjustment" name="${platform}PriceAdjust" class="form-select" onchange="handlers.applyPriceAdjustment('${platform}', this.value, ${baseItem.list_price})">
+                                            <label for="crosslist-${platform}-price-adjust" class="form-label">Price Adjustment</label>
+                                            <select id="crosslist-${platform}-price-adjust" aria-label="Price adjustment" name="${platform}PriceAdjust" class="form-select" onchange="handlers.applyPriceAdjustment('${platform}', this.value, ${baseItem.list_price})">
                                                 <option value="0">No Change</option>
                                                 <option value="-5">-5% (Competitive)</option>
                                                 <option value="5">+5% (Premium)</option>
@@ -1770,8 +1770,8 @@ const modals = {
                                     </div>
 
                                     <div class="form-group">
-                                        <label class="form-label">Tags</label>
-                                        <input aria-label="Tags" type="text" name="${platform}Tags" class="form-input platform-tags-input" value="${escapeHtml(tagsString)}">
+                                        <label for="crosslist-${platform}-tags" class="form-label">Tags</label>
+                                        <input id="crosslist-${platform}-tags" aria-label="Tags" type="text" name="${platform}Tags" class="form-input platform-tags-input" value="${escapeHtml(tagsString)}">
                                     </div>
 
                                     ${
@@ -1918,7 +1918,7 @@ const modals = {
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Target Platform</label>
+                        <label for="ai-target-platform" class="form-label">Target Platform</label>
                         <select aria-label="Ai Target Platform" id="ai-target-platform" class="form-select">
                             <option value="poshmark">Poshmark (80 char title)</option>
                             <option value="ebay">eBay (80 char title)</option>
@@ -2044,7 +2044,7 @@ const modals = {
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Target Platform</label>
+                        <label for="gli-platform" class="form-label">Target Platform</label>
                         <select aria-label="Gli Platform" id="gli-platform" class="form-select">
                             <option value="poshmark">Poshmark (80 char title)</option>
                             <option value="ebay">eBay (80 char title)</option>
@@ -2075,24 +2075,24 @@ const modals = {
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Title</label>
+                        <label for="gli-result-title" class="form-label">Title</label>
                         <input aria-label="Gli Result Title" type="text" id="gli-result-title" class="form-input" maxlength="100">
                         <p class="text-xs text-gray-500 mt-1"><span id="gli-title-count">0</span> characters</p>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Description</label>
+                        <label for="gli-result-description" class="form-label">Description</label>
                         <textarea id="gli-result-description" class="form-input" rows="7" aria-label="Gli Result Description"></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Tags</label>
+                        <label for="gli-result-tags" class="form-label">Tags</label>
                         <input aria-label="Comma-separated tags" type="text" id="gli-result-tags" class="form-input" placeholder="Comma-separated tags">
                         <p class="text-xs text-gray-500 mt-1"><span id="gli-tags-count">0</span> tags</p>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Price</label>
+                        <label for="gli-result-price" class="form-label">Price</label>
                         <div class="flex items-center gap-3">
                             <input aria-label="Gli Result Price" type="number" id="gli-result-price" class="form-input" step="0.01" style="max-width: 140px;">
                             <span id="gli-price-range" class="text-sm text-gray-500"></span>
@@ -2517,8 +2517,8 @@ const modals = {
                     ticket.status !== 'closed' && ticket.status !== 'resolved'
                         ? `
                     <form onsubmit="handlers.submitTicketReply(event, '${ticket.id}')" style="margin-top: 1.5rem;">
-                        <label class="form-label">Add Reply</label>
-                        <textarea aria-label="Add additional information or reply to support..." class="form-textarea" name="message" rows="4" required
+                        <label for="ticket-reply-message" class="form-label">Add Reply</label>
+                        <textarea id="ticket-reply-message" aria-label="Add additional information or reply to support..." class="form-textarea" name="message" rows="4" required
                                   placeholder="Add additional information or reply to support..."></textarea>
                         <div style="margin-top: 0.75rem;">
                             <button type="submit" class="btn btn-primary">Send Reply</button>
@@ -2545,13 +2545,13 @@ const modals = {
             <div class="modal-body">
                 <form id="add-sku-rule-form" onsubmit="handlers.addSkuRule(event)">
                     <div class="form-group">
-                        <label class="form-label">Rule Name *</label>
-                        <input aria-label="Standard SKU, Vintage Items" type="text" class="form-input" name="name" required placeholder="e.g., Standard SKU, Vintage Items">
+                        <label for="sku-rule-name" class="form-label">Rule Name *</label>
+                        <input id="sku-rule-name" aria-label="Standard SKU, Vintage Items" type="text" class="form-input" name="name" required placeholder="e.g., Standard SKU, Vintage Items">
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Pattern *</label>
-                        <input aria-label="{brand}-{category}-{counter}" type="text" class="form-input" name="pattern" required
+                        <label for="sku-rule-pattern" class="form-label">Pattern *</label>
+                        <input id="sku-rule-pattern" aria-label="{brand}-{category}-{counter}" type="text" class="form-input" name="pattern" required
                                placeholder="{brand}-{category}-{counter}"
                                oninput="handlers.livePreviewSkuPattern(this.value)">
                         <div class="sku-pattern-buttons mt-2">
@@ -2571,33 +2571,33 @@ const modals = {
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Description</label>
-                        <textarea aria-label="Optional description for this rule" class="form-textarea" name="description" rows="2" placeholder="Optional description for this rule"></textarea>
+                        <label for="sku-rule-description" class="form-label">Description</label>
+                        <textarea id="sku-rule-description" aria-label="Optional description for this rule" class="form-textarea" name="description" rows="2" placeholder="Optional description for this rule"></textarea>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Prefix</label>
-                            <input aria-label="VL-" type="text" class="form-input" name="prefix" placeholder="e.g., VL-">
+                            <label for="sku-rule-prefix" class="form-label">Prefix</label>
+                            <input id="sku-rule-prefix" aria-label="VL-" type="text" class="form-input" name="prefix" placeholder="e.g., VL-">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Suffix</label>
-                            <input aria-label="-NEW" type="text" class="form-input" name="suffix" placeholder="e.g., -NEW">
+                            <label for="sku-rule-suffix" class="form-label">Suffix</label>
+                            <input id="sku-rule-suffix" aria-label="-NEW" type="text" class="form-input" name="suffix" placeholder="e.g., -NEW">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-3 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Separator</label>
-                            <input aria-label="Separator" type="text" class="form-input" name="separator" value="-" maxlength="2">
+                            <label for="sku-rule-separator" class="form-label">Separator</label>
+                            <input id="sku-rule-separator" aria-label="Separator" type="text" class="form-input" name="separator" value="-" maxlength="2">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Counter Start</label>
-                            <input aria-label="Counter start" type="number" class="form-input" name="counterStart" value="1" min="0">
+                            <label for="sku-rule-counter-start" class="form-label">Counter Start</label>
+                            <input id="sku-rule-counter-start" aria-label="Counter start" type="number" class="form-input" name="counterStart" value="1" min="0">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Counter Padding</label>
-                            <select aria-label="Counter offer padding" class="form-select" name="counterPadding">
+                            <label for="sku-rule-counter-padding" class="form-label">Counter Padding</label>
+                            <select id="sku-rule-counter-padding" aria-label="Counter offer padding" class="form-select" name="counterPadding">
                                 <option value="2">2 digits (01)</option>
                                 <option value="3">3 digits (001)</option>
                                 <option value="4" selected>4 digits (0001)</option>
@@ -2634,13 +2634,13 @@ const modals = {
                     <input type="hidden" name="ruleId" value="${rule.id}">
 
                     <div class="form-group">
-                        <label class="form-label">Rule Name *</label>
-                        <input aria-label="Name" type="text" class="form-input" name="name" required value="${escapeHtml(rule.name)}">
+                        <label for="edit-sku-rule-name" class="form-label">Rule Name *</label>
+                        <input id="edit-sku-rule-name" aria-label="Name" type="text" class="form-input" name="name" required value="${escapeHtml(rule.name)}">
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Pattern *</label>
-                        <input aria-label="Pattern" type="text" class="form-input" name="pattern" required
+                        <label for="edit-sku-rule-pattern" class="form-label">Pattern *</label>
+                        <input id="edit-sku-rule-pattern" aria-label="Pattern" type="text" class="form-input" name="pattern" required
                                value="${escapeHtml(rule.pattern)}"
                                oninput="handlers.livePreviewSkuPattern(this.value)">
                         <div class="sku-pattern-buttons mt-2">
@@ -2660,33 +2660,33 @@ const modals = {
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Description</label>
-                        <textarea aria-label="Description" class="form-textarea" name="description" rows="2">${escapeHtml(rule.description || '')}</textarea>
+                        <label for="edit-sku-rule-description" class="form-label">Description</label>
+                        <textarea id="edit-sku-rule-description" aria-label="Description" class="form-textarea" name="description" rows="2">${escapeHtml(rule.description || '')}</textarea>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Prefix</label>
-                            <input aria-label="Prefix" type="text" class="form-input" name="prefix" value="${escapeHtml(rule.prefix || '')}">
+                            <label for="edit-sku-rule-prefix" class="form-label">Prefix</label>
+                            <input id="edit-sku-rule-prefix" aria-label="Prefix" type="text" class="form-input" name="prefix" value="${escapeHtml(rule.prefix || '')}">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Suffix</label>
-                            <input aria-label="Suffix" type="text" class="form-input" name="suffix" value="${escapeHtml(rule.suffix || '')}">
+                            <label for="edit-sku-rule-suffix" class="form-label">Suffix</label>
+                            <input id="edit-sku-rule-suffix" aria-label="Suffix" type="text" class="form-input" name="suffix" value="${escapeHtml(rule.suffix || '')}">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-3 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Separator</label>
-                            <input aria-label="Separator" type="text" class="form-input" name="separator" value="${escapeHtml(rule.separator || '-')}" maxlength="2">
+                            <label for="edit-sku-rule-separator" class="form-label">Separator</label>
+                            <input id="edit-sku-rule-separator" aria-label="Separator" type="text" class="form-input" name="separator" value="${escapeHtml(rule.separator || '-')}" maxlength="2">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Counter Start</label>
-                            <input aria-label="Counter start" type="number" class="form-input" name="counterStart" value="${rule.counter_start || 1}" min="0">
+                            <label for="edit-sku-rule-counter-start" class="form-label">Counter Start</label>
+                            <input id="edit-sku-rule-counter-start" aria-label="Counter start" type="number" class="form-input" name="counterStart" value="${rule.counter_start || 1}" min="0">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Counter Padding</label>
-                            <select aria-label="Counter offer padding" class="form-select" name="counterPadding">
+                            <label for="edit-sku-rule-counter-padding" class="form-label">Counter Padding</label>
+                            <select id="edit-sku-rule-counter-padding" aria-label="Counter offer padding" class="form-select" name="counterPadding">
                                 <option value="2" ${rule.counter_padding == 2 ? 'selected' : ''}>2 digits (01)</option>
                                 <option value="3" ${rule.counter_padding == 3 ? 'selected' : ''}>3 digits (001)</option>
                                 <option value="4" ${!rule.counter_padding || rule.counter_padding == 4 ? 'selected' : ''}>4 digits (0001)</option>
@@ -2757,7 +2757,7 @@ const modals = {
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Select SKU Rule *</label>
+                        <label for="batch-sku-rule-select" class="form-label">Select SKU Rule *</label>
                         <select aria-label="Batch Sku Rule Select" class="form-select" id="batch-sku-rule-select">
                             <option value="">Choose a rule...</option>
                             ${rules

@@ -9,8 +9,7 @@ const i18n = {
 
     // Supported locales
     supportedLocales: {
-        'en-US': { name: 'English (US)', nativeName: 'English', dir: 'ltr' },
-        'en-GB': { name: 'English (UK)', nativeName: 'English', dir: 'ltr' },
+        'en-US': { name: 'English', nativeName: 'English', dir: 'ltr' },
         'es-ES': { name: 'Spanish', nativeName: 'Español', dir: 'ltr' },
         'es-MX': { name: 'Spanish (Mexico)', nativeName: 'Español (México)', dir: 'ltr' },
         'fr-FR': { name: 'French', nativeName: 'Français', dir: 'ltr' },
@@ -295,7 +294,6 @@ const i18n = {
 
         const translations = {
             'en-US': en,
-            'en-GB': en,
             'es-ES': { ...en, ...es },
             'es-MX': { ...en, ...es },
             'fr-FR': { ...en, ...fr },
