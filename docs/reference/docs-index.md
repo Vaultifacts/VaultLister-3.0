@@ -36,8 +36,9 @@ the ultimate truth.
 | `docs/reference/testing.md` | Test commands, baseline, protocols |
 | `docs/reference/api-route-inventory.md` | Enumerated route list (derived but kept current) |
 | `docs/reference/db-query-inventory.md` | Enumerated DB query inventory |
-| `docs/OPEN_ITEMS.md` | **Generated canonical open-items report** — current launch blockers, pending verification items, GitHub issues, checklist backlog, and TODO/FIXME scan |
-| `docs/open-items/source-policy.md` | Source precedence and regeneration rules for `docs/OPEN_ITEMS.md` |
+| `docs/OPEN_ITEMS.md` | **Generated canonical open-items report** — current launch blockers, pending verification items, structural/refactor backlog, GitHub issues, checklist backlog, and TODO/FIXME scan |
+| `docs/open-items/source-policy.md` | Source precedence, retirement classification, and regeneration rules for `docs/OPEN_ITEMS.md` |
+| `docs/reference/deep-dive-backlog.md` | Read-only structural/refactor backlog parsed into `docs/OPEN_ITEMS.md`; verify code before implementation |
 
 **How to treat:** Use directly as reference for code decisions.
 

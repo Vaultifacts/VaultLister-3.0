@@ -19,8 +19,8 @@
       "priority": "launch-blocker",
       "category": "shipping",
       "area": "Shipping / EasyPost",
-      "next_action": "Configure EASYPOST_API_KEY in Railway, then run an authenticated EasyPost rates/buy/track verification and update docs/walkthrough/environment.md plus docs/walkthrough/shipping.md.",
-      "blocker": "EasyPost account/API key availability and Railway production environment configuration.",
+      "next_action": "Deploy the EasyPost routing fix, configure EASYPOST_API_KEY in Railway, then run authenticated production EasyPost rates/buy/track verification and update docs/walkthrough/environment.md plus docs/walkthrough/shipping.md.",
+      "blocker": "EasyPost account/API key availability, Railway production environment configuration, and live authenticated verification.",
       "owner": "manual-runtime-verification"
     }
   ]
