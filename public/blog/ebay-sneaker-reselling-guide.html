@@ -564,21 +564,12 @@
                                 src="https://flagcdn.com/16x12/us.png"
                                 width="16"
                                 height="12"
-                                alt="English (U.S)"
+                                alt="English"
                                 style="vertical-align: middle"
                             />
-                            English (U.S)
+                            English
                         </button>
-                        <button type="button" class="lang-option" data-lang="en-ca" data-flag="ca">
-                            <img
-                                src="https://flagcdn.com/16x12/ca.png"
-                                width="16"
-                                height="12"
-                                alt="English (CA)"
-                                style="vertical-align: middle"
-                            />
-                            English (CA)
-                        </button>
+
                         <button type="button" class="lang-option" data-lang="es" data-flag="es">
                             <img
                                 src="https://flagcdn.com/16x12/es.png"
@@ -1270,7 +1261,6 @@
             (function () {
                 var LANGS = {
                     en: { flag: 'us', code: 'EN' },
-                    'en-ca': { flag: 'ca', code: 'EN' },
                     es: { flag: 'es', code: 'ES' },
                     fr: { flag: 'fr', code: 'FR' },
                     de: { flag: 'de', code: 'DE' },
@@ -1300,7 +1290,6 @@
                         if (stored && LANGS[stored]) return stored;
                     } catch (e) {}
                     var nav = (navigator.language || '').toLowerCase();
-                    if (nav === 'en-ca' || nav.startsWith('en-ca')) return 'en-ca';
                     var base = nav.split('-')[0];
                     return LANGS[base] ? base : 'en';
                 }
