@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-04-30T20:44:47.705Z
-Commit: f33bf869
+Generated at: 2026-04-30T20:47:02.028Z
+Commit: 5208c7ee
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -202,7 +202,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | docs/SECURITY-GUIDE.md | 1 | 298 | Excluded: runbook/checklist gate, not persistent backlog |
 | memory/COMPLETED.md | 2 | 61 | Excluded: session memory, promote only after current verification |
 | memory/LAUNCH_PRIORITY.md | 5 | 13 | Excluded: session memory, promote only after current verification |
-| memory/MEMORY.md | 5 | 7 | Excluded: session memory, promote only after current verification |
+| memory/MEMORY.md | 6 | 7 | Excluded: session memory, promote only after current verification |
 | memory/STATUS.md | 88 | 20 | Excluded: session memory, promote only after current verification |
 | memory/TIER0_PLAYBOOK.md | 3 | 11 | Excluded: session memory, promote only after current verification |
 | data/qa-report-2026-04-04-chrome-walkthrough.md | 2 | 20 | Excluded: timestamped QA evidence, not current truth |
