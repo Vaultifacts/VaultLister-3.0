@@ -15743,14 +15743,16 @@ const financialDashboardHeader = {
                     ${value < 0 ? '-' : ''}C$${Math.abs(value).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </div>
                 ${
-                    change !== undefined
-                        ? `
+                    change === null
+                        ? `<div class="financial-metric-change neutral" style="color: var(--gray-400);">— vs last period</div>`
+                        : change !== undefined
+                          ? `
                     <div class="financial-metric-change ${changeUp ? 'up' : 'down'}">
                         ${components.icon(changeUp ? 'arrow-up' : 'arrow-down', 12)}
                         ${Math.abs(change).toFixed(1)}% vs last period
                     </div>
                 `
-                        : ''
+                          : ''
                 }
             </div>
         `;
@@ -17040,7 +17042,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'a101e09d';
+    const v = '6f0c409d';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function (resolve, reject) {

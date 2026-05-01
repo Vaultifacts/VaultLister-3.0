@@ -6300,14 +6300,16 @@ const financialDashboardHeader = {
                     ${value < 0 ? '-' : ''}C$${Math.abs(value).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </div>
                 ${
-                    change !== undefined
-                        ? `
+                    change === null
+                        ? `<div class="financial-metric-change neutral" style="color: var(--gray-400);">— vs last period</div>`
+                        : change !== undefined
+                          ? `
                     <div class="financial-metric-change ${changeUp ? 'up' : 'down'}">
                         ${components.icon(changeUp ? 'arrow-up' : 'arrow-down', 12)}
                         ${Math.abs(change).toFixed(1)}% vs last period
                     </div>
                 `
-                        : ''
+                          : ''
                 }
             </div>
         `;

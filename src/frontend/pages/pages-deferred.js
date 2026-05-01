@@ -3394,16 +3394,6 @@ Object.assign(pages, {
         const netProfit = totalRevenue - totalExpenses;
         const profitMargin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
 
-        // Financial dashboard metrics
-        const cashFlow = totalRevenue - totalExpenses;
-        const dashboardMetrics = {
-            revenue: totalRevenue,
-            expenses: totalExpenses,
-            profit: netProfit,
-            margin: profitMargin,
-            cashFlow: cashFlow,
-        };
-
         // Cash flow waterfall data — derived from same totalExpenses as overview cards
         const waterfallShipping = (store.state.sales || []).reduce((sum, s) => sum + (s.shipping_cost || 0), 0);
         const waterfallFees = (store.state.sales || []).reduce((sum, s) => sum + (s.platform_fee || 0), 0);
