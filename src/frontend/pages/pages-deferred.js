@@ -2386,47 +2386,6 @@ Object.assign(pages, {
                     </div>
                 </div>
             </div>
-
-            <!-- Duration Trends Section -->
-            <div class="card mt-6">
-                <div class="card-header flex justify-between items-center">
-                    <div>
-                        <h2 class="card-title">${components.icon('trending-up', 18)} Run Duration Trends</h2>
-                        <p class="text-sm text-gray-500">Average execution time per rule over the last 30 days</p>
-                    </div>
-                    <button class="btn btn-ghost btn-sm" onclick="handlers.loadDurationTrends()">
-                        ${components.icon('refresh-cw', 14)} Load
-                    </button>
-                </div>
-                <div class="card-body">
-                    <div id="duration-trends-chart">
-                        ${store.state.durationTrends ? handlers._renderDurationTrendsChart(store.state.durationTrends) : '<p class="text-gray-500 text-sm text-center py-4">Click Load to view execution time trends</p>'}
-                    </div>
-                </div>
-            </div>
-
-            <!-- A/B Experiments Section -->
-            <div class="card mt-6">
-                <div class="card-header flex justify-between items-center">
-                    <div>
-                        <h2 class="card-title">${components.icon('git-branch', 18)} A/B Experiments</h2>
-                        <p class="text-sm text-gray-500">Compare two automation approaches side-by-side</p>
-                    </div>
-                    <div class="flex gap-2">
-                        <button class="btn btn-ghost btn-sm" onclick="handlers.loadExperiments()">
-                            ${components.icon('refresh-cw', 14)} Refresh
-                        </button>
-                        <button class="btn btn-primary btn-sm" onclick="handlers.showCreateExperiment()">
-                            ${components.icon('plus', 14)} New Experiment
-                        </button>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div id="experiments-list">
-                        ${store.state.automationExperiments ? handlers._renderExperimentsList(store.state.automationExperiments) : '<p class="text-gray-500 text-sm text-center py-4">Click Refresh to load experiments</p>'}
-                    </div>
-                </div>
-            </div>
         `;
     },
 

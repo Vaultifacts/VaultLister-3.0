@@ -16650,24 +16650,21 @@ window.streakCounter = streakCounter;
 // Market Opportunity Cards
 const opportunityCards = {
     render(opportunities) {
-        const mockOpportunities =
-            opportunities.length > 0
-                ? opportunities
-                : [
-                      { category: 'Vintage Denim', score: 92, trend: 'up', potential: '$2,400/mo', competition: 'Low' },
-                      {
-                          category: 'Designer Bags',
-                          score: 87,
-                          trend: 'up',
-                          potential: '$3,100/mo',
-                          competition: 'Medium',
-                      },
-                      { category: 'Sneakers', score: 78, trend: 'stable', potential: '$1,800/mo', competition: 'High' },
-                  ];
+        const realOpportunities = Array.isArray(this.opportunities) && this.opportunities.length > 0
+            ? this.opportunities
+            : Array.isArray(this.data) && this.data.length > 0
+            ? this.data
+            : Array.isArray(opportunities) && opportunities.length > 0
+            ? opportunities
+            : null;
+
+        if (!realOpportunities) {
+            return '<div class="widget-empty-state">No opportunities detected yet.</div>';
+        }
 
         return `
             <div class="opportunity-cards">
-                ${mockOpportunities
+                ${realOpportunities
                     .map((opp) => {
                         // Determine demand level based on score
                         const demandLevel = opp.score >= 80 ? 'hot' : opp.score >= 60 ? 'warm' : 'cool';
@@ -16719,16 +16716,17 @@ const opportunityCards = {
 // Trending Keywords Panel
 const trendingKeywords = {
     render(keywords) {
-        const mockKeywords =
-            keywords.length > 0
-                ? keywords
-                : [
-                      { term: 'vintage levis', volume: 2400, change: 15 },
-                      { term: 'y2k fashion', volume: 1800, change: 32 },
-                      { term: 'designer bags', volume: 1500, change: -5 },
-                      { term: 'nike dunks', volume: 1200, change: 8 },
-                      { term: 'cottagecore', volume: 980, change: 22 },
-                  ];
+        const realKeywords = Array.isArray(this.keywords) && this.keywords.length > 0
+            ? this.keywords
+            : Array.isArray(this.data) && this.data.length > 0
+            ? this.data
+            : Array.isArray(keywords) && keywords.length > 0
+            ? keywords
+            : null;
+
+        if (!realKeywords) {
+            return '<div class="widget-empty-state">No trending keywords yet. Connect platforms to see trending data.</div>';
+        }
 
         return `
             <div class="trending-keywords">
@@ -16737,7 +16735,7 @@ const trendingKeywords = {
                     <span>Trending Searches</span>
                 </div>
                 <div class="trending-list">
-                    ${mockKeywords
+                    ${realKeywords
                         .map(
                             (kw, i) => `
                         <div class="trending-item">
@@ -17028,7 +17026,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '5e9d1ab3';
+    const v = '32e102ec';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function (resolve, reject) {
@@ -22906,122 +22904,6 @@ const pages = {
                 );
             })()}
 
-            <!-- Analytics Hero Section -->
-            <div class="analytics-hero mb-6">
-                <div class="analytics-hero-snapshot">
-                    <div class="snapshot-header">
-                        <div class="snapshot-period">
-                            <span class="period-icon">${components.icon('calendar', 18)}</span>
-                            <span class="period-text">${periodLabel.charAt(0).toUpperCase() + periodLabel.slice(1)}</span>
-                        </div>
-                        <div class="performance-indicator ${performanceLevel}">
-                            ${
-                                performanceLevel === 'growing'
-                                    ? components.icon('trending-up', 16)
-                                    : performanceLevel === 'stable'
-                                      ? components.icon('minus', 16)
-                                      : components.icon('trending-down', 16)
-                            }
-                            <span>${performanceLabel}</span>
-                        </div>
-                    </div>
-
-                    <div class="snapshot-metrics">
-                        <div class="snapshot-metric primary">
-                            <div class="metric-value-large">C$${totalRevenue.toLocaleString()}</div>
-                            <div class="metric-label">Total Revenue</div>
-                            <div class="metric-change ${revenueGrowth === null ? '' : revenueGrowth >= 0 ? 'positive' : 'negative'}">
-                                ${revenueGrowthLabel}
-                            </div>
-                        </div>
-                        <div class="snapshot-metric">
-                            <div class="metric-value-medium">${totalSales}</div>
-                            <div class="metric-label">Total Sales</div>
-                        </div>
-                        <div class="snapshot-metric">
-                            <div class="metric-value-medium">C$${avgOrderValue.toFixed(2)}</div>
-                            <div class="metric-label">Avg Order Value</div>
-                        </div>
-                        <div class="snapshot-metric">
-                            <div class="metric-value-medium">${profitMargin}%</div>
-                            <div class="metric-label">Profit Margin</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="analytics-hero-highlights">
-                    <div class="highlight-card">
-                        <div class="highlight-icon top-seller">
-                            ${components.icon('award', 18)}
-                        </div>
-                        <div class="highlight-content">
-                            <div class="highlight-label">Top Platform</div>
-                            <div class="highlight-value">${platformData.length > 0 ? platformData[0].label : 'N/A'}</div>
-                            <div class="highlight-detail">${platformData.length > 0 ? 'C$' + platformData[0].value.toFixed(2) + ' revenue' : ''}</div>
-                        </div>
-                    </div>
-                    <div class="highlight-card">
-                        <div class="highlight-icon sell-through">
-                            ${components.icon('package', 18)}
-                        </div>
-                        <div class="highlight-content">
-                            <div class="highlight-label">Sell-Through Rate</div>
-                            <div class="highlight-value">${sellThrough}%</div>
-                            <div class="highlight-detail">${soldItems} of ${totalInventory} ${totalInventory === 1 ? 'item' : 'items'} sold</div>
-                        </div>
-                    </div>
-                    <div class="highlight-card">
-                        <div class="highlight-icon profit">
-                            ${components.icon('dollar', 18)}
-                        </div>
-                        <div class="highlight-content">
-                            <div class="highlight-label">Total Profit</div>
-                            <div class="highlight-value ${totalProfit >= 0 ? 'positive' : 'negative'}">${totalProfit >= 0 ? '' : '-'}C$${Math.abs(totalProfit).toFixed(2)}</div>
-                            <div class="highlight-detail">After all fees & costs</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="analytics-quick-insights">
-                    ${
-                        bestSellers.length > 0
-                            ? `
-                        <div class="quick-insight">
-                            ${components.icon('star', 14)}
-                            <span>Best seller: <strong>${bestSellers[0].title.substring(0, 25)}${bestSellers[0].title.length > 25 ? '...' : ''}</strong> (C$${bestSellers[0].revenue.toFixed(2)})</span>
-                        </div>
-                    `
-                            : ''
-                    }
-                    ${
-                        slowMovers.length > 0
-                            ? `
-                        <div class="quick-insight warning">
-                            ${components.icon('clock', 14)}
-                            <span>${slowMovers.length} item${slowMovers.length !== 1 ? 's' : ''} listed for 60+ days need attention</span>
-                        </div>
-                    `
-                            : ''
-                    }
-                    ${
-                        totalRevenue > 0
-                            ? profitMargin < 15
-                                ? `
-                        <div class="quick-insight alert">
-                            ${components.icon('alert-circle', 14)}
-                            <span>Profit margin below target (15%). Review pricing strategy.</span>
-                        </div>
-                    `
-                                : `
-                        <div class="quick-insight success">
-                            ${components.icon('check-circle', 14)}
-                            <span>Profit margin is healthy at ${profitMargin}%</span>
-                        </div>
-                    `
-                            : ''
-                    }
-                </div>
-            </div>
 
             <!-- KPI Dashboard -->
             <div class="mb-6 analytics-summary-panels" hidden style="display: none;">
