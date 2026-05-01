@@ -857,43 +857,6 @@ Object.assign(pages, {
             activeListings > 0 ? Math.round(((activeListings - staleListings) / activeListings) * 100) : null;
 
         return `
-            <!-- Breadcrumb Navigation -->
-            <nav class="listing-breadcrumb mb-4" aria-label="Breadcrumb">
-                <ol style="display: flex; align-items: center; gap: 6px; list-style: none; padding: 0; margin: 0; font-size: 13px;">
-                    <li>
-                        <a href="#" onclick="router.navigate('dashboard'); return false;" style="color: var(--gray-500); text-decoration: none;">
-                            ${components.icon('home', 14)} Dashboard
-                        </a>
-                    </li>
-                    <li style="color: var(--gray-400);">${components.icon('chevron-right', 12)}</li>
-                    <li>
-                        <a href="#" onclick="handlers.switchListingsTab('listings'); return false;" style="color: ${currentListingsTab === 'listings' ? 'var(--primary-600)' : 'var(--gray-500)'}; text-decoration: none; font-weight: ${currentListingsTab === 'listings' ? '600' : '400'};">
-                            Listings
-                        </a>
-                    </li>
-                    ${
-                        currentListingsTab !== 'listings'
-                            ? `
-                        <li style="color: var(--gray-400);">${components.icon('chevron-right', 12)}</li>
-                        <li style="color: var(--primary-600); font-weight: 600;">
-                            ${currentListingsTab === 'archived' ? 'Archived' : currentListingsTab === 'templates' ? 'Templates' : currentListingsTab === 'recently-deleted' ? 'Recently Deleted' : 'Listings'}
-                        </li>
-                    `
-                            : ''
-                    }
-                    ${
-                        statusFilter !== 'all'
-                            ? `
-                        <li style="color: var(--gray-400);">${components.icon('chevron-right', 12)}</li>
-                        <li style="color: var(--primary-600); font-weight: 600;">
-                            ${statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
-                        </li>
-                    `
-                            : ''
-                    }
-                </ol>
-            </nav>
-
             <!-- Listings Hero Section -->
             <div class="listings-hero">
                 <div class="listings-hero-header">
