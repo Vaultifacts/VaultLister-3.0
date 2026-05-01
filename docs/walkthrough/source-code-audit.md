@@ -22,7 +22,7 @@ None — all source code audit findings have been resolved.
 
 | ID | File:Line | Issue | Status |
 |----|-----------|-------|--------|
-| SEC-H41 | `src/backend/utils/encryption.js`, `src/backend/routes/auth/session.js` | No programmatic key rotation for `JWT_SECRET`. Rotation runbook documented at `docs/JWT-ROTATION-RUNBOOK.md`: invalidate all sessions via `UPDATE sessions SET is_valid = 0`, rotate secret in Railway, redeploy. `OAUTH_ENCRYPTION_KEY` has partial support via `OAUTH_ENCRYPTION_KEY_OLD` fallback. | RESOLVED ✅ 2026-05-01 — manual rotation runbook written |
+| SEC-H41 | `src/backend/middleware/auth.js`, `src/backend/routes/adminOps.js` | No programmatic key rotation for `JWT_SECRET`. Fixed: migration 031 adds `force_logout_at` to users table; `auth.js` rejects tokens issued before `force_logout_at`; `POST /api/admin/force-logout-all` invalidates all sessions + sets `force_logout_at = NOW()` — kills all active tokens instantly. `JWT_SECRET_OLD` fallback already supported for graceful rotation. Runbook: `docs/JWT-ROTATION-RUNBOOK.md`. | RESOLVED ✅ eab7ce75 — 26 pass, 0 fail |
 
 ### HIGH — Code Audit
 

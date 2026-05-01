@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-01T06:23:34.684Z
-Commit: e5546f8f
+Generated at: 2026-05-01T06:59:41.217Z
+Commit: 48c8fc66
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -20,13 +20,13 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 | Structural/refactor backlog items | 10 |
 | Competitor intelligence gaps | 862 |
 | Anti-detection/design gaps | 14 |
-| Open GitHub issues | 10 |
+| Open GitHub issues | 8 |
 | Explicit unchecked checklist items | 359 |
 | Repo-wide unchecked checkbox hits | 583 |
 | Repo-wide unchecked checkbox hits included | 359 |
 | Repo-wide unchecked checkbox hits excluded or review-only | 224 |
 | Open-marker source files discovered | 212 |
-| Source TODO/FIXME hits | 15 |
+| Source TODO/FIXME hits | 14 |
 
 ## Source Coverage Audit
 
@@ -115,7 +115,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | .github/workflows/observability-health.yml | 2 | 356 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/orphan-cleanup.yml | 1 | 84 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/production-smoke.yml | 4 | 74 | Config/workflow text; parsed separately only if promoted |
-| .github/workflows/project-status-update.yml | 13 | 30 | Config/workflow text; parsed separately only if promoted |
+| .github/workflows/project-status-update.yml | 11 | 30 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/push-cleanup.yml | 3 | 34 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/queue-health.yml | 1 | 89 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/redis-health.yml | 1 | 97 | Config/workflow text; parsed separately only if promoted |
@@ -204,7 +204,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | memory/COMPLETED.md | 2 | 61 | Excluded: session memory, promote only after current verification |
 | memory/LAUNCH_PRIORITY.md | 5 | 13 | Excluded: session memory, promote only after current verification |
 | memory/MEMORY.md | 9 | 7 | Excluded: session memory, promote only after current verification |
-| memory/STATUS.md | 88 | 2 | Excluded: session memory, promote only after current verification |
+| memory/STATUS.md | 108 | 4 | Excluded: session memory, promote only after current verification |
 | memory/TIER0_PLAYBOOK.md | 3 | 11 | Excluded: session memory, promote only after current verification |
 | data/qa-report-2026-04-04-chrome-walkthrough.md | 2 | 20 | Excluded: timestamped QA evidence, not current truth |
 | data/qa-report-2026-04-04-exhaustive.md | 4 | 39 | Excluded: timestamped QA evidence, not current truth |
@@ -1254,14 +1254,12 @@ Command: `gh issue list --state open --limit 200 --json number,title,labels,upda
 
 | Issue | Title | Labels | Updated | URL |
 |---|---|---|---|---|
-| #483 | [Automation] Project status update workflow failed — boards may be stale | ci-failure, automated | 2026-05-01T06:07:48Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/483 |
 | #482 | [Automation] Project status update workflow failed — boards may be stale | ci-failure, automated | 2026-05-01T06:07:47Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/482 |
-| #481 | [Deploy Failure] db009ff — Run #1034 | automated, deploy-failure | 2026-05-01T05:05:04Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/481 |
 | #467 | [WAF] Monthly Cloudflare WAF rule review — 2026-05 | security, automated | 2026-05-01T00:01:51Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/467 |
-| #456 | [Automation Coverage] 27 gap(s) detected — 2026-04-27 | automated, automation-coverage | 2026-04-27T15:50:17Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/456 |
-| #455 | [Infra Audit] Issues detected — 2026-04-27 | automated, infra-audit | 2026-04-27T15:08:38Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/455 |
+| #456 | [Automation Coverage] 27 gap(s) detected — 2026-04-27 | automated, automation-coverage | 2026-05-01T06:43:43Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/456 |
+| #455 | [Infra Audit] Issues detected — 2026-04-27 | automated, infra-audit | 2026-05-01T06:43:41Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/455 |
 | #453 | [Redis] Health check failed — Redis may be down or misconfigured | infrastructure, automated | 2026-04-27T11:09:35Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/453 |
-| #447 | [Observability] 3 pipeline issue(s) — 2026-04-27 | automated, observability | 2026-04-27T10:21:28Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/447 |
+| #447 | [Observability] 3 pipeline issue(s) — 2026-04-27 | automated, observability | 2026-05-01T06:43:42Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/447 |
 | #446 | Maintenance: Push subscription cleanup reminder (2026-W17) | maintenance | 2026-04-26T08:47:19Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/446 |
 | #445 | [Lighthouse] Performance score below 50 — immediate attention required | automated, performance | 2026-04-30T00:57:56Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/445 |
 
@@ -1718,7 +1716,6 @@ Command: `rg -n "TODO|FIXME" src public scripts worker design e2e qa data .githu
 |---|---|
 | .github/workflows/ci.yml:591 | if grep -rn "password\s*=\s*['\"][^'\"]*['\"]" src/ --include="*.js" \| grep -v "password.*=.*body" \| grep -v "password.*=.*formData" \| grep -v "password.*=.*process.env" \| grep -v "test" \| grep -v "demo" \| grep -v "placeholder" \| grep -v "TODO"; then |
 | public/status.html:288 | /* TODO: wire to real uptime data (v2) */ |
-| public/status.html:1317 | // TODO (v2): wire per-platform status from /api/health/platforms |
 | qa/reports/audits/architecture_reliability_audit.md:178 | - **In-memory monitoring metrics lost on restart** — metrics accumulate in RAM only; code has `// TODO: use Redis` comment (Low) |
 | qa/reports/browserstack/2026-04-23/performance-notes.md:63 | **TODO (future regression risk):** `renderPastIncidents()` replaces the static "No resolved incidents in the last 90 days." text with a dynamically-built `<ul>` of different height when incidents exist. Currently no incidents → no shift. When the first real incident is posted, this will cause CLS. Fix: give `#past-incidents-list` a `min-height` matching the empty state, or pre-render as a `<ul>` with an empty-state `<li>`. |
 | scripts/generate-blog-article.js:126 | - No placeholders or TODOs in the output. |
