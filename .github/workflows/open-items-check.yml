@@ -7,12 +7,22 @@ on:
       - 'docs/superpowers/plans/**'
       - 'docs/walkthrough/**'
       - 'docs/open-items/**'
+      - 'docs/reference/deep-dive-backlog.md'
+      - 'docs/COMPETITOR_GAP_INVENTORY_2026-04-19.md'
+      - 'docs/PERFECT_ANTI_DETECTION_SYSTEM.md'
+      - 'docs/FACEBOOK_OAUTH_COMPLIANCE.md'
+      - 'memory/project_automation_roadmap.md'
       - 'scripts/generate-open-items.mjs'
   pull_request:
     paths:
       - 'docs/superpowers/plans/**'
       - 'docs/walkthrough/**'
       - 'docs/open-items/**'
+      - 'docs/reference/deep-dive-backlog.md'
+      - 'docs/COMPETITOR_GAP_INVENTORY_2026-04-19.md'
+      - 'docs/PERFECT_ANTI_DETECTION_SYSTEM.md'
+      - 'docs/FACEBOOK_OAUTH_COMPLIANCE.md'
+      - 'memory/project_automation_roadmap.md'
       - 'scripts/generate-open-items.mjs'
   workflow_dispatch:
 

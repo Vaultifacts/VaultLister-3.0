@@ -169,7 +169,8 @@ function normalizeLineEndings(value) {
 function normalizeForCheck(value) {
     return normalizeLineEndings(value)
         .replace(/^Generated at: .+$/m, 'Generated at: <ignored>')
-        .replace(/^Commit: .+$/m, 'Commit: <ignored>');
+        .replace(/^Commit: .+$/m, 'Commit: <ignored>')
+        .replace(/^## GitHub Open Issues\n[\s\S]*?(?=^## )/m, '## GitHub Open Issues\n<ignored>\n\n');
 }
 
 function escapeCell(value) {

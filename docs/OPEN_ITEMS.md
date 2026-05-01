@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-01T21:48:51.825Z
-Commit: 83f2ec5b
+Generated at: 2026-05-01T22:05:29.028Z
+Commit: 09b803ea
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -20,13 +20,13 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 | Structural/refactor backlog items | 10 |
 | Competitor intelligence gaps | 862 |
 | Anti-detection/design gaps | 14 |
-| Open GitHub issues | 9 |
-| Explicit unchecked checklist items | 433 |
-| Repo-wide unchecked checkbox hits | 657 |
-| Repo-wide unchecked checkbox hits included | 433 |
+| Open GitHub issues | 10 |
+| Explicit unchecked checklist items | 416 |
+| Repo-wide unchecked checkbox hits | 640 |
+| Repo-wide unchecked checkbox hits included | 416 |
 | Repo-wide unchecked checkbox hits excluded or review-only | 224 |
 | Open-marker source files discovered | 214 |
-| Source TODO/FIXME hits | 15 |
+| Source TODO/FIXME hits | 14 |
 
 ## Source Coverage Audit
 
@@ -63,7 +63,7 @@ Command: `rg -n "^\s*[-*]\s+\[ \]" <document targets> --glob "*.md"`
 | docs/superpowers/plans/2026-04-15-camoufox-migration.md | 28 | 40 | Included as explicit checklist backlog |
 | docs/superpowers/plans/2026-04-15-facebook-mock-test-env.md | 34 | 33 | Included as explicit checklist backlog |
 | docs/superpowers/plans/2026-04-15-facebook-safe-fixes.md | 20 | 28 | Included as explicit checklist backlog |
-| docs/superpowers/plans/2026-05-01-fake-data-audit.md | 74 | 10 | Included as explicit checklist backlog |
+| docs/superpowers/plans/2026-05-01-fake-data-audit.md | 57 | 21 | Included as explicit checklist backlog |
 | memory/project_automation_roadmap.md | 59 | 19 | Included as explicit checklist backlog |
 
 ### Open-Marker Source Coverage
@@ -114,7 +114,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | .github/workflows/marketplace-health.yml | 2 | 157 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/npm-audit.yml | 3 | 74 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/observability-health.yml | 2 | 356 | Config/workflow text; parsed separately only if promoted |
-| .github/workflows/open-items-check.yml | 7 | 1 | Config/workflow text; parsed separately only if promoted |
+| .github/workflows/open-items-check.yml | 9 | 1 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/orphan-cleanup.yml | 1 | 84 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/production-smoke.yml | 4 | 74 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/project-status-update.yml | 11 | 30 | Config/workflow text; parsed separately only if promoted |
@@ -1235,6 +1235,7 @@ Command: `gh issue list --state open --limit 200 --json number,title,labels,upda
 
 | Issue | Title | Labels | Updated | URL |
 |---|---|---|---|---|
+| #490 | [CI Failure] release-please--branches--master--components--vaultlister - Run #1564 | ci-failure, automated | 2026-05-01T21:53:46Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/490 |
 | #489 | [CI Failure] master - Run #1554 | ci-failure, automated | 2026-05-01T18:50:13Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/489 |
 | #488 | [Lighthouse] Performance score below 50 — immediate attention required | automated, performance | 2026-05-01T18:35:25Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/488 |
 | #487 | [Billing] Monthly AI services spend review — 2026-05 | automated, billing, ai-spend | 2026-05-01T12:00:53Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/487 |
@@ -1692,23 +1693,12 @@ Count: 20
 
 ### Plan: 2026-05-01-fake-data-audit.md
 
-Count: 74
+Count: 57
 
 | Item | Source |
 |---|---|
-| F77: Implement real 2FA — TOTP secret generated server-side, real QR code returned, SMS API integrated, verify2FACode() validates against backend (handlers-settings-account.js:747,810,864-877) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:10 |
-| F108: Make OAUTH_MODE fail-closed — error on startup if not explicitly set to 'real'; remove \|\| 'mock' default (oauth.js:99,180,319,413) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:11 |
-| F61: Wire regenerateAPIKey() to a real backend endpoint — store and return the new key from DB; current key is unusable client-side random (handlers-settings-account.js:4644) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:12 |
-| F103: saveShopBranding(platform) — create backend branding endpoint; persist logo/color/tagline/bio (handlers-settings-account.js:111-124) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:18 |
-| F104: saveSyncSettings() — create backend sync-config endpoint; persist mode/frequency/platform prefs (handlers-settings-account.js:195-218) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:19 |
-| F109: showShopSettings() Save button — wire modal form to a real API call instead of inline toast.success onclick (handlers-settings-account.js:56) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:20 |
 | F58: financialGoals — create backend goals endpoint; call POST/PUT on save (handlers-deferred.js:15871, handlers-sales-orders.js:4435) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:21 |
 | F74: saveGoals() (revenue/sales/margin) — create backend goals endpoint or persist via existing settings route (handlers-deferred.js:4689-4700) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:22 |
-| F86: saveWhatnotLiveEvent() calendar path — call existing POST /api/whatnot/events; already wired in main Whatnot page (handlers-tools-tasks.js:452-489) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:23 |
-| F87: Quick Notes — create backend /notes endpoint or persist to localStorage; currently lost on every refresh (handlers-tools-tasks.js:1304) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:24 |
-| F96: addCompetitor() — call existing POST /api/market-intel/competitors instead of state-only (handlers-deferred.js:5633-5634) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:25 |
-| F97: removeCompetitor() — call existing DELETE /api/market-intel/competitors/:id instead of state-only (handlers-deferred.js:5728-5729) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:26 |
-| F65: saveNewSupplier() in Intelligence page — call existing POST /api/inventory/suppliers like addSupplier() in Settings does (handlers-intelligence.js:216-235) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:27 |
 | F80: savePriceWatch() — create backend price-watch endpoint; remove Math.random() seed history (handlers-intelligence.js:1278-1295) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:28 |
 | F99: saveBudgetSettings() — create backend budget endpoint; persist monthlyBudget (handlers-sales-orders.js:1428-1433) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:29 |
 | F100: saveCompetitorAlerts() — create backend competitor-alerts endpoint (handlers-deferred.js:5775-5784) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:30 |
@@ -1720,21 +1710,15 @@ Count: 74
 | F50: refreshCompetitorActivity() — call GET /api/market-intel/competitors instead of setTimeout toast (handlers-deferred.js:5789) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:41 |
 | F51: runSavedSearch(id) — query backend with saved search parameters instead of setting results to null (handlers-intelligence.js:1517) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:42 |
 | F52: refreshAnalytics() — fetch new data from /api/analytics instead of re-rendering stale state (handlers-deferred.js:4652) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:43 |
-| F53: refreshShopHealth(platform) — call real shop health endpoint (handlers-deferred.js:3406) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:44 |
 | F54: exportFinancials(format) — implement server-side CSV/PDF generation and trigger download (handlers-deferred.js:4590) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:45 |
 | F63: saveRoadmapSubscription() — POST email to backend or third-party email list endpoint (handlers-community-help.js:182) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:46 |
-| F67: runPredictionModel() — call real prediction endpoint instead of adding Math.random() noise (handlers-intelligence.js:14-27) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:47 |
 | F69: generateLabelsForOrders() — call EasyPost label generation endpoint (handlers-sales-orders.js:4200-4205) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:48 |
 | F72: downloadLegalPDF(docType) — serve pre-generated PDFs from /public/legal/ or generate server-side (handlers-deferred.js:26718-26722) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:49 |
 | F73: downloadReport(reportId) — generate and serve report file from backend (handlers-deferred.js:26886-26891) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:50 |
 | F76: runCleanup() — implement real data deletion endpoint instead of setTimeout toast (handlers-settings-account.js:630-635) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:51 |
-| F71: refreshPredictions() — fetch new data from predictions endpoint instead of re-rendering (handlers-deferred.js:4727-4732) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:52 |
-| F78: refreshAllSuppliers() — call /api/inventory/suppliers instead of timeout toast (handlers-intelligence.js:156-162) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:53 |
-| F79: refreshSupplier(id) — call /api/inventory/suppliers/:id instead of timeout toast (handlers-intelligence.js:303-308) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:54 |
 | F105: trendingKeywords.render() — remove 5 hardcoded fake terms; show empty/loading state when no data (widgets.js:7226-7263) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:60 |
 | F106: opportunityCards.render() — remove 3 hardcoded fake opportunity cards; show empty state (widgets.js:7157-7222) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:61 |
 | F107: pricePositionChart.render() — remove Comp A/B/C hardcoded dots and {price:45,quality:75} default; show no-data state (widgets.js:7266-7286) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:62 |
-| F49: Automation History fake fallback — replace mock fallback with empty state (pages-deferred.js:1691-1707) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:63 |
 | F88: showAutomationHistoryMock() error fallback — replace fake history in catch block with real error state or retry prompt (handlers-inventory-catalog.js:1153-1154) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:64 |
 | F95: showAutomationHistoryMock() called from normal navigation — remove calls from close/back/retry buttons; fetch real data instead (handlers-deferred.js:1996,2078,2174) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:65 |
 | F89: _simulateDryRun() — implement real dry-run API endpoint or remove feature; remove hardcoded affected counts and action strings (handlers-inventory-catalog.js:859-1007) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:66 |
@@ -1791,7 +1775,6 @@ Command: `rg -n "TODO|FIXME" src public scripts worker design e2e qa data .githu
 | src/backend/services/platformSync/whatnotSync.js:8 | // TODO(signal-emitter): import { trackApiLatency, checkListingInvisibility, checkEngagementDrop } from './signalEmitter.js'; |
 | src/frontend/core-bundle.js:68 | // TODO(csp-hardening): ADD_ATTR allows inline event handlers so developer-controlled |
 | src/frontend/core/utils.js:66 | // TODO(csp-hardening): ADD_ATTR allows inline event handlers so developer-controlled |
-| src/frontend/handlers/handlers-sales-orders.js:1448 | // TODO: needs backend budget endpoint |
 
 ## Historical Sources Excluded
 
