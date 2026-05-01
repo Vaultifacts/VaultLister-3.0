@@ -1286,8 +1286,10 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 NOTE: CR-9 (Analytics Sales Funnel) + M-2 (Radar labels) are already VERIFIED ✅ — removed from task list
 NOTE: CR-4 (EasyPost) was historically marked RESOLVED 2026-04-20, but 2026-04-22 live verification reopened it: production currently returns `503 {"error":"EasyPost not configured"}`.
 
-## Unstaged Changes (pre-existing, not from this session)
-- `src/backend/db/seeds/demoData.js` — modified
-- `src/shared/ai/listing-generator.js` — modified
-- `src/frontend/handlers/handlers-tools-tasks.js` — modified (from gitStatus at session start)
-These were present before the session started. Investigate before committing.
+## Unstaged Changes (as of 2026-04-30)
+- `.claude/settings.local.json` — modified
+- `public/sw.js` — modified
+- `src/frontend/core-bundle.js` — modified
+- `src/frontend/index.html` — modified
+- `src/frontend/pages/pages-inventory-catalog.js` — modified
+- `src/frontend/styles/main.css` — modified
