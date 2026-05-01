@@ -1,4 +1,41 @@
 # VaultLister 3.0 — Session Status
+**Updated:** 2026-04-30 MST (a11y: 114 aria-hidden close button fixes in commit 60e4771c; automations page 3 sections removed)
+
+## Completed This Session (2026-04-30, session 4)
+
+### a11y — wrap bare × close chars with aria-hidden spans (commit 60e4771c)
+
+- 114 instances across 12 JS files wrapped with `<span aria-hidden="true">`
+- SVG aria audit on public HTML: already clean (0 files needed updating)
+
+### Automations page — removed Scheduler Health, Schedule Settings, Notification Preferences
+
+- Confirmed removed via localhost screenshot ✅
+- Handlers (`refreshSchedulerStatus`, `updateAutomationSchedule`, `updateAutomationNotifPref`) still active in `pages-inventory-catalog.js` — not dead code
+
+---
+
+**Updated:** 2026-04-30 MST (affiliate tier DB fix + Depop infrastructure verified complete)
+
+## Completed This Session (2026-04-30, session 3)
+
+### Affiliate tier commission rates — all tiers now 25% in live DB
+
+- Settings tabs loading fix (IIFE chunk wrapping) was already deployed
+- Migration 029 had been deployed in its first form (Bronze=0.25, Silver=0.30, Gold=0.35) — already recorded as applied
+- Created migration `030_fix_silver_gold_tier_rates.sql` to correct Silver and Gold to 0.25
+- Pushed `a3d073f4`; verified live: all three tiers now `commission_rate: 0.25` ✅
+
+### Depop REST API infrastructure — verified COMPLETE
+
+- OAuth PKCE (`depop` in `PKCE_PLATFORMS`), full config in `oauth.js:695` ✅
+- REST publish client in `depopPublish.js` ✅
+- `fetchDepopListings` + `fetchDepopOrders` implemented in `depopSync.js` ✅
+- Webhook handler POST /depop (`v1:order.new`) in `webhooks.js:938` ✅
+- **Remaining action (manual):** Submit Depop Selling API Enquiry Form for production credentials
+
+---
+
 **Updated:** 2026-04-30 MST (automations page cleanup — removed Scheduler Health, Schedule Settings, Notification Preferences sections)
 
 ## Completed This Session (2026-04-30, session 2)
@@ -1279,7 +1316,7 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 4. ~~M-26: Knowledge Base "No FAQs" / "No articles"~~ — **RESOLVED / VERIFIED** — live Knowledge Base now shows seeded FAQ/article content
 5. ~~CR-14/H-22: Build affiliate backend~~ — **RESOLVED / VERIFIED** — 2026-04-22 live `POST /api/affiliate-apply` accepted a new application and `GET /api/admin/affiliate-applications` returned the persisted pending row
 6. ~~M-13 deploy verify~~ — **RESOLVED / VERIFIED** — storage limit uses plan tier on live site
-7. [OPEN / POST-LAUNCH] Activate Cloudinary image features: add CLOUDINARY_CLOUD_NAME + CLOUDINARY_API_SECRET to Railway (CLOUDINARY_API_KEY already set). Background removal, enhance, upscale, smart crop are fully coded and UI-wired — disabled only because these 2 vars are missing. Prerequisite: confirm Cloudinary account has AI Background Removal add-on enabled (paid add-on, not included by default).
+7. ~~Activate Cloudinary image features~~ — **RESOLVED / VERIFIED 2026-04-30** — All 3 vars confirmed in Railway (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET). E2E verified 2026-04-27: background removal, enhance, upscale, smart crop all active. See memory/project_image_pipeline.md.
 NOTE: CR-9 (Analytics Sales Funnel) + M-2 (Radar labels) are already VERIFIED ✅ — removed from task list
 NOTE: CR-4 (EasyPost) was historically marked RESOLVED 2026-04-20, but 2026-04-22 live verification reopened it: production currently returns `503 {"error":"EasyPost not configured"}`.
 
