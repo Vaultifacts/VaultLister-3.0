@@ -210,6 +210,7 @@ The following functions form the auth persistence chain (`src/frontend/core/stor
 - Never commit `.env`, secrets, or credentials
 - Git commits: `[AUTO]` prefix + conventional commit style (`feat`, `fix`, `chore`, `docs`, `style`, `refactor`, `perf`, `test`, `ci`, `build`, `revert`)
 - ALL `[AUTO]` commits MUST include `Verified: <how tested>` trailers. Commit-msg hook enforces for all types except docs/style/ci.
+- When a commit closes or relates to a GitHub issue, append `Fixes #N` or `Closes #N` to the commit body (not the subject). This links the commit to the issue in GitHub.
 - Push to `master` directly (single-developer workflow). Use feature branches for large multi-day changes only.
 - Do not manually compact — global autocompact fires at 90%. Save findings to memory before compacting.
 - Use Explore subagent for codebase exploration > 5K LOC

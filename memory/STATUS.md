@@ -11,6 +11,17 @@
 - **Active task backlog:** `docs/OPEN_ITEMS.md` (generated) + `docs/superpowers/plans/2026-05-01-fake-data-audit.md` (109 findings). `docs/REMAINING_WORK_EXECUTION_SHEET_2026-04-21.md` is historical — do not use as active plan.
 - **BROWSER NOTE:** Always use `mcp__claude-in-chrome__*` tools. NEVER use `mcp__plugin_chrome-devtools-mcp`.
 
+## Last Completed Work (2026-05-01 session 2)
+
+### Tracking system audit — 26 flaws fixed (commits f8eadc8e→86cd3081)
+- **Flaw 27**: `normalizeForCheck` now strips GitHub Open Issues section — `open-items:check` is deterministic in CI (no longer fails on live issue timestamp changes)
+- **Flaw 28**: `open-items-check.yml` watch paths widened to include 5 source files that feed the generator
+- **Flaw 33**: Added `labeled` event to `add-to-project.yml` — issues labeled post-creation now added to project boards
+- **Flaw 38**: Documented `- [~]` won't-fix convention in `parseUncheckedFile` comment
+- **Flaw 39**: Created `docs/reference/env.md` — 83-var reference grouped by required/optional. Resolves R-018 from deep-dive-backlog.
+- **Flaw 41**: Confirmed non-issue — `rg` is pre-installed on ubuntu-latest
+- **Still manual**: Flaw 34 (renew `ADD_TO_PROJECT_TOKEN` secret), Flaw 40 (pin unpinned action SHAs in 5 workflows — needs `pin-github-actions` tool, not safe to fabricate SHAs)
+
 ## Last Completed Work (2026-05-01)
 
 ### Display bug sweep — My Shops, Automations, Image Bank (2026-05-01, commits d75873da→273a1003)
