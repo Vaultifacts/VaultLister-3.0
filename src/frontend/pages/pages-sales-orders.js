@@ -2037,8 +2037,8 @@ Object.assign(pages, {
                 </div>
             </div>
 
-            <!-- Financial Goal Tracking -->
-            <div class="card mb-6">
+            <!-- Financial Goal Tracking (dev-only: post-launch feature) -->
+            <div class="card mb-6" style="${window.location.hostname !== 'localhost' ? 'display:none' : ''}">
                 <div class="card-header">
                     <h2 class="card-title">${components.icon('target', 18)} Financial Goals</h2>
                     <button class="btn btn-sm btn-primary" onclick="handlers.addFinancialGoal()">+ Add Goal</button>
