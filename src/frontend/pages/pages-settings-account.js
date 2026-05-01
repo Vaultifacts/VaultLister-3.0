@@ -79,7 +79,9 @@ Object.assign(pages, {
         const totalListings = platformData.reduce((sum, p) => sum + p.listings, 0);
         const totalRevenue = platformData.reduce((sum, p) => sum + p.revenue, 0);
         const totalSales = platformData.reduce((sum, p) => sum + p.sales, 0);
-        const avgHealthScore = connectedShops.length > 0 ? null : 0;
+        const avgHealthScore = connectedShops.length > 0
+            ? (connectedShops.reduce((sum, s) => sum + (s.health_score || 0), 0) / connectedShops.length) || null
+            : 0;
 
         // Platform colors for visual display
         const platformColors = {

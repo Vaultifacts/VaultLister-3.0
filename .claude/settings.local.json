@@ -148,7 +148,9 @@
       "WebFetch(domain:crosslistmagic.com)",
       "WebFetch(domain:joinflyp.com)",
       "WebFetch(domain:oneshop.com)",
-      "WebFetch(domain:crosslist.app)"
+      "WebFetch(domain:crosslist.app)",
+      "WebFetch(domain:static-assets.browserstack.com)",
+      "Bash(echo \"EXIT: $?\")"
     ]
   },
   "hooks": {

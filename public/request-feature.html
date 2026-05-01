@@ -53,7 +53,36 @@
                 justify-content: space-between;
                 gap: 1rem;
                 flex-wrap: wrap;
-                margin-bottom: 1.5rem;
+                margin-bottom: 1rem;
+            }
+            .fr-search-wrap {
+                width: 100%;
+                position: relative;
+                margin-bottom: 1rem;
+            }
+            .fr-search-wrap svg {
+                position: absolute;
+                left: 0.875rem;
+                top: 50%;
+                transform: translateY(-50%);
+                color: var(--gray-400);
+                pointer-events: none;
+            }
+            .fr-search {
+                width: 100%;
+                padding: 0.625rem 1rem 0.625rem 2.5rem;
+                border: 1.5px solid var(--gray-200);
+                border-radius: 0.5rem;
+                font-size: 0.9375rem;
+                font-family: inherit;
+                color: var(--gray-900);
+                background: var(--white);
+                outline: none;
+                transition: border-color 0.15s, box-shadow 0.15s;
+            }
+            .fr-search:focus {
+                border-color: var(--primary-500);
+                box-shadow: 0 0 0 3px rgba(245,158,11,0.15);
             }
             .fr-sort-group {
                 display: flex;
@@ -653,6 +682,10 @@
                     <h1>Feature Requests</h1>
                     <p class="subtitle">Vote on what gets built next.</p>
                 </header>
+                <div class="fr-search-wrap" role="search">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="search" class="fr-search" id="fr-search" placeholder="Search feature requests…" aria-label="Search feature requests" autocomplete="off">
+                </div>
                 <div class="fr-controls">
                     <div class="fr-sort-group" role="group" aria-label="Sort feature requests">
                         <button type="button" class="fr-sort-btn active" id="sort-votes" aria-pressed="true">

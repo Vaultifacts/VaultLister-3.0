@@ -346,6 +346,11 @@ const components = {
         return `
             <aside class="sidebar ${store.state.sidebarCollapsed ? 'sidebar-collapsed' : ''} ${store.state.sidebarOpen ? 'open' : ''}" aria-label="Primary navigation">
 
+                <a class="sidebar-brand" href="/?app=1#dashboard" aria-label="VaultLister home">
+                    <img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" height="28" class="sidebar-brand-logo">
+                    <span class="sidebar-brand-wordmark" aria-hidden="true">VaultLister</span>
+                </a>
+
                 ${
                     connectedShops.length > 0
                         ? `

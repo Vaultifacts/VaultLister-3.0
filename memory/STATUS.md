@@ -1,5 +1,17 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-30 MST (session 7: docker cache bust, nav init fix, open-items refresh, CI 401 fix; session 6: listings cache bust, CI dedup, header bar removal; session 4: a11y 102 close-button fixes in commit 551d3bd1; automations page 3 sections removed)
+**Updated:** 2026-05-01 MST (UI bugs F35/F36/F42/F44/F46 fixed + README corrected in 8ca589c2; GitHub issues resolved; fs mock leak fixed in tests)
+
+## Completed This Session (2026-05-01)
+
+### Live verification pass — 26 "fixed pending" items (commit 59ecb960)
+
+- Ran browser automation against vaultlister.com for all items marked "live/manual recheck pending"
+- **17 VERIFIED LIVE ✅**: P3-pub-3/6/7/8/9/10, P4-pub-1, P3-pub-1/4, P1-pub-2, P0-pub-2/3, changelog-33, MANUAL-listings-1/2, MANUAL-settings-3, settings-34
+- **3 NOT DEPLOYED ❌**: P3-pub-11 (feature-requests search), P3-pub-12 (learning search), P1-pub-1 (sidebar logo) — local patches never committed
+- **5 INCONCLUSIVE**: P0-pub-1, P0-pub-4, P1-pub-3, P3-pub-2, P3-pub-5
+- **1 CONFIRMED N/A**: L-18
+
+---
 
 ## Completed This Session (2026-04-30, session 7 — parallel)
 
@@ -1378,6 +1390,132 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 5. ~~Predictions fake data (CR-11/CR-12)~~ FIXED 07338ae ✅
 
 ## Next Tasks
+
+### UI Audit Findings — 100 Items (2026-05-01, exhaustive discovery + continuation sessions)
+
+**Fake/Simulated Actions (setTimeout + Toast with No Real API Call)**
+- F49: Automation History fake fallback — shows "Daily Closet Share — Shared 45 items", "Send Offers to Likers — Sent 12 offers" when no real run history; comment says "mock fallback" (`pages-deferred.js:1691-1707`)
+- F50: `refreshCompetitorActivity()` fake — 1s setTimeout + success toast, no API call (`handlers-deferred.js:5789`)
+- F51: `runSavedSearch(id)` fake — sets `results: null` then toasts "Found 0 results"; never queries backend (`handlers-intelligence.js:1517`, `handlers-deferred.js:6215`)
+- F52: `refreshAnalytics()` fake — 1s setTimeout + re-render without fetching new data (`handlers-deferred.js:4652`)
+- F53: `refreshShopHealth(platform)` fake — 1s setTimeout + success toast, no API call (`handlers-deferred.js:3406`)
+- F54: `exportFinancials(format)` fake — shows "Export ready for download" with no file generated (`handlers-deferred.js:4590`)
+
+**Financials Page — Fabricated/Never-Loaded Data**
+- F55: Financial Ratios fake multipliers — currentAssets = totalRevenue * 0.3, currentLiabilities = totalExpenses * 0.2, totalAssets = totalRevenue * 0.5, etc.; users see fabricated balance sheet ratios (`pages-deferred.js:3502-3509`)
+- F56: Financials cashFlowChange always 0 — separate from F24; Cash Flow "vs prev" card on Financials page always shows +0.0% (`pages-deferred.js:3485`)
+- F57: Budget defaults (Financials page) never load — no backend `/budget` route exists; Financials always renders Marketing/Shipping/Supplies/Fees with actual=0; `store.state.budgets` is never populated from any API (`pages-deferred.js:3516-3521`)
+- F58: financialGoals never persisted — adding a Financial Goal writes only to in-memory state (lost on refresh); no POST/PUT to any backend endpoint (`handlers-deferred.js:15871`, `handlers-sales-orders.js:4435`)
+- F59: unmatchedTransactions never fetched — Financials reconciliation panel always shows "No unmatched transactions"; no API call ever populates `store.state.unmatchedTransactions` (`pages-deferred.js:4038`)
+
+**Other New Findings**
+- F60: Referral stats literal 0s in Community Refer-a-Friend page — FIXED 2026-05-01 (uncommitted): duplicate Refer-a-Friend page now reads real referral/affiliate stat fields when present and otherwise shows `N/A` (`pages-community-help.js`)
+- F61: `regenerateAPIKey()` never persisted — generates a random `vl_*` key in state only; no backend endpoint exists; key is lost on page refresh and is unusable by API clients (`handlers-settings-account.js:4644`, `handlers-deferred.js:29258`)
+- F62: `syncAllShops()` fake — iterates connected shops and shows a success toast for each with no API call; "Sync complete" is cosmetic only (`handlers-deferred.js:3392`); called from 3 prominent Shops page buttons
+- F63: `saveRoadmapSubscription()` fake — Subscribe to Roadmap Updates form shows success toast but never submits email to any backend endpoint (`handlers-community-help.js:182`, `handlers-deferred.js:7266`)
+- F64: `showPredictionDetails()` shows fabricated "Sample Item" fallback — when no prediction found by ID, modal shows hardcoded data: "Sample Item", current_price: 50, predicted_price: 62, confidence: 78%, demand_score: "High" (`handlers-intelligence.js:82-89`, `handlers-deferred.js:4781-4788`)
+- F65: `saveNewSupplier()` in Intelligence page never persists — saves only to in-memory state with a `sup_Date.now()` fake ID; data lost on refresh; inconsistent with the real `addSupplier()` in Settings which calls `/inventory/suppliers` (`handlers-intelligence.js:216-235`, `handlers-deferred.js:4907-4934`)
+- F66: AI model weights never sent to backend — custom model weight sliders (Market/Seasonal/Demand/History) save to state only with toast "New predictions will use updated weights" — but `modelWeights` is never included in any `/predictions` API call; sliders have no effect (`handlers-intelligence.js:144-151`, `handlers-deferred.js:4842-4850`)
+- F67: `runPredictionModel()` fake AI — adds random 0-9 noise to existing confidence values instead of calling any model endpoint; toast "Predictions updated with latest data" is false (`handlers-intelligence.js:14-27`, `handlers-deferred.js:4723-4732`)
+- F68: Live Support Chat fake bot response — user message triggers a hardcoded 1s-delayed "A support agent will be with you shortly" reply with no real support backend connection (`handlers-community-help.js:1129-1137`)
+- F69: `generateLabelsForOrders()` fake — comment says "This would integrate with the shipping API"; shows success toast "Generated N shipping labels" with no actual label generation or EasyPost call (`handlers-sales-orders.js:4200-4205`, `handlers-deferred.js:14177-14182`)
+- F70: `runAITagging()` fake in tools chunk — comment says "Simulate AI tagging with common tags"; randomly picks 3 from 9 hardcoded tags using Math.random(); no AI call; this version wins for image-bank route because tools chunk loads but deferred chunk (real version calling `/image-bank/analyze`) does not (`handlers-tools-tasks.js:337-365`)
+- F71: `refreshPredictions()` fake — 1s timeout + re-render, no data fetch; same pattern whether intelligence or deferred version runs (`handlers-deferred.js:4727-4732`)
+- F72: `downloadLegalPDF(docType)` fake — shows "Document download started" toast; no file is generated or served; called from Terms of Service and Privacy Policy download buttons (`handlers-deferred.js:26718-26722`)
+- F73: `downloadReport(reportId)` fake — shows "Report download started" toast; no file generated; called from report preview modal Download button (`handlers-deferred.js:26886-26891`, `handlers-sales-orders.js:6873-6878`)
+- F74: `saveGoals()` (revenueGoal/salesGoal/marginGoal) state-only — writes to `store.state` only; `store.persist()` does NOT save these keys (only persists tokens/user); goals are lost on every page refresh; no API call (`handlers-deferred.js:4689-4700`, `handlers-sales-orders.js:1480-1491`)
+- F75: Data Retention cleanup preview uses Math.random() — `getDataCounts()` calls `Math.floor(Math.random() * 50)` to fabricate record counts shown in "What will be cleaned" preview; values change on every render (`handlers-settings-account.js:542-548`)
+- F76: `runCleanup()` is fake — "Simulate cleanup process" comment + 1.5s setTimeout + success toast "Cleanup complete!"; no API call, no actual data deletion (`handlers-settings-account.js:630-635`)
+- F77: 2FA setup UI is entirely fake [CRITICAL] — (a) `setup2FAAuthenticator()` generates client-side TOTP secret never sent to backend; shows placeholder QR code icon instead of real QR; (b) `sendSMS2FACode()` shows "Verification code sent" toast but no SMS API call; (c) `verify2FACode()` accepts any 6-digit input and just sets `twoFactorEnabled: true` in state without calling any backend or validating the TOTP code — 2FA is never actually enabled (`handlers-settings-account.js:747`, `810`, `864-877`; no backend `/mfa-setup` or `/mfa-enable` endpoint exists)
+- F78: `refreshAllSuppliers()` fake — 1.5s timeout + success toast "Supplier data refreshed" + re-render; no API call to reload supplier data from backend (`handlers-intelligence.js:156-162`, `handlers-deferred.js:4854-4858`)
+- F79: `refreshSupplier(id)` fake — 1s timeout + success toast "Supplier data updated"; no API call (`handlers-intelligence.js:303-308`, `handlers-deferred.js:5001-5005`)
+- F80: `savePriceWatch()` state-only + random history — price watchlist item saved to `store.state` only (lost on refresh, no API call); when price field is empty, history seed is `Math.floor(Math.random() * 50) + 20` — a random fake starting value (`handlers-intelligence.js:1278-1295`)
+- F81: API usage hardcoded 35% — Account Usage panel always shows `apiUsagePercent = 35` regardless of actual API calls made; comment says "Mock API usage" (`handlers-settings-account.js:2872-2873`, `handlers-deferred.js:18599-18600`)
+- F82: Active sessions hardcoded 2 — Account Usage panel always shows `activeSessions = 2` regardless of real session count; comment says "Mock active sessions" (`handlers-settings-account.js:2881-2882`, `handlers-deferred.js:18608-18609`)
+- F83: `runRetentionCleanup()` is a stub — shows "Automated data retention cleanup is coming soon." info toast with no functionality (`handlers-deferred.js:6482-6484`)
+- F84: `enhanceQuickPhoto()` is fake — "Mock enhancement - in production, use canvas API" comment; shows "Photo enhanced" success toast without any actual image processing (`init.js:1589-1595`)
+- F85: Offline queue `executeAction()` is empty — comment says "This would integrate with actual API calls"; function body does nothing so queued offline actions are never replayed when connectivity restores (`widgets.js:1094-1098`)
+- F86: `saveWhatnotLiveEvent()` state-only — Calendar planner's "Schedule Live Show" quick-form saves event to `store.state.whatnotEvents` only and calendar entry to `store.state.calendarEvents` only; backend `POST /api/whatnot/events` exists but is never called from this path; event lost on refresh (`handlers-tools-tasks.js:452-489`). Note: the Whatnot Live page's own Create Event modal correctly calls the API via `saveWhatnotEvent()`.
+- F87: Quick Notes never persisted — Quick Notes write to `store.state.quickNotes` only; `store.persist()` doesn't save this key; no localStorage fallback; no backend `/notes` route — all notes are lost on every page refresh (`handlers-tools-tasks.js:1304`, `handlers-deferred.js:11899`)
+- F88: `showAutomationHistoryMock()` error fallback shows fake history — when `GET /automations/history` API call fails, the catch block calls this function which renders hardcoded fake automation runs (Daily Closet Share: 52 items, Send Offers: 15 likers, Follow Back: 8/10) as if they are real historical data; users may be misled during outages (`handlers-inventory-catalog.js:1153-1154`, `1158-1237`)
+- F89: `_simulateDryRun()` — entire automation dry-run preview is hardcoded fabrication — when user clicks "Dry Run" before creating an automation rule, the 1.2s animated wait resolves to fully hardcoded data: affected counts derived from `listingCount * multiplier`, action lists with literal strings like "Follow back 28 new followers from last 24h", `engagement` category has hardcoded `affected: 45, success: 42`; no API call made; comment says `_simulateDryRun` (`handlers-deferred.js:1446-1537`, `handlers-inventory-catalog.js:859-1007`)
+- F90: productivityScore is a "mock calculation" — comment says so; formula is `Math.min(100, Math.round((weeklyTotal / 35) * 100))` where 35 is an arbitrary hardcoded denominator; displayed as a real "Productivity Score" badge in Task Manager weekly stats (`handlers-deferred.js:2281-2282`, `handlers-tools-tasks.js:105-106`)
+- F91: Prediction accuracy panel shows hardcoded fake stats when state is empty — `store.state.predictionAccuracy || { total: 156, correct: 118, avgError: 8.2, bestCategory: 'Shoes', worstCategory: 'Accessories', monthly: [72, 75, 68, 80, 76, 82, 78, 85] }` — users with no real prediction data see completely fabricated accuracy metrics (`pages-intelligence.js:691-698`)
+- F92: Monthly accuracy trend chart labels are always Mar–Oct — hardcoded `['Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct']` regardless of actual month/date range; chart is always mislabeled in non-summer months (`pages-intelligence.js:732`)
+- F93: Model Comparison table shows 3 hardcoded fake AI models — "Market Comps 78%", "Seasonal AI 82%", "Demand-Weighted 85%" with made-up accuracy figures; these models are not real and the percentages are not computed from any data (`pages-intelligence.js:755-774`)
+- F94: Cash-flow ticker randomly reorders transactions on every render — `.sort(() => Math.random() - 0.5)` on the recent transactions array; dashboard widget shuffles order on every page re-render creating visual noise and inconsistent ordering (`pages-core.js:1016`)
+- F95: `showAutomationHistoryMock()` called from normal UI navigation (not just error fallback) — modal close button (`handlers-deferred.js:1996`), "Back to History" button (`handlers-deferred.js:2078`), and retry-automation success callback (`handlers-deferred.js:2174`) all call this mock; same in inventory-catalog chunk (`1409`, `1491`, `1587`); users navigating the Automations page normally may see fake run history even when real data exists but hasn't been fetched yet
+- F96: `addCompetitor()` state-only — bypasses existing backend `POST /api/market-intel/competitors`; competitor data is added to `store.state.competitors` in-memory only and lost on refresh; backend has full CRUD in `marketIntel.js:57` (`handlers-deferred.js:5633-5634`)
+- F97: `removeCompetitor()` state-only — filters `store.state.competitors` in-memory only; backend `DELETE /api/market-intel/competitors/:id` is never called (`handlers-deferred.js:5728-5729`)
+- F98: "Time saved today" automation stat is a mock calculation — hardcoded minutes per automation type (`sharing: 45, engagement: 20, offers: 15, bundles: 10, pricing: 25, maintenance: 30`) multiplied by active automation count; displayed as a prominent stat card on the Automations page; no actual timing data from backend (`pages-deferred.js:1802-1813`, `pages-inventory-catalog.js:1669-1683`)
+- F99: `saveBudgetSettings()` state-only — saves `monthlyBudget` to `store.state` only; `store.persist()` does not include this key; budget setting lost on every page refresh; no backend endpoint (`handlers-sales-orders.js:1428-1433`, `handlers-deferred.js:4637-4643`)
+- F100: `saveCompetitorAlerts()` state-only — competitor price-drop/new-listing alert settings saved to `store.state.competitorAlerts` only; no backend endpoint for competitor alerts in `marketIntel.js`; settings lost on refresh (`handlers-deferred.js:5775-5784`)
+
+---
+
+### UI Audit Findings — 48 Items (2026-05-01, exhaustive discovery session)
+
+**Fake/Hardcoded Content (Displayed as Real User Data)**
+- F1: Trend Alerts — FIXED 2026-05-01 (uncommitted): removed 4 fake hardcoded alerts; empty state now renders when `trendAlerts` has no real data (`pages-intelligence.js`, `pages-deferred.js`)
+- F2: Shipping Stats — FIXED 2026-05-01 (uncommitted): hardcoded 4.2/7.8/92%/1.3 cards now derive from supplier metrics when present and show `N/A` when no real data exists (`pages-intelligence.js`, `pages-deferred.js`)
+- F3: Supplier Contact — FIXED 2026-05-01 (uncommitted): contact directory now uses real `contacts` arrays or real supplier contact fields and otherwise shows an empty state (`pages-intelligence.js`, `pages-deferred.js`)
+- F4: Support Online Status — FIXED 2026-05-01 (uncommitted): hardcoded green `"Online now"` now renders a neutral unavailable status unless real live-chat status exists (`pages-community-help.js`, `pages-deferred.js`)
+- F5: Support Popular Articles — FIXED 2026-05-01 (uncommitted): removed 4 fake hardcoded popular articles; empty state now renders until `popularArticles` has real data (`pages-community-help.js`, `pages-deferred.js`)
+- F6: Support Response Time — FIXED 2026-05-01 (uncommitted): removed `avgResponseTime: '< 24h'` fallback; support stats now show `N/A` unless real response-time data exists (`pages-deferred.js`, `pages-community-help.js`)
+- F7: Referral Stats — FIXED 2026-05-01 (uncommitted): hardcoded 0/0 months values replaced with state-derived referral/affiliate stat fields and `N/A` fallback when no real data is loaded (`pages-deferred.js`, `pages-community-help.js`)
+- F8: About Testimonials — FIXED 2026-05-01 (uncommitted): seeded Sarah/Mike/Jessica testimonials removed; testimonials render only when real `aboutTestimonials` state exists (`pages-community-help.js`, `pages-deferred.js`)
+- F9: About Feature Count — FIXED 2026-05-01 (uncommitted): hardcoded 171+ count replaced with actual displayed feature-area count; 171+ timeline copy removed (`pages-community-help.js`, `pages-deferred.js`)
+
+**Version / Copy Mismatches**
+- F10: "Free Forever" claim — FIXED 2026-05-01 (uncommitted): About page free-forever/zero-cost/free-to-use claims replaced with transparent-pricing/free-plus-paid copy (`pages-community-help.js`, `pages-deferred.js`)
+- F11: "Your data stays on your device" — FIXED 2026-05-01 (uncommitted): About page local-device privacy copy replaced with cloud-storage/security language (`pages-community-help.js`, `pages-deferred.js`)
+- F12: Version badge conflict — FIXED 2026-05-01 (uncommitted): dashboard What's New badge no longer claims stale `v1.6.0`; About stale `v0.9.0 RC` copy removed under F16 (`pages-core.js`, generated bundle rebuilt)
+- F13: sw.js stale comment — FIXED 2026-05-01 (uncommitted): removed duplicated service-worker version from header; `CACHE_VERSION` remains the only cache version source (`public/sw.js`)
+- F14: Changelog hardcoded — FIXED 2026-05-01 (uncommitted): duplicated SPA changelog fallback arrays removed; changelog now renders only real `changelogVersions` state or an empty result (`pages-community-help.js`, `pages-deferred.js`)
+- F15: Plan description binary — FIXED 2026-05-01 (uncommitted): current plan summary now uses the actual subscription tier label in both settings renderers (`pages-settings-account.js`, `pages-deferred.js`)
+- F16: About version badge — FIXED 2026-05-01 (uncommitted): stale `v0.9.0 RC` badge and timeline copy removed; badge now renders only if real version state exists (`pages-community-help.js`, `pages-deferred.js`)
+
+**Analytics & Charts with Fake/Disconnected Data**
+- F17: Market Saturation label — FIXED 2026-05-01 (uncommitted): label/color now derive from saturation thresholds instead of always showing `Moderately Saturated` (`pages-intelligence.js`, `pages-deferred.js`)
+- F18: Market Opportunity label — FIXED 2026-05-01 (uncommitted): opportunity label/color now derive from score thresholds and show no-data state when score is absent (`pages-intelligence.js`, `pages-deferred.js`)
+- F19: "Live" badge on Market Trends Radar — FIXED 2026-05-01 (uncommitted): fake live badge replaced with `Snapshot` / `No data` status based on available market data (`pages-intelligence.js`, `pages-deferred.js`)
+- F20: Competitor `tracked_since` — FIXED 2026-05-01 (uncommitted): fake `Jan 2024` fallback replaced with neutral unavailable state and escaped real dates (`pages-intelligence.js`, `pages-deferred.js`)
+- F21: Cross-Platform Comparison table — FIXED 2026-05-01 (uncommitted): static platform comparison matrix removed; section now renders real comparison rows/platforms from state or a no-data state (`pages-intelligence.js`, `pages-deferred.js`)
+- F22: Price Trends sparklines — fallback generates fake values from `list_price × [0.9,0.95,0.92,1.02,0.98,1.05,1.0]` (`pages-core.js:1207-1213`)
+- F23: Analytics "vs prev" — always `+0.0%`; `prevPeriodRevenue = 0` hardcoded (`pages-core.js:2558-2560,2710-2711`)
+- F24: Analytics KPI `change` — hardcoded `0` for Revenue/Sales/Margin/Sell-Through; no period-over-period calc (`pages-core.js:2542-2554`)
+- F25: Budget Categories — hardcoded defaults (Marketing $200 / Shipping $500 / Supplies $300 / Fees $400) displayed as user's data; `store.state.budgetCategories` never populated from backend (`pages-core.js:1873-1878`, `pages-sales-orders.js:1723`)
+- F26: Demand Radar fallback — `[0.3, 0.5, 0.8, 0.4]` hardcoded when no category data (`widgets.js:6776`)
+- F27: Supplier Price History sparkline — `[45, 42, 48, 44, 40, 38, 35]` hardcoded fake history (`widgets.js:7008`)
+- F28: Price Position Chart — Comp A/B/C at fixed coordinates + `yourPosition:{price:45,quality:75}` when no real data (`widgets.js:7267-7274`)
+- F29: Analytics Reports period label — always `'last 30 days'`; const, never reflects actual filter (`pages-deferred.js:17849`)
+- F30: Analytics Reports "Most Common Error" — always `'Sync Error'` for any non-zero error count (`pages-deferred.js:17913`)
+
+**Settings Bugs**
+- F31: Notification checkboxes — Email/Push hardcoded `checked`, SMS unchecked; never loaded from backend, `saveSettings()` never reads them (`pages-settings-account.js:1154-1168`)
+- F32: Data Retention defaults shown as user preferences (`pages-settings-account.js:1850-1856`)
+- F33: Security score always 75% / "Good" for all users (`pages-settings-account.js:1093-1095`)
+- F34: Security checklist always green — "Strong password", "Email verified", "Recent login reviewed" hardcoded completed (`pages-settings-account.js:1103-1119`)
+- F35: Appearance tab light-mode hardcoded — Light radio has `checked` with no `store.state.darkMode` connection; dark mode users see wrong state (`pages-settings-account.js:1133`)
+- F36: "@unknown" username — shown for all users without `username` set (`pages-settings-account.js:2181,2202`)
+- F37: My Shops Avg Health always `null%` — `avgHealthScore = connectedShops.length > 0 ? null : 0` (`pages-settings-account.js:82,213`)
+- F38: My Shops Performance Dashboard — Conversion Rate, Avg Days to Sell, Return Rate always hardcoded `'—'` (`pages-settings-account.js:606-609`)
+- F39: My Shops Total Listings always 0 — no listings count API data loaded (`pages-settings-account.js:74,80`)
+- F40: Plans & Billing usage meters always 0 — `store.state.usage` never populated from backend (`pages-settings-account.js:2693-2714`)
+- F41: Billing History always empty — "No billing history yet" shown for all users including paid plans (`pages-settings-account.js:2980-2983`)
+
+**Logic / Behavioral Bugs**
+- F42: Cash Flow widget random shuffle — `.sort(() => Math.random() - 0.5)` reorders transactions on every render (`pages-core.js:1017`)
+- F43: Sales table "Unknown Item" — all sales without explicit title show "Unknown Item" (`pages-sales-orders.js:775`, `pages-core.js:2299`)
+- F44: Textarea HTML parser break — `>` operator in `oninput` attribute closes attribute early; literal JS code renders as visible text (`pages-community-help.js:1979`, `pages-deferred.js:10931`)
+- F45: Roadmap in-progress default 50% — all in-progress features without `progress` field show 50% (`pages-deferred.js:10527`)
+- F46: Roadmap 3 features hardcoded — eBay Bot 70%, EasyPost 30%, Stripe Billing 85% (`pages-deferred.js:10374-10378`)
+- F47: Onboarding "Getting Started 0/4" timing bug — checks `store.state.shops` before API loads (`core-bundle.js:10208-10211`)
+- F48: Scheduler always Unhealthy on cold start — `lastRun > 30s ago` = Unhealthy; triggers every cold start (`automations.js:1931`)
+
+---
+
+### Pre-existing Tasks
 0. Follow `docs/REMAINING_WORK_EXECUTION_SHEET_2026-04-21.md` in order — start with Subset 1 docs-only cleanup/review, then Subset 2 backend/dev-tooling hardening, then the larger frontend subsets once the dirty-worktree staging plan is reconciled.
 0. [OPTIONAL] Richer sale path test — create sale with non-zero payment_fee + packaging_cost + inventory-linked item; verify all 5 ledger rows fire. Not a code gap — guard already correct, just a pre-launch verification step.
 0. [WATCH] Financial regression checkpoints: (a) no accounting-statement labels reintroduced, (b) new ledger posting paths must not skip non-zero amounts, (c) no tax schema/copy creep, (d) no duplicate rows on sale/purchase retry/edit

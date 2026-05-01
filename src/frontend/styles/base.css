@@ -354,6 +354,29 @@ select:focus-visible {
 .sidebar .nav-section-title {
     color: #9ca3af !important;
 }
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem 0.75rem;
+    text-decoration: none;
+    border-bottom: 1px solid #2a2a2a;
+    flex-shrink: 0;
+}
+.sidebar-brand-logo {
+    flex-shrink: 0;
+    display: block;
+}
+.sidebar-brand-wordmark {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: #f59e0b;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+}
+.sidebar-collapsed .sidebar-brand-logo { display: none; }
+.sidebar-collapsed .sidebar-brand-wordmark { display: none; }
+.sidebar-collapsed .sidebar-brand { justify-content: center; padding: 0.75rem; }
 .sidebar-header {
     border-bottom: 1px solid #2a2a2a !important;
 }

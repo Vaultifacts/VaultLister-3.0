@@ -23,7 +23,7 @@ cd vaultlister-3
 cp .env.example .env        # Edit with your keys
 bun install
 bun run db:init              # Create database + run migrations
-bun run db:seed              # Seed demo data
+bun run db:seed              # No-op (seeds run automatically in db:init)
 bun run dev                  # Start at http://localhost:3000
 ```
 
@@ -37,9 +37,9 @@ bun run dev                  # Start at http://localhost:3000
 | `bun run test:all` | Run unit + E2E tests |
 | `bun run test:unit` | Run Bun unit tests |
 | `bun run test:e2e` | Run Playwright E2E tests |
-| `bun run lint` | ESLint check (backend + shared) |
+| `bun run lint` | Syntax, HTML, and CSS lint check |
 | `bun run db:init` | Initialize database |
-| `bun run db:seed` | Seed demo data |
+| `bun run db:seed` | No-op (seeds run automatically in db:init) |
 | `bun run db:reset` | Re-apply migrations and seeds |
 | `bun run db:backup` | Backup database |
 | `bun run build` | Build frontend bundle |
@@ -73,12 +73,7 @@ The migration chain is in `src/backend/db/migrations.js` (32 migrations). Schema
 
 ## Git Hooks
 
-The pre-push hook runs the full unit test suite and requires the server to be running on `PORT` (default 3000). Before pushing:
-```bash
-bun run dev:bg   # Start server in background
-git push         # Hook will run tests then push
-bun run dev:stop # Stop background server after push
-```
+The pre-push hook runs auth + security tests by default (set `FULL_TEST=1` for the full suite). It auto-starts the server if one isn't running. It also checks JS syntax, auth token persistence, and CSP integrity before allowing a push.
 
 ## Deployment
 
@@ -132,10 +127,10 @@ src/
     routes/         # API route handlers (77 files)
     middleware/     # Auth, CSRF, rate limiting, security headers
     services/      # Platform sync, notifications, billing
-    workers/       # Task worker, price check worker
+    workers/       # Task, price check, email, GDPR, and uptime workers
     db/            # Schema, migrations (32), database.js
   frontend/        # Vanilla JS SPA
-    core/          # Router, store, API client, toast
+    core/          # Router, store, API client, auth, toast, utils
     pages/         # Route pages (lazy-loaded)
     handlers/      # Event handlers by domain
     ui/            # Modals, widgets, components
@@ -144,6 +139,7 @@ src/
     automations/   # Automation orchestration runner
     utils/         # Blockchain, AR preview
 e2e/               # Playwright E2E tests (83 spec files)
+worker/            # BullMQ worker service (bots/, index.js, Dockerfile)
 scripts/           # CLI tools (build, backup, scheduler)
 chrome-extension/  # MV3 Chrome extension
 ```
