@@ -1270,7 +1270,7 @@ Object.assign(pages, {
                                                 ? `
                                             <td>
                                                 <div class="font-medium">C$${listing.price}</div>
-                                                <span class="listing-fee text-sm text-muted">${listing.platform_fee ? 'Fee: C$' + parseFloat(listing.platform_fee).toFixed(2) : 'Fee: N/A'}</span>
+                                                ${listing.platform_fee ? `<span class="listing-fee text-sm text-muted">Fee: C$${parseFloat(listing.platform_fee).toFixed(2)}</span>` : ''}
                                                 ${(() => {
                                                     const priceHistory = listing.price_history
                                                         ? typeof listing.price_history === 'string'
