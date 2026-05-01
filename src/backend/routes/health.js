@@ -116,6 +116,20 @@ export async function healthRouter(ctx) {
         dbStatus = 'error';
     }
 
+    let redisStatus = 'unavailable';
+    try {
+        const redisClient = redisService.getClient();
+        if (redisClient) {
+            const pong = await Promise.race([
+                redisClient.ping(),
+                new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('timeout')), TIMEOUTS.DB_HEALTH_CHECK_MS),
+                ),
+            ]);
+            redisStatus = pong === 'PONG' ? 'ok' : 'degraded';
+        }
+    } catch (_) {}
+
     return {
         status: 200,
         data: {
@@ -124,6 +138,7 @@ export async function healthRouter(ctx) {
             version: _APP_VERSION,
             uptime: Math.floor(process.uptime()),
             database: { status: dbStatus },
+            redis: redisStatus,
         },
     };
 }
