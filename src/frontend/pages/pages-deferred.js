@@ -3628,7 +3628,7 @@ Object.assign(pages, {
                         <button class="widget-collapse-btn" aria-label="Collapse" onclick="const c=this.closest('.collapsible-card');c.classList.toggle('collapsed');this.textContent=c.classList.contains('collapsed')?'\u25BC':'\u25B2';" title="Collapse/Expand">&#x25B2;</button>
                     </div>
                     <div class="card-body">
-                        ${budgetProgress.render(budgetData)}
+                        ${budgetData.length > 0 ? budgetProgress.render(budgetData) : '<p class="text-sm text-gray-400 text-center py-4">No budget categories set up yet. Add categories to track spending.</p>'}
                         <div class="budget-alert-setting mt-2">
                             <label class="text-sm" for="budget-alert-threshold">Alert at:</label>
                             <input type="number" id="budget-alert-threshold" min="1" max="100" value="${store.state.budgetAlertThreshold || 80}"
