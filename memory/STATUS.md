@@ -1392,15 +1392,8 @@ NOTE: CR-9 (Analytics Sales Funnel) + M-2 (Radar labels) are already VERIFIED �
 NOTE: CR-4 (EasyPost) was historically marked RESOLVED 2026-04-20, but 2026-04-22 live verification reopened it: production currently returns `503 {"error":"EasyPost not configured"}`.
 
 ## Unstaged Changes (as of 2026-04-30)
-- `.claude/scheduled_tasks.lock` — modified (unstaged)
-- `.claude/settings.local.json` — modified (unstaged)
-- `.serena/project.yml` — modified (unstaged)
-- `public/sw.js` — modified (staged)
-- `src/backend/services/platformSync/imageHasher.js` — modified (unstaged)
-- `src/frontend/core-bundle.js` — modified (staged)
-- `src/frontend/index.html` — modified (unstaged)
-- `src/frontend/pages/pages-deferred.js` — modified (staged)
-- `src/frontend/pages/pages-tools-tasks.js` — modified (staged)
-- `src/frontend/styles/features.css` — modified (staged)
-- `src/frontend/styles/main.css` — modified (unstaged)
-- `src/tests/rate-limit-enforcement.test.js` — modified (unstaged)
+- `.claude/scheduled_tasks.lock` — modified
+- `.claude/settings.local.json` — modified
+- `.serena/project.yml` — modified
+- `src/frontend/index.html` — modified
+- `src/frontend/styles/main.css` — modified
