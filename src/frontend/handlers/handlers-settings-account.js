@@ -124,26 +124,24 @@ Object.assign(handlers, {
         `);
     },
 
-    saveShopBranding: function (platform) {
+    saveShopBranding: async function (platform) {
         const logoUrl = document.getElementById('branding-logo')?.value?.trim() || '';
         const primaryColor = document.getElementById('branding-color')?.value || '#f59e0b';
         const tagline = document.getElementById('branding-tagline')?.value?.trim() || '';
         const bannerText = document.getElementById('branding-banner')?.value?.trim() || '';
         const bio = document.getElementById('branding-bio')?.value?.trim() || '';
-
-        const allBranding = store.state.shopBranding || {};
-        allBranding[platform] = {
-            logoUrl,
-            primaryColor,
-            tagline,
-            bannerText,
-            bio,
-            updatedAt: new Date().toISOString(),
-        };
-        store.setState({ shopBranding: allBranding });
-        toast.success(`${platform.charAt(0).toUpperCase() + platform.slice(1)} branding saved!`);
-        modals.close();
-        renderApp(window.pages.shops());
+        const branding = { logoUrl, primaryColor, tagline, bannerText, bio };
+        try {
+            await api.request('PUT', `/api/shops/${platform}`, { settings: { branding } });
+            const allBranding = store.state.shopBranding || {};
+            allBranding[platform] = { ...branding, updatedAt: new Date().toISOString() };
+            store.setState({ shopBranding: allBranding });
+            toast.success(`${platform.charAt(0).toUpperCase() + platform.slice(1)} branding saved!`);
+            modals.close();
+            renderApp(window.pages.shops());
+        } catch (err) {
+            toast.error(err.message || 'Failed to save branding');
+        }
     },
 
     // Multi-Shop Sync Settings handler,
@@ -212,32 +210,42 @@ Object.assign(handlers, {
         `);
     },
 
-    saveMultiShopSyncSettings: function () {
+    saveMultiShopSyncSettings: async function () {
         const shops = (store.state.shops || []).filter((s) => s.is_connected);
         const syncConfig = store.state.shopSyncConfig || {};
-
-        shops.forEach((shop) => {
+        const updates = shops.map((shop) => {
             const p = shop.platform;
             const enabledCheck = document.querySelector(`.sync-enabled-check[data-platform="${p}"]`);
             const modeSelect = document.querySelector(`.sync-mode-select[data-platform="${p}"]`);
             const freqSelect = document.querySelector(`.sync-freq-select[data-platform="${p}"]`);
             const qtyCheck = document.querySelector(`.sync-quantity-check[data-platform="${p}"]`);
             const priceCheck = document.querySelector(`.sync-price-check[data-platform="${p}"]`);
-
+            const enabled = enabledCheck?.checked ?? true;
+            const freqVal = freqSelect?.value || '15min';
+            const freqMinutes = { '5min': 5, '15min': 15, '30min': 30, '60min': 60, 'manual': null }[freqVal] ?? 15;
             syncConfig[p] = {
-                enabled: enabledCheck?.checked ?? true,
+                enabled,
                 mode: modeSelect?.value || 'two-way',
-                frequency: freqSelect?.value || '15min',
+                frequency: freqVal,
                 syncQuantity: qtyCheck?.checked ?? true,
                 syncPrice: priceCheck?.checked ?? false,
                 lastSync: (syncConfig[p] || {}).lastSync || null,
             };
+            return api.request('PUT', `/api/shops/${p}`, {
+                auto_sync_enabled: enabled,
+                auto_sync_interval_minutes: freqMinutes,
+                settings: { syncConfig: syncConfig[p] },
+            });
         });
-
-        store.setState({ shopSyncConfig: syncConfig });
-        toast.success('Sync settings saved!');
-        modals.close();
-        renderApp(window.pages.shops());
+        try {
+            await Promise.all(updates);
+            store.setState({ shopSyncConfig: syncConfig });
+            toast.success('Sync settings saved!');
+            modals.close();
+            renderApp(window.pages.shops());
+        } catch (err) {
+            toast.error(err.message || 'Failed to save sync settings');
+        }
     },
 
     // View Sync Conflicts,
