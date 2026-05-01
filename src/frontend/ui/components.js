@@ -296,11 +296,11 @@ const components = {
                         icon: 'sales',
                         badge: unseenOrders > 0 ? unseenOrders : null,
                         badgeType: 'primary',
-                        activeIds: ['offers', 'orders', 'orders-sales', 'shipping-labels'],
+                        activeIds: ['offers', 'orders', 'orders-sales', 'orders-shipping'],
                         dropdownItems: [
                             { id: 'offers', label: 'Offers' },
                             { id: 'orders', label: 'Orders' },
-                            { id: 'shipping-labels', label: 'Shipping' },
+                            { id: 'orders-shipping', label: 'Shipping' },
                         ],
                     },
                 ],

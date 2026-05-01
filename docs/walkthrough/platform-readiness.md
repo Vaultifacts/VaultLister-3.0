@@ -10,7 +10,7 @@
 | **Depop** | Exists (mock) | ✅ depop-bot.js | Depop sync | Via bot | **NEEDS** real OAuth |
 | **Whatnot** | Exists (mock) | ✅ whatnot-bot.js | Whatnot sync | Via bot | **NEEDS** real OAuth |
 | Mercari | Exists (mock) | ✅ mercari-bot.js | Mercari sync | Via bot | Coming Soon — code must be feature-gated |
-| Grailed | Exists (mock) | ✅ grailed-bot.js | Grailed sync | Via bot | Coming Soon — code must be feature-gated |
+| **Grailed** | Exists (mock) | ✅ grailed-bot.js | Grailed sync | Via bot | **LIVE** — promoted from Coming Soon 2026-04-20; Connect button VERIFIED on production 2026-05-01 (commit d75873da) |
 | Etsy | Deferred | ❌ | Exists | ❌ | Coming Soon |
 | Shopify | Incomplete | ❌ | Exists | ❌ | Coming Soon |
 

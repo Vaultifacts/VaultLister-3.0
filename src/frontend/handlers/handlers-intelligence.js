@@ -1300,7 +1300,7 @@ Object.assign(handlers, {
             title: form.title.value,
             platform: form.platform.value,
             category: form.category.value,
-            history: price > 0 ? [price] : [Math.floor(Math.random() * 50) + 20],
+            history: price > 0 ? [price] : [],
             created_at: new Date().toISOString(),
         };
 

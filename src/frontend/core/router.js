@@ -292,7 +292,8 @@ const router = {
     // Route aliases for sidebar consolidation — old routes redirect to new parent pages
     routeAliases: {
         'my-listings': { target: 'listings', tab: null },
-        orders: { target: 'orders-sales', tab: 'orders' },
+        orders: { target: 'orders-sales', tab: 'orders', storeKey: 'ordersMainTab' },
+        'orders-shipping': { target: 'orders-sales', tab: 'shipping', storeKey: 'ordersMainTab' },
         transactions: { target: 'financials', tab: 'transactions', storeKey: 'financialsTab' },
         'report-builder': { target: 'analytics', tab: 'reports', storeKey: 'analyticsTab' },
         predictions: { target: 'analytics', tab: 'predictions', storeKey: 'analyticsTab' },

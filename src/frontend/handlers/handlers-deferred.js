@@ -4458,7 +4458,9 @@ Object.assign(handlers, {
 
     saveBudgetSettings: function () {
         const budget = document.getElementById('monthly-budget-input')?.value;
-        store.setState({ monthlyBudget: parseFloat(budget) || 500 });
+        const monthlyBudget = parseFloat(budget) || 500;
+        store.setState({ monthlyBudget });
+        try { localStorage.setItem('vl_monthly_budget', String(monthlyBudget)); } catch (_) {}
         toast.success('Budget settings saved');
         modals.close();
         renderApp(window.pages.financials());
@@ -4516,11 +4518,13 @@ Object.assign(handlers, {
     saveGoals: function (e) {
         e.preventDefault();
         const form = e.target;
-        store.setState({
+        const goals = {
             revenueGoal: parseFloat(form.revenueGoal.value) || 5000,
             salesGoal: parseInt(form.salesGoal.value) || 50,
             marginGoal: parseFloat(form.marginGoal.value) || 40,
-        });
+        };
+        store.setState(goals);
+        try { localStorage.setItem('vl_goals', JSON.stringify(goals)); } catch (_) {}
         toast.success('Goals updated');
         modals.close();
         renderApp(window.pages.analytics());

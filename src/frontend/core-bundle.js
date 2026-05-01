@@ -17028,7 +17028,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '3af7f35e';
+    const v = '99606c6e';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function (resolve, reject) {
@@ -17133,7 +17133,8 @@ const router = {
     // Route aliases for sidebar consolidation — old routes redirect to new parent pages
     routeAliases: {
         'my-listings': { target: 'listings', tab: null },
-        orders: { target: 'orders-sales', tab: 'orders' },
+        orders: { target: 'orders-sales', tab: 'orders', storeKey: 'ordersMainTab' },
+        'orders-shipping': { target: 'orders-sales', tab: 'shipping', storeKey: 'ordersMainTab' },
         transactions: { target: 'financials', tab: 'transactions', storeKey: 'financialsTab' },
         'report-builder': { target: 'analytics', tab: 'reports', storeKey: 'analyticsTab' },
         predictions: { target: 'analytics', tab: 'predictions', storeKey: 'analyticsTab' },
@@ -17867,11 +17868,11 @@ const components = {
                         icon: 'sales',
                         badge: unseenOrders > 0 ? unseenOrders : null,
                         badgeType: 'primary',
-                        activeIds: ['offers', 'orders', 'orders-sales', 'shipping-labels'],
+                        activeIds: ['offers', 'orders', 'orders-sales', 'orders-shipping'],
                         dropdownItems: [
                             { id: 'offers', label: 'Offers' },
                             { id: 'orders', label: 'Orders' },
-                            { id: 'shipping-labels', label: 'Shipping' },
+                            { id: 'orders-shipping', label: 'Shipping' },
                         ],
                     },
                 ],

@@ -14,7 +14,7 @@
 ## Last Completed Work (2026-05-01)
 
 ### Display bug sweep — My Shops, Automations, Image Bank (2026-05-01, commits d75873da→273a1003)
-- **Grailed "Coming Soon" fix**: was showing Coming Soon badge despite being a launched platform. Root cause: stale `dist/chunk-deferred.js` in Docker container (built 2 weeks prior, missing LAUNCH_PLATFORMS logic). Fixed by touching `init.js` to change hash, rebuilding all chunks (`bun run build`), and `docker cp` into container. Version bumped to `2a245d0f`.
+- **Grailed "Coming Soon" fix**: was showing Coming Soon badge despite being a launched platform. Root cause: stale `dist/chunk-deferred.js` in Docker container (built 2 weeks prior, missing LAUNCH_PLATFORMS logic). Fixed by touching `init.js` to change hash, rebuilding all chunks (`bun run build`), and `docker cp` into container. **VERIFIED LIVE 2026-05-01** — production DOM confirms `"Grailed (CA) Not connected Connect"` at `vaultlister.com/?app=1#shops`.
 - **`getShopHealthScore` null crash**: accessing `.health_score` on `undefined` when `shops.find()` returns undefined for unconnected platforms. Fixed with `shop ? ... : null` guard.
 - **Automations page**: clean — 8 automations render correctly (Grailed/Poshmark/Depop/Facebook/Mercari), no undefined/NaN/placeholder text, all section headings present.
 - **Image Bank page**: clean — proper empty state, search input, stats (0 Total/Folders/Tagged), no broken images.

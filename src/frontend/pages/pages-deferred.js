@@ -9817,8 +9817,8 @@ Object.assign(pages, {
                 </div>
             </div>
 
-            <!-- Press Kit & Careers -->
-            <div class="about-section" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+            <!-- Press Kit -->
+            <div class="about-section">
                 <div class="about-card-highlight">
                     <div class="highlight-icon">
                         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--primary-600)" stroke-width="2">
@@ -9832,20 +9832,6 @@ Object.assign(pages, {
                     <button class="btn btn-secondary" onclick="window.location.href='mailto:press@vaultlister.com'">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22 6 12 13 2 6"></polyline></svg>
                         Contact Press Team
-                    </button>
-                </div>
-                <div class="about-card-highlight">
-                    <div class="highlight-icon">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2">
-                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-                        </svg>
-                    </div>
-                    <h2>Careers at VaultLister</h2>
-                    <p>Interested in joining our mission to empower resellers everywhere? We'd love to hear from you!</p>
-                    <button class="btn btn-secondary" onclick="window.location.href='mailto:careers@vaultlister.com'">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22 6 12 13 2 6"></polyline></svg>
-                        Email careers@vaultlister.com
                     </button>
                 </div>
             </div>
