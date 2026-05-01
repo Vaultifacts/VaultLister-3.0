@@ -16953,7 +16953,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '8e7a3fce';
+    const v = 'c5fda208';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function (resolve, reject) {
@@ -17960,7 +17960,6 @@ const components = {
                             <div class="sidebar-dropdown-menu">
                                 <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'integrations'});router.navigate('settings/integrations')">Integrations</button>
                                 <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'account'});router.navigate('settings/account')">Account</button>
-                
                                 <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'affiliate'});router.navigate('settings/affiliate')">Affiliate Program</button>
                                 <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'tools'});router.navigate('settings/tools')">Customization</button>
                                 <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'notifications'});router.navigate('settings/notifications')">Notifications</button>
@@ -31771,7 +31770,6 @@ function renderApp(pageContent) {
                         </button>
                     </div>
                     <div class="main-wrapper">
-                        ${components.header()}
                         <main class="main-content" role="main" id="main-content" tabindex="-1" aria-label="Page content">
                             <div class="page-content">
                                 ${store.state.currentPage !== 'dashboard' && store.state.currentPage !== 'login' && store.state.currentPage !== 'register' ? components.breadcrumb(store.state.currentPage) : ''}

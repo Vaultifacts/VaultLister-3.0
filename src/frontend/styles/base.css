@@ -897,8 +897,13 @@ body.dark-mode .consolidated-tab.active {
 }
 
 .sidebar-user-menu .dropdown-menu {
-    width: 100%;
-    right: 0;
+    width: 200px;
+    left: 100%;
+    right: auto;
+    top: auto;
+    bottom: 0;
+    margin-top: 0;
+    margin-left: var(--space-2);
 }
 
 /* Logout button — always in DOM / tab order, sits just below user info */
