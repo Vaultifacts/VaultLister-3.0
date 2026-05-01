@@ -1588,11 +1588,27 @@ handlers.removeQuickPhoto = function (idx) {
 
 handlers.enhanceQuickPhoto = function (idx) {
     const photos = store.state._quickPhotos || [];
-    if (idx < photos.length) {
-        // Mock enhancement - in production, use canvas API to adjust brightness/contrast
+    if (idx >= photos.length) return;
+    const src = photos[idx];
+    const img = new Image();
+    img.onload = function () {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.filter = 'brightness(1.1) contrast(1.15) saturate(1.1)';
+        ctx.drawImage(img, 0, 0);
+        const enhanced = canvas.toDataURL('image/jpeg', 0.92);
+        const updated = [...photos];
+        updated[idx] = enhanced;
+        store.setState({ _quickPhotos: updated });
         toast.success(`Photo ${idx + 1} enhanced`);
         handlers.showQuickPhotoCapture();
-    }
+    };
+    img.onerror = function () {
+        toast.error(`Failed to enhance photo ${idx + 1}`);
+    };
+    img.src = src;
 };
 
 handlers.addPhotosToBank = async function () {

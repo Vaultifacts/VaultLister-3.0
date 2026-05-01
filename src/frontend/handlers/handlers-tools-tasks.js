@@ -102,8 +102,8 @@ Object.assign(handlers, {
         const weeklyTotal = weeklyData.reduce((sum, d) => sum + d.completed, 0);
         const avgPerDay = (weeklyTotal / 7).toFixed(1);
 
-        // Calculate productivity score (mock calculation)
-        const productivityScore = Math.min(100, Math.round((weeklyTotal / 35) * 100));
+        const weeklyTaskGoal = store.state.weeklyTaskGoal || 35;
+        const productivityScore = Math.min(100, Math.round((weeklyTotal / weeklyTaskGoal) * 100));
         const getScoreColor = (score) => {
             if (score >= 80) return 'success';
             if (score >= 50) return 'warning';
@@ -335,33 +335,21 @@ Object.assign(handlers, {
     },
 
     runAITagging: async function () {
-        const selectedImages = store.state.selectedImages || [];
-        const images = store.state.imageBankImages || [];
-        const imagesToTag =
-            selectedImages.length > 0 ? images.filter((img) => selectedImages.includes(img.id)) : images;
-
-        if (imagesToTag.length === 0) {
-            toast.warning('No images to tag');
+        const selectedIds = [...(store.state.selectedImageIds || [])];
+        if (selectedIds.length === 0) {
+            toast.error('Select images to tag first');
             return;
         }
-
-        toast.info(`Processing ${imagesToTag.length} image(s)...`);
-
-        // Simulate AI tagging with common tags
-        const commonTags = ['clothing', 'vintage', 'casual', 'formal', 'accessories', 'shoes', 'dress', 'top', 'pants'];
-        const updated = images.map((img) => {
-            if (selectedImages.length === 0 || selectedImages.includes(img.id)) {
-                const randomTags = commonTags.sort(() => 0.5 - Math.random()).slice(0, 3);
-                const existingTags = img.tags || [];
-                const newTags = [...new Set([...existingTags, ...randomTags])];
-                return { ...img, tags: newTags };
-            }
-            return img;
-        });
-
-        store.setState({ imageBankImages: updated });
-        renderApp(window.pages.imageBank());
-        toast.success(`Tagged ${imagesToTag.length} image(s) successfully!`);
+        toast.info('Running AI tagging on ' + selectedIds.length + ' image(s)...');
+        try {
+            await api.ensureCSRFToken();
+            const data = await api.post('/image-bank/analyze', { imageIds: selectedIds, mode: 'tag' });
+            const tagged = data.tagged || data.results?.length || selectedIds.length;
+            toast.success('AI tagging complete — ' + tagged + ' image(s) tagged');
+            renderApp(window.pages.imageBank());
+        } catch (err) {
+            toast.error('AI tagging failed: ' + (err.message || 'Unknown error'));
+        }
     },
 
     // Calendar handlers,

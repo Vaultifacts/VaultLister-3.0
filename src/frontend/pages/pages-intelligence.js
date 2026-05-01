@@ -688,14 +688,10 @@ Object.assign(pages, {
                 </div>
                 <div class="card-body">
                     ${(() => {
-                        const accuracy = store.state.predictionAccuracy || {
-                            total: 156,
-                            correct: 118,
-                            avgError: 8.2,
-                            bestCategory: 'Shoes',
-                            worstCategory: 'Accessories',
-                            monthly: [72, 75, 68, 80, 76, 82, 78, 85],
-                        };
+                        const accuracy = store.state.predictionAccuracy;
+                        if (!accuracy) {
+                            return '<p class="text-sm text-gray-400 text-center py-8">No prediction accuracy data yet. Run the prediction model to see results.</p>';
+                        }
                         const successRate =
                             accuracy.total > 0 ? ((accuracy.correct / accuracy.total) * 100).toFixed(1) : 0;
                         return `
@@ -720,7 +716,14 @@ Object.assign(pages, {
                             <div>
                                 <div class="text-xs font-semibold text-gray-600 mb-2">Monthly Accuracy Trend</div>
                                 <div style="display: flex; align-items: flex-end; gap: 4px; height: 60px;">
-                                    ${accuracy.monthly
+                                    ${(() => {
+                                            const now = new Date();
+                                            const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                                            const months = Array.from({ length: accuracy.monthly.length }, (_, i) => {
+                                                const d = new Date(now.getFullYear(), now.getMonth() - (accuracy.monthly.length - 1 - i), 1);
+                                                return monthNames[d.getMonth()];
+                                            });
+                                            return accuracy.monthly
                                         .map((val, i) => {
                                             const barHeight = (val / 100) * 60;
                                             const barColor =
@@ -729,13 +732,13 @@ Object.assign(pages, {
                                                     : val >= 65
                                                       ? 'var(--warning)'
                                                       : 'var(--error)';
-                                            const months = ['Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'];
                                             return `<div style="flex: 1; display: flex; flex-direction: column; align-items: center;" title="${months[i]}: ${val}%">
                                             <div style="width: 100%; height: ${barHeight}px; background: ${barColor}; border-radius: 3px 3px 0 0;"></div>
                                             <div style="font-size: 8px; color: var(--gray-400); margin-top: 2px;">${months[i]}</div>
                                         </div>`;
                                         })
-                                        .join('')}
+                                        .join('');
+                                        })()}
                                 </div>
                             </div>
                         `;
@@ -752,40 +755,18 @@ Object.assign(pages, {
                     <div class="card-body">
                         <p class="text-xs text-gray-500 mb-3">Compare outputs from different prediction models.</p>
                         ${(() => {
-                            const models = [
-                                {
-                                    name: 'Market Comps',
-                                    accuracy: 78,
-                                    speed: 'Fast',
-                                    approach: 'Recent comparable sales analysis',
-                                },
-                                {
-                                    name: 'Seasonal AI',
-                                    accuracy: 82,
-                                    speed: 'Medium',
-                                    approach: 'Historical seasonal patterns',
-                                },
-                                {
-                                    name: 'Demand-Weighted',
-                                    accuracy: 85,
-                                    speed: 'Slow',
-                                    approach: 'Demand score + price elasticity',
-                                },
-                            ];
-                            return `<div class="space-y-3">${models
-                                .map(
-                                    (m) => `
+                            const modelComps = store.state.modelComparisons;
+                            if (!modelComps || modelComps.length === 0) {
+                                return '<p class="text-sm text-gray-400 text-center py-4">No model comparison data available. Run predictions to compare models.</p>';
+                            }
+                            return `<div class="space-y-3">${modelComps.map(m => `
                                 <div style="padding: 10px; border: 1px solid var(--gray-200); border-radius: 8px;">
                                     <div class="flex items-center justify-between mb-1">
-                                        <span class="font-medium text-sm">${m.name}</span>
-                                        <span class="badge badge-sm ${m.accuracy >= 80 ? 'badge-success' : 'badge-warning'}">${m.accuracy}% accurate</span>
+                                        <span style="font-weight: 600;">${escapeHtml(m.name)}</span>
+                                        <span class="badge badge-success">${m.accuracy}% accurate</span>
                                     </div>
-                                    <div class="text-xs text-gray-500">${m.approach}</div>
-                                    <div class="text-xs text-gray-400 mt-1">Speed: ${m.speed}</div>
-                                </div>
-                            `,
-                                )
-                                .join('')}</div>`;
+                                    <p class="text-xs text-gray-500">${escapeHtml(m.approach || '')}</p>
+                                </div>`).join('')}</div>`;
                         })()}
                     </div>
                 </div>

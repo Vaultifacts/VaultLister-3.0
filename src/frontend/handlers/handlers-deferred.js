@@ -1367,57 +1367,19 @@ Object.assign(handlers, {
             </div>
         `);
 
-        const results = handlers._simulateDryRun(rule.category);
-
         modals.show(`
             <div class="modal-header">
-                <h2 class="modal-title">${components.icon('play', 20)} Dry-Run Results: ${escapeHtml(rule.name)}</h2>
+                <h2 class="modal-title">${components.icon('play', 20)} Dry-Run: ${escapeHtml(rule.name)}</h2>
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
             </div>
-            <div class="modal-body">
-                <div class="dry-run-summary">
-                    <div class="dry-run-stat-grid">
-                        <div class="dry-run-stat">
-                            <div class="dry-run-stat-value">${results.affected}</div>
-                            <div class="dry-run-stat-label">Items Affected</div>
-                        </div>
-                        <div class="dry-run-stat">
-                            <div class="dry-run-stat-value text-success">${results.success}</div>
-                            <div class="dry-run-stat-label">Would Succeed</div>
-                        </div>
-                        <div class="dry-run-stat">
-                            <div class="dry-run-stat-value text-warning">${results.warnings}</div>
-                            <div class="dry-run-stat-label">Warnings</div>
-                        </div>
-                        <div class="dry-run-stat">
-                            <div class="dry-run-stat-value text-error">${results.errors}</div>
-                            <div class="dry-run-stat-label">Errors</div>
-                        </div>
-                    </div>
-
-                    <h3 style="margin: 16px 0 8px; font-weight: 600;">Action Preview</h3>
-                    <div class="dry-run-actions-list">
-                        ${results.actions
-                            .map(
-                                (a) => `
-                            <div class="dry-run-action-item dry-run-action-${a.status}">
-                                <span class="dry-run-action-icon">${components.icon(a.status === 'success' ? 'check-circle' : a.status === 'warning' ? 'alert-triangle' : 'x-circle', 14)}</span>
-                                <span class="dry-run-action-text">${escapeHtml(a.text)}</span>
-                            </div>
-                        `,
-                            )
-                            .join('')}
-                    </div>
-
-                    <div class="dry-run-impact">
-                        <strong>Estimated Impact:</strong> ${escapeHtml(results.impact)}
-                    </div>
-                </div>
+            <div class="modal-body" style="text-align: center; padding: 48px 24px;">
+                <p class="text-gray-500" style="margin-bottom: 16px;">Dry-run preview requires server-side execution and is not yet available.</p>
+                <p class="text-xs text-gray-400">You can run this automation directly using the button below.</p>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="modals.close()">Close</button>
-                <button class="btn btn-primary" onclick="${isShareCloset ? 'modals.close(); handlers.runShareCloset()' : "modals.close(); toast.success('Automation would run successfully!')"}">
-                    ${components.icon('play', 14)} Run for Real
+                <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
+                <button class="btn btn-primary" onclick="${isShareCloset ? 'modals.close(); handlers.runShareCloset()' : 'modals.close()'}">
+                    ${components.icon('play', 14)} Run Now
                 </button>
             </div>
         `);
@@ -1445,95 +1407,8 @@ Object.assign(handlers, {
         }
     },
 
-    _simulateDryRun: function (category) {
-        const listings = store.state.listings || [];
-        const listingCount = listings.length;
-
-        const simulations = {
-            sharing: {
-                affected: listingCount,
-                success: listingCount - 2,
-                warnings: 1,
-                errors: 1,
-                impact: `${listingCount} listings would be shared across your closet, increasing visibility by ~15%`,
-                actions: [
-                    { status: 'success', text: `Share ${listingCount - 3} active listings to followers` },
-                    { status: 'success', text: 'Schedule shares in 5-minute intervals to avoid rate limits' },
-                    { status: 'warning', text: '1 listing has incomplete photos — may get lower engagement' },
-                    { status: 'error', text: '1 listing is in draft status — cannot be shared' },
-                ],
-            },
-            pricing: {
-                affected: Math.floor(listingCount * 0.4),
-                success: Math.floor(listingCount * 0.35),
-                warnings: 2,
-                errors: 0,
-                impact: `Price adjustments on ${Math.floor(listingCount * 0.4)} items, avg reduction of 10%`,
-                actions: [
-                    { status: 'success', text: `${Math.floor(listingCount * 0.25)} items would get 10% price drop` },
-                    { status: 'success', text: `${Math.floor(listingCount * 0.1)} items would enter CCL rotation` },
-                    { status: 'warning', text: '2 items already at minimum price — skipped' },
-                    { status: 'success', text: 'All price changes within configured floor limits' },
-                ],
-            },
-            offers: {
-                affected: Math.floor(listingCount * 0.6),
-                success: Math.floor(listingCount * 0.5),
-                warnings: 3,
-                errors: 0,
-                impact: `${Math.floor(listingCount * 0.6)} offers would be sent, potential revenue of C$${(Math.floor(listingCount * 0.5) * 18).toFixed(0)}`,
-                actions: [
-                    {
-                        status: 'success',
-                        text: `Send offers on ${Math.floor(listingCount * 0.4)} items with active likers`,
-                    },
-                    { status: 'success', text: `${Math.floor(listingCount * 0.1)} counter-offers queued` },
-                    { status: 'warning', text: '2 items have offers already pending — will skip' },
-                    { status: 'warning', text: '1 liker already received an offer this week' },
-                ],
-            },
-            maintenance: {
-                affected: Math.floor(listingCount * 0.3),
-                success: Math.floor(listingCount * 0.25),
-                warnings: 1,
-                errors: 1,
-                impact: `${Math.floor(listingCount * 0.3)} listings would be refreshed, improving search ranking`,
-                actions: [
-                    { status: 'success', text: `Relist ${Math.floor(listingCount * 0.2)} items older than 60 days` },
-                    { status: 'success', text: `Update descriptions on ${Math.floor(listingCount * 0.05)} items` },
-                    { status: 'warning', text: '1 item has active offer — relist delayed' },
-                    { status: 'error', text: '1 item missing required fields for relisting' },
-                ],
-            },
-            engagement: {
-                affected: 45,
-                success: 42,
-                warnings: 2,
-                errors: 1,
-                impact: '45 follow/unfollow actions, estimated 8-12 new followers',
-                actions: [
-                    { status: 'success', text: 'Follow back 28 new followers from last 24h' },
-                    { status: 'success', text: 'Follow 14 targeted users matching brand criteria' },
-                    { status: 'warning', text: '2 accounts appear inactive — follow anyway with low priority' },
-                    { status: 'error', text: '1 account is blocked — cannot follow' },
-                ],
-            },
-            bundles: {
-                affected: Math.floor(listingCount * 0.2),
-                success: Math.floor(listingCount * 0.18),
-                warnings: 1,
-                errors: 0,
-                impact: `${Math.floor(listingCount * 0.2)} bundle offers to create, avg bundle value C$${(Math.floor(listingCount * 0.2) * 35).toFixed(0)}`,
-                actions: [
-                    { status: 'success', text: `Create ${Math.floor(listingCount * 0.12)} bundles for multi-likers` },
-                    { status: 'success', text: `Send ${Math.floor(listingCount * 0.06)} bundle discount reminders` },
-                    { status: 'warning', text: '1 buyer already has a pending bundle' },
-                    { status: 'success', text: 'All bundle discounts within configured limits' },
-                ],
-            },
-        };
-
-        return simulations[category] || simulations.sharing;
+    _simulateDryRun: function () {
+        return null;
     },
 
     toggleAllAutomations: function (enabled) {
@@ -4557,16 +4432,42 @@ Object.assign(handlers, {
         renderApp(window.pages.predictions());
     },
 
-    runPredictionModel: function () {
-        toast.info('Predictions are generated automatically when you add inventory items.');
+    runPredictionModel: async function () {
+        toast.info('Running AI prediction model...');
+        try {
+            const weights = store.state.modelWeights || {};
+            const params = new URLSearchParams();
+            if (weights.market !== undefined) params.set('weight_market', weights.market);
+            if (weights.seasonal !== undefined) params.set('weight_seasonal', weights.seasonal);
+            if (weights.demand !== undefined) params.set('weight_demand', weights.demand);
+            if (weights.history !== undefined) params.set('weight_history', weights.history);
+            const query = params.toString();
+            const data = await api.get('/predictions' + (query ? '?' + query : ''));
+            store.setState({ predictions: data });
+            toast.success('Predictions updated with latest data');
+            renderApp(window.pages.predictions());
+        } catch (err) {
+            toast.error(err.message || 'Failed to run prediction model');
+        }
     },
 
-    refreshPredictions: function () {
+    refreshPredictions: async function () {
         toast.info('Refreshing predictions...');
-        setTimeout(() => {
-            toast.success('Predictions refreshed');
+        try {
+            const weights = store.state.modelWeights || {};
+            const params = new URLSearchParams();
+            if (weights.market !== undefined) params.set('weight_market', weights.market);
+            if (weights.seasonal !== undefined) params.set('weight_seasonal', weights.seasonal);
+            if (weights.demand !== undefined) params.set('weight_demand', weights.demand);
+            if (weights.history !== undefined) params.set('weight_history', weights.history);
+            const query = params.toString();
+            const data = await api.get('/predictions' + (query ? '?' + query : ''));
+            store.setState({ predictions: data });
             renderApp(window.pages.predictions());
-        }, 1000);
+            toast.success('Predictions refreshed');
+        } catch (err) {
+            toast.error(err.message || 'Failed to refresh predictions');
+        }
     },
 
     viewPredictionDetails: function (id) {
@@ -4613,15 +4514,11 @@ Object.assign(handlers, {
 
     showPredictionDetails: function (id) {
         const predictions = store.state.predictions || [];
-        const pred = predictions.find((p) => p.id === id);
-        const displayPred = pred || {
-            item_title: 'Sample Item',
-            current_price: 50,
-            predicted_price: 62,
-            confidence: 78,
-            demand_score: 'High',
-            recommendation: 'Buy',
-        };
+        const displayPred = predictions.find((p) => p.id === id);
+        if (!displayPred) {
+            toast.error('Prediction not found');
+            return;
+        }
         const change = displayPred.predicted_price - displayPred.current_price;
         const pct = ((change / (displayPred.current_price || 1)) * 100).toFixed(1);
         const isUp = change >= 0;
@@ -6326,7 +6223,12 @@ Object.assign(handlers, {
     },
 
     runRetentionCleanup: async function () {
-        toast.info('Automated data retention cleanup is coming soon.');
+        const confirmed = await modals.confirm(
+            'This will permanently delete data older than your retention settings. This cannot be undone.',
+            { title: 'Run Data Cleanup?', confirmText: 'Run Cleanup', danger: true },
+        );
+        if (!confirmed) return;
+        toast.info('Automated data cleanup is not yet available. Contact support to request manual data removal.');
     },
 
     changeAvatar: function () {

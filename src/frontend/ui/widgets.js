@@ -1118,9 +1118,15 @@ const offlineManager = {
     },
 
     async executeAction(action) {
-        // Execute queued action based on type
-        // This would integrate with actual API calls
-        // Action execution integrates with API calls — type determines handler
+        const method = (action.method || 'POST').toUpperCase();
+        const url = action.url || action.endpoint;
+        if (!url) throw new Error('Action missing url');
+        await api.ensureCSRFToken();
+        if (method === 'GET') return api.get(url);
+        if (method === 'PUT') return api.put(url, action.body);
+        if (method === 'PATCH') return api.patch(url, action.body);
+        if (method === 'DELETE') return api.delete(url);
+        return api.post(url, action.body);
     },
 
     updateQueueIndicator() {

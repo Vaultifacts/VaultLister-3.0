@@ -3402,7 +3402,6 @@ Object.assign(pages, {
             profit: netProfit,
             margin: profitMargin,
             cashFlow: cashFlow,
-            cashFlowChange: 0,
         };
 
         // Cash flow waterfall data — derived from same totalExpenses as overview cards
@@ -3419,6 +3418,7 @@ Object.assign(pages, {
 
         // Financial ratios
         const balanceSheet = store.state.balanceSheet;
+        const analyticsCoGs = store.state.analytics?.cogs ?? null;
         const financialRatiosData = balanceSheet ? {
             currentAssets: balanceSheet.totalCurrentAssets || 0,
             currentLiabilities: balanceSheet.totalCurrentLiabilities || 0,
@@ -3426,7 +3426,7 @@ Object.assign(pages, {
             totalLiabilities: balanceSheet.totalLiabilities || 0,
             totalEquity: balanceSheet.totalEquity || 0,
             revenue: totalRevenue,
-            cogs: totalExpenses * 0.6,
+            cogs: analyticsCoGs !== null ? analyticsCoGs : totalExpenses,
             netIncome: netProfit,
         } : null;
 
@@ -3463,6 +3463,77 @@ Object.assign(pages, {
                   : financialHealthScore >= 40
                     ? 'fair'
                     : 'needs-attention';
+
+        const financialGoalsCard = window.location.hostname !== 'localhost' ? '' : `
+            <!-- Financial Goal Tracking (dev-only: post-launch feature) -->
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h2 class="card-title">${components.icon('target', 18)} Financial Goals</h2>
+                    <button class="btn btn-sm btn-primary" onclick="handlers.addFinancialGoal()">+ Add Goal</button>
+                </div>
+                <div class="card-body">
+                    ${
+                        (store.state.financialGoals || []).length > 0
+                            ? `
+                        <div style="display: grid; gap: 16px;">
+                            ${(store.state.financialGoals || [])
+                                .map((goal) => {
+                                    const progress = Math.min(100, Math.round((goal.current / goal.target) * 100));
+                                    const color =
+                                        progress >= 100
+                                            ? 'success'
+                                            : progress >= 60
+                                              ? 'primary'
+                                              : progress >= 30
+                                                ? 'warning'
+                                                : 'danger';
+                                    return (
+                                        '<div style="padding: 16px; background: var(--gray-50); border-radius: 8px;">' +
+                                        '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">' +
+                                        '<div><span style="font-weight: 600;">' +
+                                        escapeHtml(goal.name) +
+                                        '</span><span style="font-size: 12px; color: var(--gray-500); margin-left: 8px;">' +
+                                        escapeHtml(goal.category || '') +
+                                        '</span></div>' +
+                                        '<span style="font-size: 13px; font-weight: 600; color: var(--' +
+                                        color +
+                                        ');">' +
+                                        progress +
+                                        '%</span>' +
+                                        '</div>' +
+                                        '<div style="height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden; margin-bottom: 8px;">' +
+                                        '<div style="height: 100%; width: ' +
+                                        progress +
+                                        '%; background: var(--' +
+                                        color +
+                                        '); border-radius: 4px; transition: width 0.3s;"></div>' +
+                                        '</div>' +
+                                        '<div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--gray-500);">' +
+                                        '<span>$' +
+                                        (goal.current || 0).toLocaleString() +
+                                        ' of $' +
+                                        (goal.target || 0).toLocaleString() +
+                                        '</span>' +
+                                        '<span>Deadline: ' +
+                                        (goal.deadline || 'None') +
+                                        '</span>' +
+                                        '</div>' +
+                                        '</div>'
+                                    );
+                                })
+                                .join('')}
+                        </div>
+                    `
+                            : `
+                        <div class="text-center py-8">
+                            <p style="color: var(--gray-500); margin-bottom: 12px;">Set financial goals to track your progress. Examples: Revenue target, savings, debt payoff.</p>
+                            <button class="btn btn-primary btn-sm" onclick="handlers.addFinancialGoal()">+ Create First Goal</button>
+                        </div>
+                    `
+                    }
+                </div>
+            </div>
+        `;
 
         return `
             <div class="page-header">
@@ -3814,74 +3885,7 @@ Object.assign(pages, {
                 </div>
             </div>
 
-            <!-- Financial Goal Tracking (dev-only: post-launch feature) -->
-            <div class="card mb-6" style="${window.location.hostname !== 'localhost' ? 'display:none' : ''}">
-                <div class="card-header">
-                    <h2 class="card-title">${components.icon('target', 18)} Financial Goals</h2>
-                    <button class="btn btn-sm btn-primary" onclick="handlers.addFinancialGoal()">+ Add Goal</button>
-                </div>
-                <div class="card-body">
-                    ${
-                        (store.state.financialGoals || []).length > 0
-                            ? `
-                        <div style="display: grid; gap: 16px;">
-                            ${(store.state.financialGoals || [])
-                                .map((goal) => {
-                                    const progress = Math.min(100, Math.round((goal.current / goal.target) * 100));
-                                    const color =
-                                        progress >= 100
-                                            ? 'success'
-                                            : progress >= 60
-                                              ? 'primary'
-                                              : progress >= 30
-                                                ? 'warning'
-                                                : 'danger';
-                                    return (
-                                        '<div style="padding: 16px; background: var(--gray-50); border-radius: 8px;">' +
-                                        '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">' +
-                                        '<div><span style="font-weight: 600;">' +
-                                        escapeHtml(goal.name) +
-                                        '</span><span style="font-size: 12px; color: var(--gray-500); margin-left: 8px;">' +
-                                        escapeHtml(goal.category || '') +
-                                        '</span></div>' +
-                                        '<span style="font-size: 13px; font-weight: 600; color: var(--' +
-                                        color +
-                                        ');">' +
-                                        progress +
-                                        '%</span>' +
-                                        '</div>' +
-                                        '<div style="height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden; margin-bottom: 8px;">' +
-                                        '<div style="height: 100%; width: ' +
-                                        progress +
-                                        '%; background: var(--' +
-                                        color +
-                                        '); border-radius: 4px; transition: width 0.3s;"></div>' +
-                                        '</div>' +
-                                        '<div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--gray-500);">' +
-                                        '<span>$' +
-                                        (goal.current || 0).toLocaleString() +
-                                        ' of $' +
-                                        (goal.target || 0).toLocaleString() +
-                                        '</span>' +
-                                        '<span>Deadline: ' +
-                                        (goal.deadline || 'None') +
-                                        '</span>' +
-                                        '</div>' +
-                                        '</div>'
-                                    );
-                                })
-                                .join('')}
-                        </div>
-                    `
-                            : `
-                        <div class="text-center py-8">
-                            <p style="color: var(--gray-500); margin-bottom: 12px;">Set financial goals to track your progress. Examples: Revenue target, savings, debt payoff.</p>
-                            <button class="btn btn-primary btn-sm" onclick="handlers.addFinancialGoal()">+ Create First Goal</button>
-                        </div>
-                    `
-                    }
-                </div>
-            </div>
+            ${financialGoalsCard}
 
             <!-- Expense Category Dashboard -->
             <div class="card mb-6">

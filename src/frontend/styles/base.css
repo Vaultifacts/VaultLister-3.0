@@ -775,8 +775,8 @@ body.dark-mode .shop-switch-divider {
 }
 
 .consolidated-tab.active {
-    color: var(--primary-600);
-    border-bottom-color: var(--primary-600);
+    color: var(--primary-800);
+    border-bottom-color: var(--primary-800);
     font-weight: 600;
 }
 
@@ -843,7 +843,7 @@ body.dark-mode .consolidated-tab.active {
 
 .nav-item-badge-primary {
     background: var(--primary);
-    color: white;
+    color: var(--gray-900);
 }
 
 .nav-item-badge-info {
@@ -1896,8 +1896,8 @@ button[aria-expanded='true'] .chevron {
 }
 
 .tab.active {
-    color: var(--primary-600);
-    border-bottom-color: var(--primary-600);
+    color: var(--primary-800);
+    border-bottom-color: var(--primary-800);
 }
 
 /* Dark mode tabs */

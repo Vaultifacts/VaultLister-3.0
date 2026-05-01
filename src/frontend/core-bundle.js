@@ -10561,9 +10561,15 @@ const offlineManager = {
     },
 
     async executeAction(action) {
-        // Execute queued action based on type
-        // This would integrate with actual API calls
-        // Action execution integrates with API calls — type determines handler
+        const method = (action.method || 'POST').toUpperCase();
+        const url = action.url || action.endpoint;
+        if (!url) throw new Error('Action missing url');
+        await api.ensureCSRFToken();
+        if (method === 'GET') return api.get(url);
+        if (method === 'PUT') return api.put(url, action.body);
+        if (method === 'PATCH') return api.patch(url, action.body);
+        if (method === 'DELETE') return api.delete(url);
+        return api.post(url, action.body);
     },
 
     updateQueueIndicator() {
@@ -17034,7 +17040,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'a617248b';
+    const v = 'a101e09d';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function (resolve, reject) {
@@ -32684,11 +32690,27 @@ handlers.removeQuickPhoto = function (idx) {
 
 handlers.enhanceQuickPhoto = function (idx) {
     const photos = store.state._quickPhotos || [];
-    if (idx < photos.length) {
-        // Mock enhancement - in production, use canvas API to adjust brightness/contrast
+    if (idx >= photos.length) return;
+    const src = photos[idx];
+    const img = new Image();
+    img.onload = function () {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.filter = 'brightness(1.1) contrast(1.15) saturate(1.1)';
+        ctx.drawImage(img, 0, 0);
+        const enhanced = canvas.toDataURL('image/jpeg', 0.92);
+        const updated = [...photos];
+        updated[idx] = enhanced;
+        store.setState({ _quickPhotos: updated });
         toast.success(`Photo ${idx + 1} enhanced`);
         handlers.showQuickPhotoCapture();
-    }
+    };
+    img.onerror = function () {
+        toast.error(`Failed to enhance photo ${idx + 1}`);
+    };
+    img.src = src;
 };
 
 handlers.addPhotosToBank = async function () {

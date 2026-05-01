@@ -94,14 +94,11 @@ Object.assign(handlers, {
     showPredictionDetails: function (id) {
         const predictions = store.state.predictions || [];
         const pred = predictions.find((p) => p.id === id);
-        const displayPred = pred || {
-            item_title: 'Sample Item',
-            current_price: 50,
-            predicted_price: 62,
-            confidence: 78,
-            demand_score: 'High',
-            recommendation: 'Buy',
-        };
+        if (!pred) {
+            toast.error('Prediction not found');
+            return;
+        }
+        const displayPred = pred;
         const change = displayPred.predicted_price - displayPred.current_price;
         const pct = ((change / (displayPred.current_price || 1)) * 100).toFixed(1);
         const isUp = change >= 0;
@@ -163,6 +160,7 @@ Object.assign(handlers, {
         const history = parseInt(document.getElementById('model-weight-history')?.value || 10);
 
         store.setState({ modelWeights: { market, seasonal, demand, history } });
+        try { localStorage.setItem('vl_model_weights', JSON.stringify({ market, seasonal, demand, history })); } catch (_) {}
         toast.success('Model configuration saved! New predictions will use updated weights.');
     },
 

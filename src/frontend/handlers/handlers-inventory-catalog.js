@@ -780,6 +780,23 @@ Object.assign(handlers, {
 
         const results = handlers._simulateDryRun(rule.category);
 
+        if (!results) {
+            modals.show(`
+                <div class="modal-header">
+                    <h2 class="modal-title">${components.icon('play', 20)} Dry-Run Results: ${escapeHtml(rule.name)}</h2>
+                    <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+                </div>
+                <div class="modal-body">
+                    <p>Dry-run preview is not available. Run the automation to see actual results.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="modals.close()">Close</button>
+                    <button class="btn btn-primary" onclick="${isShareCloset ? 'modals.close(); handlers.runShareCloset()' : "modals.close(); toast.success('Automation would run successfully!')"}">
+                        ${components.icon('play', 14)} Run for Real
+                    </button>
+                </div>
+            `);
+        } else {
         modals.show(`
             <div class="modal-header">
                 <h2 class="modal-title">${components.icon('play', 20)} Dry-Run Results: ${escapeHtml(rule.name)}</h2>
@@ -832,6 +849,7 @@ Object.assign(handlers, {
                 </button>
             </div>
         `);
+        }
 
         activityLogPanel.addLog({ title: `Dry-run completed: ${rule.name}`, type: 'success' });
     },
@@ -857,96 +875,7 @@ Object.assign(handlers, {
     },
 
     _simulateDryRun: function (category) {
-        const listings = store.state.listings || [];
-        const inventory = store.state.inventory || [];
-        const listingCount = Math.max(listings.length, 12);
-        const inventoryCount = Math.max(inventory.length, 25);
-
-        const simulations = {
-            sharing: {
-                affected: listingCount,
-                success: listingCount - 2,
-                warnings: 1,
-                errors: 1,
-                impact: `${listingCount} listings would be shared across your closet, increasing visibility by ~15%`,
-                actions: [
-                    { status: 'success', text: `Share ${listingCount - 3} active listings to followers` },
-                    { status: 'success', text: 'Schedule shares in 5-minute intervals to avoid rate limits' },
-                    { status: 'warning', text: '1 listing has incomplete photos — may get lower engagement' },
-                    { status: 'error', text: '1 listing is in draft status — cannot be shared' },
-                ],
-            },
-            pricing: {
-                affected: Math.floor(listingCount * 0.4),
-                success: Math.floor(listingCount * 0.35),
-                warnings: 2,
-                errors: 0,
-                impact: `Price adjustments on ${Math.floor(listingCount * 0.4)} items, avg reduction of 10%`,
-                actions: [
-                    { status: 'success', text: `${Math.floor(listingCount * 0.25)} items would get 10% price drop` },
-                    { status: 'success', text: `${Math.floor(listingCount * 0.1)} items would enter CCL rotation` },
-                    { status: 'warning', text: '2 items already at minimum price — skipped' },
-                    { status: 'success', text: 'All price changes within configured floor limits' },
-                ],
-            },
-            offers: {
-                affected: Math.floor(listingCount * 0.6),
-                success: Math.floor(listingCount * 0.5),
-                warnings: 3,
-                errors: 0,
-                impact: `${Math.floor(listingCount * 0.6)} offers would be sent, potential revenue of C$${(Math.floor(listingCount * 0.5) * 18).toFixed(0)}`,
-                actions: [
-                    {
-                        status: 'success',
-                        text: `Send offers on ${Math.floor(listingCount * 0.4)} items with active likers`,
-                    },
-                    { status: 'success', text: `${Math.floor(listingCount * 0.1)} counter-offers queued` },
-                    { status: 'warning', text: '2 items have offers already pending — will skip' },
-                    { status: 'warning', text: '1 liker already received an offer this week' },
-                ],
-            },
-            maintenance: {
-                affected: Math.floor(listingCount * 0.3),
-                success: Math.floor(listingCount * 0.25),
-                warnings: 1,
-                errors: 1,
-                impact: `${Math.floor(listingCount * 0.3)} listings would be refreshed, improving search ranking`,
-                actions: [
-                    { status: 'success', text: `Relist ${Math.floor(listingCount * 0.2)} items older than 60 days` },
-                    { status: 'success', text: `Update descriptions on ${Math.floor(listingCount * 0.05)} items` },
-                    { status: 'warning', text: '1 item has active offer — relist delayed' },
-                    { status: 'error', text: '1 item missing required fields for relisting' },
-                ],
-            },
-            engagement: {
-                affected: 45,
-                success: 42,
-                warnings: 2,
-                errors: 1,
-                impact: '45 follow/unfollow actions, estimated 8-12 new followers',
-                actions: [
-                    { status: 'success', text: 'Follow back 28 new followers from last 24h' },
-                    { status: 'success', text: 'Follow 14 targeted users matching brand criteria' },
-                    { status: 'warning', text: '2 accounts appear inactive — follow anyway with low priority' },
-                    { status: 'error', text: '1 account is blocked — cannot follow' },
-                ],
-            },
-            bundles: {
-                affected: Math.floor(listingCount * 0.2),
-                success: Math.floor(listingCount * 0.18),
-                warnings: 1,
-                errors: 0,
-                impact: `${Math.floor(listingCount * 0.2)} bundle offers to create, avg bundle value C$${(Math.floor(listingCount * 0.2) * 35).toFixed(0)}`,
-                actions: [
-                    { status: 'success', text: `Create ${Math.floor(listingCount * 0.12)} bundles for multi-likers` },
-                    { status: 'success', text: `Send ${Math.floor(listingCount * 0.06)} bundle discount reminders` },
-                    { status: 'warning', text: '1 buyer already has a pending bundle' },
-                    { status: 'success', text: 'All bundle discounts within configured limits' },
-                ],
-            },
-        };
-
-        return simulations[category] || simulations.sharing;
+        return null;
     },
 
     toggleAllAutomations: function (enabled) {
@@ -1201,7 +1130,7 @@ Object.assign(handlers, {
         modals.show(`
             <div class="modal-header">
                 <h2 class="modal-title">Run Details</h2>
-                <button class="modal-close" aria-label="Close" onclick="handlers.showAutomationHistoryMock()">${components.icon('close')}</button>
+                <button class="modal-close" aria-label="Close" onclick="handlers.showAutomationHistory()">${components.icon('close')}</button>
             </div>
             <div class="modal-body">
                 <div class="flex items-center gap-3 mb-6 pb-4 border-b" style="border-color: var(--gray-200);">
@@ -1283,7 +1212,7 @@ Object.assign(handlers, {
                 <button class="btn btn-secondary" onclick="handlers.retryAutomation('${run.id}')">
                     ${components.icon('refresh-cw', 14)} Retry Now
                 </button>
-                <button class="btn btn-primary" onclick="handlers.showAutomationHistoryMock()">Back to History</button>
+                <button class="btn btn-primary" onclick="handlers.showAutomationHistory()">Back to History</button>
             </div>
         `);
     },
@@ -1379,7 +1308,7 @@ Object.assign(handlers, {
         try {
             await api.post(`/automations/${run.automation_id || 'default'}/run`);
             toast.success('Automation started');
-            handlers.showAutomationHistoryMock();
+            handlers.showAutomationHistory();
         } catch (error) {
             toast.error('Failed to start automation: ' + error.message);
         }

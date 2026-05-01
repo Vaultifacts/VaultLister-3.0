@@ -1107,7 +1107,7 @@ Object.assign(handlers, {
         reader.readAsText(file);
     },
 
-    openLiveChat: function () {
+    openLiveChat: async function () {
         modals.show(`
             <div class="modal-header">
                 <h2>${components.icon('message-circle', 20)} Live Chat Support</h2>
@@ -1133,35 +1133,54 @@ Object.assign(handlers, {
             </div>
         `);
         setTimeout(() => document.getElementById('chat-input')?.focus(), 100);
+        try {
+            const res = await api.post('/chatbot/conversations', { title: 'Support Chat' });
+            const convId = res?.conversation?.id;
+            const chatEl = document.getElementById('chat-messages');
+            if (convId && chatEl) chatEl.dataset.conversationId = convId;
+        } catch (_) {
+            // conversation creation failed — sendChatMessage will handle gracefully
+        }
     },
 
-    sendChatMessage: function () {
+    sendChatMessage: async function () {
         const input = document.getElementById('chat-input');
         const messages = document.getElementById('chat-messages');
         if (!input || !messages || !input.value.trim()) return;
 
         const text = input.value.trim();
+        const conversationId = messages.dataset.conversationId;
+        if (!conversationId) {
+            toast.error('Chat session not ready. Please close and reopen the chat.');
+            return;
+        }
         input.value = '';
+        input.disabled = true;
 
-        // Add user message
         const userMsg = document.createElement('div');
         userMsg.style.cssText = 'display: flex; gap: 8px; margin-bottom: 12px; justify-content: flex-end;';
-        userMsg.innerHTML = sanitizeHTML(
+        userMsg.innerHTML = sanitizeHTML( // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             `<div style="background: var(--primary-500); color: white; padding: 10px 14px; border-radius: 12px 0 12px 12px; max-width: 80%;"><p class="text-sm">${escapeHtml(text)}</p><span class="text-xs" style="opacity: 0.7;">Just now</span></div>`,
-        ); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        );
         messages.appendChild(userMsg);
         messages.scrollTop = messages.scrollHeight;
 
-        // Simulate support response
-        setTimeout(() => {
+        try {
+            const res = await api.post('/chatbot/message', { conversation_id: conversationId, message: text });
+            const reply = res?.message?.content || 'No response received.';
             const botMsg = document.createElement('div');
             botMsg.style.cssText = 'display: flex; gap: 8px; margin-bottom: 12px;';
-            botMsg.innerHTML = sanitizeHTML(
-                `<div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary-500); display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; flex-shrink: 0;">VL</div><div style="background: white; padding: 10px 14px; border-radius: 0 12px 12px 12px; max-width: 80%; border: 1px solid var(--gray-200);"><p class="text-sm">Thanks for reaching out! A support agent will be with you shortly. In the meantime, you can check our knowledge base or tutorials for quick answers.</p><span class="text-xs text-gray-400">Just now</span></div>`,
-            ); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            botMsg.innerHTML = sanitizeHTML( // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                `<div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary-500); display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; flex-shrink: 0;">VL</div><div style="background: white; padding: 10px 14px; border-radius: 0 12px 12px 12px; max-width: 80%; border: 1px solid var(--gray-200);"><p class="text-sm">${escapeHtml(reply)}</p><span class="text-xs text-gray-400">Just now</span></div>`,
+            );
             messages.appendChild(botMsg);
             messages.scrollTop = messages.scrollHeight;
-        }, 1000);
+        } catch (err) {
+            toast.error('Failed to send message: ' + (err.message || 'Unknown error'));
+        } finally {
+            input.disabled = false;
+            input.focus();
+        }
     },
 
     // Interactive Walkthrough System,

@@ -1898,7 +1898,7 @@ body.dark-mode .preset-btn.active {
 }
 
 .mini-calendar-day.today {
-    background: var(--primary-500);
+    background: var(--primary-700);
     color: white;
 }
 
@@ -2871,7 +2871,7 @@ body.dark-mode .mini-calendar-day:hover {
 }
 
 body.dark-mode .mini-calendar-day.today {
-    background: var(--primary-600);
+    background: var(--primary-700);
     color: #ffffff;
 }
 

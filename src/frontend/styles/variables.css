@@ -166,6 +166,10 @@
     /* Semantic text colors */
     --text-secondary: var(--gray-500);
 
+    /* Alias tokens */
+    --primary: var(--primary-500);
+    --bg-secondary: var(--gray-100);
+
     /* Z-index scale (#244) */
     --z-dropdown: 100;
     --z-sticky: 200;
@@ -192,6 +196,7 @@ body.dark-mode {
     --gray-900: #ffffff;
 
     --text-secondary: #9ca3af;
+    --bg-secondary: rgba(255, 255, 255, 0.08);
 }
 
 body.dark-mode .sidebar,

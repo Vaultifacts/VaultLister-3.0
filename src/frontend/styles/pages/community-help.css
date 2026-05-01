@@ -2381,7 +2381,7 @@ body.dark-mode .vote-button {
     font-weight: 600;
     padding: 2px 10px;
     background: var(--primary-600);
-    color: white;
+    color: #111827;
     border-radius: 20px;
     white-space: nowrap;
 }
