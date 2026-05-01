@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-01T19:12:00.733Z
-Commit: dfffe736
+Generated at: 2026-05-01T19:42:32.890Z
+Commit: 69b1cd06
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -15,7 +15,7 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 |---|---:|
 | Launch blockers | 2 |
 | Open walkthrough/product items | 0 |
-| Fixed pending live/manual verification | 23 |
+| Fixed pending live/manual verification | 6 |
 | Deferred/post-launch items | 10 |
 | Structural/refactor backlog items | 10 |
 | Competitor intelligence gaps | 862 |
@@ -38,7 +38,7 @@ Command: `rg -n "^\s*[-*]\s+\[ \]" <document targets> --glob "*.md"`
 
 | Source | Matches | First Match | Treatment |
 |---|---:|---:|---|
-| memory/STATUS.md | 74 | 1407 | Excluded pending source-policy review |
+| memory/STATUS.md | 74 | 1416 | Excluded pending source-policy review |
 | .agents/skills/mobile-audit/SKILL.md | 6 | 75 | Excluded: agent skill runbook checklist, not persistent backlog |
 | docs/archive/evidence-2026-03/RUNBOOK_CHECKLIST.md | 4 | 25 | Excluded: historical evidence, verify before promotion |
 | docs/LAUNCH_AUDIT_FINDINGS_2026-04-05.md | 9 | 284 | Excluded: historical evidence, verify before promotion |
@@ -205,7 +205,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | memory/COMPLETED.md | 2 | 61 | Excluded: session memory, promote only after current verification |
 | memory/LAUNCH_PRIORITY.md | 5 | 13 | Excluded: session memory, promote only after current verification |
 | memory/MEMORY.md | 9 | 7 | Excluded: session memory, promote only after current verification |
-| memory/STATUS.md | 178 | 19 | Excluded: session memory, promote only after current verification |
+| memory/STATUS.md | 179 | 28 | Excluded: session memory, promote only after current verification |
 | memory/TIER0_PLAYBOOK.md | 3 | 11 | Excluded: session memory, promote only after current verification |
 | data/qa-report-2026-04-04-chrome-walkthrough.md | 2 | 20 | Excluded: timestamped QA evidence, not current truth |
 | data/qa-report-2026-04-04-exhaustive.md | 4 | 39 | Excluded: timestamped QA evidence, not current truth |
@@ -222,7 +222,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | docs/walkthrough/automations.md | 4 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/batch-photo.md | 3 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/calendar.md | 3 | 3 | Included via walkthrough parser when table status is active |
-| docs/walkthrough/changelog.md | 4 | 3 | Included via walkthrough parser when table status is active |
+| docs/walkthrough/changelog.md | 3 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/community.md | 1 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/connections.md | 5 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/dashboard.md | 7 | 3 | Included via walkthrough parser when table status is active |
@@ -233,7 +233,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | docs/walkthrough/import.md | 1 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/INDEX.md | 9 | 4 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/inventory.md | 1 | 3 | Included via walkthrough parser when table status is active |
-| docs/walkthrough/listings.md | 5 | 3 | Included via walkthrough parser when table status is active |
+| docs/walkthrough/listings.md | 3 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/market-intel.md | 3 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/my-shops.md | 7 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/orders-sales.md | 2 | 3 | Included via walkthrough parser when table status is active |
@@ -242,12 +242,12 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | docs/walkthrough/platform-readiness.md | 3 | 14 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/predictions.md | 4 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/privacy.md | 1 | 3 | Included via walkthrough parser when table status is active |
-| docs/walkthrough/public-site.md | 48 | 3 | Included via walkthrough parser when table status is active |
+| docs/walkthrough/public-site.md | 36 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/receipts.md | 2 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/refer-a-friend.md | 1 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/reports.md | 2 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/roadmap.md | 5 | 3 | Included via walkthrough parser when table status is active |
-| docs/walkthrough/settings.md | 15 | 3 | Included via walkthrough parser when table status is active |
+| docs/walkthrough/settings.md | 14 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/shipping.md | 3 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/size-charts.md | 1 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/source-code-audit.md | 12 | 5 | Included via walkthrough parser when table status is active |
@@ -300,29 +300,12 @@ _None._
 
 | ID | Status | Priority | Area | Item | Source | Next Action | Blocker |
 |---|---|---|---|---|---|---|---|
-| changelog-33-fixed-please-add-a-search-bar-above-the-bu | FIXED — local changelog source already matches; live/manual recheck pending |  | Changelog | FIXED — Please add a search bar above the button filters on the changelog page, and also please display the Version information and exact date of each change, on the left side of the Dot next to each associated batch of changes (image-72) | docs/walkthrough/changelog.md:33 |  |  |
 | L-18 | CONFIRMED N/A -- connectGmail() has real OAuth popup flow. Functional pending credentials. |  | Connections | Gmail/Outlook/Cloudinary/Google Drive "Connect" buttons -- unclear if functional | docs/walkthrough/connections.md:14 |  |  |
-| MANUAL-listings-1 | FIXED — local Listings dropdown now uses SUPPORTED_PLATFORMS and components.platformLogo() assets to match My Shops; live/manual recheck pending |  | Listings | Platform icons in the Platform dropdown menu of the Listings page are not displaying the correct icons for the platform. (Should show the same associated icons as it does on the My Shops page) | docs/walkthrough/listings.md:12 |  |  |
-| MANUAL-listings-2 | VERIFIED LOCALLY / NO CODE CHANGE — real demo JWT returned 200 for /api/listings and /api/listings/folders; direct #listings load on bundle 0ed2ca33 showed no error toasts; live/manual recheck pending |  | Listings | When I navigate to the listings page, the following errors show up in the top right corner (image-90) | docs/walkthrough/listings.md:13 |  |  |
-| MANUAL-settings-3 | FIXED -- 2026-04-24 local Account tab patch places compact CAD/EN dropdowns beside Timezone with CSS-rendered Canada flags; live/manual recheck pending |  | Settings | Add Currency (CAD) and Language (EN) dropdown menus next to the Timezone field in Account tab (image-83, image-84) | docs/walkthrough/settings.md:45 |  |  |
-| P0-pub-1 | FIXED -- local source patch present; live/manual recheck pending |  | Public Nav | When pressing dropdown menu buttons, user is signed out -- should display profile circle instead (image-86) | docs/walkthrough/public-site.md:62 |  |  |
-| P0-pub-2 | FIXED -- local source patch present; live/manual recheck pending |  | Routes | Different changelog/roadmap pages shown from public vs signed-in sidebar (image-57) | docs/walkthrough/public-site.md:63 |  |  |
-| P0-pub-3 | FIXED -- local source patch present; live/manual recheck pending |  | Sidebar Profile | Bottom left profile icon not clickable -- should display dropdown options (image-54) | docs/walkthrough/public-site.md:64 |  |  |
-| P1-pub-1 | FIXED -- local sidebar source already matches; live/manual recheck pending |  | Sidebar | Migrate logo from top bar back to sidebar; sidebar extends to top of page (image-53) | docs/walkthrough/public-site.md:66 |  |  |
-| P1-pub-2 | FIXED -- 2026-04-24 local landing source patch; live/manual recheck pending |  | Landing | Coming-soon platform text brighter white and larger; Soon label larger and more vibrant (image-55) | docs/walkthrough/public-site.md:67 |  |  |
-| P3-pub-1 | FIXED -- local public footer source already matches; live/manual recheck pending |  | Public Footer | Make social media icons slightly larger and black; bottom bar fully extends entire page width (image-61, image-62) | docs/walkthrough/public-site.md:69 |  |  |
-| P3-pub-2 | FIXED -- 2026-04-24 local landing source patch; live/manual recheck pending |  | Landing | Make background of a specific landing section white with proper contrasting (image-69) | docs/walkthrough/public-site.md:70 |  |  |
-| P3-pub-3 | FIXED -- local public footer source already matches; live/manual recheck pending |  | Public Footer | Change footer copyright text to 2026 VaultLister, Inc. All rights reserved. (image-63) | docs/walkthrough/public-site.md:71 |  |  |
-| P3-pub-4 | FIXED -- local Help Center source already matches; live/manual recheck pending |  | Help Center | Center the orange Still need help popup below Related Articles (image-67) | docs/walkthrough/public-site.md:72 |  |  |
-| P3-pub-6 | FIXED -- 2026-04-24 local selector source patch; live/manual recheck pending |  | Language / Currency Selector | Fix two Canada options; add English (U.S.); Currency dropdown same size as Language; matching colour theme (image-71) | docs/walkthrough/public-site.md:74 |  |  |
-| P3-pub-7 | FIXED -- local changelog source already matches; live/manual recheck pending |  | Public Changelog | Add search bar above button filters; display Version info and exact date on left side of dot (image-72) | docs/walkthrough/public-site.md:75 |  |  |
-| P3-pub-8 | FIXED -- local public nav source already matches; live/manual recheck pending |  | Public Nav | Rearrange top nav so Sign in button appears first (image-74) | docs/walkthrough/public-site.md:76 |  |  |
-| P3-pub-9 | FIXED -- local public nav source already matches; live/manual recheck pending |  | Public Nav | Make Sign in buttons follow the same colour theme as Start Free Trial (image-75) | docs/walkthrough/public-site.md:77 |  |  |
-| P3-pub-10 | FIXED -- 2026-04-24 local landing hero source patch; live/manual recheck pending |  | Landing Hero | Reorder and centre hero elements in specified sequence (image-76) | docs/walkthrough/public-site.md:78 |  |  |
-| P3-pub-11 | FIXED -- 2026-04-24 local feature-request search patch; live/manual recheck pending |  | Feature Requests | Add a search bar under feature requests (image-78) | docs/walkthrough/public-site.md:79 |  |  |
-| P3-pub-12 | FIXED -- 2026-04-24 local learning search patch; live/manual recheck pending |  | Learning Page | Add a search bar to the Learning page (image-106) | docs/walkthrough/public-site.md:80 |  |  |
-| P4-pub-1 | FIXED -- local compare pages present; live/manual recheck pending |  | Compare Pages | Add an Oneshop Comparison and a Crosslist Magic comparison | docs/walkthrough/public-site.md:81 |  |  |
-| settings-34-fixed-settings-sidebar-tab-targeting-so-th | FIXED — 2026-04-23 local route-normalization patch; live/manual recheck pending |  | Settings | FIXED — Settings sidebar tab targeting so the clicked tab renders immediately (image-80) | docs/walkthrough/settings.md:34 |  |  |
+| P0-pub-1 | FIXED -- local source patch present; live/manual recheck pending |  | Public Nav | When pressing dropdown menu buttons, user is signed out -- should display profile circle instead (image-86) | docs/walkthrough/public-site.md:74 |  |  |
+| P1-pub-1 | FIXED -- local sidebar source already matches; live/manual recheck pending |  | Sidebar | Migrate logo from top bar back to sidebar; sidebar extends to top of page (image-53) | docs/walkthrough/public-site.md:76 |  |  |
+| P3-pub-2 | FIXED -- 2026-04-24 local landing source patch; live/manual recheck pending |  | Landing | Make background of a specific landing section white with proper contrasting (image-69) | docs/walkthrough/public-site.md:78 |  |  |
+| P3-pub-11 | FIXED -- 2026-04-24 local feature-request search patch; live/manual recheck pending |  | Feature Requests | Add a search bar under feature requests (image-78) | docs/walkthrough/public-site.md:80 |  |  |
+| P3-pub-12 | FIXED -- 2026-04-24 local learning search patch; live/manual recheck pending |  | Learning Page | Add a search bar to the Learning page (image-106) | docs/walkthrough/public-site.md:81 |  |  |
 
 ## Deferred / Post-Launch Items
 

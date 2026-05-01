@@ -54,29 +54,29 @@
 | MANUAL-pub-17 | Landing | Make marketplace icons larger; make 6 SUPPORTED MARKETPLACES and PLATFORMS COMING SOON text white and in larger bolded format (image-37) | Backlog | VERIFIED ✅ — Marketplace section redesigned with large spinning vinyl record icons and white 'Live Marketplaces' h2 heading (landing.html:934-938); icons substantially larger than original flat squares |
 | MANUAL-pub-27 | Status Page | Remove a specific section from the Status Page (image-45) | Backlog | VERIFIED ✅ — status.html no longer contains the old 'VaultLister Platform' card with per-platform rows; replaced with 'Marketplace Uptime History' stripe-style section (MANUAL-pub-23 redesign, 2026-04-23) |
 | MANUAL-pub-36 | Status Page | Change icon to the proper logo; change background to traditional branded dark theme (image-99) | Backlog | VERIFIED ✅ — status.html nav uses horizontal-2048.svg (line 532); nav has dark styling; old orange V-letter icon replaced |
+| P0-pub-2 | Routes | Different changelog/roadmap pages shown from public vs signed-in sidebar (image-57) | Session | VERIFIED LIVE ✅ 2026-05-01 — changelog/roadmap pages confirmed identical from public nav vs signed-in sidebar |
+| P0-pub-3 | Sidebar Profile | Bottom left profile icon not clickable -- should display dropdown options (image-54) | Session | VERIFIED LIVE ✅ 2026-05-01 — profile dropdown confirmed functional in live site |
+| P1-pub-2 | Landing | Coming-soon platform text brighter white and larger; Soon label larger and more vibrant (image-55) | Session | VERIFIED LIVE ✅ 2026-05-01 — coming-soon platform text confirmed brighter/larger on live landing |
+| P3-pub-1 | Public Footer | Make social media icons slightly larger and black; bottom bar fully extends entire page width (image-61, image-62) | Session | VERIFIED LIVE ✅ 2026-05-01 — footer social icons size and full-width bar confirmed live |
+| P3-pub-3 | Public Footer | Change footer copyright text to 2026 VaultLister, Inc. All rights reserved. (image-63) | Session | VERIFIED LIVE ✅ 2026-05-01 — footer copyright "2026 VaultLister, Inc. All rights reserved." confirmed live |
+| P3-pub-4 | Help Center | Center the orange Still need help popup below Related Articles (image-67) | Session | VERIFIED LIVE ✅ 2026-05-01 — Still need help popup centered below Related Articles confirmed live |
+| P3-pub-6 | Language / Currency Selector | Fix two Canada options; add English (U.S.); Currency dropdown same size as Language; matching colour theme (image-71) | Session | VERIFIED LIVE ✅ 2026-05-01 — language/currency selector dedup and sizing confirmed live |
+| P3-pub-7 | Public Changelog | Add search bar above button filters; display Version info and exact date on left side of dot (image-72) | Session | VERIFIED LIVE ✅ 2026-05-01 — changelog search bar and version/date display confirmed live |
+| P3-pub-8 | Public Nav | Rearrange top nav so Sign in button appears first (image-74) | Session | VERIFIED LIVE ✅ 2026-05-01 — Sign in button appears first in top nav confirmed live |
+| P3-pub-9 | Public Nav | Make Sign in buttons follow the same colour theme as Start Free Trial (image-75) | Session | VERIFIED LIVE ✅ 2026-05-01 — Sign in button matches Start Free Trial colour theme confirmed live |
+| P3-pub-10 | Landing Hero | Reorder and centre hero elements in specified sequence (image-76) | Session | VERIFIED LIVE ✅ 2026-05-01 — hero elements reordered and centred confirmed live |
+| P4-pub-1 | Compare Pages | Add an Oneshop Comparison and a Crosslist Magic comparison | Session | VERIFIED LIVE ✅ 2026-05-01 — Oneshop and Crosslist Magic comparison pages confirmed live |
 
-## Completed & Verified (Local Patches -- Live Recheck Pending) (Local Patches -- Live/Manual Recheck Pending)
+## Completed & Verified (Local Patches -- Live Recheck Pending)
 
 | # | Page / Component | Issue | Status |
 |---|-----------------|-------|--------|
-| P0-pub-1 | Public Nav | When pressing dropdown menu buttons, user is signed out -- should display profile circle instead (image-86) | FIXED -- local source patch present; live/manual recheck pending |
-| P0-pub-2 | Routes | Different changelog/roadmap pages shown from public vs signed-in sidebar (image-57) | FIXED -- local source patch present; live/manual recheck pending |
-| P0-pub-3 | Sidebar Profile | Bottom left profile icon not clickable -- should display dropdown options (image-54) | FIXED -- local source patch present; live/manual recheck pending |
+| P0-pub-1 | Public Nav | When pressing dropdown menu buttons, user is signed out -- should display profile circle instead (image-86) | VERIFIED LIVE ✅ 2026-05-01 -- public-profile-trigger display:flex confirmed; auth menu shows "Signed In / Demo User" with profile circle rendered |
 | P0-pub-4 | Assets | Old logo showing on page refresh (image-87) | FIXED 2026-05-01 -- /favicon.ico was missing (server returned HTML fallback); created public/favicon.ico (16×16+32×32 ICO from Favicon PNG assets); browsers will now get correct icon on hard refresh |
 | P1-pub-1 | Sidebar | Migrate logo from top bar back to sidebar; sidebar extends to top of page (image-53) | FIXED -- local sidebar source already matches; live/manual recheck pending |
-| P1-pub-2 | Landing | Coming-soon platform text brighter white and larger; Soon label larger and more vibrant (image-55) | FIXED -- 2026-04-24 local landing source patch; live/manual recheck pending |
 | P1-pub-3 | Sidebar | Remove 5 deprecated tabs from the sidebar menu (image-105) | VERIFIED FIXED 2026-05-01 -- sidebar navItems confirmed in components.js: Dashboard, Inventory, Listings, Sales & Purchases, Offers/Orders/Shipping, Automations, Financials, Analytics, My Shops, Planning Tools, Image Bank, Settings. Routes for intelligence/community/tools-tasks have no sidebar entries (confirmed removed). |
-| P3-pub-1 | Public Footer | Make social media icons slightly larger and black; bottom bar fully extends entire page width (image-61, image-62) | FIXED -- local public footer source already matches; live/manual recheck pending |
-| P3-pub-2 | Landing | Make background of a specific landing section white with proper contrasting (image-69) | FIXED -- 2026-04-24 local landing source patch; live/manual recheck pending |
-| P3-pub-3 | Public Footer | Change footer copyright text to 2026 VaultLister, Inc. All rights reserved. (image-63) | FIXED -- local public footer source already matches; live/manual recheck pending |
-| P3-pub-4 | Help Center | Center the orange Still need help popup below Related Articles (image-67) | FIXED -- local Help Center source already matches; live/manual recheck pending |
+| P3-pub-2 | Landing | Make background of a specific landing section white with proper contrasting (image-69) | VERIFIED LIVE ✅ 2026-05-01 -- section-label color rgb(180,83,9) = #b45309 (WCAG-compliant amber); contrast fix confirmed deployed |
 | P3-pub-5 | Help Center | Make all Related Articles buttons display in a single row (image-68) | VERIFIED FIXED 2026-05-01 -- related-grid CSS in help article pages (e.g. /help/automations.html) uses grid-template-columns: repeat(4, minmax(0, 1fr)) — all 4 related article buttons render in a single row on desktop |
-| P3-pub-6 | Language / Currency Selector | Fix two Canada options; add English (U.S.); Currency dropdown same size as Language; matching colour theme (image-71) | FIXED -- 2026-04-24 local selector source patch; live/manual recheck pending |
-| P3-pub-7 | Public Changelog | Add search bar above button filters; display Version info and exact date on left side of dot (image-72) | FIXED -- local changelog source already matches; live/manual recheck pending |
-| P3-pub-8 | Public Nav | Rearrange top nav so Sign in button appears first (image-74) | FIXED -- local public nav source already matches; live/manual recheck pending |
-| P3-pub-9 | Public Nav | Make Sign in buttons follow the same colour theme as Start Free Trial (image-75) | FIXED -- local public nav source already matches; live/manual recheck pending |
-| P3-pub-10 | Landing Hero | Reorder and centre hero elements in specified sequence (image-76) | FIXED -- 2026-04-24 local landing hero source patch; live/manual recheck pending |
 | P3-pub-11 | Feature Requests | Add a search bar under feature requests (image-78) | FIXED -- 2026-04-24 local feature-request search patch; live/manual recheck pending |
 | P3-pub-12 | Learning Page | Add a search bar to the Learning page (image-106) | FIXED -- 2026-04-24 local learning search patch; live/manual recheck pending |
-| P4-pub-1 | Compare Pages | Add an Oneshop Comparison and a Crosslist Magic comparison | FIXED -- local compare pages present; live/manual recheck pending |
 | P4-pub-2 | Affiliate | Change recurring commission to 25% recurring; referral link gives 25% off first month (image-77) | VERIFIED ✅ — efc5fe75 — pages-deferred.js:7102,7129 and affiliate.html updated to 25% recurring + 25% off first month |

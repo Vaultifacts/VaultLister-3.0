@@ -30,4 +30,4 @@ _No open items._
 | Browser tab title does not update to reflect the Changelog page | VERIFIED ✅ — ee1767a — 'changelog': 'Changelog' added to PAGE_TITLES |
 | Changelog entry change-item containers are not keyboard accessible | VERIFIED ✅ — ee1767a — role="button" tabindex="0" aria-expanded + onkeydown added |
 | All modal buttons throughout Changelog use type="submit" instead of type="button" | VERIFIED ✅ — ee1767a — RSS Copy and Subscribe close buttons changed to type="button" |
-| FIXED — Please add a search bar above the button filters on the changelog page, and also please display the Version information and exact date of each change, on the left side of the Dot next to each associated batch of changes (image-72) | FIXED — local changelog source already matches; live/manual recheck pending |
+| Please add a search bar above the button filters on the changelog page, and also please display the Version information and exact date of each change, on the left side of the Dot next to each associated batch of changes (image-72) | VERIFIED LIVE ✅ 2026-05-01 — search bar and version/date display confirmed live on production site |

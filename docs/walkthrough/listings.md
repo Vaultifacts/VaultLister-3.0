@@ -9,8 +9,8 @@
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
-| MANUAL-listings-1 | Listings | Platform icons in the Platform dropdown menu of the Listings page are not displaying the correct icons for the platform. (Should show the same associated icons as it does on the My Shops page) | 2026-04-24 | FIXED — local Listings dropdown now uses `SUPPORTED_PLATFORMS` and `components.platformLogo()` assets to match My Shops; live/manual recheck pending |
-| MANUAL-listings-2 | Listings | When I navigate to the listings page, the following errors show up in the top right corner (image-90) | 2026-04-24 | VERIFIED LOCALLY / NO CODE CHANGE — real demo JWT returned 200 for `/api/listings` and `/api/listings/folders`; direct `#listings` load on bundle `0ed2ca33` showed no error toasts; live/manual recheck pending |
+| MANUAL-listings-1 | Listings | Platform icons in the Platform dropdown menu of the Listings page are not displaying the correct icons for the platform. (Should show the same associated icons as it does on the My Shops page) | 2026-04-24 | VERIFIED LIVE ✅ 2026-05-01 — platform icons in Listings dropdown confirmed showing correct logos on live site |
+| MANUAL-listings-2 | Listings | When I navigate to the listings page, the following errors show up in the top right corner (image-90) | 2026-04-24 | VERIFIED LIVE ✅ 2026-05-01 — no error toasts on Listings page load confirmed on live site |
 | H-26 | Listings | Platform dropdown only shows 6 of 9 platforms — missing Etsy, Shopify, Whatnot | Session 3 | VERIFIED ✅ — eb9e086 |
 | H-27 | Listings | "Add New Listing(s)" primary CTA dropdown button has NO onclick handler | Session 3 | VERIFIED ✅ f2390bf |
 | #126 | Cross-list Modal | Cross-list modal shows Etsy/Mercari/Grailed as active — for Canada launch only eBay, Poshmark, Facebook, Depop, Whatnot should be active | Session 5 | VERIFIED ✅ — e097efa |

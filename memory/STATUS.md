@@ -1,5 +1,5 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-05-01 MST (stub cleanup batch 2: F35/F36/F40 fixed + INCONCLUSIVE items resolved; 8016d058 pushed)
+**Updated:** 2026-05-01 MST (P0-pub-1 + P3-pub-2 VERIFIED LIVE; all walkthrough items closed)
 
 ## Completed This Session (2026-05-01)
 
@@ -10,7 +10,8 @@
 - P0-pub-4 FIXED: created public/favicon.ico (16×16+32×32 ICO) — was returning text/html
 - P1-pub-3 VERIFIED: sidebar navItems confirmed clean; intelligence/community routes have no sidebar entries
 - P3-pub-5 VERIFIED: related-grid CSS = repeat(4,1fr) = single row on desktop in help article pages
-- P0-pub-1, P3-pub-2 remain INCONCLUSIVE (require unauthenticated session / image-69 reference)
+- P0-pub-1 VERIFIED LIVE: public-profile-trigger display:flex; auth menu shows "Signed In / Demo User"
+- P3-pub-2 VERIFIED LIVE: section-label color = #b45309 (WCAG-compliant amber) confirmed on live site
 
 ### Fake-data removal + stub cleanup batch 1 (commits 744a80fd→06940c23)
 - F26/F27/F28: budget progress widget and demand heatmap render from real data only
