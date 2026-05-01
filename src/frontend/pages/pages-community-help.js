@@ -984,7 +984,7 @@ Object.assign(pages, {
                         <div class="mb-4">
                             <label class="form-label" for="referral-code">Your Referral Code</label>
                             <div class="flex gap-2">
-                                <input type="text" class="form-input" value="${escapeHtml(referralCode)}" readonly id="referral-code" aria-label="Referral Code">
+                                <input type="text" class="form-input" value="${escapeHtml(referralCode)}" readonly id="referral-code">
                                 <button class="btn btn-secondary" onclick="navigator.clipboard.writeText('${escapeHtml(referralCode)}'); toast.success('Code copied!')">
                                     ${components.icon('copy', 16)}
                                 </button>
@@ -1964,7 +1964,7 @@ Upload photos once, use them across all your listings.`,
                         <!-- Category (optional) -->
                         <div style="margin-bottom: 20px;">
                             <label for="feedback-category" class="form-label">Category (Optional)</label>
-                            <select aria-label="Feedback Category" id="feedback-category" class="form-control" value="${escapeHtml(feedbackCategory)}">
+                            <select id="feedback-category" class="form-control" value="${escapeHtml(feedbackCategory)}">
                                 <option value="">Select a category...</option>
                                 <option value="inventory">Inventory Management</option>
                                 <option value="listings">Listings & Cross-listing</option>
@@ -2502,7 +2502,7 @@ Upload photos once, use them across all your listings.`,
                         </div>
                         <form class="subscribe-form" method="post">
                             <label for="changelog-subscribe-email" class="sr-only">Email address</label>
-                            <input type="email" id="changelog-subscribe-email" placeholder="Enter your email" required aria-label="Changelog Subscribe Email">
+                            <input type="email" id="changelog-subscribe-email" placeholder="Enter your email" required aria-label="Email address">
                             <button type="button" class="btn btn-primary" onclick="handlers.subscribeChangelogEmail(event)">Subscribe</button>
                         </form>
                     </div>

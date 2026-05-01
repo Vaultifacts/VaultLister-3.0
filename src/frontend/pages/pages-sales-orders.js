@@ -1718,15 +1718,11 @@ Object.assign(pages, {
         };
 
         // Budget data
-        const budgetData =
-            store.state.budgets && store.state.budgets.length > 0
-                ? store.state.budgets
-                : [
-                      { name: 'Marketing', budget: 200, actual: 0 },
-                      { name: 'Shipping', budget: 500, actual: 0 },
-                      { name: 'Supplies', budget: 300, actual: 0 },
-                      { name: 'Fees', budget: 400, actual: 0 },
-                  ];
+        const budgetData = Array.isArray(store.state.budgets)
+            ? store.state.budgets
+            : Array.isArray(store.state.budgetCategories)
+              ? store.state.budgetCategories
+              : [];
 
         // Calculate financial health score
         const healthFactors = [];
@@ -2000,7 +1996,7 @@ Object.assign(pages, {
                         <div style="padding-bottom: 8px; font-size: 20px; color: var(--gray-400);">&rarr;</div>
                         <div class="form-group" style="margin: 0;">
                             <label class="form-label" for="currency-target">Convert To</label>
-                            <select id="currency-target" class="form-select" onchange="handlers.convertCurrency()" aria-label="Target currency">
+                            <select id="currency-target" class="form-select" onchange="handlers.convertCurrency()">
                                 <option value="EUR">EUR (Euro)</option>
                                 <option value="GBP">GBP (British Pound)</option>
                                 <option value="CAD">CAD (Canadian Dollar)</option>
@@ -3516,11 +3512,11 @@ Object.assign(pages, {
                         }
                         <div>
                             <label class="form-label" style="font-size: 12px;" for="pso-tx-min">Min Amount</label>
-                            <input id="pso-tx-min" type="number" class="form-input" style="width: 100px;" placeholder="C$0" step="0.01" value="${store.state.txAmountMin || ''}" onchange="store.setState({txAmountMin: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());" aria-label="Minimum price">
+                            <input id="pso-tx-min" type="number" class="form-input" style="width: 100px;" placeholder="C$0" step="0.01" value="${store.state.txAmountMin || ''}" onchange="store.setState({txAmountMin: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                         </div>
                         <div>
                             <label class="form-label" style="font-size: 12px;" for="pso-tx-max">Max Amount</label>
-                            <input id="pso-tx-max" type="number" class="form-input" style="width: 100px;" placeholder="C$999" step="0.01" value="${store.state.txAmountMax || ''}" onchange="store.setState({txAmountMax: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());" aria-label="Maximum price">
+                            <input id="pso-tx-max" type="number" class="form-input" style="width: 100px;" placeholder="C$999" step="0.01" value="${store.state.txAmountMax || ''}" onchange="store.setState({txAmountMax: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                         </div>
                         ${
                             activeTab === 'purchases'

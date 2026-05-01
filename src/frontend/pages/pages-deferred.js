@@ -3510,15 +3510,11 @@ Object.assign(pages, {
         };
 
         // Budget data
-        const budgetData =
-            store.state.budgets && store.state.budgets.length > 0
-                ? store.state.budgets
-                : [
-                      { name: 'Marketing', budget: 200, actual: 0 },
-                      { name: 'Shipping', budget: 500, actual: 0 },
-                      { name: 'Supplies', budget: 300, actual: 0 },
-                      { name: 'Fees', budget: 400, actual: 0 },
-                  ];
+        const budgetData = Array.isArray(store.state.budgets)
+            ? store.state.budgets
+            : Array.isArray(store.state.budgetCategories)
+              ? store.state.budgetCategories
+              : [];
 
         // Calculate financial health score
         const healthFactors = [];
@@ -3717,7 +3713,7 @@ Object.assign(pages, {
                             <label class="text-sm" for="budget-alert-threshold">Alert at:</label>
                             <input type="number" id="budget-alert-threshold" min="1" max="100" value="${store.state.budgetAlertThreshold || 80}"
                                 onchange="handlers.setBudgetAlertThreshold(this.value)"
-                                style="width:60px; padding:2px 4px;" aria-label="Budget alert threshold percentage" /> %
+                                style="width:60px; padding:2px 4px;" /> %
                         </div>
                     </div>
                 </div>
@@ -9778,7 +9774,7 @@ Object.assign(pages, {
                         <div class="mb-4">
                             <label class="form-label" for="referral-code">Your Referral Code</label>
                             <div class="flex gap-2">
-                                <input aria-label="Referral Code" type="text" class="form-input" value="${escapeHtml(referralCode)}" readonly id="referral-code">
+                                <input type="text" class="form-input" value="${escapeHtml(referralCode)}" readonly id="referral-code">
                                 <button class="btn btn-secondary" onclick="navigator.clipboard.writeText('${escapeHtml(referralCode)}'); toast.success('Code copied!')">
                                     ${components.icon('copy', 16)}
                                 </button>
@@ -10922,7 +10918,7 @@ Upload photos once, use them across all your listings.`,
                         <!-- Category (optional) -->
                         <div style="margin-bottom: 20px;">
                             <label for="feedback-category" class="form-label">Category (Optional)</label>
-                            <select id="feedback-category" class="form-control" value="${escapeHtml(feedbackCategory)}" aria-label="Feedback Category">
+                            <select id="feedback-category" class="form-control" value="${escapeHtml(feedbackCategory)}">
                                 <option value="">Select a category...</option>
                                 <option value="inventory">Inventory Management</option>
                                 <option value="listings">Listings & Cross-listing</option>
@@ -17322,7 +17318,7 @@ Upload photos once, use them across all your listings.`,
                         <div style="display: flex; flex-direction: column; gap: 6px;">
                             <label class="form-label" for="pd-tx-date" style="font-size: 12px;">Date Range</label>
                             <div style="display: flex; gap: 8px; align-items: flex-end;">
-                                <select id="pd-tx-date" aria-label="Filter by date" class="form-select" style="width: 140px;" onchange="store.setState({txDateFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                                <select id="pd-tx-date" class="form-select" style="width: 140px;" onchange="store.setState({txDateFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                                     <option value="all" ${txDateFilter === 'all' ? 'selected' : ''}>All Time</option>
                                     <option value="7d" ${txDateFilter === '7d' ? 'selected' : ''}>Last 7 Days</option>
                                     <option value="30d" ${txDateFilter === '30d' ? 'selected' : ''}>Last 30 Days</option>
@@ -17357,11 +17353,11 @@ Upload photos once, use them across all your listings.`,
                         }
                         <div>
                             <label class="form-label" for="pd-tx-min-amount" style="font-size: 12px;">Min Amount</label>
-                            <input id="pd-tx-min-amount" type="number" class="form-input" style="width: 100px;" aria-label="Minimum amount" placeholder="C$0" step="0.01" value="${store.state.txAmountMin || ''}" onchange="store.setState({txAmountMin: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <input id="pd-tx-min-amount" type="number" class="form-input" style="width: 100px;" placeholder="C$0" step="0.01" value="${store.state.txAmountMin || ''}" onchange="store.setState({txAmountMin: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                         </div>
                         <div>
                             <label class="form-label" for="pd-tx-max-amount" style="font-size: 12px;">Max Amount</label>
-                            <input id="pd-tx-max-amount" type="number" class="form-input" style="width: 100px;" aria-label="Maximum amount" placeholder="C$999" step="0.01" value="${store.state.txAmountMax || ''}" onchange="store.setState({txAmountMax: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <input id="pd-tx-max-amount" type="number" class="form-input" style="width: 100px;" placeholder="C$999" step="0.01" value="${store.state.txAmountMax || ''}" onchange="store.setState({txAmountMax: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                         </div>
                         ${
                             activeTab === 'purchases'

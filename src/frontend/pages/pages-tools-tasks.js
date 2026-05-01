@@ -1538,15 +1538,15 @@ Object.assign(pages, {
                     <div class="grid grid-cols-4 gap-4">
                         <div class="form-group">
                             <label class="form-label" for="rec-bust">Bust/Chest (inches)</label>
-                            <input type="number" id="rec-bust" class="form-input" placeholder="e.g. 36" min="24" max="60" step="0.5" aria-label="Bust measurement">
+                            <input type="number" id="rec-bust" class="form-input" placeholder="e.g. 36" min="24" max="60" step="0.5">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="rec-waist">Waist (inches)</label>
-                            <input type="number" id="rec-waist" class="form-input" placeholder="e.g. 28" min="20" max="50" step="0.5" aria-label="Waist measurement">
+                            <input type="number" id="rec-waist" class="form-input" placeholder="e.g. 28" min="20" max="50" step="0.5">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="rec-hips">Hips (inches)</label>
-                            <input type="number" id="rec-hips" class="form-input" placeholder="e.g. 38" min="28" max="60" step="0.5" aria-label="Hips measurement">
+                            <input type="number" id="rec-hips" class="form-input" placeholder="e.g. 38" min="28" max="60" step="0.5">
                         </div>
                         <div class="form-group" style="display: flex; align-items: flex-end;">
                             <button class="btn btn-primary" onclick="handlers.getSizeRecommendation()">
@@ -2225,7 +2225,7 @@ Object.assign(pages, {
                                 <input id="ptt-crop-width" type="number"
                                        class="form-input"
                                        value="${transforms.cropWidth || ''}"
-                                       aria-label="Crop width" placeholder="800"
+                                       placeholder="800"
                                        onchange="handlers.setBatchPhotoCropDimensions(this.value, document.querySelector('[data-crop-height]').value)"
                                        data-crop-width>
                             </div>
