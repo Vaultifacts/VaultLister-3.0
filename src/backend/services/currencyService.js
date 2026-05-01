@@ -7,7 +7,7 @@ export async function getRates() {
         return cache.rates;
     }
     try {
-        const res = await fetch('https://api.frankfurter.app/latest?base=USD&symbols=EUR,GBP,AUD,JPY,CAD');
+        const res = await fetch('https://api.frankfurter.dev/v1/latest?base=USD&symbols=EUR,GBP,AUD,JPY,CAD');
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         const rates = { USD: 1, ...data.rates };
