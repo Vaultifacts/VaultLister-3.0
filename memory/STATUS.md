@@ -1,4 +1,19 @@
 # VaultLister 3.0 — Session Status
+**Updated:** 2026-04-30 MST (automations page cleanup — removed Scheduler Health, Schedule Settings, Notification Preferences sections)
+
+## Completed This Session (2026-04-30, session 2)
+
+### Automations page — removed 3 sections from UI
+
+- **Scheduler Health** widget card removed (`pages-deferred.js`)
+- **Schedule Settings** card removed (frequency, start/end time, active days, schedule summary)
+- **Notification Preferences** card removed (event types, channels, quick actions)
+- Bundle rebuilt to hash `d99da114`
+
+**Verification:** `grep` on both source and `dist/core-bundle.js` — 0 matches ✅
+
+---
+
 **Updated:** 2026-04-30 MST (nav language/currency dropdown cleanup across all 54 public HTML files)
 
 ## Completed This Session (2026-04-30)
