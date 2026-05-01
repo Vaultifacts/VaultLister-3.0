@@ -163,7 +163,7 @@ Object.assign(pages, {
                                 <span class="inventory-stat-label">Drafts${statCardFilter === 'draft' ? ' ✕' : ''}</span>
                             </div>
                         </div>
-                        <div class="inventory-stat-card ${lowStockItems > 0 ? 'warning' : ''}" data-testid="stat-low-stock" style="cursor:pointer;" title="Filter by Low Stock" onclick="handlers.filterByStatCard('low_stock')">
+                        <div role="button" tabindex="0" class="inventory-stat-card ${lowStockItems > 0 ? 'warning' : ''}" data-testid="stat-low-stock" style="cursor:pointer;" title="Filter by Low Stock" onclick="handlers.filterByStatCard('low_stock')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.filterByStatCard('low_stock')}">
                             <div class="inventory-stat-icon ${lowStockItems > 0 ? 'warning' : 'muted'}">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
@@ -176,7 +176,7 @@ Object.assign(pages, {
                                 <span class="inventory-stat-label">Low Stock${statCardFilter === 'low_stock' ? ' ✕' : ''}</span>
                             </div>
                         </div>
-                        <div class="inventory-stat-card ${outOfStock > 0 ? 'danger' : ''}" data-testid="stat-out-of-stock" style="cursor:pointer;" title="Filter by Out of Stock" onclick="handlers.filterByStatCard('out_of_stock')">
+                        <div role="button" tabindex="0" class="inventory-stat-card ${outOfStock > 0 ? 'danger' : ''}" data-testid="stat-out-of-stock" style="cursor:pointer;" title="Filter by Out of Stock" onclick="handlers.filterByStatCard('out_of_stock')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.filterByStatCard('out_of_stock')}">
                             <div class="inventory-stat-icon ${outOfStock > 0 ? 'danger' : 'muted'}">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="12" cy="12" r="10"></circle>
@@ -188,7 +188,7 @@ Object.assign(pages, {
                                 <span class="inventory-stat-label">Out of Stock${statCardFilter === 'out_of_stock' ? ' ✕' : ''}</span>
                             </div>
                         </div>
-                        <div class="inventory-stat-card ${staleItems > 0 ? 'warning' : ''}" data-testid="stat-stale" style="cursor:pointer;" title="Filter by Stale" onclick="handlers.filterByStatCard('stale')">
+                        <div role="button" tabindex="0" class="inventory-stat-card ${staleItems > 0 ? 'warning' : ''}" data-testid="stat-stale" style="cursor:pointer;" title="Filter by Stale" onclick="handlers.filterByStatCard('stale')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.filterByStatCard('stale')}">
                             <div class="inventory-stat-icon ${staleItems > 0 ? 'warning' : 'muted'}">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="12" cy="12" r="10"></circle>

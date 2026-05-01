@@ -2314,7 +2314,7 @@ Object.assign(pages, {
 
                 <!-- Order Pipeline Visualization -->
                 <div class="orders-pipeline">
-                    <div class="pipeline-stage ${pendingOrders > 0 ? 'active' : ''}" onclick="handlers.filterOrders('status', 'pending');">
+                    <div role="button" tabindex="0" class="pipeline-stage ${pendingOrders > 0 ? 'active' : ''}" onclick="handlers.filterOrders('status', 'pending');" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.filterOrders('status', 'pending')}">
                         <div class="pipeline-stage-icon pending">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="10"></circle>
@@ -2326,7 +2326,7 @@ Object.assign(pages, {
                         <div class="pipeline-stage-bar" style="--fill: ${totalOrders > 0 ? (pendingOrders / totalOrders) * 100 : 0}%;"></div>
                     </div>
                     <div class="pipeline-connector"></div>
-                    <div class="pipeline-stage ${confirmedOrders > 0 ? 'active' : ''}" onclick="handlers.filterOrders('status', 'confirmed');">
+                    <div role="button" tabindex="0" class="pipeline-stage ${confirmedOrders > 0 ? 'active' : ''}" onclick="handlers.filterOrders('status', 'confirmed');" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.filterOrders('status', 'confirmed')}">
                         <div class="pipeline-stage-icon confirmed">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polyline points="20 6 9 17 4 12"></polyline>
@@ -2337,7 +2337,7 @@ Object.assign(pages, {
                         <div class="pipeline-stage-bar" style="--fill: ${totalOrders > 0 ? (confirmedOrders / totalOrders) * 100 : 0}%;"></div>
                     </div>
                     <div class="pipeline-connector"></div>
-                    <div class="pipeline-stage ${shippedOrders > 0 ? 'active' : ''}" onclick="handlers.filterOrders('status', 'shipped');">
+                    <div role="button" tabindex="0" class="pipeline-stage ${shippedOrders > 0 ? 'active' : ''}" onclick="handlers.filterOrders('status', 'shipped');" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.filterOrders('status', 'shipped')}">
                         <div class="pipeline-stage-icon shipped">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="1" y="3" width="15" height="13"></rect>
@@ -2351,7 +2351,7 @@ Object.assign(pages, {
                         <div class="pipeline-stage-bar" style="--fill: ${totalOrders > 0 ? (shippedOrders / totalOrders) * 100 : 0}%;"></div>
                     </div>
                     <div class="pipeline-connector"></div>
-                    <div class="pipeline-stage ${deliveredOrders > 0 ? 'active' : ''}" onclick="handlers.filterOrders('status', 'delivered');">
+                    <div role="button" tabindex="0" class="pipeline-stage ${deliveredOrders > 0 ? 'active' : ''}" onclick="handlers.filterOrders('status', 'delivered');" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.filterOrders('status', 'delivered')}">
                         <div class="pipeline-stage-icon delivered">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
