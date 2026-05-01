@@ -57,10 +57,29 @@ Object.assign(handlers, {
             </div>
             <div class="flex justify-end gap-2 mt-4">
                 <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
-                <button class="btn btn-primary" onclick="toast.success('Settings saved'); modals.close();">Save</button>
+                <button class="btn btn-primary" onclick="handlers.saveShopSettings('${platform}')">Save</button>
             </div>
         `,
         );
+    },
+
+    saveShopSettings: async function (platform) {
+        const interval = document.getElementById('hsa-auto-sync-interval')?.value;
+        const syncInventory = document.querySelector('#hsa-auto-sync-interval')?.closest('.modal-body')?.querySelector('input[aria-label="Sync inventory"]')?.checked ?? true;
+        const syncOrders = document.querySelector('#hsa-auto-sync-interval')?.closest('.modal-body')?.querySelector('input[aria-label="Sync orders"]')?.checked ?? true;
+        const syncAnalytics = document.querySelector('#hsa-auto-sync-interval')?.closest('.modal-body')?.querySelector('input[aria-label="Sync analytics"]')?.checked ?? false;
+        const intervalMinutes = interval === 'manual' ? null : parseInt(interval, 10) || 60;
+        try {
+            await api.request('PUT', `/api/shops/${platform}`, {
+                auto_sync_enabled: interval !== 'manual',
+                auto_sync_interval_minutes: intervalMinutes,
+                settings: { syncInventory, syncOrders, syncAnalytics },
+            });
+            toast.success('Settings saved');
+            modals.close();
+        } catch (err) {
+            toast.error(err.message || 'Failed to save settings');
+        }
     },
 
     // Shop Branding handler,

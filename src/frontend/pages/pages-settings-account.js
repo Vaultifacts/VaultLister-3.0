@@ -1336,6 +1336,7 @@ Object.assign(pages, {
                                 const activityLog = store.state.accountActivityLog || [];
                                 const hasMFA = toBooleanFlag(user.mfa_enabled) || toBooleanFlag(user.totp_enabled);
                                 const emailVerified = toBooleanFlag(user.email_verified);
+                                const hasStrongPassword = !toBooleanFlag(user.is_oauth_only);
                                 const hasRecentLogin =
                                     isRecentTimestamp(user.last_login_at) ||
                                     activityLog.some(
@@ -1344,14 +1345,14 @@ Object.assign(pages, {
                                             (activity.type === 'login' && isRecentTimestamp(activity.timestamp)),
                                     );
                                 const scorePct =
-                                    (emailVerified ? 35 : 0) + (hasRecentLogin ? 25 : 0) + (hasMFA ? 40 : 0);
+                                    (hasMFA ? 25 : 0) + (emailVerified ? 25 : 0) + (hasStrongPassword ? 25 : 0) + (hasRecentLogin ? 25 : 0);
                                 const scoreLabel =
-                                    scorePct >= 80 ? 'Strong' : scorePct >= 50 ? 'Good' : scorePct > 0 ? 'Needs review' : 'Incomplete';
+                                    scorePct >= 100 ? 'Excellent' : scorePct >= 75 ? 'Good' : scorePct >= 50 ? 'Fair' : 'Poor';
                                 const scoreColor =
-                                    scorePct >= 80 ? 'var(--success)' : scorePct >= 50 ? 'var(--warning)' : 'var(--danger)';
+                                    scorePct >= 100 ? 'var(--success)' : scorePct >= 75 ? 'var(--success)' : scorePct >= 50 ? 'var(--warning)' : 'var(--danger)';
                                 const checkIcon = (ok) => ok
                                     ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>`
-                                    : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>`;
+                                    : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
                                 return `
                                 <div class="security-summary-card">
                                     <div class="security-summary-header">
@@ -1368,18 +1369,22 @@ Object.assign(pages, {
                                         </div>
                                     </div>
                                     <div class="security-checklist">
-                                        <div class="security-check-item ${emailVerified ? 'completed' : ''}">
-                                            ${checkIcon(emailVerified)}
-                                            <span>Email verified</span>
-                                        </div>
-                                        <div class="security-check-item ${hasRecentLogin ? 'completed' : ''}">
-                                            ${checkIcon(hasRecentLogin)}
-                                            <span>Recent login recorded</span>
-                                        </div>
                                         <div class="security-check-item ${hasMFA ? 'completed' : ''}">
                                             ${checkIcon(hasMFA)}
                                             <span>Two-factor authentication</span>
                                             ${hasMFA ? '' : '<button class="btn btn-sm btn-primary" disabled style="opacity:0.5;cursor:not-allowed;" title="2FA setup coming soon">Enable</button>'}
+                                        </div>
+                                        <div class="security-check-item ${emailVerified ? 'completed' : ''}">
+                                            ${checkIcon(emailVerified)}
+                                            <span>Email verified</span>
+                                        </div>
+                                        <div class="security-check-item ${hasStrongPassword ? 'completed' : ''}">
+                                            ${checkIcon(hasStrongPassword)}
+                                            <span>Password set (not OAuth-only)</span>
+                                        </div>
+                                        <div class="security-check-item ${hasRecentLogin ? 'completed' : ''}">
+                                            ${checkIcon(hasRecentLogin)}
+                                            <span>Recent login recorded</span>
                                         </div>
                                     </div>
                                 </div>
@@ -2464,7 +2469,7 @@ Object.assign(pages, {
                             </div>
                             <div>
                                 <h2 style="font-size: 18px; font-weight: 600; margin: 0;">${escapeHtml(user.full_name || user.username || 'User')}</h2>
-                                <p style="color: var(--gray-500); margin: 4px 0 0;">@${escapeHtml(user.username || user.email?.split('@')[0] || 'user')}</p>
+                                <p style="color: var(--gray-500); margin: 4px 0 0;">${(() => { const uname = user.username || user.email?.split('@')[0] || 'Not set'; return uname === 'Not set' ? escapeHtml(uname) : '@' + escapeHtml(uname); })()}</p>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
