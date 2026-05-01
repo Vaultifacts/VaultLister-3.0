@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-01T04:41:24.489Z
-Commit: bfb4dabd
+Generated at: 2026-05-01T04:55:11.701Z
+Commit: 3ad9e503
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -203,7 +203,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | memory/COMPLETED.md | 2 | 61 | Excluded: session memory, promote only after current verification |
 | memory/LAUNCH_PRIORITY.md | 5 | 13 | Excluded: session memory, promote only after current verification |
 | memory/MEMORY.md | 9 | 7 | Excluded: session memory, promote only after current verification |
-| memory/STATUS.md | 86 | 84 | Excluded: session memory, promote only after current verification |
+| memory/STATUS.md | 89 | 2 | Excluded: session memory, promote only after current verification |
 | memory/TIER0_PLAYBOOK.md | 3 | 11 | Excluded: session memory, promote only after current verification |
 | data/qa-report-2026-04-04-chrome-walkthrough.md | 2 | 20 | Excluded: timestamped QA evidence, not current truth |
 | data/qa-report-2026-04-04-exhaustive.md | 4 | 39 | Excluded: timestamped QA evidence, not current truth |
