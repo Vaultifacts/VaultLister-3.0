@@ -3,7 +3,12 @@
 
 import crypto from 'crypto';
 import { readFileSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { logger } from '../shared/logger.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const ROOT_DIR = join(__dirname, '..', '..', '..');
 
 const MIME_FROM_EXT = {
     jpg: 'image/jpeg',
@@ -64,8 +69,9 @@ export async function uploadToCloudinary(imagePath, userId, imageId) {
             const { body, contentType } = await streamFromR2(imagePath, mimeType);
             fileDataUri = `data:${contentType || mimeType};base64,${body.toString('base64')}`;
         } else {
-            // Local filesystem path
-            const imageBuffer = readFileSync(imagePath);
+            // Local filesystem path — imagePath is a web path like /uploads/images/...
+            const absolutePath = join(ROOT_DIR, 'public', imagePath);
+            const imageBuffer = readFileSync(absolutePath);
             fileDataUri = `data:${mimeType};base64,${imageBuffer.toString('base64')}`;
         }
 
