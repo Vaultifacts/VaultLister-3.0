@@ -3794,10 +3794,10 @@ Object.assign(pages, {
                                         '<td class="font-medium">' +
                                         m +
                                         '</td>' +
-                                        '<td style="color: var(--success);">$' +
+                                        '<td style="color: var(--success);">C$' +
                                         income[i].toLocaleString() +
                                         '</td>' +
-                                        '<td style="color: var(--danger);">$' +
+                                        '<td style="color: var(--danger);">C$' +
                                         expenses[i].toLocaleString() +
                                         '</td>' +
                                         '<td class="font-medium" style="color: ' +
@@ -3807,7 +3807,7 @@ Object.assign(pages, {
                                         'C$' +
                                         net[i].toLocaleString() +
                                         '</td>' +
-                                        '<td class="font-medium">$' +
+                                        '<td class="font-medium">C$' +
                                         cumulative[i].toLocaleString() +
                                         '</td>' +
                                         '<td style="width: 120px;"><div style="height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden;"><div style="height: 100%; width: ' +
