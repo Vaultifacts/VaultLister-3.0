@@ -6,7 +6,7 @@ import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { getStatementCacheStats } from '../db/database.js';
-import { SUPPORTED_PLATFORM_IDS as _STATUS_PLATFORM_IDS } from '../../shared/supportedPlatforms.js';
+import { SUPPORTED_PLATFORM_IDS as _STATUS_PLATFORM_IDS, publicPlatformList } from '../../shared/supportedPlatforms.js';
 import { deriveRecentHealthState } from '../utils/platformHealthState.js';
 import { isOpenPlatformIncident, shouldShowAutoProbeIssue } from '../utils/platformHealthIssues.js';
 import { websocketService } from '../services/websocket.js';
@@ -343,6 +343,7 @@ export async function healthPlatformsRouter() {
 
     const body = {
         platforms: out,
+        platformList: publicPlatformList(),
         pastIncidents,
         generatedAt: new Date().toISOString(),
     };

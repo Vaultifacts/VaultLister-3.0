@@ -1313,22 +1313,8 @@
             var lastCheckTime = null;
             var tickerTimer = null;
 
-            // 7 live platforms (matches /platforms.html)
-            // TODO (v2): wire per-platform status from /api/health/platforms
-            var PLATFORMS = [
-                { id: 'ebay', name: 'eBay', logo: '/assets/logos/ebay/logo.svg', logoHeight: 38 },
-                { id: 'shopify', name: 'Shopify', logo: '/assets/logos/shopify/logo.svg', logoHeight: 34 },
-                { id: 'poshmark', name: 'Poshmark', logo: '/assets/logos/poshmark/logo.png', logoHeight: 32 },
-                { id: 'depop', name: 'Depop', logo: '/assets/logos/depop/logo.svg', logoHeight: 30 },
-                {
-                    id: 'facebook',
-                    name: 'Facebook Marketplace',
-                    logo: '/assets/logos/facebook/Facebook_Logo_Primary.png',
-                    logoHeight: 36,
-                },
-                { id: 'whatnot', name: 'Whatnot', logo: '/assets/logos/whatnot/logo.svg', logoHeight: 30 },
-                { id: 'grailed', name: 'Grailed', logo: '/assets/logos/grailed/icon2.png', logoHeight: 30 },
-            ];
+            // Populated on first API response from /api/health/platforms (platformList field)
+            var PLATFORMS = [];
 
             function escapeStr(str) {
                 return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -1837,6 +1823,10 @@
                     if (!r.ok) throw new Error('HTTP ' + r.status);
                     var data = await r.json();
                     var platforms = (data && data.platforms) || {};
+                    if (PLATFORMS.length === 0 && data && data.platformList && data.platformList.length) {
+                        PLATFORMS = data.platformList;
+                        renderPlatformCards();
+                    }
                     renderPastIncidents(data && data.pastIncidents);
                     var overall = computeOverallFromPlatforms(platforms);
                     updateOverallBanner(overall.state, overall.avgUptime);
@@ -1869,7 +1859,7 @@
                 updateLastChecked(new Date());
             }
 
-            renderPlatformCards();
+            // Platform cards rendered on first checkHealth() response (PLATFORMS populated from API)
 
             // Desktop dropdown toggle
             document.querySelectorAll('.nav-dropdown-btn').forEach(function (btn) {
