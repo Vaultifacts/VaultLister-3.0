@@ -1447,9 +1447,7 @@ Object.assign(handlers, {
 
     _simulateDryRun: function (category) {
         const listings = store.state.listings || [];
-        const inventory = store.state.inventory || [];
-        const listingCount = Math.max(listings.length, 12);
-        const inventoryCount = Math.max(inventory.length, 25);
+        const listingCount = listings.length;
 
         const simulations = {
             sharing: {
@@ -2076,8 +2074,8 @@ Object.assign(handlers, {
         const weeklyTotal = weeklyData.reduce((sum, d) => sum + d.completed, 0);
         const avgPerDay = (weeklyTotal / 7).toFixed(1);
 
-        // Calculate productivity score (mock calculation)
-        const productivityScore = Math.min(100, Math.round((weeklyTotal / 35) * 100));
+        const weeklyTaskGoal = store.state.weeklyTaskGoal || 35;
+        const productivityScore = Math.min(100, Math.round((weeklyTotal / weeklyTaskGoal) * 100));
         const getScoreColor = (score) => {
             if (score >= 80) return 'success';
             if (score >= 50) return 'warning';
@@ -4456,14 +4454,18 @@ Object.assign(handlers, {
         `);
     },
 
-    saveBudgetSettings: function () {
+    saveBudgetSettings: async function () {
         const budget = document.getElementById('monthly-budget-input')?.value;
         const monthlyBudget = parseFloat(budget) || 500;
-        store.setState({ monthlyBudget });
-        try { localStorage.setItem('vl_monthly_budget', String(monthlyBudget)); } catch (_) {}
-        toast.success('Budget settings saved');
-        modals.close();
-        renderApp(window.pages.financials());
+        try {
+            await api.request('PUT', '/api/budget', { monthlyBudget });
+            store.setState({ monthlyBudget });
+            toast.success('Budget settings saved');
+            modals.close();
+            renderApp(window.pages.financials());
+        } catch (err) {
+            toast.error('Failed to save budget settings');
+        }
     },
 
     // Analytics handlers,
@@ -4515,7 +4517,7 @@ Object.assign(handlers, {
         `);
     },
 
-    saveGoals: function (e) {
+    saveGoals: async function (e) {
         e.preventDefault();
         const form = e.target;
         const goals = {
@@ -4523,11 +4525,15 @@ Object.assign(handlers, {
             salesGoal: parseInt(form.salesGoal.value) || 50,
             marginGoal: parseFloat(form.marginGoal.value) || 40,
         };
-        store.setState(goals);
-        try { localStorage.setItem('vl_goals', JSON.stringify(goals)); } catch (_) {}
-        toast.success('Goals updated');
-        modals.close();
-        renderApp(window.pages.analytics());
+        try {
+            await api.request('POST', '/api/goals', goals);
+            store.setState(goals);
+            toast.success('Goals updated');
+            modals.close();
+            renderApp(window.pages.analytics());
+        } catch (err) {
+            toast.error('Failed to save goals');
+        }
     },
 
     toggleBusinessFAB: function () {
@@ -5609,7 +5615,7 @@ Object.assign(handlers, {
         `);
     },
 
-    saveCompetitorAlerts: function (competitorId) {
+    saveCompetitorAlerts: async function (competitorId) {
         const priceDrop = document.getElementById('alert-price-drop')?.checked ?? true;
         const newListing = document.getElementById('alert-new-listing')?.checked ?? true;
         const threshold = parseInt(document.getElementById('alert-threshold')?.value) || 10;
@@ -5617,10 +5623,14 @@ Object.assign(handlers, {
             ...(store.state.competitorAlerts || {}),
             [competitorId]: { priceDrop, newListing, threshold },
         };
-        store.setState({ competitorAlerts: allAlerts });
-        localStorage.setItem('vaultlister_competitor_alerts', JSON.stringify(allAlerts));
-        toast.success('Alert settings saved');
-        modals.close();
+        try {
+            await api.request('PUT', '/api/market-intel/competitors/alerts', allAlerts);
+            store.setState({ competitorAlerts: allAlerts });
+            toast.success('Alert settings saved');
+            modals.close();
+        } catch (err) {
+            toast.error('Failed to save alert settings');
+        }
     },
 
     refreshCompetitorActivity: async function () {
@@ -6056,25 +6066,22 @@ Object.assign(handlers, {
         renderApp(window.pages.marketIntel());
     },
 
-    runSavedSearch: function (id) {
+    runSavedSearch: async function (id) {
         const search = (store.state.savedSearches || []).find((s) => s.id === id);
         if (!search) return;
-
         toast.info('Running search: ' + search.name + '...');
-        setTimeout(() => {
+        try {
+            const data = await api.get('/market-intel/search?q=' + encodeURIComponent(search.query || search.name) + '&platform=' + encodeURIComponent(search.platform || ''));
+            const count = data.count || data.results?.length || 0;
             const savedSearches = (store.state.savedSearches || []).map((s) =>
-                s.id === id ? { ...s, lastRun: new Date().toISOString(), results: null } : s,
+                s.id === id ? { ...s, lastRun: new Date().toISOString(), resultCount: count } : s,
             );
-            store.setState({ savedSearches });
-            toast.success(
-                'Found ' +
-                    (savedSearches.find((s) => s.id === id)?.results || 0) +
-                    ' results for "' +
-                    search.name +
-                    '"',
-            );
+            store.setState({ savedSearches, lastSearchResults: data.results || [] });
+            toast.success('Found ' + count + ' results for "' + search.name + '"');
             renderApp(window.pages.marketIntel());
-        }, 1200);
+        } catch (err) {
+            toast.error('Search failed: ' + (err.message || 'Unknown error'));
+        }
     },
 
     // ==========================================

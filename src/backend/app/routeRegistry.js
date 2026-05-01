@@ -77,6 +77,8 @@ import { integrationsRouter } from '../routes/integrations.js';
 import { currencyRouter } from '../routes/currency.js';
 import { monitoringRouter } from '../routes/monitoring.js';
 import { settingsRouter } from '../routes/settings.js';
+import { goalsRouter } from '../routes/goals.js';
+import { budgetRouter } from '../routes/budget.js';
 import { contactRouter } from '../routes/contact.js';
 import { affiliateApplyRouter } from '../routes/affiliate-apply.js';
 import { featureRequestsRouter } from '../routes/feature-requests-routes.js';
@@ -161,6 +163,8 @@ export const routeRegistry = {
     '/api/currency': currencyRouter,
     '/api/monitoring': monitoringRouter,
     '/api/settings': settingsRouter,
+    '/api/goals': goalsRouter,
+    '/api/budget': budgetRouter,
     '/api/contact': contactRouter,
     '/api/affiliate-apply': affiliateApplyRouter,
     '/api/feature-requests': featureRequestsRouter,

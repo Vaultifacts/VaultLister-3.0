@@ -90,6 +90,48 @@ export async function marketIntelRouter(ctx) {
         }
     }
 
+    // GET /market-intel/competitors/alerts - Get competitor alert settings
+    if (method === 'GET' && path === '/competitors/alerts') {
+        const authError = requireAuth();
+        if (authError) return authError;
+
+        try {
+            const row = await query.get('SELECT competitor_alerts_json FROM users WHERE id = ?', [user.id]);
+            const alerts = safeJsonParse(row?.competitor_alerts_json, {});
+            return { status: 200, data: { alerts } };
+        } catch (error) {
+            logger.error('[MarketIntel] Error fetching competitor alerts', user?.id || null, { detail: error.message });
+            return { status: 500, data: { error: 'Internal server error' } };
+        }
+    }
+
+    // PUT /market-intel/competitors/alerts - Save competitor alert settings
+    if (method === 'PUT' && path === '/competitors/alerts') {
+        const authError = requireAuth();
+        if (authError) return authError;
+
+        if (!body) {
+            return { status: 400, data: { error: 'Request body is required' } };
+        }
+
+        const payload = JSON.stringify(body);
+        if (payload.length > 16384) {
+            return { status: 400, data: { error: 'Alert settings payload too large (max 16KB)' } };
+        }
+
+        try {
+            await query.run(
+                'UPDATE users SET competitor_alerts_json = ?, updated_at = NOW() WHERE id = ?',
+                [payload, user.id],
+            );
+
+            return { status: 200, data: { alerts: body } };
+        } catch (error) {
+            logger.error('[MarketIntel] Error saving competitor alerts', user?.id || null, { detail: error.message });
+            return { status: 500, data: { error: 'Internal server error' } };
+        }
+    }
+
     // GET /market-intel/competitors/:id - Get competitor details
     const competitorIdMatch = path.match(/^\/competitors\/([^/]+)$/);
     if (method === 'GET' && competitorIdMatch) {

@@ -1444,14 +1444,18 @@ Object.assign(handlers, {
         `);
     },
 
-    saveBudgetSettings: function () {
+    saveBudgetSettings: async function () {
         const budget = document.getElementById('monthly-budget-input')?.value;
         const monthlyBudget = parseFloat(budget) || 500;
-        store.setState({ monthlyBudget });
-        try { localStorage.setItem('vl_monthly_budget', String(monthlyBudget)); } catch (_) {}
-        toast.success('Budget settings saved');
-        modals.close();
-        renderApp(window.pages.financials());
+        try {
+            await api.request('PUT', '/api/budget', { monthlyBudget });
+            store.setState({ monthlyBudget });
+            toast.success('Budget settings saved');
+            modals.close();
+            renderApp(window.pages.financials());
+        } catch (err) {
+            toast.error('Failed to save budget settings');
+        }
     },
 
     // Analytics handlers,
@@ -1503,7 +1507,7 @@ Object.assign(handlers, {
         `);
     },
 
-    saveGoals: function (e) {
+    saveGoals: async function (e) {
         e.preventDefault();
         const form = e.target;
         const goals = {
@@ -1511,11 +1515,15 @@ Object.assign(handlers, {
             salesGoal: parseInt(form.salesGoal.value) || 50,
             marginGoal: parseFloat(form.marginGoal.value) || 40,
         };
-        store.setState(goals);
-        try { localStorage.setItem('vl_goals', JSON.stringify(goals)); } catch (_) {}
-        toast.success('Goals updated');
-        modals.close();
-        renderApp(window.pages.analytics());
+        try {
+            await api.request('POST', '/api/goals', goals);
+            store.setState(goals);
+            toast.success('Goals updated');
+            modals.close();
+            renderApp(window.pages.analytics());
+        } catch (err) {
+            toast.error('Failed to save goals');
+        }
     },
 
     toggleBusinessFAB: function () {
