@@ -1,9 +1,17 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-30 MST (a11y: 114 aria-hidden close button fixes in commit 60e4771c; automations page 3 sections removed)
+**Updated:** 2026-04-30 MST (session 6: listings cache bust, CI dedup, header bar removal; session 4: a11y 102 close-button fixes in commit 551d3bd1; automations page 3 sections removed)
+
+## Completed This Session (2026-04-30, session 6 — parallel)
+
+- **6524ca2c** fix(listings): bump chunk version to v21 to bust Cloudflare cache after listing row cleanup
+- **efa6c48d** fix(ci): add dedup check to project-status-update failure handler (prevents issue storms when close triggers re-run)
+- **c50073ac** fix(frontend): remove global header bar (search+bell+avatar) from app layout
+
+---
 
 ## Completed This Session (2026-04-30, session 4)
 
-### a11y — wrap bare × close chars with aria-hidden spans (commit 60e4771c)
+### a11y — wrap bare × close chars with aria-hidden spans (commit 551d3bd1)
 
 - 114 instances across 12 JS files wrapped with `<span aria-hidden="true">`
 - SVG aria audit on public HTML: already clean (0 files needed updating)
@@ -1375,9 +1383,11 @@ NOTE: CR-9 (Analytics Sales Funnel) + M-2 (Radar labels) are already VERIFIED �
 NOTE: CR-4 (EasyPost) was historically marked RESOLVED 2026-04-20, but 2026-04-22 live verification reopened it: production currently returns `503 {"error":"EasyPost not configured"}`.
 
 ## Unstaged Changes (as of 2026-04-30)
+- `.claude/scheduled_tasks.lock` — modified
 - `.claude/settings.local.json` — modified
-- `public/sw.js` — modified
-- `src/frontend/core-bundle.js` — modified
-- `src/frontend/index.html` — modified
-- `src/frontend/pages/pages-inventory-catalog.js` — modified
-- `src/frontend/styles/main.css` — modified
+- `.serena/project.yml` — modified
+- `public/sw.js` — modified (staged)
+- `src/frontend/core-bundle.js` — modified (staged)
+- `src/frontend/core/router.js` — modified (staged)
+- `src/frontend/index.html` — modified (staged)
+- `src/frontend/styles/main.css` — modified (staged)

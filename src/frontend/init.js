@@ -386,9 +386,6 @@ async function initApp() {
             await handlers.loadTeamsPage();
             renderApp(window.pages.teams());
         });
-        router.register('plans-billing', () => {
-            requestAnimationFrame(() => renderApp(window.pages.plansBilling()));
-        });
         router.register('affiliate', () => renderApp(window.pages.affiliate()));
         router.register('notifications', () => renderApp(window.pages.notifications()));
         router.register('connections', async () => {
@@ -462,12 +459,6 @@ async function initApp() {
             await handlers.loadWhatnotData();
             renderApp(window.pages.whatnotLive());
         });
-        router.register('reports', async () => {
-            requestAnimationFrame(() => renderApp(window.pages.reports()));
-            await handlers.loadReportsData();
-            renderApp(window.pages.reports());
-        });
-
         // AR Preview
         router.register('ar-preview', async () => {
             if (!store.state.inventory || store.state.inventory.length === 0) {
@@ -1040,7 +1031,6 @@ handlers.showUsageDashboard = async function () {
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-primary" onclick="router.navigate('plans-billing'); modals.close();">View Billing Details</button>
                 <button class="btn btn-secondary" onclick="modals.close();">Close</button>
             </div>
         `);
