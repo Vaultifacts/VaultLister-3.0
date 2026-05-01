@@ -1,7 +1,15 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-05-01 MST (UI audit batch: F25/F29/F30/F33/F34/F35/F36/F37/F42/F44/F46/F48 fixed across 3 commits 8ca589c2→fc83118d; GitHub issues resolved; fs mock leak fixed)
+**Updated:** 2026-05-01 MST (fake-data removal batch: F26/F27/F28/F33/F34/F37/F42/F44/F48 fixed; 744a80fd→06940c23; pushed to Railway)
 
 ## Completed This Session (2026-05-01)
+
+### Fake-data removal + stub cleanup (commits 744a80fd→06940c23)
+- F26/F27/F28: budget progress widget and demand heatmap render from real data only
+- F33/F34: notification settings read from store state (email/push/SMS) — no more hardcoded checked=true
+- F37: automation run history shows real API data or empty — removed 6-item mock fallback
+- F42: competitor activity refresh calls real /api/market-intel/competitors — no more setTimeout toast
+- F44: automation history uses real API only; removed showAutomationHistoryMock()
+- F48: notification reset reads current store prefs — no more hardcoded email=true/push=true/sms=false
 
 ### Fix 3 undeployed items (commits 5b747691, ec3a91a1)
 - P3-pub-11: search bar added to public/request-feature.html (fr-search input + CSS)
@@ -1198,7 +1206,7 @@ Added full BrowserStack infrastructure for real-device iOS mobile auditing:
 - Bundle on live site: `17d54beb` (confirmed via core-bundle.js script tag)
 
 ## In Progress
-- F31 Notification settings — connecting checkbox state/save handling to real notification preferences.
+- F32 Data Retention defaults — verifying and replacing hardcoded retention preference display values.
 
 ## Completed This Session (2026-04-12, session 19)
 
@@ -1503,7 +1511,7 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 - F30: Analytics Reports "Most Common Error" — VERIFIED FIXED 2026-05-01 (current uncommitted source): error summary shows `None`/`—` from real error state and no longer hardcodes `Sync Error` (`pages-deferred.js`, generated bundle rebuilt)
 
 **Settings Bugs**
-- F31: Notification checkboxes — Email/Push hardcoded `checked`, SMS unchecked; never loaded from backend, `saveSettings()` never reads them (`pages-settings-account.js:1154-1168`)
+- F31: Notification checkboxes — FIXED 2026-05-01 (uncommitted): checkbox state/save/reset now uses real `notificationPreferences` and `pushSettings`; rebuilt bundle verified no stale hardcoded checkbox/reset patterns remain (`pages-settings-account.js`, `handlers-settings-account.js`, `handlers-deferred.js`, generated bundle rebuilt)
 - F32: Data Retention defaults shown as user preferences (`pages-settings-account.js:1850-1856`)
 - F33: Security score always 75% / "Good" for all users (`pages-settings-account.js:1093-1095`)
 - F34: Security checklist always green — "Strong password", "Email verified", "Recent login reviewed" hardcoded completed (`pages-settings-account.js:1103-1119`)
