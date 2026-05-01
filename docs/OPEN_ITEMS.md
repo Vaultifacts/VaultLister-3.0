@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-01T04:55:11.701Z
-Commit: 3ad9e503
+Generated at: 2026-05-01T05:05:29.763Z
+Commit: 181c6998
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -20,7 +20,7 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 | Structural/refactor backlog items | 10 |
 | Competitor intelligence gaps | 862 |
 | Anti-detection/design gaps | 14 |
-| Open GitHub issues | 9 |
+| Open GitHub issues | 10 |
 | Explicit unchecked checklist items | 359 |
 | Repo-wide unchecked checkbox hits | 583 |
 | Repo-wide unchecked checkbox hits included | 359 |
@@ -203,7 +203,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | memory/COMPLETED.md | 2 | 61 | Excluded: session memory, promote only after current verification |
 | memory/LAUNCH_PRIORITY.md | 5 | 13 | Excluded: session memory, promote only after current verification |
 | memory/MEMORY.md | 9 | 7 | Excluded: session memory, promote only after current verification |
-| memory/STATUS.md | 89 | 2 | Excluded: session memory, promote only after current verification |
+| memory/STATUS.md | 88 | 2 | Excluded: session memory, promote only after current verification |
 | memory/TIER0_PLAYBOOK.md | 3 | 11 | Excluded: session memory, promote only after current verification |
 | data/qa-report-2026-04-04-chrome-walkthrough.md | 2 | 20 | Excluded: timestamped QA evidence, not current truth |
 | data/qa-report-2026-04-04-exhaustive.md | 4 | 39 | Excluded: timestamped QA evidence, not current truth |
@@ -1251,6 +1251,7 @@ Command: `gh issue list --state open --limit 200 --json number,title,labels,upda
 
 | Issue | Title | Labels | Updated | URL |
 |---|---|---|---|---|
+| #481 | [Deploy Failure] db009ff — Run #1034 | automated, deploy-failure | 2026-05-01T05:05:04Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/481 |
 | #480 | [CI Failure] master - Run #1527 | ci-failure, automated | 2026-05-01T04:37:47Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/480 |
 | #469 | [Automation] Project status update workflow failed — boards may be stale | ci-failure, automated | 2026-05-01T04:22:16Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/469 |
 | #467 | [WAF] Monthly Cloudflare WAF rule review — 2026-05 | security, automated | 2026-05-01T00:01:51Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/467 |
