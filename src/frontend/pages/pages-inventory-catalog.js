@@ -2093,13 +2093,13 @@ Object.assign(pages, {
                         <!-- Start Time -->
                         <div>
                             <label class="form-label" for="pic-start-time">Start Time</label>
-                            <input id="pic-start-time" aria-label="Time" type="time" class="form-input" value="${scheduleSettings.startTime}"
+                            <input id="pic-start-time" aria-label="Start Time" type="time" class="form-input" value="${scheduleSettings.startTime}"
                                 onchange="handlers.updateAutomationSchedule('startTime', this.value)">
                         </div>
                         <!-- End Time -->
                         <div>
                             <label class="form-label" for="pic-end-time">End Time</label>
-                            <input id="pic-end-time" aria-label="Time" type="time" class="form-input" value="${scheduleSettings.endTime}"
+                            <input id="pic-end-time" aria-label="End Time" type="time" class="form-input" value="${scheduleSettings.endTime}"
                                 onchange="handlers.updateAutomationSchedule('endTime', this.value)">
                         </div>
                         <!-- Timezone -->

@@ -274,7 +274,7 @@ select:focus-visible {
     position: absolute;
     top: -40px;
     left: 0;
-    background: var(--primary-600);
+    background: var(--primary-800);
     color: white;
     padding: 8px 16px;
     z-index: var(--z-tooltip);
@@ -352,7 +352,7 @@ select:focus-visible {
     color: #f59e0b !important;
 }
 .sidebar .nav-section-title {
-    color: var(--gray-500) !important;
+    color: #9ca3af !important;
 }
 .sidebar-header {
     border-bottom: 1px solid #2a2a2a !important;
@@ -875,7 +875,7 @@ body.dark-mode .consolidated-tab.active {
 }
 
 .sidebar-user-meta .font-medium {
-    color: var(--gray-800);
+    color: #e5e7eb;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -883,11 +883,11 @@ body.dark-mode .consolidated-tab.active {
 
 .sidebar-user-plan {
     font-size: 12px;
-    color: var(--gray-500);
+    color: #9ca3af;
 }
 
 .sidebar-user-chevron {
-    color: var(--gray-400);
+    color: #9ca3af;
     font-size: 11px;
     transition: transform 0.15s ease;
 }

@@ -2440,7 +2440,7 @@ Object.assign(pages, {
                         </div>
                         <div>
                             <label class="form-label" for="pso-orders-date">Date Range</label>
-                            <select id="pso-orders-date" aria-label="Filter by date" class="form-select" onchange="handlers.filterOrders('date', this.value)">
+                            <select id="pso-orders-date" class="form-select" onchange="handlers.filterOrders('date', this.value)">
                                 <option value="all" ${dateFilter === 'all' ? 'selected' : ''}>All Time</option>
                                 <option value="today" ${dateFilter === 'today' ? 'selected' : ''}>Today</option>
                                 <option value="week" ${dateFilter === 'week' ? 'selected' : ''}>Last 7 Days</option>

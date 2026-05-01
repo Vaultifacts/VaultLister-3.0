@@ -7067,15 +7067,15 @@ Object.assign(pages, {
                     <div class="grid grid-cols-4 gap-4">
                         <div class="form-group">
                             <label class="form-label" for="rec-bust">Bust/Chest (inches)</label>
-                            <input type="number" id="rec-bust" class="form-input" placeholder="e.g. 36" min="24" max="60" step="0.5" aria-label="Rec Bust">
+                            <input type="number" id="rec-bust" class="form-input" placeholder="e.g. 36" min="24" max="60" step="0.5">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="rec-waist">Waist (inches)</label>
-                            <input type="number" id="rec-waist" class="form-input" placeholder="e.g. 28" min="20" max="50" step="0.5" aria-label="Rec Waist">
+                            <input type="number" id="rec-waist" class="form-input" placeholder="e.g. 28" min="20" max="50" step="0.5">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="rec-hips">Hips (inches)</label>
-                            <input type="number" id="rec-hips" class="form-input" placeholder="e.g. 38" min="28" max="60" step="0.5" aria-label="Rec Hips">
+                            <input type="number" id="rec-hips" class="form-input" placeholder="e.g. 38" min="28" max="60" step="0.5">
                         </div>
                         <div class="form-group" style="display: flex; align-items: flex-end;">
                             <button class="btn btn-primary" onclick="handlers.getSizeRecommendation()">
@@ -8113,6 +8113,16 @@ Object.assign(pages, {
     plansBilling() {
         const user = store.state.user || {};
         const currentPlan = user.subscription_tier || 'free';
+        const planLabels = {
+            free: 'Free',
+            starter: 'Starter',
+            pro: 'Pro',
+            business: 'Business',
+        };
+        const currentPlanLabel =
+            planLabels[currentPlan] || currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1);
+        const currentPlanDescription =
+            currentPlan === 'free' ? 'Free plan with limited features' : `${currentPlanLabel} plan`;
         const billingPeriod = store.state.billingPeriod || 'monthly';
 
         function getPrice(tier) {
@@ -8157,10 +8167,10 @@ Object.assign(pages, {
                     <div class="flex items-center justify-between">
                         <div>
                             <div class="flex items-center gap-3">
-                                <span class="badge badge-lg badge-success">${currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)}</span>
+                                <span class="badge badge-lg badge-success">${currentPlanLabel}</span>
                                 <span class="text-gray-500">Active</span>
                             </div>
-                            <p class="text-sm text-gray-600 mt-2">You're currently on the ${currentPlan === 'free' ? 'Free plan with limited features' : currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1) + ' plan with all features unlocked'}.</p>
+                            <p class="text-sm text-gray-600 mt-2">You're currently on the ${currentPlanDescription}.</p>
                         </div>
                         ${
                             currentPlan === 'free'
@@ -9184,7 +9194,7 @@ Object.assign(pages, {
             {
                 icon: 'wifi-off',
                 title: 'Offline Capable',
-                description: 'Your data stays on your device - work anywhere, anytime',
+                description: 'Keep working through connection changes with cloud sync when available',
                 color: 'success',
             },
             {
@@ -9243,26 +9253,40 @@ Object.assign(pages, {
             },
         ];
 
-        const testimonials = [
-            {
-                name: 'Sarah M.',
-                role: 'Full-time Reseller',
-                quote: 'VaultLister has completely transformed how I manage my reselling business. The cross-listing feature alone saves me hours every week!',
-                rating: 5,
-            },
-            {
-                name: 'Mike T.',
-                role: 'Part-time Seller',
-                quote: 'Finally, a tool that works offline! I can update my inventory at estate sales without worrying about internet connection.',
-                rating: 5,
-            },
-            {
-                name: 'Jessica L.',
-                role: 'Boutique Owner',
-                quote: 'The AI listing generation is incredible. It writes better descriptions than I could and helps my items sell faster.',
-                rating: 5,
-            },
-        ];
+        const featureAreaCount = features.length;
+        const appVersion = store.state.appVersion || store.state.app_version || null;
+        const testimonials = Array.isArray(store.state.aboutTestimonials) ? store.state.aboutTestimonials : [];
+        const testimonialCards = testimonials
+            .map((testimonial) => {
+                const quote = escapeHtml(String(testimonial.quote || ''));
+                if (!quote) return '';
+                const name = escapeHtml(String(testimonial.name || 'Customer'));
+                const role = testimonial.role ? `<span>${escapeHtml(String(testimonial.role))}</span>` : '';
+                const rating = Math.max(0, Math.min(5, Number(testimonial.rating) || 0));
+                const stars = rating > 0 ? '★'.repeat(rating) : '';
+                return `
+                        <div class="testimonial-card">
+                            ${
+                                stars
+                                    ? `
+                            <div class="testimonial-stars">
+                                ${stars}
+                            </div>
+                            `
+                                    : ''
+                            }
+                            <p class="testimonial-quote">"${quote}"</p>
+                            <div class="testimonial-author">
+                                <div class="author-avatar">${name.charAt(0)}</div>
+                                <div class="author-info">
+                                    <strong>${name}</strong>
+                                    ${role}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+            })
+            .join('');
 
         return `
             <!-- Hero Section -->
@@ -9273,10 +9297,10 @@ Object.assign(pages, {
                         <div class="hero-logo-glow"></div>
                     </div>
                     <h1 class="about-hero-title">VaultLister</h1>
-                    <div class="about-version-badge">v0.9.0 RC</div>
-                    <p class="about-hero-tagline">Zero-cost, offline-capable multi-channel reselling platform</p>
+                    ${appVersion ? `<div class="about-version-badge">v${escapeHtml(String(appVersion))}</div>` : ''}
+                    <p class="about-hero-tagline">Multi-channel reselling platform for inventory, listing, and automation workflows</p>
                     <div class="about-hero-badges">
-                        <span class="hero-badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Free Forever</span>
+                        <span class="hero-badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Transparent Pricing</span>
                         <span class="hero-badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Privacy First</span>
                         <span class="hero-badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg> Works Offline</span>
                     </div>
@@ -9292,8 +9316,8 @@ Object.assign(pages, {
                             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                         </svg>
                     </div>
-                    <div class="stat-value" data-count="171">171+</div>
-                    <div class="stat-label">Features Built</div>
+                    <div class="stat-value" data-count="${featureAreaCount}">${featureAreaCount}</div>
+                    <div class="stat-label">Feature Areas</div>
                 </div>
                 <div class="about-stat-card">
                     <div class="stat-icon-wrapper success">
@@ -9313,8 +9337,8 @@ Object.assign(pages, {
                             <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
                         </svg>
                     </div>
-                    <div class="stat-value">100%</div>
-                    <div class="stat-label">Free to Use</div>
+                    <div class="stat-value">Free + Paid</div>
+                    <div class="stat-label">Pricing Options</div>
                 </div>
                 <div class="about-stat-card">
                     <div class="stat-icon-wrapper info">
@@ -9336,7 +9360,7 @@ Object.assign(pages, {
                 <div class="mission-content">
                     <div class="mission-text">
                         <p>VaultLister was built with a simple goal: to give resellers the tools they need to manage their business efficiently, without expensive subscriptions or complicated software.</p>
-                        <p>We believe in keeping your data local, your costs low, and your productivity high. Whether you're selling on one platform or six, VaultLister helps you work smarter, not harder.</p>
+                        <p>We believe in keeping reseller workflows organized, costs visible, and productivity high. Whether you're selling on one platform or six, VaultLister helps you work smarter, not harder.</p>
                     </div>
                     <div class="mission-values">
                         <div class="value-card">
@@ -9347,12 +9371,12 @@ Object.assign(pages, {
                         <div class="value-card">
                             <div class="value-icon">🔒</div>
                             <h3>Privacy</h3>
-                            <p>Your data stays on your device</p>
+                            <p>Your account data is stored securely and protected in transit</p>
                         </div>
                         <div class="value-card">
                             <div class="value-icon">💰</div>
                             <h3>Affordability</h3>
-                            <p>Free forever, no hidden costs</p>
+                            <p>Clear plans with transparent pricing</p>
                         </div>
                     </div>
                 </div>
@@ -9382,6 +9406,9 @@ Object.assign(pages, {
                 </div>
             </div>
 
+            ${
+                testimonialCards
+                    ? `
             <!-- Testimonials Section -->
             <div class="about-section testimonials-section">
                 <div class="about-section-header">
@@ -9389,27 +9416,12 @@ Object.assign(pages, {
                     <h2 class="section-title">Loved by Resellers</h2>
                 </div>
                 <div class="testimonials-grid">
-                    ${testimonials
-                        .map(
-                            (t) => `
-                        <div class="testimonial-card">
-                            <div class="testimonial-stars">
-                                ${'★'.repeat(t.rating)}
-                            </div>
-                            <p class="testimonial-quote">"${t.quote}"</p>
-                            <div class="testimonial-author">
-                                <div class="author-avatar">${t.name[0]}</div>
-                                <div class="author-info">
-                                    <strong>${t.name}</strong>
-                                    <span>${t.role}</span>
-                                </div>
-                            </div>
-                        </div>
-                    `,
-                        )
-                        .join('')}
+                    ${testimonialCards}
                 </div>
             </div>
+            `
+                    : ''
+            }
 
             <!-- Team Section -->
             <div class="about-section">
@@ -9492,14 +9504,13 @@ Object.assign(pages, {
                         },
                         {
                             date: 'Apr 2026',
-                            title: '170+ Features Milestone',
-                            description: 'Reached 171+ features including calendar, automations, and image bank.',
+                            title: 'Feature Expansion',
+                            description: 'Added calendar, automations, and image bank workflows.',
                         },
                         {
                             date: 'Apr 2026',
-                            title: 'Release Candidate',
-                            description:
-                                'v0.9.0 RC — continuing to add features based on community feedback and votes.',
+                            title: 'Quality Push',
+                            description: 'Continuing to refine integrations, reliability, and community feedback loops.',
                         },
                     ]
                         .map(
@@ -9702,6 +9713,52 @@ Object.assign(pages, {
         const user = store.state.user || {};
         const referralCode = user.referral_code || 'VAULT' + (user.id?.substring(0, 6)?.toUpperCase() || 'FRIEND');
         const referralLink = `https://vaultlister.com/signup?ref=${referralCode}`;
+        const referralStats =
+            store.state.referralStats ||
+            store.state.referral_stats ||
+            store.state.affiliateStats ||
+            store.state.affiliate_stats ||
+            {};
+        const referralStat = (...fields) => {
+            for (const field of fields) {
+                const value = referralStats[field];
+                if (value !== undefined && value !== null && value !== '') {
+                    return value;
+                }
+            }
+            return 'N/A';
+        };
+        const formatReferralStat = (...fields) => escapeHtml(String(referralStat(...fields)));
+        const formatReferralMonths = (...fields) => {
+            const value = referralStat(...fields);
+            if (value === 'N/A') return 'N/A';
+            const text = String(value);
+            if (/month/i.test(text)) return escapeHtml(text);
+            return `${escapeHtml(text)} ${Number(value) === 1 ? 'month' : 'months'}`;
+        };
+        const totalReferrals = formatReferralStat(
+            'totalReferrals',
+            'total_referrals',
+            'referralCount',
+            'referral_count',
+            'totalSignups',
+            'total_signups',
+        );
+        const successfulSignups = formatReferralStat(
+            'successfulSignups',
+            'successful_signups',
+            'successfulReferrals',
+            'successful_referrals',
+            'totalConversions',
+            'total_conversions',
+        );
+        const pendingReferrals = formatReferralStat('pendingReferrals', 'pending_referrals', 'pending');
+        const freePremiumLabel = formatReferralMonths(
+            'freePremiumMonths',
+            'free_premium_months',
+            'freePremiumEarned',
+            'free_premium_earned',
+        );
 
         return `
             <div class="page-header">
@@ -9819,19 +9876,19 @@ Object.assign(pages, {
                 <div class="card-body">
                     <div class="grid grid-cols-4 gap-4">
                         <div class="text-center">
-                            <div class="text-2xl font-bold text-primary">0</div>
+                            <div class="text-2xl font-bold text-primary">${totalReferrals}</div>
                             <div class="text-xs text-gray-500">Total Referrals</div>
                         </div>
                         <div class="text-center">
-                            <div class="text-2xl font-bold text-success">0</div>
+                            <div class="text-2xl font-bold text-success">${successfulSignups}</div>
                             <div class="text-xs text-gray-500">Successful Sign-ups</div>
                         </div>
                         <div class="text-center">
-                            <div class="text-2xl font-bold text-warning">0</div>
+                            <div class="text-2xl font-bold text-warning">${pendingReferrals}</div>
                             <div class="text-xs text-gray-500">Pending</div>
                         </div>
                         <div class="text-center">
-                            <div class="text-2xl font-bold">0 months</div>
+                            <div class="text-2xl font-bold">${freePremiumLabel}</div>
                             <div class="text-xs text-gray-500">Free Premium Earned</div>
                         </div>
                     </div>
@@ -11056,206 +11113,12 @@ Upload photos once, use them across all your listings.`,
     // Changelog page,
 
     changelog() {
-        const versions = store.state.changelogVersions || [
-            {
-                version: 'v0.9.0',
-                date: '2026-04-01',
-                changes: [
-                    {
-                        type: 'feature',
-                        title: 'Sidebar Icon-Only Mode',
-                        description: 'Collapsed sidebar now shows icons for quick navigation with hover tooltips',
-                        areas: ['Navigation', 'UI'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Pie Chart Component',
-                        description: 'New pie chart visualization option for analytics',
-                        areas: ['Analytics'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Chart Type Toggle',
-                        description: 'Switch between bar and pie charts for platform revenue and sales data',
-                        areas: ['Analytics', 'Dashboard'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'About Us Page',
-                        description: 'Company information and VaultLister stats page',
-                        areas: ['Company'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Gmail Integration',
-                        description: 'Automatic receipt detection and import from Gmail inbox',
-                        areas: ['Integrations', 'Settings'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Batch Photo Processing',
-                        description: 'Apply AI edits to multiple images at once with presets',
-                        areas: ['Image Bank'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Receipt Parser AI',
-                        description: 'Upload receipts and let AI extract vendor, items, and totals',
-                        areas: ['Transactions'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Calendar View',
-                        description: 'Track listings, orders, and events in a visual calendar',
-                        areas: ['Calendar'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Product Roadmap',
-                        description: 'See upcoming features and vote for your favorites',
-                        areas: ['Roadmap'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Enhanced Notifications',
-                        description: 'Bell dropdown with search and filters',
-                        areas: ['Navigation', 'UI'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Help & Support System',
-                        description: 'Tutorials, FAQs, and knowledge base articles',
-                        areas: ['Help & Support'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Support Tickets',
-                        description: 'Submit and track bug reports and feature requests',
-                        areas: ['Help & Support'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Chrome Extension',
-                        description: 'Import listings directly from marketplace pages',
-                        areas: ['My Listings', 'Integrations'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Image Bank',
-                        description: 'Organize photos in folders with drag-and-drop support',
-                        areas: ['Image Bank'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Community Features',
-                        description: 'Tips library and seller discussions',
-                        areas: ['Community'],
-                    },
-                    {
-                        type: 'improvement',
-                        title: 'Analytics Sales Tab',
-                        description: 'Added summary stat cards with key metrics',
-                        areas: ['Analytics'],
-                    },
-                    {
-                        type: 'improvement',
-                        title: 'Full OAuth Integration',
-                        description: 'Enhanced platform sync with real-time status tracking',
-                        areas: ['My Shops', 'Integrations'],
-                    },
-                    {
-                        type: 'improvement',
-                        title: 'Navigation Reorganization',
-                        description: 'Added Tools and Company sections for better organization',
-                        areas: ['Navigation'],
-                    },
-                    {
-                        type: 'improvement',
-                        title: 'Sidebar Collapse',
-                        description: 'Fixed text visibility when sidebar is collapsed',
-                        areas: ['Navigation', 'UI'],
-                    },
-                    {
-                        type: 'security',
-                        title: 'Token Encryption',
-                        description: 'AES-256-GCM encryption for stored OAuth tokens',
-                        areas: ['Security', 'Settings'],
-                    },
-                ],
-            },
-            {
-                version: 'v0.5.0',
-                date: '2026-03-15',
-                changes: [
-                    {
-                        type: 'feature',
-                        title: 'Listing Templates',
-                        description: 'Save and reuse item details for faster listing',
-                        areas: ['My Listings'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Low Stock Alerts',
-                        description: 'Get notified when inventory runs low',
-                        areas: ['Inventory', 'Notifications'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'AI Listing Generation',
-                        description: 'Generate listing titles and descriptions using Claude AI',
-                        areas: ['My Listings', 'AI'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Price Predictions',
-                        description: 'AI-powered pricing suggestions and demand forecasts',
-                        areas: ['Intelligence'],
-                    },
-                    {
-                        type: 'improvement',
-                        title: 'OAuth Integration',
-                        description: 'Connect marketplace accounts securely',
-                        areas: ['Settings', 'Integrations'],
-                    },
-                    {
-                        type: 'fix',
-                        title: 'Cross-listing',
-                        description: 'Fixed image upload issues on certain platforms',
-                        areas: ['My Listings'],
-                    },
-                ],
-            },
-            {
-                version: 'v0.1.0',
-                date: '2026-03-02',
-                changes: [
-                    {
-                        type: 'feature',
-                        title: 'Initial Alpha',
-                        description: 'Inventory management and cross-listing tools',
-                        areas: ['Inventory', 'My Listings'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Multi-Platform Support',
-                        description: 'Poshmark, eBay, Mercari, Depop, Grailed, Facebook',
-                        areas: ['My Shops'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Analytics Dashboard',
-                        description: 'Track sales, revenue, and performance metrics',
-                        areas: ['Analytics', 'Dashboard'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Automation Rules',
-                        description: 'Automate pricing, sharing, and listing updates',
-                        areas: ['Automations'],
-                    },
-                ],
-            },
-        ];
+        const versions = (Array.isArray(store.state.changelogVersions) ? store.state.changelogVersions : []).map(
+            (version) => ({
+                ...version,
+                changes: Array.isArray(version.changes) ? version.changes : [],
+            }),
+        );
 
         const changelogVotes = store.state.changelogVotes || {};
         const typeFilter = store.state.changelogTypeFilter || 'all';
@@ -13174,40 +13037,16 @@ Upload photos once, use them across all your listings.`,
                 </div>
                 <div class="card-body">
                     ${(() => {
-                        const alerts = store.state.trendAlerts || [
-                            {
-                                category: 'Vintage Denim',
-                                type: 'price_up',
-                                change: '+18%',
-                                message: 'Prices rising in vintage denim category. Consider listing vintage items now.',
-                                severity: 'success',
-                                time: '2 hours ago',
-                            },
-                            {
-                                category: 'Designer Bags',
-                                type: 'demand_spike',
-                                change: '+25%',
-                                message: 'Demand spike detected for designer bags on eBay and Poshmark.',
-                                severity: 'info',
-                                time: '5 hours ago',
-                            },
-                            {
-                                category: 'Athletic Shoes',
-                                type: 'price_drop',
-                                change: '-12%',
-                                message: 'Market prices declining for athletic shoes. Hold off on new acquisitions.',
-                                severity: 'warning',
-                                time: '1 day ago',
-                            },
-                            {
-                                category: 'Band Tees',
-                                type: 'saturation',
-                                change: '+40% listings',
-                                message: 'Market becoming saturated with band tees. Differentiate with rare finds.',
-                                severity: 'error',
-                                time: '2 days ago',
-                            },
-                        ];
+                        const alerts = Array.isArray(store.state.trendAlerts) ? store.state.trendAlerts : [];
+                        if (alerts.length === 0) {
+                            return `
+                                <div class="empty-state compact" style="padding: 24px; text-align: center;">
+                                    <div class="empty-state-icon">${components.icon('bell', 32)}</div>
+                                    <h2 class="empty-state-title">No trend alerts yet</h2>
+                                    <p class="empty-state-description">Trend alerts will appear here once market data identifies a real change.</p>
+                                </div>
+                            `;
+                        }
                         return `
                             <div class="space-y-3">
                                 ${alerts
@@ -13224,18 +13063,21 @@ Upload photos once, use them across all your listings.`,
                                             price_drop: 'trending-down',
                                             saturation: 'alert-triangle',
                                         };
+                                        const severity = colors[alert.severity] ? alert.severity : 'info';
+                                        const color = colors[severity];
+                                        const icon = icons[alert.type] || 'bell';
                                         return `
-                                        <div style="display: flex; gap: 12px; padding: 12px; border-radius: 10px; border: 1px solid ${colors[alert.severity]}30; background: ${colors[alert.severity]}08;">
-                                            <div style="width: 36px; height: 36px; border-radius: 8px; background: ${colors[alert.severity]}15; display: flex; align-items: center; justify-content: center; color: ${colors[alert.severity]}; flex-shrink: 0;">
-                                                ${components.icon(icons[alert.type] || 'bell', 18)}
+                                        <div style="display: flex; gap: 12px; padding: 12px; border-radius: 10px; border: 1px solid ${color}30; background: ${color}08;">
+                                            <div style="width: 36px; height: 36px; border-radius: 8px; background: ${color}15; display: flex; align-items: center; justify-content: center; color: ${color}; flex-shrink: 0;">
+                                                ${components.icon(icon, 18)}
                                             </div>
                                             <div style="flex: 1;">
                                                 <div class="flex items-center gap-2 mb-1">
-                                                    <span class="font-medium text-sm">${escapeHtml(alert.category)}</span>
-                                                    <span class="badge badge-sm" style="background: ${colors[alert.severity]}20; color: ${colors[alert.severity]};">${alert.change}</span>
+                                                    <span class="font-medium text-sm">${escapeHtml(String(alert.category || 'Market update'))}</span>
+                                                    ${alert.change ? `<span class="badge badge-sm" style="background: ${color}20; color: ${color};">${escapeHtml(String(alert.change))}</span>` : ''}
                                                 </div>
-                                                <p class="text-xs text-gray-600">${escapeHtml(alert.message)}</p>
-                                                <span class="text-xs text-gray-400">${alert.time}</span>
+                                                <p class="text-xs text-gray-600">${escapeHtml(String(alert.message || ''))}</p>
+                                                ${alert.time ? `<span class="text-xs text-gray-400">${escapeHtml(String(alert.time))}</span>` : ''}
                                             </div>
                                         </div>
                                     `;
@@ -13546,6 +13388,32 @@ Upload photos once, use them across all your listings.`,
                 supplier_name: s.name,
                 supplier_id: s.id,
             }));
+        const toMetricNumber = (value) => {
+            const number = Number(value);
+            return Number.isFinite(number) ? number : null;
+        };
+        const firstMetric = (supplier, fields) => {
+            for (const field of fields) {
+                const value = toMetricNumber(supplier[field]);
+                if (value !== null) return value;
+            }
+            return null;
+        };
+        const averageMetric = (fields) => {
+            const values = displaySuppliers
+                .map((supplier) => firstMetric(supplier, fields))
+                .filter((value) => value !== null);
+            return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
+        };
+        const formatMetric = (value, suffix = '') => {
+            if (value === null) return 'N/A';
+            const rounded = Math.round(value * 10) / 10;
+            return `${Number.isInteger(rounded) ? rounded.toFixed(0) : rounded.toFixed(1)}${suffix}`;
+        };
+        const leadTimeDays = averageMetric(['lead_time_days']);
+        const deliveryDays = averageMetric(['avg_delivery_days']);
+        const onTimeDelivery = averageMetric(['on_time_delivery']);
+        const processingDays = averageMetric(['avg_processing_days', 'processing_days']);
 
         return `
             <div class="page-header">
@@ -13759,19 +13627,19 @@ Upload photos once, use them across all your listings.`,
                 <div class="card-body">
                     <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px;">
                         <div style="text-align: center; padding: 16px; background: var(--gray-50); border-radius: 8px;">
-                            <div style="font-size: 28px; font-weight: 700; color: var(--primary-600);">4.2</div>
-                            <div style="font-size: 12px; color: var(--gray-500);">Avg Days to Ship</div>
+                            <div style="font-size: 28px; font-weight: 700; color: ${leadTimeDays === null ? 'var(--gray-500)' : 'var(--primary-600)'};">${formatMetric(leadTimeDays)}</div>
+                            <div style="font-size: 12px; color: var(--gray-500);">Avg Lead Time</div>
                         </div>
                         <div style="text-align: center; padding: 16px; background: var(--gray-50); border-radius: 8px;">
-                            <div style="font-size: 28px; font-weight: 700; color: var(--success);">7.8</div>
+                            <div style="font-size: 28px; font-weight: 700; color: ${deliveryDays === null ? 'var(--gray-500)' : 'var(--success)'};">${formatMetric(deliveryDays)}</div>
                             <div style="font-size: 12px; color: var(--gray-500);">Avg Days to Deliver</div>
                         </div>
                         <div style="text-align: center; padding: 16px; background: var(--gray-50); border-radius: 8px;">
-                            <div style="font-size: 28px; font-weight: 700; color: var(--warning);">92%</div>
+                            <div style="font-size: 28px; font-weight: 700; color: ${onTimeDelivery === null ? 'var(--gray-500)' : onTimeDelivery >= 90 ? 'var(--success)' : 'var(--warning)'};">${formatMetric(onTimeDelivery, '%')}</div>
                             <div style="font-size: 12px; color: var(--gray-500);">On-Time Rate</div>
                         </div>
                         <div style="text-align: center; padding: 16px; background: var(--gray-50); border-radius: 8px;">
-                            <div style="font-size: 28px; font-weight: 700; color: var(--gray-700);">1.3</div>
+                            <div style="font-size: 28px; font-weight: 700; color: ${processingDays === null ? 'var(--gray-500)' : 'var(--gray-700)'};">${formatMetric(processingDays)}</div>
                             <div style="font-size: 12px; color: var(--gray-500);">Avg Processing Days</div>
                         </div>
                     </div>
@@ -13838,53 +13706,82 @@ Upload photos once, use them across all your listings.`,
                 </div>
                 <div class="card-body">
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
-                        ${displaySuppliers
-                            .slice(0, 6)
-                            .map((s) => {
-                                const contacts = s.contacts || [
-                                    {
-                                        name: s.name + ' Sales',
-                                        role: 'Sales Rep',
-                                        email: s.email || s.name.toLowerCase().replace(/\s/g, '') + '@example.com',
-                                        phone: s.phone || 'No phone on file',
-                                    },
-                                ];
-                                return contacts
-                                    .map(
-                                        (c) =>
-                                            '<div style="padding: 16px; background: var(--gray-50); border-radius: 8px; border: 1px solid var(--gray-200);">' +
-                                            '<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">' +
-                                            '<div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-100); color: var(--primary-600); display: flex; align-items: center; justify-content: center; font-weight: 600;">' +
-                                            (c.name || 'C')[0].toUpperCase() +
-                                            '</div>' +
-                                            '<div>' +
-                                            '<div style="font-weight: 600; font-size: 14px;">' +
-                                            escapeHtml(c.name) +
-                                            '</div>' +
-                                            '<div style="font-size: 12px; color: var(--gray-500);">' +
-                                            escapeHtml(c.role || 'Contact') +
-                                            ' &middot; ' +
-                                            escapeHtml(s.name) +
-                                            '</div>' +
-                                            '</div>' +
-                                            '</div>' +
-                                            '<div style="display: grid; gap: 6px; font-size: 12px;">' +
-                                            '<div style="display: flex; align-items: center; gap: 8px; color: var(--gray-600);">' +
-                                            components.icon('mail', 12) +
-                                            ' ' +
-                                            escapeHtml(c.email || '') +
-                                            '</div>' +
-                                            '<div style="display: flex; align-items: center; gap: 8px; color: var(--gray-600);">' +
-                                            components.icon('phone', 12) +
-                                            ' ' +
-                                            escapeHtml(c.phone || '') +
-                                            '</div>' +
-                                            '</div>' +
-                                            '</div>',
-                                    )
-                                    .join('');
-                            })
-                            .join('')}
+                        ${(() => {
+                            const supplierContacts = displaySuppliers
+                                .flatMap((supplier) => {
+                                    const contacts = Array.isArray(supplier.contacts) ? supplier.contacts : [];
+                                    const directContact =
+                                        supplier.contact_email || supplier.contact_phone || supplier.email || supplier.phone
+                                            ? [
+                                                  {
+                                                      name: supplier.name,
+                                                      role: 'Supplier',
+                                                      email: supplier.contact_email || supplier.email || '',
+                                                      phone: supplier.contact_phone || supplier.phone || '',
+                                                  },
+                                              ]
+                                            : [];
+                                    return (contacts.length > 0 ? contacts : directContact).map((contact) => ({
+                                        ...contact,
+                                        supplierName: supplier.name,
+                                    }));
+                                })
+                                .slice(0, 6);
+                            if (supplierContacts.length === 0) {
+                                return `
+                                    <div class="empty-state compact" style="grid-column: 1 / -1; padding: 24px; text-align: center;">
+                                        <div class="empty-state-icon">${components.icon('users', 32)}</div>
+                                        <h2 class="empty-state-title">No supplier contacts yet</h2>
+                                        <p class="empty-state-description">Contact details will appear here after they are added to a supplier.</p>
+                                    </div>
+                                `;
+                            }
+                            return supplierContacts
+                                .map((c) => {
+                                    const contactName = String(c.name || c.supplierName || 'Supplier contact');
+                                    const role = String(c.role || 'Contact');
+                                    const supplierName = String(c.supplierName || '');
+                                    const email = c.email ? String(c.email) : '';
+                                    const phone = c.phone ? String(c.phone) : '';
+                                    const contactMethods =
+                                        (email
+                                            ? '<div style="display: flex; align-items: center; gap: 8px; color: var(--gray-600);">' +
+                                              components.icon('mail', 12) +
+                                              ' ' +
+                                              escapeHtml(email) +
+                                              '</div>'
+                                            : '') +
+                                        (phone
+                                            ? '<div style="display: flex; align-items: center; gap: 8px; color: var(--gray-600);">' +
+                                              components.icon('phone', 12) +
+                                              ' ' +
+                                              escapeHtml(phone) +
+                                              '</div>'
+                                            : '');
+                                    return (
+                                        '<div style="padding: 16px; background: var(--gray-50); border-radius: 8px; border: 1px solid var(--gray-200);">' +
+                                        '<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">' +
+                                        '<div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-100); color: var(--primary-600); display: flex; align-items: center; justify-content: center; font-weight: 600;">' +
+                                        escapeHtml(contactName[0].toUpperCase()) +
+                                        '</div>' +
+                                        '<div>' +
+                                        '<div style="font-weight: 600; font-size: 14px;">' +
+                                        escapeHtml(contactName) +
+                                        '</div>' +
+                                        '<div style="font-size: 12px; color: var(--gray-500);">' +
+                                        escapeHtml(role) +
+                                        (supplierName ? ' &middot; ' + escapeHtml(supplierName) : '') +
+                                        '</div>' +
+                                        '</div>' +
+                                        '</div>' +
+                                        '<div style="display: grid; gap: 6px; font-size: 12px;">' +
+                                        (contactMethods || '<div style="color: var(--gray-500);">No contact method on file</div>') +
+                                        '</div>' +
+                                        '</div>'
+                                    );
+                                })
+                                .join('');
+                        })()}
                     </div>
                 </div>
             </div>
@@ -14078,6 +13975,37 @@ Upload photos once, use them across all your listings.`,
         const competitorActivity = store.state.competitorActivity || [];
         const opportunities = store.state.marketOpportunities || [];
         const trendingTerms = store.state.trendingKeywords || [];
+        const comparisonRows = Array.isArray(store.state.crossPlatformComparison)
+            ? store.state.crossPlatformComparison
+            : Array.isArray(store.state.platformComparison)
+              ? store.state.platformComparison
+              : [];
+        const comparisonPlatforms = Array.isArray(store.state.crossPlatformComparisonPlatforms)
+            ? store.state.crossPlatformComparisonPlatforms
+            : Array.isArray(store.state.platformComparisonPlatforms)
+              ? store.state.platformComparisonPlatforms
+              : comparisonRows[0]?.values && !Array.isArray(comparisonRows[0].values)
+                ? Object.keys(comparisonRows[0].values)
+                : [];
+        const hasPlatformComparison = comparisonRows.length > 0 && comparisonPlatforms.length > 0;
+        const opportunityScore = Number(marketTrends.opportunity);
+        const hasOpportunityScore = Number.isFinite(opportunityScore) && opportunityScore > 0;
+        const opportunityDisplay = hasOpportunityScore ? `${opportunityScore}%` : '—';
+        const opportunityLabel = !hasOpportunityScore
+            ? 'No data yet'
+            : opportunityScore >= 70
+              ? 'High potential'
+              : opportunityScore >= 40
+                ? 'Moderate potential'
+                : 'Low potential';
+        const opportunityColor = !hasOpportunityScore
+            ? 'var(--gray-500)'
+            : opportunityScore >= 70
+              ? 'var(--success)'
+              : opportunityScore >= 40
+                ? 'var(--warning)'
+                : 'var(--gray-600)';
+        const marketTrendBadge = rawInsights.length > 0 || hasOpportunityScore ? 'Snapshot' : 'No data';
 
         const lastUpdated = store.state.marketIntelLastUpdated
             ? new Date(store.state.marketIntelLastUpdated)
@@ -14145,11 +14073,29 @@ Upload photos once, use them across all your listings.`,
                         const satDisplay = avgSaturation !== null ? avgSaturation + '%' : 'N/A';
                         const satDash =
                             avgSaturation !== null ? Math.round(220 * (avgSaturation / 100)) + ' 220' : '0 220';
+                        const satLabel =
+                            avgSaturation === null
+                                ? 'No data yet'
+                                : avgSaturation >= 75
+                                  ? 'Highly saturated'
+                                  : avgSaturation >= 40
+                                    ? 'Moderately saturated'
+                                    : 'Low saturation';
+                        const satColor =
+                            avgSaturation === null
+                                ? 'var(--gray-400)'
+                                : avgSaturation >= 75
+                                  ? 'var(--danger-600)'
+                                  : avgSaturation >= 40
+                                    ? 'var(--warning)'
+                                    : 'var(--success)';
                         return (
                             '<div style="position: relative; width: 80px; height: 80px; margin: 0 auto 8px;">' +
                             '<svg viewBox="0 0 80 80" style="width: 100%; height: 100%;">' +
                             '<circle cx="40" cy="40" r="35" fill="none" stroke="var(--gray-200)" stroke-width="6"></circle>' +
-                            '<circle cx="40" cy="40" r="35" fill="none" stroke="var(--warning)" stroke-width="6" stroke-dasharray="' +
+                            '<circle cx="40" cy="40" r="35" fill="none" stroke="' +
+                            satColor +
+                            '" stroke-width="6" stroke-dasharray="' +
                             satDash +
                             '" transform="rotate(-90 40 40)"></circle>' +
                             '</svg>' +
@@ -14161,8 +14107,10 @@ Upload photos once, use them across all your listings.`,
                             '</div>' +
                             '</div>' +
                             '</div>' +
-                            '<div style="font-size: 11px; color: var(--warning);">' +
-                            (avgSaturation !== null ? 'Moderately Saturated' : 'No data yet') +
+                            '<div style="font-size: 11px; color: ' +
+                            satColor +
+                            ';">' +
+                            satLabel +
                             '</div>'
                         );
                     })()}
@@ -14179,8 +14127,8 @@ Upload photos once, use them across all your listings.`,
                 </div>
                 <div class="card" style="padding: 20px; text-align: center;">
                     <div style="font-size: 13px; color: var(--gray-600); margin-bottom: 8px;">Market Opportunity</div>
-                    <div style="font-size: 36px; font-weight: 700; color: ${marketTrends.opportunity > 0 ? 'var(--success)' : 'var(--gray-500)'};">${marketTrends.opportunity > 0 ? marketTrends.opportunity + '%' : '—'}</div>
-                    <div style="font-size: 11px; color: var(--gray-400); margin-top: 4px;">${marketTrends.opportunity > 0 ? '↑ High potential' : 'No data yet'}</div>
+                    <div style="font-size: 36px; font-weight: 700; color: ${opportunityColor};">${opportunityDisplay}</div>
+                    <div style="font-size: 11px; color: ${opportunityColor}; margin-top: 4px;">${opportunityLabel}</div>
                 </div>
             </div>
 
@@ -14189,7 +14137,7 @@ Upload photos once, use them across all your listings.`,
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Market Trends Radar</h2>
-                        <span class="badge badge-primary" style="font-size: 11px;">Live</span>
+                        <span class="badge badge-outline" style="font-size: 11px;">${marketTrendBadge}</span>
                     </div>
                     <div class="card-body">
                         ${marketTrendsRadar.render(marketTrends)}
@@ -14455,7 +14403,7 @@ Upload photos once, use them across all your listings.`,
                                                         </div>
                                                         <div>
                                                             <strong>${escapeHtml(competitor.name || 'Competitor')}</strong>
-                                                            <div style="font-size: 11px; color: var(--gray-500);">Since ${competitor.tracked_since || 'Jan 2024'}</div>
+                                                            <div style="font-size: 11px; color: var(--gray-500);">${competitor.tracked_since ? `Since ${escapeHtml(String(competitor.tracked_since))}` : 'Tracking date unavailable'}</div>
                                                         </div>
                                                     </div>
                                                 </td>
@@ -14691,7 +14639,7 @@ Upload photos once, use them across all your listings.`,
                             <p style="font-size: 13px; color: var(--gray-600); margin-bottom: 16px;">Enter item details to get AI-powered pricing recommendations based on market data.</p>
                             <div class="form-group">
                                 <label class="form-label" for="price-suggest-title">Item Title</label>
-                                <input aria-label="Vintage Sony Walkman" type="text" class="form-input" id="price-suggest-title" placeholder="e.g., Vintage Sony Walkman">
+                                <input aria-label="Item Title" type="text" class="form-input" id="price-suggest-title" placeholder="e.g., Vintage Sony Walkman">
                             </div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                                 <div class="form-group">
@@ -14837,39 +14785,50 @@ Upload photos once, use them across all your listings.`,
                     <h2 class="card-title">${components.icon('layers', 18)} Cross-Platform Comparison</h2>
                 </div>
                 <div class="card-body">
+                    ${
+                        hasPlatformComparison
+                            ? `
                     <div style="overflow-x: auto;">
                         <table class="table">
                             <thead>
                                 <tr>
                                     <th>Metric</th>
-                                    <th style="text-align: center;">Poshmark</th>
-                                    <th style="text-align: center;">eBay</th>
-                                    <th style="text-align: center;">Mercari</th>
-                                    <th style="text-align: center;">Depop</th>
-                                    <th style="text-align: center;">Grailed</th>
+                                    ${comparisonPlatforms
+                                        .map((platform) => `<th style="text-align: center;">${escapeHtml(String(platform))}</th>`)
+                                        .join('')}
                                 </tr>
                             </thead>
                             <tbody>
-                                ${[
-                                    { metric: 'Avg Selling Price', values: ['$38', '$45', '$32', '$28', '$65'] },
-                                    { metric: 'Days to Sell', values: ['7.2d', '5.8d', '6.4d', '8.1d', '9.3d'] },
-                                    { metric: 'Sell-Through Rate', values: ['62%', '71%', '58%', '55%', '48%'] },
-                                    { metric: 'Seller Fees', values: ['20%', '13%', '10%', '10%', '9%'] },
-                                    { metric: 'Active Listings', values: ['8.2M', '12.5M', '4.1M', '3.8M', '1.2M'] },
-                                    { metric: 'Best For', values: ["Women's", 'All', 'Budget', 'Trendy', 'Luxury'] },
-                                ]
-                                    .map(
-                                        (row) => `
+                                ${comparisonRows
+                                    .map((row) => {
+                                        const values = row.values || {};
+                                        return `
                                     <tr>
-                                        <td style="font-weight: 600; font-size: 13px;">${row.metric}</td>
-                                        ${row.values.map((v) => `<td style="text-align: center; font-size: 13px;">${v}</td>`).join('')}
+                                        <td style="font-weight: 600; font-size: 13px;">${escapeHtml(String(row.metric || 'Metric'))}</td>
+                                        ${comparisonPlatforms
+                                            .map((platform, index) => {
+                                                const value = Array.isArray(values)
+                                                    ? values[index]
+                                                    : (values[platform] ?? values[String(platform).toLowerCase()]);
+                                                return `<td style="text-align: center; font-size: 13px;">${escapeHtml(String(value ?? 'N/A'))}</td>`;
+                                            })
+                                            .join('')}
                                     </tr>
-                                `,
-                                    )
+                                `;
+                                    })
                                     .join('')}
                             </tbody>
                         </table>
                     </div>
+                    `
+                            : `
+                    <div class="empty-state compact" style="padding: 24px; text-align: center;">
+                        <div class="empty-state-icon">${components.icon('layers', 32)}</div>
+                        <h2 class="empty-state-title">No platform comparison yet</h2>
+                        <p class="empty-state-description">Platform comparison data will appear here after market metrics are available.</p>
+                    </div>
+                    `
+                    }
                 </div>
             </div>
         `;
@@ -15168,33 +15127,8 @@ Upload photos once, use them across all your listings.`,
         const _helpSearchQuery = store.state.helpSearchQuery || '';
         const _helpFAQs = store.state.helpFAQs || [];
         const _helpArticles = store.state.helpArticles || [];
-        const supportStats = store.state.supportStats || { articlesRead: 0, ticketsOpen: 0, avgResponseTime: '< 24h' };
-        const popularArticles = store.state.popularArticles || [
-            {
-                id: 'art_getting_started_cross_listing',
-                slug: 'art_getting_started_cross_listing',
-                title: 'Getting Started with Cross-Listing',
-                category: 'Basics',
-            },
-            {
-                id: 'art_connect_ebay_account',
-                slug: 'art_connect_ebay_account',
-                title: 'How to Connect Your eBay Account',
-                category: 'Integrations',
-            },
-            {
-                id: 'art_analytics_dashboard',
-                slug: 'art_analytics_dashboard',
-                title: 'Understanding Analytics Dashboard',
-                category: 'Analytics',
-            },
-            {
-                id: 'art_setting_up_automations',
-                slug: 'art_setting_up_automations',
-                title: 'Setting Up Automations',
-                category: 'Automations',
-            },
-        ];
+        const supportStats = store.state.supportStats || {};
+        const popularArticles = Array.isArray(store.state.popularArticles) ? store.state.popularArticles : [];
         const gettingStartedSteps = [
             { id: 1, title: 'Create your account', completed: true },
             { id: 2, title: 'Add your first item', completed: (store.state.inventoryItems || []).length > 0 },
@@ -15203,6 +15137,14 @@ Upload photos once, use them across all your listings.`,
             { id: 5, title: 'Record your first sale', completed: (store.state.sales || []).length > 0 },
         ];
         const completedSteps = gettingStartedSteps.filter((s) => s.completed).length;
+        const liveChatStatus = String(supportStats.liveChatStatus || supportStats.live_chat_status || '').toLowerCase();
+        const liveChatStatusLabel =
+            liveChatStatus === 'online' ? 'Online' : liveChatStatus === 'offline' ? 'Offline' : 'Availability unavailable';
+        const liveChatStatusColor =
+            liveChatStatus === 'online' ? 'var(--success)' : liveChatStatus === 'offline' ? 'var(--warning)' : 'var(--gray-500)';
+        const articlesRead = supportStats.articlesRead ?? supportStats.articles_read ?? 'N/A';
+        const ticketsOpen = supportStats.ticketsOpen ?? supportStats.tickets_open ?? 'N/A';
+        const avgResponseTime = supportStats.avgResponseTime ?? supportStats.avg_response_time ?? 'N/A';
 
         return `
             <div class="page-header">
@@ -15222,7 +15164,7 @@ Upload photos once, use them across all your listings.`,
                         </svg>
                     </div>
                     <div class="help-stat-info">
-                        <span class="help-stat-value">${supportStats.articlesRead}</span>
+                        <span class="help-stat-value">${articlesRead}</span>
                         <span class="help-stat-label">Articles Read</span>
                     </div>
                 </div>
@@ -15233,7 +15175,7 @@ Upload photos once, use them across all your listings.`,
                         </svg>
                     </div>
                     <div class="help-stat-info">
-                        <span class="help-stat-value">${supportStats.ticketsOpen}</span>
+                        <span class="help-stat-value">${ticketsOpen}</span>
                         <span class="help-stat-label">Open Tickets</span>
                     </div>
                 </div>
@@ -15245,7 +15187,7 @@ Upload photos once, use them across all your listings.`,
                         </svg>
                     </div>
                     <div class="help-stat-info">
-                        <span class="help-stat-value">${supportStats.avgResponseTime}</span>
+                        <span class="help-stat-value">${avgResponseTime}</span>
                         <span class="help-stat-label">Avg Response</span>
                     </div>
                 </div>
@@ -15413,9 +15355,18 @@ Upload photos once, use them across all your listings.`,
                 </div>
                 <div class="card-body">
                     <div class="popular-articles-grid">
-                        ${popularArticles
-                            .map(
-                                (article) => `
+                        ${
+                            popularArticles.length === 0
+                                ? `
+                            <div class="empty-state compact" style="grid-column: 1 / -1; padding: 24px; text-align: center;">
+                                <div class="empty-state-icon">${components.icon('file-text', 32)}</div>
+                                <h2 class="empty-state-title">No popular articles yet</h2>
+                                <p class="empty-state-description">Popular articles will appear here after article activity is available.</p>
+                            </div>
+                        `
+                                : popularArticles
+                                      .map(
+                                          (article) => `
                             <button class="popular-article-card" onclick="modals.viewArticle('${article.slug || article.id}')">
                                 <div class="article-category">${article.category}</div>
                                 <h3 class="article-title">${escapeHtml(article.title)}</h3>
@@ -15432,8 +15383,9 @@ Upload photos once, use them across all your listings.`,
                                 }
                             </button>
                         `,
-                            )
-                            .join('')}
+                                      )
+                                      .join('')
+                        }
                     </div>
                 </div>
             </div>
@@ -15475,7 +15427,7 @@ Upload photos once, use them across all your listings.`,
                             </div>
                             <h3>Live Chat</h3>
                             <p>Chat with our support team in real-time</p>
-                            <span class="response-time" style="color: var(--success);">Online now</span>
+                            <span class="response-time" style="color: ${liveChatStatusColor};">${liveChatStatusLabel}</span>
                         </div>
                         <div class="contact-method-card">
                             <div class="contact-method-icon">

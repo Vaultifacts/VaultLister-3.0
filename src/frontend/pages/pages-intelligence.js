@@ -629,40 +629,16 @@ Object.assign(pages, {
                 </div>
                 <div class="card-body">
                     ${(() => {
-                        const alerts = store.state.trendAlerts || [
-                            {
-                                category: 'Vintage Denim',
-                                type: 'price_up',
-                                change: '+18%',
-                                message: 'Prices rising in vintage denim category. Consider listing vintage items now.',
-                                severity: 'success',
-                                time: '2 hours ago',
-                            },
-                            {
-                                category: 'Designer Bags',
-                                type: 'demand_spike',
-                                change: '+25%',
-                                message: 'Demand spike detected for designer bags on eBay and Poshmark.',
-                                severity: 'info',
-                                time: '5 hours ago',
-                            },
-                            {
-                                category: 'Athletic Shoes',
-                                type: 'price_drop',
-                                change: '-12%',
-                                message: 'Market prices declining for athletic shoes. Hold off on new acquisitions.',
-                                severity: 'warning',
-                                time: '1 day ago',
-                            },
-                            {
-                                category: 'Band Tees',
-                                type: 'saturation',
-                                change: '+40% listings',
-                                message: 'Market becoming saturated with band tees. Differentiate with rare finds.',
-                                severity: 'error',
-                                time: '2 days ago',
-                            },
-                        ];
+                        const alerts = Array.isArray(store.state.trendAlerts) ? store.state.trendAlerts : [];
+                        if (alerts.length === 0) {
+                            return `
+                                <div class="empty-state compact" style="padding: 24px; text-align: center;">
+                                    <div class="empty-state-icon">${components.icon('bell', 32)}</div>
+                                    <h2 class="empty-state-title">No trend alerts yet</h2>
+                                    <p class="empty-state-description">Trend alerts will appear here once market data identifies a real change.</p>
+                                </div>
+                            `;
+                        }
                         return `
                             <div class="space-y-3">
                                 ${alerts
@@ -679,18 +655,21 @@ Object.assign(pages, {
                                             price_drop: 'trending-down',
                                             saturation: 'alert-triangle',
                                         };
+                                        const severity = colors[alert.severity] ? alert.severity : 'info';
+                                        const color = colors[severity];
+                                        const icon = icons[alert.type] || 'bell';
                                         return `
-                                        <div style="display: flex; gap: 12px; padding: 12px; border-radius: 10px; border: 1px solid ${colors[alert.severity]}30; background: ${colors[alert.severity]}08;">
-                                            <div style="width: 36px; height: 36px; border-radius: 8px; background: ${colors[alert.severity]}15; display: flex; align-items: center; justify-content: center; color: ${colors[alert.severity]}; flex-shrink: 0;">
-                                                ${components.icon(icons[alert.type] || 'bell', 18)}
+                                        <div style="display: flex; gap: 12px; padding: 12px; border-radius: 10px; border: 1px solid ${color}30; background: ${color}08;">
+                                            <div style="width: 36px; height: 36px; border-radius: 8px; background: ${color}15; display: flex; align-items: center; justify-content: center; color: ${color}; flex-shrink: 0;">
+                                                ${components.icon(icon, 18)}
                                             </div>
                                             <div style="flex: 1;">
                                                 <div class="flex items-center gap-2 mb-1">
-                                                    <span class="font-medium text-sm">${escapeHtml(alert.category)}</span>
-                                                    <span class="badge badge-sm" style="background: ${colors[alert.severity]}20; color: ${colors[alert.severity]};">${alert.change}</span>
+                                                    <span class="font-medium text-sm">${escapeHtml(String(alert.category || 'Market update'))}</span>
+                                                    ${alert.change ? `<span class="badge badge-sm" style="background: ${color}20; color: ${color};">${escapeHtml(String(alert.change))}</span>` : ''}
                                                 </div>
-                                                <p class="text-xs text-gray-600">${escapeHtml(alert.message)}</p>
-                                                <span class="text-xs text-gray-400">${alert.time}</span>
+                                                <p class="text-xs text-gray-600">${escapeHtml(String(alert.message || ''))}</p>
+                                                ${alert.time ? `<span class="text-xs text-gray-400">${escapeHtml(String(alert.time))}</span>` : ''}
                                             </div>
                                         </div>
                                     `;
@@ -1001,6 +980,32 @@ Object.assign(pages, {
                 supplier_name: s.name,
                 supplier_id: s.id,
             }));
+        const toMetricNumber = (value) => {
+            const number = Number(value);
+            return Number.isFinite(number) ? number : null;
+        };
+        const firstMetric = (supplier, fields) => {
+            for (const field of fields) {
+                const value = toMetricNumber(supplier[field]);
+                if (value !== null) return value;
+            }
+            return null;
+        };
+        const averageMetric = (fields) => {
+            const values = displaySuppliers
+                .map((supplier) => firstMetric(supplier, fields))
+                .filter((value) => value !== null);
+            return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
+        };
+        const formatMetric = (value, suffix = '') => {
+            if (value === null) return 'N/A';
+            const rounded = Math.round(value * 10) / 10;
+            return `${Number.isInteger(rounded) ? rounded.toFixed(0) : rounded.toFixed(1)}${suffix}`;
+        };
+        const leadTimeDays = averageMetric(['lead_time_days']);
+        const deliveryDays = averageMetric(['avg_delivery_days']);
+        const onTimeDelivery = averageMetric(['on_time_delivery']);
+        const processingDays = averageMetric(['avg_processing_days', 'processing_days']);
 
         return `
             <div class="page-header">
@@ -1214,19 +1219,19 @@ Object.assign(pages, {
                 <div class="card-body">
                     <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px;">
                         <div style="text-align: center; padding: 16px; background: var(--gray-50); border-radius: 8px;">
-                            <div style="font-size: 28px; font-weight: 700; color: var(--primary-600);">4.2</div>
-                            <div style="font-size: 12px; color: var(--gray-500);">Avg Days to Ship</div>
+                            <div style="font-size: 28px; font-weight: 700; color: ${leadTimeDays === null ? 'var(--gray-500)' : 'var(--primary-600)'};">${formatMetric(leadTimeDays)}</div>
+                            <div style="font-size: 12px; color: var(--gray-500);">Avg Lead Time</div>
                         </div>
                         <div style="text-align: center; padding: 16px; background: var(--gray-50); border-radius: 8px;">
-                            <div style="font-size: 28px; font-weight: 700; color: var(--success);">7.8</div>
+                            <div style="font-size: 28px; font-weight: 700; color: ${deliveryDays === null ? 'var(--gray-500)' : 'var(--success)'};">${formatMetric(deliveryDays)}</div>
                             <div style="font-size: 12px; color: var(--gray-500);">Avg Days to Deliver</div>
                         </div>
                         <div style="text-align: center; padding: 16px; background: var(--gray-50); border-radius: 8px;">
-                            <div style="font-size: 28px; font-weight: 700; color: var(--warning);">92%</div>
+                            <div style="font-size: 28px; font-weight: 700; color: ${onTimeDelivery === null ? 'var(--gray-500)' : onTimeDelivery >= 90 ? 'var(--success)' : 'var(--warning)'};">${formatMetric(onTimeDelivery, '%')}</div>
                             <div style="font-size: 12px; color: var(--gray-500);">On-Time Rate</div>
                         </div>
                         <div style="text-align: center; padding: 16px; background: var(--gray-50); border-radius: 8px;">
-                            <div style="font-size: 28px; font-weight: 700; color: var(--gray-700);">1.3</div>
+                            <div style="font-size: 28px; font-weight: 700; color: ${processingDays === null ? 'var(--gray-500)' : 'var(--gray-700)'};">${formatMetric(processingDays)}</div>
                             <div style="font-size: 12px; color: var(--gray-500);">Avg Processing Days</div>
                         </div>
                     </div>
@@ -1293,53 +1298,82 @@ Object.assign(pages, {
                 </div>
                 <div class="card-body">
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
-                        ${displaySuppliers
-                            .slice(0, 6)
-                            .map((s) => {
-                                const contacts = s.contacts || [
-                                    {
-                                        name: s.name + ' Sales',
-                                        role: 'Sales Rep',
-                                        email: s.email || s.name.toLowerCase().replace(/\s/g, '') + '@example.com',
-                                        phone: s.phone || 'No phone on file',
-                                    },
-                                ];
-                                return contacts
-                                    .map(
-                                        (c) =>
-                                            '<div style="padding: 16px; background: var(--gray-50); border-radius: 8px; border: 1px solid var(--gray-200);">' +
-                                            '<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">' +
-                                            '<div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-100); color: var(--primary-600); display: flex; align-items: center; justify-content: center; font-weight: 600;">' +
-                                            (c.name || 'C')[0].toUpperCase() +
-                                            '</div>' +
-                                            '<div>' +
-                                            '<div style="font-weight: 600; font-size: 14px;">' +
-                                            escapeHtml(c.name) +
-                                            '</div>' +
-                                            '<div style="font-size: 12px; color: var(--gray-500);">' +
-                                            escapeHtml(c.role || 'Contact') +
-                                            ' &middot; ' +
-                                            escapeHtml(s.name) +
-                                            '</div>' +
-                                            '</div>' +
-                                            '</div>' +
-                                            '<div style="display: grid; gap: 6px; font-size: 12px;">' +
-                                            '<div style="display: flex; align-items: center; gap: 8px; color: var(--gray-600);">' +
-                                            components.icon('mail', 12) +
-                                            ' ' +
-                                            escapeHtml(c.email || '') +
-                                            '</div>' +
-                                            '<div style="display: flex; align-items: center; gap: 8px; color: var(--gray-600);">' +
-                                            components.icon('phone', 12) +
-                                            ' ' +
-                                            escapeHtml(c.phone || '') +
-                                            '</div>' +
-                                            '</div>' +
-                                            '</div>',
-                                    )
-                                    .join('');
-                            })
-                            .join('')}
+                        ${(() => {
+                            const supplierContacts = displaySuppliers
+                                .flatMap((supplier) => {
+                                    const contacts = Array.isArray(supplier.contacts) ? supplier.contacts : [];
+                                    const directContact =
+                                        supplier.contact_email || supplier.contact_phone || supplier.email || supplier.phone
+                                            ? [
+                                                  {
+                                                      name: supplier.name,
+                                                      role: 'Supplier',
+                                                      email: supplier.contact_email || supplier.email || '',
+                                                      phone: supplier.contact_phone || supplier.phone || '',
+                                                  },
+                                              ]
+                                            : [];
+                                    return (contacts.length > 0 ? contacts : directContact).map((contact) => ({
+                                        ...contact,
+                                        supplierName: supplier.name,
+                                    }));
+                                })
+                                .slice(0, 6);
+                            if (supplierContacts.length === 0) {
+                                return `
+                                    <div class="empty-state compact" style="grid-column: 1 / -1; padding: 24px; text-align: center;">
+                                        <div class="empty-state-icon">${components.icon('users', 32)}</div>
+                                        <h2 class="empty-state-title">No supplier contacts yet</h2>
+                                        <p class="empty-state-description">Contact details will appear here after they are added to a supplier.</p>
+                                    </div>
+                                `;
+                            }
+                            return supplierContacts
+                                .map((c) => {
+                                    const contactName = String(c.name || c.supplierName || 'Supplier contact');
+                                    const role = String(c.role || 'Contact');
+                                    const supplierName = String(c.supplierName || '');
+                                    const email = c.email ? String(c.email) : '';
+                                    const phone = c.phone ? String(c.phone) : '';
+                                    const contactMethods =
+                                        (email
+                                            ? '<div style="display: flex; align-items: center; gap: 8px; color: var(--gray-600);">' +
+                                              components.icon('mail', 12) +
+                                              ' ' +
+                                              escapeHtml(email) +
+                                              '</div>'
+                                            : '') +
+                                        (phone
+                                            ? '<div style="display: flex; align-items: center; gap: 8px; color: var(--gray-600);">' +
+                                              components.icon('phone', 12) +
+                                              ' ' +
+                                              escapeHtml(phone) +
+                                              '</div>'
+                                            : '');
+                                    return (
+                                        '<div style="padding: 16px; background: var(--gray-50); border-radius: 8px; border: 1px solid var(--gray-200);">' +
+                                        '<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">' +
+                                        '<div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-100); color: var(--primary-600); display: flex; align-items: center; justify-content: center; font-weight: 600;">' +
+                                        escapeHtml(contactName[0].toUpperCase()) +
+                                        '</div>' +
+                                        '<div>' +
+                                        '<div style="font-weight: 600; font-size: 14px;">' +
+                                        escapeHtml(contactName) +
+                                        '</div>' +
+                                        '<div style="font-size: 12px; color: var(--gray-500);">' +
+                                        escapeHtml(role) +
+                                        (supplierName ? ' &middot; ' + escapeHtml(supplierName) : '') +
+                                        '</div>' +
+                                        '</div>' +
+                                        '</div>' +
+                                        '<div style="display: grid; gap: 6px; font-size: 12px;">' +
+                                        (contactMethods || '<div style="color: var(--gray-500);">No contact method on file</div>') +
+                                        '</div>' +
+                                        '</div>'
+                                    );
+                                })
+                                .join('');
+                        })()}
                     </div>
                 </div>
             </div>
@@ -1533,6 +1567,37 @@ Object.assign(pages, {
         const competitorActivity = store.state.competitorActivity || [];
         const opportunities = store.state.marketOpportunities || [];
         const trendingTerms = store.state.trendingKeywords || [];
+        const comparisonRows = Array.isArray(store.state.crossPlatformComparison)
+            ? store.state.crossPlatformComparison
+            : Array.isArray(store.state.platformComparison)
+              ? store.state.platformComparison
+              : [];
+        const comparisonPlatforms = Array.isArray(store.state.crossPlatformComparisonPlatforms)
+            ? store.state.crossPlatformComparisonPlatforms
+            : Array.isArray(store.state.platformComparisonPlatforms)
+              ? store.state.platformComparisonPlatforms
+              : comparisonRows[0]?.values && !Array.isArray(comparisonRows[0].values)
+                ? Object.keys(comparisonRows[0].values)
+                : [];
+        const hasPlatformComparison = comparisonRows.length > 0 && comparisonPlatforms.length > 0;
+        const opportunityScore = Number(marketTrends.opportunity);
+        const hasOpportunityScore = Number.isFinite(opportunityScore) && opportunityScore > 0;
+        const opportunityDisplay = hasOpportunityScore ? `${opportunityScore}%` : '—';
+        const opportunityLabel = !hasOpportunityScore
+            ? 'No data yet'
+            : opportunityScore >= 70
+              ? 'High potential'
+              : opportunityScore >= 40
+                ? 'Moderate potential'
+                : 'Low potential';
+        const opportunityColor = !hasOpportunityScore
+            ? 'var(--gray-500)'
+            : opportunityScore >= 70
+              ? 'var(--success)'
+              : opportunityScore >= 40
+                ? 'var(--warning)'
+                : 'var(--gray-600)';
+        const marketTrendBadge = rawInsights.length > 0 || hasOpportunityScore ? 'Snapshot' : 'No data';
 
         const lastUpdated = store.state.marketIntelLastUpdated
             ? new Date(store.state.marketIntelLastUpdated)
@@ -1600,11 +1665,29 @@ Object.assign(pages, {
                         const satDisplay = avgSaturation !== null ? avgSaturation + '%' : 'N/A';
                         const satDash =
                             avgSaturation !== null ? Math.round(220 * (avgSaturation / 100)) + ' 220' : '0 220';
+                        const satLabel =
+                            avgSaturation === null
+                                ? 'No data yet'
+                                : avgSaturation >= 75
+                                  ? 'Highly saturated'
+                                  : avgSaturation >= 40
+                                    ? 'Moderately saturated'
+                                    : 'Low saturation';
+                        const satColor =
+                            avgSaturation === null
+                                ? 'var(--gray-400)'
+                                : avgSaturation >= 75
+                                  ? 'var(--danger-600)'
+                                  : avgSaturation >= 40
+                                    ? 'var(--warning)'
+                                    : 'var(--success)';
                         return (
                             '<div style="position: relative; width: 80px; height: 80px; margin: 0 auto 8px;">' +
                             '<svg viewBox="0 0 80 80" style="width: 100%; height: 100%;">' +
                             '<circle cx="40" cy="40" r="35" fill="none" stroke="var(--gray-200)" stroke-width="6"></circle>' +
-                            '<circle cx="40" cy="40" r="35" fill="none" stroke="var(--warning)" stroke-width="6" stroke-dasharray="' +
+                            '<circle cx="40" cy="40" r="35" fill="none" stroke="' +
+                            satColor +
+                            '" stroke-width="6" stroke-dasharray="' +
                             satDash +
                             '" transform="rotate(-90 40 40)"></circle>' +
                             '</svg>' +
@@ -1616,8 +1699,10 @@ Object.assign(pages, {
                             '</div>' +
                             '</div>' +
                             '</div>' +
-                            '<div style="font-size: 11px; color: var(--warning);">' +
-                            (avgSaturation !== null ? 'Moderately Saturated' : 'No data yet') +
+                            '<div style="font-size: 11px; color: ' +
+                            satColor +
+                            ';">' +
+                            satLabel +
                             '</div>'
                         );
                     })()}
@@ -1634,8 +1719,8 @@ Object.assign(pages, {
                 </div>
                 <div class="card" style="padding: 20px; text-align: center;">
                     <div style="font-size: 13px; color: var(--gray-600); margin-bottom: 8px;">Market Opportunity</div>
-                    <div style="font-size: 36px; font-weight: 700; color: var(--success);">${marketTrends.opportunity}%</div>
-                    <div style="font-size: 11px; color: var(--success); margin-top: 4px;">↑ High potential</div>
+                    <div style="font-size: 36px; font-weight: 700; color: ${opportunityColor};">${opportunityDisplay}</div>
+                    <div style="font-size: 11px; color: ${opportunityColor}; margin-top: 4px;">${opportunityLabel}</div>
                 </div>
             </div>
 
@@ -1644,7 +1729,7 @@ Object.assign(pages, {
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Market Trends Radar</h2>
-                        <span class="badge badge-primary" style="font-size: 11px;">Live</span>
+                        <span class="badge badge-outline" style="font-size: 11px;">${marketTrendBadge}</span>
                     </div>
                     <div class="card-body">
                         ${marketTrendsRadar.render(marketTrends)}
@@ -1910,7 +1995,7 @@ Object.assign(pages, {
                                                         </div>
                                                         <div>
                                                             <strong>${escapeHtml(competitor.name || 'Competitor')}</strong>
-                                                            <div style="font-size: 11px; color: var(--gray-500);">Since ${competitor.tracked_since || 'Jan 2024'}</div>
+                                                            <div style="font-size: 11px; color: var(--gray-500);">${competitor.tracked_since ? `Since ${escapeHtml(String(competitor.tracked_since))}` : 'Tracking date unavailable'}</div>
                                                         </div>
                                                     </div>
                                                 </td>
@@ -2292,39 +2377,50 @@ Object.assign(pages, {
                     <h2 class="card-title">${components.icon('layers', 18)} Cross-Platform Comparison</h2>
                 </div>
                 <div class="card-body">
+                    ${
+                        hasPlatformComparison
+                            ? `
                     <div style="overflow-x: auto;">
                         <table class="table">
                             <thead>
                                 <tr>
                                     <th>Metric</th>
-                                    <th style="text-align: center;">Poshmark</th>
-                                    <th style="text-align: center;">eBay</th>
-                                    <th style="text-align: center;">Mercari</th>
-                                    <th style="text-align: center;">Depop</th>
-                                    <th style="text-align: center;">Grailed</th>
+                                    ${comparisonPlatforms
+                                        .map((platform) => `<th style="text-align: center;">${escapeHtml(String(platform))}</th>`)
+                                        .join('')}
                                 </tr>
                             </thead>
                             <tbody>
-                                ${[
-                                    { metric: 'Avg Selling Price', values: ['$38', '$45', '$32', '$28', '$65'] },
-                                    { metric: 'Days to Sell', values: ['7.2d', '5.8d', '6.4d', '8.1d', '9.3d'] },
-                                    { metric: 'Sell-Through Rate', values: ['62%', '71%', '58%', '55%', '48%'] },
-                                    { metric: 'Seller Fees', values: ['20%', '13%', '10%', '10%', '9%'] },
-                                    { metric: 'Active Listings', values: ['8.2M', '12.5M', '4.1M', '3.8M', '1.2M'] },
-                                    { metric: 'Best For', values: ["Women's", 'All', 'Budget', 'Trendy', 'Luxury'] },
-                                ]
-                                    .map(
-                                        (row) => `
+                                ${comparisonRows
+                                    .map((row) => {
+                                        const values = row.values || {};
+                                        return `
                                     <tr>
-                                        <td style="font-weight: 600; font-size: 13px;">${row.metric}</td>
-                                        ${row.values.map((v) => `<td style="text-align: center; font-size: 13px;">${v}</td>`).join('')}
+                                        <td style="font-weight: 600; font-size: 13px;">${escapeHtml(String(row.metric || 'Metric'))}</td>
+                                        ${comparisonPlatforms
+                                            .map((platform, index) => {
+                                                const value = Array.isArray(values)
+                                                    ? values[index]
+                                                    : (values[platform] ?? values[String(platform).toLowerCase()]);
+                                                return `<td style="text-align: center; font-size: 13px;">${escapeHtml(String(value ?? 'N/A'))}</td>`;
+                                            })
+                                            .join('')}
                                     </tr>
-                                `,
-                                    )
+                                `;
+                                    })
                                     .join('')}
                             </tbody>
                         </table>
                     </div>
+                    `
+                            : `
+                    <div class="empty-state compact" style="padding: 24px; text-align: center;">
+                        <div class="empty-state-icon">${components.icon('layers', 32)}</div>
+                        <h2 class="empty-state-title">No platform comparison yet</h2>
+                        <p class="empty-state-description">Platform comparison data will appear here after market metrics are available.</p>
+                    </div>
+                    `
+                    }
                 </div>
             </div>
         `;

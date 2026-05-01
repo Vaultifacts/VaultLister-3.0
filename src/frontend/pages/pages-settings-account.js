@@ -2620,6 +2620,16 @@ Object.assign(pages, {
     plansBillingBody() {
         const user = store.state.user || {};
         const currentPlan = user.subscription_tier || 'free';
+        const planLabels = {
+            free: 'Free',
+            starter: 'Starter',
+            pro: 'Pro',
+            business: 'Business',
+        };
+        const currentPlanLabel =
+            planLabels[currentPlan] || currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1);
+        const currentPlanDescription =
+            currentPlan === 'free' ? 'Free plan with limited features' : `${currentPlanLabel} plan`;
         const period = store.state.billingPeriod || 'monthly';
         const PRICING = {
             starter: { monthly: 9, quarterly: 8.1, yearly: 7.2 },
@@ -2648,10 +2658,10 @@ Object.assign(pages, {
                     <div class="flex items-center justify-between">
                         <div>
                             <div class="flex items-center gap-3">
-                                <span class="badge badge-lg badge-success">${currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)}</span>
+                                <span class="badge badge-lg badge-success">${currentPlanLabel}</span>
                                 <span class="text-gray-500">Active</span>
                             </div>
-                            <p class="text-sm text-gray-600 mt-2">You're currently on the ${currentPlan === 'free' ? 'Free plan with limited features' : 'Pro plan with all features unlocked'}.</p>
+                            <p class="text-sm text-gray-600 mt-2">You're currently on the ${currentPlanDescription}.</p>
                         </div>
                         ${
                             currentPlan === 'free'
