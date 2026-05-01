@@ -16804,6 +16804,7 @@ const pageChunkMap = {
     transactions: 'sales',
     'report-builder': 'sales',
     'shipping-labels': 'sales',
+    reports: 'sales',
 
     // tools chunk
     checklist: 'tools',
@@ -16826,6 +16827,7 @@ const pageChunkMap = {
     settings: 'settings',
     account: 'settings',
     teams: 'settings',
+    'plans-billing': 'settings',
     affiliate: 'settings',
     notifications: 'settings',
     connections: 'settings',
@@ -16953,7 +16955,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '73cb0632';
+    const v = 'f22187bd';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function (resolve, reject) {
@@ -17070,6 +17072,8 @@ const router = {
         'feedback-suggestions': { target: 'help-support', tab: 'feedback' },
         'recently-deleted': { target: 'inventory', tab: 'trash' },
         'my-shops': { target: 'shops' },
+        billing: { target: 'plans-billing' },
+        upgrade: { target: 'plans-billing' },
         'terms-of-service': { target: 'help-support', tab: 'terms' },
         'privacy-policy': { target: 'help-support', tab: 'privacy' },
         // admin-metrics: standalone page (no alias — loads admin chunk directly)
@@ -17128,6 +17132,7 @@ const router = {
         // Handle settings deep-linking: #settings/account → set tab and use 'settings' as route.
         const settingsTabAliases = {
             profile: 'account',
+            billing: 'plans-billing',
         };
         const settingsStandaloneRoutes = {
             teams: 'teams',
@@ -17142,6 +17147,7 @@ const router = {
             'tools',
             'data',
             'affiliate',
+            'plans-billing',
         ];
         if (path.startsWith('settings/')) {
             const rawTab = path.split('/')[1];
@@ -17253,6 +17259,8 @@ const router = {
             'support-articles': 'Knowledge Base',
             tutorials: 'Tutorials & Guides',
             roadmap: 'Roadmap',
+            reports: 'Reports',
+            'plans-billing': 'Plans & Billing',
             changelog: 'Changelog',
             'receipt-parser': 'Receipts',
         };
