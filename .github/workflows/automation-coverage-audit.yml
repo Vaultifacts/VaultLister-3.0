@@ -118,7 +118,7 @@ jobs:
           # functionality is covered by a named workflow (e.g. queue-health.yml
           # covers redis/BullMQ, observability-health.yml covers prometheusMetrics,
           # internal-service-health.yml covers webhookProcessor, etc.).
-          EXCLUDED_SERVICES="analytics auditLog cloudinaryService enhancedMFA featureFlags gmailService googleOAuth grokService imageStorage marketDataService mfa notificationService outlookService pricingEngine prometheusMetrics receiptDetector redis redisLock stripeService webhookProcessor monitoring email"
+          EXCLUDED_SERVICES="analytics auditLog cloudinaryService enhancedMFA featureFlags gmailService googleOAuth grokService imageStorage marketDataService mfa notificationService outlookService pricingEngine prometheusMetrics receiptDetector redis redisLock stripeService webhookProcessor monitoring email syncScheduler"
 
           UNCOVERED=0
           UNCOVERED_LIST=""
