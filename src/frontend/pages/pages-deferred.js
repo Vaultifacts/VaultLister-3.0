@@ -1972,19 +1972,6 @@ Object.assign(pages, {
                     : ''
             }
 
-            <!-- Scheduler Health Widget -->
-            <div class="card mb-6" id="scheduler-health-widget-card">
-                <div class="card-header flex justify-between items-center">
-                    <h2 class="font-semibold">${components.icon('activity', 18)} Scheduler Health</h2>
-                    <button class="btn btn-ghost btn-sm" onclick="handlers.refreshSchedulerStatus()">
-                        ${components.icon('refresh-cw', 14)} Refresh
-                    </button>
-                </div>
-                <div class="card-body" id="scheduler-health-widget">
-                    ${renderSchedulerWidget(store.state.schedulerStatus)}
-                </div>
-            </div>
-
             <!-- Automations Hero Section -->
             <div class="automations-hero mb-6" hidden style="display: none;">
                 <div class="automations-hero-main">
@@ -2209,8 +2196,8 @@ Object.assign(pages, {
                 </div>
             </div>
 
-            <!-- Scheduling Settings -->
-            <div class="card mb-6">
+            <!-- Scheduling Settings - removed -->
+            <div class="card mb-6" hidden style="display:none;">
                 <div class="card-header">
                     <h2 class="card-title">Schedule Settings</h2>
                     <p class="text-sm text-gray-500">Configure when automations run</p>
@@ -4272,14 +4259,14 @@ const PLATFORM_DISPLAY_NAMES = {
     shopify: 'Shopify (CA)',
     grailed: 'Grailed (CA)',
     etsy: 'Etsy (CA)',
-    poshmark: 'Poshmark (U.S)',
-    ebay: 'eBay (U.S)',
-    depop: 'Depop (U.S)',
+    poshmark: 'Poshmark (CA)',
+    ebay: 'eBay (CA)',
+    depop: 'Depop (CA)',
     kijiji: 'Kijiji (CA)',
-    vinted: 'Vinted (U.S)',
-    mercari: 'Mercari (U.S)',
-    facebook: 'Facebook Marketplace',
-    whatnot: 'Whatnot',
+    vinted: 'Vinted (US)',
+    mercari: 'Mercari (US)',
+    facebook: 'Facebook Marketplace (CA)',
+    whatnot: 'Whatnot (CA)',
 };
 
 Object.assign(pages, {
@@ -4387,7 +4374,7 @@ Object.assign(pages, {
                                         ? `
                                     <circle cx="60" cy="60" r="54" fill="none" stroke="var(--gray-200)" stroke-width="8"/>
                                     <circle cx="60" cy="60" r="54" fill="none" stroke="var(--success-500)" stroke-width="8"
-                                        stroke-dasharray="${(connectedShops.length / (window.SUPPORTED_PLATFORMS || []).length) * 339} 339"
+                                        stroke-dasharray="${(connectedShops.length / (window.LAUNCH_PLATFORMS || new Set(['poshmark','ebay','depop','shopify','facebook','whatnot','grailed'])).size) * 339} 339"
                                         stroke-linecap="round" transform="rotate(-90 60 60)"/>
                                 `
                                         : `
@@ -4397,7 +4384,7 @@ Object.assign(pages, {
                             </svg>
                             <div class="connection-count">
                                 <span class="count-value">${connectedShops.length}</span>
-                                <span class="count-label">of ${(window.SUPPORTED_PLATFORMS || []).length}</span>
+                                <span class="count-label">of ${(window.LAUNCH_PLATFORMS || new Set(['poshmark','ebay','depop','shopify','facebook','whatnot','grailed'])).size}</span>
                             </div>
                         </div>
                         <div class="connection-info">
@@ -4663,7 +4650,7 @@ Object.assign(pages, {
 
                         const launchPlatforms =
                             window.LAUNCH_PLATFORMS ||
-                            new Set(['poshmark', 'ebay', 'depop', 'shopify', 'facebook', 'whatnot']);
+                            new Set(['poshmark', 'ebay', 'depop', 'shopify', 'facebook', 'whatnot', 'grailed']);
                         const isPostLaunch = !launchPlatforms.has(platform);
 
                         // Calculate status HTML before template literal
@@ -8985,7 +8972,7 @@ Object.assign(pages, {
         const gmailConfigured = providerById.get('gmail')?.configured !== false;
         const outlookConfigured = Boolean(providerById.get('outlook')?.configured);
         const launchPlatforms =
-            window.LAUNCH_PLATFORMS || new Set(['poshmark', 'ebay', 'depop', 'shopify', 'facebook', 'whatnot']);
+            window.LAUNCH_PLATFORMS || new Set(['poshmark', 'ebay', 'depop', 'shopify', 'facebook', 'whatnot', 'grailed']);
         const marketplacePlatforms = (window.SUPPORTED_PLATFORMS || []).map((platform) => ({
             id: platform.id,
             label: PLATFORM_DISPLAY_NAMES[platform.id] || platform.name,
