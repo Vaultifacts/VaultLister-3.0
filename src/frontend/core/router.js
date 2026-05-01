@@ -36,7 +36,6 @@ const pageChunkMap = {
     offers: 'sales',
     financials: 'sales',
     transactions: 'sales',
-    reports: 'sales',
     'report-builder': 'sales',
     'shipping-labels': 'sales',
 
@@ -61,7 +60,6 @@ const pageChunkMap = {
     settings: 'settings',
     account: 'settings',
     teams: 'settings',
-    'plans-billing': 'settings',
     affiliate: 'settings',
     notifications: 'settings',
     connections: 'settings',
@@ -306,8 +304,6 @@ const router = {
         'feedback-suggestions': { target: 'help-support', tab: 'feedback' },
         'recently-deleted': { target: 'inventory', tab: 'trash' },
         'my-shops': { target: 'shops' },
-        billing: { target: 'plans-billing' },
-        upgrade: { target: 'plans-billing' },
         'terms-of-service': { target: 'help-support', tab: 'terms' },
         'privacy-policy': { target: 'help-support', tab: 'privacy' },
         // admin-metrics: standalone page (no alias — loads admin chunk directly)
@@ -366,7 +362,6 @@ const router = {
         // Handle settings deep-linking: #settings/account → set tab and use 'settings' as route.
         const settingsTabAliases = {
             profile: 'account',
-            billing: 'plans-billing',
         };
         const settingsStandaloneRoutes = {
             teams: 'teams',
@@ -380,7 +375,6 @@ const router = {
             'integrations',
             'tools',
             'data',
-            'plans-billing',
             'affiliate',
         ];
         if (path.startsWith('settings/')) {
@@ -474,7 +468,6 @@ const router = {
             listings: 'Cross-Lister',
             analytics: 'Analytics',
             sales: 'Sales',
-            reports: 'Reports',
             calendar: 'Calendar',
             'image-bank': 'Image Bank',
             settings: 'Settings',
@@ -494,7 +487,6 @@ const router = {
             'support-articles': 'Knowledge Base',
             tutorials: 'Tutorials & Guides',
             roadmap: 'Roadmap',
-            'plans-billing': 'Plans & Billing',
             changelog: 'Changelog',
             'receipt-parser': 'Receipts',
         };

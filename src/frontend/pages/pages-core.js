@@ -1677,7 +1677,6 @@ const pages = {
         const removedAnalyticsTabs = new Set([
             'live',
             'performance',
-            'reports',
             'profitability',
             'sales-analytics',
             'purchases-analytics',
@@ -2984,9 +2983,7 @@ const pages = {
                           })()
                         : currentTab === 'performance'
                           ? performanceTabContent
-                          : currentTab === 'reports'
-                            ? `<div class="card"><div class="card-body text-center py-8"><p class="text-gray-500 mb-4">Detailed reports have moved to the Reports page.</p><button class="btn btn-primary" onclick="router.navigate('reports')">${components.icon('bar-chart', 16)} Go to Reports</button></div></div>`
-                            : currentTab === 'ratio-analysis'
+                          : currentTab === 'ratio-analysis'
                               ? ratioAnalysisTabContent
                               : currentTab === 'profitability'
                                 ? profitabilityTabContent

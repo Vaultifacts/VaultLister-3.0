@@ -3669,6 +3669,8 @@ Object.assign(pages, {
         `;
     },
 
+    // Whatnot Live Selling page,
+
     // Recently Deleted (Trash) Page,
 
     reportBuilder() {

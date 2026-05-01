@@ -615,9 +615,6 @@ Object.assign(pages, {
                         <p class="page-description">View and manage your listings across all platforms</p>
                     </div>
                     <div class="flex gap-2">
-                        <button class="btn btn-secondary" onclick="handlers.showCreateListingFolder()">
-                            ${components.icon('folder', 16)} New Folder
-                        </button>
                         <div class="dropdown">
                             <button aria-haspopup="menu" class="btn btn-primary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                                 ${components.icon('plus', 16)} Add New Listing(s)
@@ -637,12 +634,6 @@ Object.assign(pages, {
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="tabs mb-6" role="tablist">
-                    <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('listings')">Listings</button>
-                    <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('archived')">Archived</button>
-                    <button class="tab active" role="tab" aria-selected="true" onclick="handlers.switchListingsTab('templates')">Listing Templates</button>
-                    <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('recently-deleted')">Recently Deleted</button>
                 </div>
                 ${pages.templates()}
             `;
@@ -656,9 +647,6 @@ Object.assign(pages, {
                         <p class="page-description">View and manage your listings across all platforms</p>
                     </div>
                     <div class="flex gap-2">
-                        <button class="btn btn-secondary" onclick="handlers.showCreateListingFolder()">
-                            ${components.icon('folder', 16)} New Folder
-                        </button>
                         <div class="dropdown">
                             <button aria-haspopup="menu" class="btn btn-primary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                                 ${components.icon('plus', 16)} Add New Listing(s)
@@ -678,12 +666,6 @@ Object.assign(pages, {
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="tabs mb-6" role="tablist">
-                    <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('listings')">Listings</button>
-                    <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('archived')">Archived</button>
-                    <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('templates')">Listing Templates</button>
-                    <button class="tab active" role="tab" aria-selected="true" onclick="handlers.switchListingsTab('recently-deleted')">Recently Deleted</button>
                 </div>
                 ${pages.recentlyDeleted()}
             `;
@@ -698,12 +680,6 @@ Object.assign(pages, {
                         <h1 class="page-title">My Listings</h1>
                         <p class="page-description">Archived listings that have been removed from active selling</p>
                     </div>
-                </div>
-                <div class="tabs mb-6" role="tablist">
-                    <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('listings')">Listings</button>
-                    <button class="tab active" role="tab" aria-selected="true" onclick="handlers.switchListingsTab('archived')">Archived</button>
-                    <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('templates')">Listing Templates</button>
-                    <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('recently-deleted')">Recently Deleted</button>
                 </div>
                 <div class="card">
                     ${
@@ -926,15 +902,6 @@ Object.assign(pages, {
                         <p class="listings-hero-subtitle">View and manage your listings across all platforms</p>
                     </div>
                     <div class="listings-hero-actions">
-                        <button class="btn btn-secondary" onclick="handlers.showListingHealth()" title="Listing Health Score">
-                            ${components.icon('activity', 16)} Health
-                        </button>
-                        <button class="btn btn-secondary" onclick="handlers.showCreateListingFolder()">
-                            ${components.icon('folder', 16)} New Folder
-                        </button>
-                        <button class="btn btn-secondary" onclick="handlers.showPlatformFeeCalculator()" title="Platform Fee Calculator">
-                            ${components.icon('percent', 16)} Fees
-                        </button>
                         <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                             <button aria-haspopup="menu" class="btn btn-secondary" style="display:flex;align-items:center;gap:6px;">
                                 ${components.icon('upload', 16)} Import ${components.icon('chevron-down', 12)}
@@ -1060,12 +1027,6 @@ Object.assign(pages, {
                 </div>
             </div>
 
-            <div class="tabs mb-6" role="tablist">
-                <button class="tab ${currentListingsTab === 'listings' ? 'active' : ''}" role="tab" aria-selected="${currentListingsTab === 'listings' ? 'true' : 'false'}" onclick="handlers.switchListingsTab('listings')">Listings</button>
-                <button class="tab ${currentListingsTab === 'archived' ? 'active' : ''}" role="tab" aria-selected="${currentListingsTab === 'archived' ? 'true' : 'false'}" onclick="handlers.switchListingsTab('archived')">Archived</button>
-                <button class="tab ${currentListingsTab === 'templates' ? 'active' : ''}" role="tab" aria-selected="${currentListingsTab === 'templates' ? 'true' : 'false'}" onclick="handlers.switchListingsTab('templates')">Listing Templates</button>
-                <button class="tab ${currentListingsTab === 'recently-deleted' ? 'active' : ''}" role="tab" aria-selected="${currentListingsTab === 'recently-deleted' ? 'true' : 'false'}" onclick="handlers.switchListingsTab('recently-deleted')">Recently Deleted</button>
-            </div>
 
             <div class="card">
                 <div class="card-header">

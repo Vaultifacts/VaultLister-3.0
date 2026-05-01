@@ -325,14 +325,12 @@ const components = {
                         ],
                     },
                     { id: 'image-bank', label: 'Image Bank', icon: 'image' },
-                    { id: 'reports', label: 'Reports', icon: 'list' },
                 ],
             },
             {
                 section: '',
                 divider: true,
                 items: [
-                    { id: 'plans-billing', label: 'Plans & Billing', icon: 'dollar' },
                     { id: 'settings', label: 'Settings', icon: 'settings' },
                     ...(store.state.user?.is_admin ? [{ id: 'admin-metrics', label: 'Admin', icon: 'shield' }] : []),
                 ],
@@ -466,7 +464,6 @@ const components = {
                             <div class="sidebar-dropdown-menu">
                                 <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'integrations'});router.navigate('settings/integrations')">Integrations</button>
                                 <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'account'});router.navigate('settings/account')">Account</button>
-                                <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'plans-billing'});router.navigate('settings/plans-billing')">Subscription</button>
                                 <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'affiliate'});router.navigate('settings/affiliate')">Affiliate Program</button>
                                 <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'tools'});router.navigate('settings/tools')">Customization</button>
                                 <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'notifications'});router.navigate('settings/notifications')">Notifications</button>
@@ -550,7 +547,6 @@ const components = {
                         .join('')}
                 </nav>
                 <div class="sidebar-footer">
-                    ${store.getPlanTier() === 'free' && store.state.currentPage !== 'plans-billing' ? `<a href="#plans-billing" class="sidebar-upgrade-cta" style="display:block;padding:8px 12px;margin:8px 12px;background:var(--primary);color:white;border-radius:6px;text-align:center;text-decoration:none;font-size:13px;font-weight:500;">Upgrade to Pro</a>` : ''}
                     <div class="sidebar-user-menu dropdown">
                         <button class="sidebar-user-trigger"
                                 type="button"
@@ -643,7 +639,7 @@ const components = {
                             </button>
                         </div>
                     </div>
-                    <div class="user-menu dropdown" role="button" aria-haspopup="menu" aria-expanded="false" aria-label="User menu" onclick="const _open=this.classList.toggle('open'); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();const _open=this.classList.toggle('open');this.setAttribute('aria-expanded',_open);}">
+                    <div class="user-menu dropdown" role="button" tabindex="0" aria-haspopup="menu" aria-expanded="false" aria-label="User menu" onclick="const _open=this.classList.toggle('open'); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();const _open=this.classList.toggle('open');this.setAttribute('aria-expanded',_open);}">
                         <div class="user-avatar" aria-hidden="true">${store.state.user?.username?.[0]?.toUpperCase() || 'U'}</div>
                         <div class="dropdown-menu" aria-hidden="true">
                             <button class="dropdown-item" onclick="router.navigate('account')" aria-label="Account">
@@ -1114,7 +1110,6 @@ const components = {
             terms: { label: 'Terms of Service', section: '' },
             privacy: { label: 'Privacy Policy', section: '' },
             sales: { label: 'Sales', section: 'Sell' },
-            reports: { label: 'Reports', section: 'Manage' },
             'report-builder': { label: 'Report Builder', section: 'Manage' },
             heatmaps: { label: 'Heatmaps', section: 'Manage' },
             sourcing: { label: 'Sourcing Hub', section: 'Manage' },
@@ -1126,7 +1121,6 @@ const components = {
             'receipt-parser': { label: 'Receipt Parser', section: 'Manage' },
             'whatnot-live': { label: 'Whatnot Live', section: 'Manage' },
             'shipping-labels': { label: 'Shipping Labels', section: 'Sell' },
-            'plans-billing': { label: 'Plans & Billing', section: '' },
             account: { label: 'Account', section: '' },
             import: { label: 'Import', section: 'Manage' },
             'inventory-import': { label: 'Import', section: 'Manage' },

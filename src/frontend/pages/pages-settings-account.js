@@ -6,14 +6,14 @@ const PLATFORM_DISPLAY_NAMES = {
     shopify: 'Shopify (CA)',
     grailed: 'Grailed (CA)',
     etsy: 'Etsy (CA)',
-    poshmark: 'Poshmark (U.S)',
-    ebay: 'eBay (U.S)',
-    depop: 'Depop (U.S)',
+    poshmark: 'Poshmark (CA)',
+    ebay: 'eBay (CA)',
+    depop: 'Depop (CA)',
     kijiji: 'Kijiji (CA)',
-    vinted: 'Vinted (U.S)',
-    mercari: 'Mercari (U.S)',
-    facebook: 'Facebook Marketplace',
-    whatnot: 'Whatnot',
+    vinted: 'Vinted (US)',
+    mercari: 'Mercari (US)',
+    facebook: 'Facebook Marketplace (CA)',
+    whatnot: 'Whatnot (CA)',
 };
 
 Object.assign(pages, {
@@ -121,7 +121,7 @@ Object.assign(pages, {
                                         ? `
                                     <circle cx="60" cy="60" r="54" fill="none" stroke="var(--gray-200)" stroke-width="8"/>
                                     <circle cx="60" cy="60" r="54" fill="none" stroke="var(--success-500)" stroke-width="8"
-                                        stroke-dasharray="${(connectedShops.length / (window.SUPPORTED_PLATFORMS || []).length) * 339} 339"
+                                        stroke-dasharray="${(connectedShops.length / (window.LAUNCH_PLATFORMS || new Set(['poshmark','ebay','depop','shopify','facebook','whatnot','grailed'])).size) * 339} 339"
                                         stroke-linecap="round" transform="rotate(-90 60 60)"/>
                                 `
                                         : `
@@ -426,7 +426,7 @@ Object.assign(pages, {
                                   : 'var(--error)';
                         const launchPlatforms =
                             window.LAUNCH_PLATFORMS ||
-                            new Set(['poshmark', 'ebay', 'depop', 'shopify', 'facebook', 'whatnot']);
+                            new Set(['poshmark', 'ebay', 'depop', 'shopify', 'facebook', 'whatnot', 'grailed']);
                         const isPostLaunch = !launchPlatforms.has(platform);
                         const platformDisplayName =
                             PLATFORM_DISPLAY_NAMES[platform] || platform.charAt(0).toUpperCase() + platform.slice(1);
@@ -1356,7 +1356,7 @@ Object.assign(pages, {
                     const shopByPlatform = new Map(connectedShops.map((shop) => [shop.platform, shop]));
                     const launchPlatforms =
                         window.LAUNCH_PLATFORMS ||
-                        new Set(['poshmark', 'ebay', 'depop', 'shopify', 'facebook', 'whatnot']);
+                        new Set(['poshmark', 'ebay', 'depop', 'shopify', 'facebook', 'whatnot', 'grailed']);
                     const marketplacePlatforms = (window.SUPPORTED_PLATFORMS || []).map((platform) => ({
                         id: platform.id,
                         label: PLATFORM_DISPLAY_NAMES[platform.id] || platform.name,
@@ -3382,7 +3382,7 @@ Object.assign(pages, {
         const gmailConfigured = providerById.get('gmail')?.configured !== false;
         const outlookConfigured = Boolean(providerById.get('outlook')?.configured);
         const launchPlatforms =
-            window.LAUNCH_PLATFORMS || new Set(['poshmark', 'ebay', 'depop', 'shopify', 'facebook', 'whatnot']);
+            window.LAUNCH_PLATFORMS || new Set(['poshmark', 'ebay', 'depop', 'shopify', 'facebook', 'whatnot', 'grailed']);
         const marketplacePlatforms = (window.SUPPORTED_PLATFORMS || []).map((platform) => ({
             id: platform.id,
             label: PLATFORM_DISPLAY_NAMES[platform.id] || platform.name,

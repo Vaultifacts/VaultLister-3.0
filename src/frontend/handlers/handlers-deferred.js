@@ -22073,16 +22073,18 @@ Object.assign(handlers, {
         if (!cloudinaryConfigured) {
             // Cloudinary not set up — use local file, AI transformations unavailable
             store.setState({ photoEditorPreviewUrl: localUrl, photoEditorCloudinaryRequired: false });
-            if (store.state.currentPage && window.pages[store.state.currentPage]) {
-                renderApp(window.pages[store.state.currentPage]());
+            const _pgKey = (store.state.currentPage || '').replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+            if (_pgKey && window.pages[_pgKey]) {
+                renderApp(window.pages[_pgKey]());
             }
             return;
         }
         if (!photoEditorImage.cloudinary_public_id) {
             // Cloudinary configured but image not uploaded yet
             store.setState({ photoEditorPreviewUrl: localUrl, photoEditorCloudinaryRequired: true });
-            if (store.state.currentPage && window.pages[store.state.currentPage]) {
-                renderApp(window.pages[store.state.currentPage]());
+            const _pgKey = (store.state.currentPage || '').replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+            if (_pgKey && window.pages[_pgKey]) {
+                renderApp(window.pages[_pgKey]());
             }
             return;
         }
@@ -22113,8 +22115,9 @@ Object.assign(handlers, {
 
         store.setState({ photoEditorPreviewUrl: previewUrl });
         // Re-render to update preview
-        if (store.state.currentPage && window.pages[store.state.currentPage]) {
-            renderApp(window.pages[store.state.currentPage]());
+        const _pgKeyPreview = (store.state.currentPage || '').replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+        if (_pgKeyPreview && window.pages[_pgKeyPreview]) {
+            renderApp(window.pages[_pgKeyPreview]());
         }
     },
 
@@ -22130,8 +22133,9 @@ Object.assign(handlers, {
 
         store.setState({ photoEditorLoading: true });
         // Re-render to show loading state
-        if (store.state.currentPage && window.pages[store.state.currentPage]) {
-            renderApp(window.pages[store.state.currentPage]());
+        const _pgKeyLoad = (store.state.currentPage || '').replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+        if (_pgKeyLoad && window.pages[_pgKeyLoad]) {
+            renderApp(window.pages[_pgKeyLoad]());
         }
 
         try {
@@ -22166,8 +22170,9 @@ Object.assign(handlers, {
         } finally {
             store.setState({ photoEditorLoading: false });
             // Re-render to hide loading state
-            if (store.state.currentPage && window.pages[store.state.currentPage]) {
-                renderApp(window.pages[store.state.currentPage]());
+            const _pgKey = (store.state.currentPage || '').replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+            if (_pgKey && window.pages[_pgKey]) {
+                renderApp(window.pages[_pgKey]());
             }
         }
     },
