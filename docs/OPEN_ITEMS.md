@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-01T22:05:29.028Z
-Commit: 09b803ea
+Generated at: 2026-05-01T22:20:18.597Z
+Commit: f690bcb5
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -21,9 +21,9 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 | Competitor intelligence gaps | 862 |
 | Anti-detection/design gaps | 14 |
 | Open GitHub issues | 10 |
-| Explicit unchecked checklist items | 416 |
-| Repo-wide unchecked checkbox hits | 640 |
-| Repo-wide unchecked checkbox hits included | 416 |
+| Explicit unchecked checklist items | 413 |
+| Repo-wide unchecked checkbox hits | 637 |
+| Repo-wide unchecked checkbox hits included | 413 |
 | Repo-wide unchecked checkbox hits excluded or review-only | 224 |
 | Open-marker source files discovered | 214 |
 | Source TODO/FIXME hits | 14 |
@@ -63,7 +63,7 @@ Command: `rg -n "^\s*[-*]\s+\[ \]" <document targets> --glob "*.md"`
 | docs/superpowers/plans/2026-04-15-camoufox-migration.md | 28 | 40 | Included as explicit checklist backlog |
 | docs/superpowers/plans/2026-04-15-facebook-mock-test-env.md | 34 | 33 | Included as explicit checklist backlog |
 | docs/superpowers/plans/2026-04-15-facebook-safe-fixes.md | 20 | 28 | Included as explicit checklist backlog |
-| docs/superpowers/plans/2026-05-01-fake-data-audit.md | 57 | 21 | Included as explicit checklist backlog |
+| docs/superpowers/plans/2026-05-01-fake-data-audit.md | 54 | 21 | Included as explicit checklist backlog |
 | memory/project_automation_roadmap.md | 59 | 19 | Included as explicit checklist backlog |
 
 ### Open-Marker Source Coverage
@@ -1693,15 +1693,12 @@ Count: 20
 
 ### Plan: 2026-05-01-fake-data-audit.md
 
-Count: 57
+Count: 54
 
 | Item | Source |
 |---|---|
 | F58: financialGoals — create backend goals endpoint; call POST/PUT on save (handlers-deferred.js:15871, handlers-sales-orders.js:4435) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:21 |
-| F74: saveGoals() (revenue/sales/margin) — create backend goals endpoint or persist via existing settings route (handlers-deferred.js:4689-4700) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:22 |
 | F80: savePriceWatch() — create backend price-watch endpoint; remove Math.random() seed history (handlers-intelligence.js:1278-1295) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:28 |
-| F99: saveBudgetSettings() — create backend budget endpoint; persist monthlyBudget (handlers-sales-orders.js:1428-1433) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:29 |
-| F100: saveCompetitorAlerts() — create backend competitor-alerts endpoint (handlers-deferred.js:5775-5784) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:30 |
 | F57: Budget data (Financials page) — create backend /budget endpoint or load from sales data; currently always zero (pages-deferred.js:3516-3521) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:31 |
 | F66: AI model weights — include modelWeights in /predictions API calls; currently slider values have no effect (handlers-intelligence.js:144-151) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:32 |
 | F101: connectIntegration(platform) — call real OAuth or credential-store endpoint instead of setTimeout toast (handlers-settings-account.js:938-944) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:38 |

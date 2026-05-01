@@ -839,6 +839,7 @@ function parseAntiDetectionGaps() {
 }
 
 function parseUncheckedFile(filePath, group) {
+    // Only `- [ ] item` is open. `- [x]` = done, `- [~]` = won't fix / skipped. Both are ignored.
     if (!existsSync(filePath)) return [];
     const sourcePath = rel(filePath);
     return readLines(filePath)
