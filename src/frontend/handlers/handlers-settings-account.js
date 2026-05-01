@@ -4739,8 +4739,19 @@ Object.assign(handlers, {
         toast.success(`Drafts cleared (${draftKeys.length} drafts removed)`);
     },
 
-    regenerateAPIKey: function () {
-        toast.info('Developer API keys are not yet available. Check the roadmap for updates.');
+    regenerateAPIKey: async function () {
+        try {
+            const data = await api.request('POST', '/api/auth/api-key/regenerate');
+            store.setState({ apiKey: data.apiKey });
+            modals.show(`<div class="modal-header"><h2>New API Key Generated</h2></div>
+<div class="modal-body">
+  <p class="modal-subtitle">Copy this key now — it will not be shown again.</p>
+  <div class="api-key-display" style="font-family:monospace;background:var(--bg-secondary);padding:12px;border-radius:6px;word-break:break-all;margin:12px 0">${escapeHtml(data.apiKey)}</div>
+  <button class="btn btn-secondary" onclick="handlers.copyAPIKey();modals.close()">Copy &amp; Close</button>
+</div>`);
+        } catch (err) {
+            toast.error('Failed to regenerate API key');
+        }
     },
 
     copyAPIKey: function () {
@@ -5153,8 +5164,19 @@ Object.assign(handlers, {
 
     // Settings,
 
-    regenerateAPIKey() {
-        toast.info('Developer API keys are not yet available. Check the roadmap for updates.');
+    async regenerateAPIKey() {
+        try {
+            const data = await api.request('POST', '/api/auth/api-key/regenerate');
+            store.setState({ apiKey: data.apiKey });
+            modals.show(`<div class="modal-header"><h2>New API Key Generated</h2></div>
+<div class="modal-body">
+  <p class="modal-subtitle">Copy this key now — it will not be shown again.</p>
+  <div class="api-key-display" style="font-family:monospace;background:var(--bg-secondary);padding:12px;border-radius:6px;word-break:break-all;margin:12px 0">${escapeHtml(data.apiKey)}</div>
+  <button class="btn btn-secondary" onclick="handlers.copyAPIKey();modals.close()">Copy &amp; Close</button>
+</div>`);
+        } catch (err) {
+            toast.error('Failed to regenerate API key');
+        }
     },
 
     async copyAPIKey() {
