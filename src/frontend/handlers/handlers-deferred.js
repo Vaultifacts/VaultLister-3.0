@@ -6396,14 +6396,7 @@ Object.assign(handlers, {
     // Data Retention Handlers,
 
     updateRetentionSetting: function (setting, value) {
-        const currentSettings = store.state.dataRetention || {
-            completedOrders: '365',
-            soldItems: '180',
-            analyticsData: '90',
-            notifications: '30',
-            automationLogs: '30',
-            autoCleanup: false,
-        };
+        const currentSettings = store.state.dataRetention || {};
         store.setState({
             dataRetention: { ...currentSettings, [setting]: value },
         });
@@ -6414,6 +6407,7 @@ Object.assign(handlers, {
         const settings = store.state.dataRetention || {};
 
         const getDataCounts = (category, days) => {
+            if (!days) return null;
             if (days === 'forever') return 0;
             return '—';
         };
@@ -6421,33 +6415,34 @@ Object.assign(handlers, {
         const previewData = [
             {
                 category: 'Completed Orders',
-                count: getDataCounts('orders', settings.completedOrders || '365'),
-                retention: settings.completedOrders || '365',
+                count: getDataCounts('orders', settings.completedOrders),
+                retention: settings.completedOrders,
             },
             {
                 category: 'Sold Items',
-                count: getDataCounts('sold', settings.soldItems || '180'),
-                retention: settings.soldItems || '180',
+                count: getDataCounts('sold', settings.soldItems),
+                retention: settings.soldItems,
             },
             {
                 category: 'Analytics Records',
-                count: getDataCounts('analytics', settings.analyticsData || '90'),
-                retention: settings.analyticsData || '90',
+                count: getDataCounts('analytics', settings.analyticsData),
+                retention: settings.analyticsData,
             },
             {
                 category: 'Notifications',
-                count: getDataCounts('notifications', settings.notifications || '30'),
-                retention: settings.notifications || '30',
+                count: getDataCounts('notifications', settings.notifications),
+                retention: settings.notifications,
             },
             {
                 category: 'Automation Logs',
-                count: getDataCounts('logs', settings.automationLogs || '30'),
-                retention: settings.automationLogs || '30',
+                count: getDataCounts('logs', settings.automationLogs),
+                retention: settings.automationLogs,
             },
         ];
 
-        const totalItems = previewData.reduce((sum, d) => sum + d.count, 0);
-        const formatRetention = (value) => (value === 'forever' ? 'Keep forever' : value + ' days');
+        const totalItems = previewData.reduce((sum, d) => sum + (Number.isFinite(d.count) ? d.count : 0), 0);
+        const formatRetention = (value) => (!value ? 'Not configured' : value === 'forever' ? 'Keep forever' : value + ' days');
+        const formatCleanupCount = (count) => (count === null || count === '—' ? '—' : count + ' items');
 
         modals.show(`
             <div class="modal-header">
@@ -6473,7 +6468,7 @@ Object.assign(handlers, {
                                 <span class="category-name">${d.category}</span>
                                 <span class="category-retention">Older than ${formatRetention(d.retention)}</span>
                             </div>
-                            <div class="cleanup-preview-count ${d.count === 0 ? 'zero' : ''}">${d.count} items</div>
+                            <div class="cleanup-preview-count ${d.count === 0 ? 'zero' : ''}">${formatCleanupCount(d.count)}</div>
                         </div>
                     `,
                         )

@@ -1388,9 +1388,28 @@ Object.assign(handlers, {
 
     // Financials handlers,
 
-    exportFinancials: function (format) {
-        toast.info(`Generating ${format.toUpperCase()} export...`);
-        setTimeout(() => toast.success('Export ready for download'), 1500);
+    exportFinancials: async function (format) {
+        if (format === 'pdf' || format === 'xlsx') {
+            toast.info('PDF and Excel export coming soon. Exporting as CSV.');
+            format = 'csv';
+        }
+        toast.info('Generating CSV export...');
+        try {
+            const period = store.state.analyticsPeriod || '30d';
+            const res = await api.request('POST', '/api/analytics/export', { type: 'sales', format: 'json', period });
+            const rows = res.export || [];
+            if (!rows.length) { toast.info('No sales data to export'); return; }
+            const headers = Object.keys(rows[0]);
+            const csv = [headers.join(','), ...rows.map((r) => headers.map((h) => JSON.stringify(r[h] ?? '')).join(','))].join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `financials-${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click(); URL.revokeObjectURL(url);
+            toast.success('CSV downloaded');
+        } catch (err) {
+            toast.error('Export failed');
+        }
     },
 
     setFinancialsTab: function (tab) {

@@ -1884,15 +1884,15 @@ Object.assign(pages, {
                             <h3 class="settings-section-title">Data Retention Settings</h3>
                             <p class="text-sm text-gray-500 mb-4">Configure how long different types of data are kept before automatic cleanup.</p>
                             ${(() => {
-                                const retentionSettings = store.state.dataRetention || {
-                                    completedOrders: '365',
-                                    soldItems: '180',
-                                    analyticsData: '90',
-                                    notifications: '30',
-                                    automationLogs: '30',
-                                    autoCleanup: false,
+                                const retentionSettings = store.state.dataRetention || {};
+                                const getRetentionValue = (key) => {
+                                    const value = retentionSettings[key];
+                                    return value === undefined || value === null || value === '' ? '' : String(value);
                                 };
-
+                                const hasSavedRetentionSettings = Object.keys(retentionSettings).some((key) => {
+                                    const value = retentionSettings[key];
+                                    return typeof value === 'boolean' || getRetentionValue(key) !== '';
+                                });
                                 const retentionOptions = [
                                     { value: '30', label: '30 days' },
                                     { value: '60', label: '60 days' },
@@ -1901,8 +1901,33 @@ Object.assign(pages, {
                                     { value: '365', label: '1 year' },
                                     { value: 'forever', label: 'Keep forever' },
                                 ];
+                                const renderRetentionOptions = (key) => {
+                                    const currentValue = getRetentionValue(key);
+                                    return (
+                                        (currentValue
+                                            ? ''
+                                            : '<option value="" selected disabled>Not configured</option>') +
+                                        retentionOptions
+                                            .map(
+                                                (opt) =>
+                                                    '<option value="' +
+                                                    opt.value +
+                                                    '" ' +
+                                                    (currentValue === opt.value ? 'selected' : '') +
+                                                    '>' +
+                                                    opt.label +
+                                                    '</option>',
+                                            )
+                                            .join('')
+                                    );
+                                };
+                                const autoCleanupConfigured = typeof retentionSettings.autoCleanup === 'boolean';
+                                const autoCleanupEnabled = autoCleanupConfigured ? retentionSettings.autoCleanup : false;
 
                                 return (
+                                    (hasSavedRetentionSettings
+                                        ? ''
+                                        : '<div class="text-gray-500 text-sm mb-4">No saved data retention preferences yet. Choose values below to configure cleanup.</div>') +
                                     '<div class="data-retention-grid">' +
                                     '<div class="retention-option">' +
                                     '<div class="retention-info">' +
@@ -1915,18 +1940,7 @@ Object.assign(pages, {
                                     '</div>' +
                                     '</div>' +
                                     '<select class="form-select form-select-sm" aria-label="Completed orders retention" onchange="handlers.updateRetentionSetting(\'completedOrders\', this.value)">' +
-                                    retentionOptions
-                                        .map(
-                                            (opt) =>
-                                                '<option value="' +
-                                                opt.value +
-                                                '" ' +
-                                                (retentionSettings.completedOrders === opt.value ? 'selected' : '') +
-                                                '>' +
-                                                opt.label +
-                                                '</option>',
-                                        )
-                                        .join('') +
+                                    renderRetentionOptions('completedOrders') +
                                     '</select>' +
                                     '</div>' +
                                     '<div class="retention-option">' +
@@ -1940,18 +1954,7 @@ Object.assign(pages, {
                                     '</div>' +
                                     '</div>' +
                                     '<select class="form-select form-select-sm" aria-label="Sold items retention" onchange="handlers.updateRetentionSetting(\'soldItems\', this.value)">' +
-                                    retentionOptions
-                                        .map(
-                                            (opt) =>
-                                                '<option value="' +
-                                                opt.value +
-                                                '" ' +
-                                                (retentionSettings.soldItems === opt.value ? 'selected' : '') +
-                                                '>' +
-                                                opt.label +
-                                                '</option>',
-                                        )
-                                        .join('') +
+                                    renderRetentionOptions('soldItems') +
                                     '</select>' +
                                     '</div>' +
                                     '<div class="retention-option">' +
@@ -1965,18 +1968,7 @@ Object.assign(pages, {
                                     '</div>' +
                                     '</div>' +
                                     '<select class="form-select form-select-sm" aria-label="Analytics data retention" onchange="handlers.updateRetentionSetting(\'analyticsData\', this.value)">' +
-                                    retentionOptions
-                                        .map(
-                                            (opt) =>
-                                                '<option value="' +
-                                                opt.value +
-                                                '" ' +
-                                                (retentionSettings.analyticsData === opt.value ? 'selected' : '') +
-                                                '>' +
-                                                opt.label +
-                                                '</option>',
-                                        )
-                                        .join('') +
+                                    renderRetentionOptions('analyticsData') +
                                     '</select>' +
                                     '</div>' +
                                     '<div class="retention-option">' +
@@ -1990,18 +1982,7 @@ Object.assign(pages, {
                                     '</div>' +
                                     '</div>' +
                                     '<select class="form-select form-select-sm" aria-label="Notifications retention" onchange="handlers.updateRetentionSetting(\'notifications\', this.value)">' +
-                                    retentionOptions
-                                        .map(
-                                            (opt) =>
-                                                '<option value="' +
-                                                opt.value +
-                                                '" ' +
-                                                (retentionSettings.notifications === opt.value ? 'selected' : '') +
-                                                '>' +
-                                                opt.label +
-                                                '</option>',
-                                        )
-                                        .join('') +
+                                    renderRetentionOptions('notifications') +
                                     '</select>' +
                                     '</div>' +
                                     '<div class="retention-option">' +
@@ -2015,18 +1996,7 @@ Object.assign(pages, {
                                     '</div>' +
                                     '</div>' +
                                     '<select class="form-select form-select-sm" aria-label="Automation logs retention" onchange="handlers.updateRetentionSetting(\'automationLogs\', this.value)">' +
-                                    retentionOptions
-                                        .map(
-                                            (opt) =>
-                                                '<option value="' +
-                                                opt.value +
-                                                '" ' +
-                                                (retentionSettings.automationLogs === opt.value ? 'selected' : '') +
-                                                '>' +
-                                                opt.label +
-                                                '</option>',
-                                        )
-                                        .join('') +
+                                    renderRetentionOptions('automationLogs') +
                                     '</select>' +
                                     '</div>' +
                                     '</div>' +
@@ -2034,11 +2004,15 @@ Object.assign(pages, {
                                     '<label class="toggle-row">' +
                                     '<div class="toggle-info">' +
                                     '<span class="toggle-label">Automatic Cleanup</span>' +
-                                    '<span class="toggle-description">Automatically delete old data based on retention settings</span>' +
+                                    '<span class="toggle-description">' +
+                                    (autoCleanupConfigured
+                                        ? 'Automatically delete old data based on retention settings'
+                                        : 'Not configured yet. Toggle to enable automatic cleanup after retention settings are saved.') +
+                                    '</span>' +
                                     '</div>' +
                                     '<label class="switch">' +
                                     '<input aria-label="Toggle Auto cleanup" type="checkbox" ' +
-                                    (retentionSettings.autoCleanup ? 'checked' : '') +
+                                    (autoCleanupEnabled ? 'checked' : '') +
                                     ' onchange="handlers.updateRetentionSetting(\'autoCleanup\', this.checked)">' +
                                     '<span class="slider round"></span>' +
                                     '</label>' +
