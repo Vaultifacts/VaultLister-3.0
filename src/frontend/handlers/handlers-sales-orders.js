@@ -1506,11 +1506,13 @@ Object.assign(handlers, {
     saveGoals: function (e) {
         e.preventDefault();
         const form = e.target;
-        store.setState({
+        const goals = {
             revenueGoal: parseFloat(form.revenueGoal.value) || 5000,
             salesGoal: parseInt(form.salesGoal.value) || 50,
             marginGoal: parseFloat(form.marginGoal.value) || 40,
-        });
+        };
+        store.setState(goals);
+        try { localStorage.setItem('vl_goals', JSON.stringify(goals)); } catch (_) {}
         toast.success('Goals updated');
         modals.close();
         renderApp(window.pages.analytics());
