@@ -400,7 +400,7 @@ Object.assign(pages, {
             {
                 icon: 'wifi-off',
                 title: 'Offline Capable',
-                description: 'Your data stays on your device - work anywhere, anytime',
+                description: 'Keep working through connection changes with cloud sync when available',
                 color: 'success',
             },
             {
@@ -459,26 +459,40 @@ Object.assign(pages, {
             },
         ];
 
-        const testimonials = [
-            {
-                name: 'Sarah M.',
-                role: 'Full-time Reseller',
-                quote: 'VaultLister has completely transformed how I manage my reselling business. The cross-listing feature alone saves me hours every week!',
-                rating: 5,
-            },
-            {
-                name: 'Mike T.',
-                role: 'Part-time Seller',
-                quote: 'Finally, a tool that works offline! I can update my inventory at estate sales without worrying about internet connection.',
-                rating: 5,
-            },
-            {
-                name: 'Jessica L.',
-                role: 'Boutique Owner',
-                quote: 'The AI listing generation is incredible. It writes better descriptions than I could and helps my items sell faster.',
-                rating: 5,
-            },
-        ];
+        const featureAreaCount = features.length;
+        const appVersion = store.state.appVersion || store.state.app_version || null;
+        const testimonials = Array.isArray(store.state.aboutTestimonials) ? store.state.aboutTestimonials : [];
+        const testimonialCards = testimonials
+            .map((testimonial) => {
+                const quote = escapeHtml(String(testimonial.quote || ''));
+                if (!quote) return '';
+                const name = escapeHtml(String(testimonial.name || 'Customer'));
+                const role = testimonial.role ? `<span>${escapeHtml(String(testimonial.role))}</span>` : '';
+                const rating = Math.max(0, Math.min(5, Number(testimonial.rating) || 0));
+                const stars = rating > 0 ? '★'.repeat(rating) : '';
+                return `
+                        <div class="testimonial-card">
+                            ${
+                                stars
+                                    ? `
+                            <div class="testimonial-stars">
+                                ${stars}
+                            </div>
+                            `
+                                    : ''
+                            }
+                            <p class="testimonial-quote">"${quote}"</p>
+                            <div class="testimonial-author">
+                                <div class="author-avatar">${name.charAt(0)}</div>
+                                <div class="author-info">
+                                    <strong>${name}</strong>
+                                    ${role}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+            })
+            .join('');
 
         return `
             <!-- Hero Section -->
@@ -489,10 +503,10 @@ Object.assign(pages, {
                         <div class="hero-logo-glow"></div>
                     </div>
                     <h1 class="about-hero-title">VaultLister</h1>
-                    <div class="about-version-badge">v0.9.0 RC</div>
-                    <p class="about-hero-tagline">Zero-cost, offline-capable multi-channel reselling platform</p>
+                    ${appVersion ? `<div class="about-version-badge">v${escapeHtml(String(appVersion))}</div>` : ''}
+                    <p class="about-hero-tagline">Multi-channel reselling platform for inventory, listing, and automation workflows</p>
                     <div class="about-hero-badges">
-                        <span class="hero-badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Free Forever</span>
+                        <span class="hero-badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Transparent Pricing</span>
                         <span class="hero-badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Privacy First</span>
                         <span class="hero-badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg> Works Offline</span>
                     </div>
@@ -508,8 +522,8 @@ Object.assign(pages, {
                             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                         </svg>
                     </div>
-                    <div class="stat-value" data-count="171">171+</div>
-                    <div class="stat-label">Features Built</div>
+                    <div class="stat-value" data-count="${featureAreaCount}">${featureAreaCount}</div>
+                    <div class="stat-label">Feature Areas</div>
                 </div>
                 <div class="about-stat-card">
                     <div class="stat-icon-wrapper success">
@@ -529,8 +543,8 @@ Object.assign(pages, {
                             <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
                         </svg>
                     </div>
-                    <div class="stat-value">100%</div>
-                    <div class="stat-label">Free to Use</div>
+                    <div class="stat-value">Free + Paid</div>
+                    <div class="stat-label">Pricing Options</div>
                 </div>
                 <div class="about-stat-card">
                     <div class="stat-icon-wrapper info">
@@ -552,7 +566,7 @@ Object.assign(pages, {
                 <div class="mission-content">
                     <div class="mission-text">
                         <p>VaultLister was built with a simple goal: to give resellers the tools they need to manage their business efficiently, without expensive subscriptions or complicated software.</p>
-                        <p>We believe in keeping your data local, your costs low, and your productivity high. Whether you're selling on one platform or six, VaultLister helps you work smarter, not harder.</p>
+                        <p>We believe in keeping reseller workflows organized, costs visible, and productivity high. Whether you're selling on one platform or six, VaultLister helps you work smarter, not harder.</p>
                     </div>
                     <div class="mission-values">
                         <div class="value-card">
@@ -563,12 +577,12 @@ Object.assign(pages, {
                         <div class="value-card">
                             <div class="value-icon">🔒</div>
                             <h3>Privacy</h3>
-                            <p>Your data stays on your device</p>
+                            <p>Your account data is stored securely and protected in transit</p>
                         </div>
                         <div class="value-card">
                             <div class="value-icon">💰</div>
                             <h3>Affordability</h3>
-                            <p>Free forever, no hidden costs</p>
+                            <p>Clear plans with transparent pricing</p>
                         </div>
                     </div>
                 </div>
@@ -598,6 +612,9 @@ Object.assign(pages, {
                 </div>
             </div>
 
+            ${
+                testimonialCards
+                    ? `
             <!-- Testimonials Section -->
             <div class="about-section testimonials-section">
                 <div class="about-section-header">
@@ -605,27 +622,12 @@ Object.assign(pages, {
                     <h2 class="section-title">Loved by Resellers</h2>
                 </div>
                 <div class="testimonials-grid">
-                    ${testimonials
-                        .map(
-                            (t) => `
-                        <div class="testimonial-card">
-                            <div class="testimonial-stars">
-                                ${'★'.repeat(t.rating)}
-                            </div>
-                            <p class="testimonial-quote">"${t.quote}"</p>
-                            <div class="testimonial-author">
-                                <div class="author-avatar">${t.name[0]}</div>
-                                <div class="author-info">
-                                    <strong>${t.name}</strong>
-                                    <span>${t.role}</span>
-                                </div>
-                            </div>
-                        </div>
-                    `,
-                        )
-                        .join('')}
+                    ${testimonialCards}
                 </div>
             </div>
+            `
+                    : ''
+            }
 
             <!-- Team Section -->
             <div class="about-section">
@@ -708,14 +710,13 @@ Object.assign(pages, {
                         },
                         {
                             date: 'Apr 2026',
-                            title: '170+ Features Milestone',
-                            description: 'Reached 171+ features including calendar, automations, and image bank.',
+                            title: 'Feature Expansion',
+                            description: 'Added calendar, automations, and image bank workflows.',
                         },
                         {
                             date: 'Apr 2026',
-                            title: 'Release Candidate',
-                            description:
-                                'v0.9.0 RC — continuing to add features based on community feedback and votes.',
+                            title: 'Quality Push',
+                            description: 'Continuing to refine integrations, reliability, and community feedback loops.',
                         },
                     ]
                         .map(
@@ -918,6 +919,52 @@ Object.assign(pages, {
         const user = store.state.user || {};
         const referralCode = user.referral_code || 'VAULT' + (user.id?.substring(0, 6)?.toUpperCase() || 'FRIEND');
         const referralLink = `https://vaultlister.com/signup?ref=${referralCode}`;
+        const referralStats =
+            store.state.referralStats ||
+            store.state.referral_stats ||
+            store.state.affiliateStats ||
+            store.state.affiliate_stats ||
+            {};
+        const referralStat = (...fields) => {
+            for (const field of fields) {
+                const value = referralStats[field];
+                if (value !== undefined && value !== null && value !== '') {
+                    return value;
+                }
+            }
+            return 'N/A';
+        };
+        const formatReferralStat = (...fields) => escapeHtml(String(referralStat(...fields)));
+        const formatReferralMonths = (...fields) => {
+            const value = referralStat(...fields);
+            if (value === 'N/A') return 'N/A';
+            const text = String(value);
+            if (/month/i.test(text)) return escapeHtml(text);
+            return `${escapeHtml(text)} ${Number(value) === 1 ? 'month' : 'months'}`;
+        };
+        const totalReferrals = formatReferralStat(
+            'totalReferrals',
+            'total_referrals',
+            'referralCount',
+            'referral_count',
+            'totalSignups',
+            'total_signups',
+        );
+        const successfulSignups = formatReferralStat(
+            'successfulSignups',
+            'successful_signups',
+            'successfulReferrals',
+            'successful_referrals',
+            'totalConversions',
+            'total_conversions',
+        );
+        const pendingReferrals = formatReferralStat('pendingReferrals', 'pending_referrals', 'pending');
+        const freePremiumLabel = formatReferralMonths(
+            'freePremiumMonths',
+            'free_premium_months',
+            'freePremiumEarned',
+            'free_premium_earned',
+        );
 
         return `
             <div class="page-header">
@@ -1035,19 +1082,19 @@ Object.assign(pages, {
                 <div class="card-body">
                     <div class="grid grid-cols-4 gap-4">
                         <div class="text-center">
-                            <div class="text-2xl font-bold text-primary">0</div>
+                            <div class="text-2xl font-bold text-primary">${totalReferrals}</div>
                             <div class="text-xs text-gray-500">Total Referrals</div>
                         </div>
                         <div class="text-center">
-                            <div class="text-2xl font-bold text-success">0</div>
+                            <div class="text-2xl font-bold text-success">${successfulSignups}</div>
                             <div class="text-xs text-gray-500">Successful Sign-ups</div>
                         </div>
                         <div class="text-center">
-                            <div class="text-2xl font-bold text-warning">0</div>
+                            <div class="text-2xl font-bold text-warning">${pendingReferrals}</div>
                             <div class="text-xs text-gray-500">Pending</div>
                         </div>
                         <div class="text-center">
-                            <div class="text-2xl font-bold">0 months</div>
+                            <div class="text-2xl font-bold">${freePremiumLabel}</div>
                             <div class="text-xs text-gray-500">Free Premium Earned</div>
                         </div>
                     </div>
@@ -2104,206 +2151,12 @@ Upload photos once, use them across all your listings.`,
     // Changelog page,
 
     changelog() {
-        const versions = store.state.changelogVersions || [
-            {
-                version: 'v0.9.0',
-                date: '2026-04-01',
-                changes: [
-                    {
-                        type: 'feature',
-                        title: 'Sidebar Icon-Only Mode',
-                        description: 'Collapsed sidebar now shows icons for quick navigation with hover tooltips',
-                        areas: ['Navigation', 'UI'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Pie Chart Component',
-                        description: 'New pie chart visualization option for analytics',
-                        areas: ['Analytics'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Chart Type Toggle',
-                        description: 'Switch between bar and pie charts for platform revenue and sales data',
-                        areas: ['Analytics', 'Dashboard'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'About Us Page',
-                        description: 'Company information and VaultLister stats page',
-                        areas: ['Company'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Gmail Integration',
-                        description: 'Automatic receipt detection and import from Gmail inbox',
-                        areas: ['Integrations', 'Settings'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Batch Photo Processing',
-                        description: 'Apply AI edits to multiple images at once with presets',
-                        areas: ['Image Bank'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Receipt Parser AI',
-                        description: 'Upload receipts and let AI extract vendor, items, and totals',
-                        areas: ['Transactions'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Calendar View',
-                        description: 'Track listings, orders, and events in a visual calendar',
-                        areas: ['Calendar'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Product Roadmap',
-                        description: 'See upcoming features and vote for your favorites',
-                        areas: ['Roadmap'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Enhanced Notifications',
-                        description: 'Bell dropdown with search and filters',
-                        areas: ['Navigation', 'UI'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Help & Support System',
-                        description: 'Tutorials, FAQs, and knowledge base articles',
-                        areas: ['Help & Support'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Support Tickets',
-                        description: 'Submit and track bug reports and feature requests',
-                        areas: ['Help & Support'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Chrome Extension',
-                        description: 'Import listings directly from marketplace pages',
-                        areas: ['My Listings', 'Integrations'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Image Bank',
-                        description: 'Organize photos in folders with drag-and-drop support',
-                        areas: ['Image Bank'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Community Features',
-                        description: 'Tips library and seller discussions',
-                        areas: ['Community'],
-                    },
-                    {
-                        type: 'improvement',
-                        title: 'Analytics Sales Tab',
-                        description: 'Added summary stat cards with key metrics',
-                        areas: ['Analytics'],
-                    },
-                    {
-                        type: 'improvement',
-                        title: 'Full OAuth Integration',
-                        description: 'Enhanced platform sync with real-time status tracking',
-                        areas: ['My Shops', 'Integrations'],
-                    },
-                    {
-                        type: 'improvement',
-                        title: 'Navigation Reorganization',
-                        description: 'Added Tools and Company sections for better organization',
-                        areas: ['Navigation'],
-                    },
-                    {
-                        type: 'improvement',
-                        title: 'Sidebar Collapse',
-                        description: 'Fixed text visibility when sidebar is collapsed',
-                        areas: ['Navigation', 'UI'],
-                    },
-                    {
-                        type: 'security',
-                        title: 'Token Encryption',
-                        description: 'AES-256-GCM encryption for stored OAuth tokens',
-                        areas: ['Security', 'Settings'],
-                    },
-                ],
-            },
-            {
-                version: 'v0.5.0',
-                date: '2026-03-15',
-                changes: [
-                    {
-                        type: 'feature',
-                        title: 'Listing Templates',
-                        description: 'Save and reuse item details for faster listing',
-                        areas: ['My Listings'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Low Stock Alerts',
-                        description: 'Get notified when inventory runs low',
-                        areas: ['Inventory', 'Notifications'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'AI Listing Generation',
-                        description: 'Generate listing titles and descriptions using Claude AI',
-                        areas: ['My Listings', 'AI'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Price Predictions',
-                        description: 'AI-powered pricing suggestions and demand forecasts',
-                        areas: ['Intelligence'],
-                    },
-                    {
-                        type: 'improvement',
-                        title: 'OAuth Integration',
-                        description: 'Connect marketplace accounts securely',
-                        areas: ['Settings', 'Integrations'],
-                    },
-                    {
-                        type: 'fix',
-                        title: 'Cross-listing',
-                        description: 'Fixed image upload issues on certain platforms',
-                        areas: ['My Listings'],
-                    },
-                ],
-            },
-            {
-                version: 'v0.1.0',
-                date: '2026-03-02',
-                changes: [
-                    {
-                        type: 'feature',
-                        title: 'Initial Alpha',
-                        description: 'Inventory management and cross-listing tools',
-                        areas: ['Inventory', 'My Listings'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Multi-Platform Support',
-                        description: 'Poshmark, eBay, Mercari, Depop, Grailed, Facebook',
-                        areas: ['My Shops'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Analytics Dashboard',
-                        description: 'Track sales, revenue, and performance metrics',
-                        areas: ['Analytics', 'Dashboard'],
-                    },
-                    {
-                        type: 'feature',
-                        title: 'Automation Rules',
-                        description: 'Automate pricing, sharing, and listing updates',
-                        areas: ['Automations'],
-                    },
-                ],
-            },
-        ];
+        const versions = (Array.isArray(store.state.changelogVersions) ? store.state.changelogVersions : []).map(
+            (version) => ({
+                ...version,
+                changes: Array.isArray(version.changes) ? version.changes : [],
+            }),
+        );
 
         const changelogVotes = store.state.changelogVotes || {};
         const typeFilter = store.state.changelogTypeFilter || 'all';
@@ -3176,33 +3029,8 @@ Upload photos once, use them across all your listings.`,
         const _helpSearchQuery = store.state.helpSearchQuery || '';
         const _helpFAQs = store.state.helpFAQs || [];
         const _helpArticles = store.state.helpArticles || [];
-        const supportStats = store.state.supportStats || { articlesRead: 0, ticketsOpen: 0, avgResponseTime: '< 24h' };
-        const popularArticles = store.state.popularArticles || [
-            {
-                id: 'art_getting_started_cross_listing',
-                slug: 'art_getting_started_cross_listing',
-                title: 'Getting Started with Cross-Listing',
-                category: 'Basics',
-            },
-            {
-                id: 'art_connect_ebay_account',
-                slug: 'art_connect_ebay_account',
-                title: 'How to Connect Your eBay Account',
-                category: 'Integrations',
-            },
-            {
-                id: 'art_analytics_dashboard',
-                slug: 'art_analytics_dashboard',
-                title: 'Understanding Analytics Dashboard',
-                category: 'Analytics',
-            },
-            {
-                id: 'art_setting_up_automations',
-                slug: 'art_setting_up_automations',
-                title: 'Setting Up Automations',
-                category: 'Automations',
-            },
-        ];
+        const supportStats = store.state.supportStats || {};
+        const popularArticles = Array.isArray(store.state.popularArticles) ? store.state.popularArticles : [];
         const gettingStartedSteps = [
             { id: 1, title: 'Create your account', completed: true },
             { id: 2, title: 'Add your first item', completed: (store.state.inventoryItems || []).length > 0 },
@@ -3211,6 +3039,11 @@ Upload photos once, use them across all your listings.`,
             { id: 5, title: 'Record your first sale', completed: (store.state.sales || []).length > 0 },
         ];
         const completedSteps = gettingStartedSteps.filter((s) => s.completed).length;
+        const liveChatStatus = String(supportStats.liveChatStatus || supportStats.live_chat_status || '').toLowerCase();
+        const liveChatStatusLabel =
+            liveChatStatus === 'online' ? 'Online' : liveChatStatus === 'offline' ? 'Offline' : 'Availability unavailable';
+        const liveChatStatusColor =
+            liveChatStatus === 'online' ? 'var(--success)' : liveChatStatus === 'offline' ? 'var(--warning)' : 'var(--gray-500)';
 
         return `
             <div class="page-header">
@@ -3380,20 +3213,29 @@ Upload photos once, use them across all your listings.`,
                 </div>
                 <div class="card-body">
                     <div class="popular-articles-grid">
-                        ${popularArticles
-                            .map((article) => {
-                                const categoryIcons = {
-                                    Basics: '🚀',
-                                    Integrations: '🔗',
-                                    Analytics: '📊',
-                                    Automations: '⚡',
-                                    Inventory: '📦',
-                                    Pricing: '💰',
-                                    Shipping: '📬',
-                                    Account: '👤',
-                                };
-                                const icon = categoryIcons[article.category] || '📄';
-                                return `
+                        ${
+                            popularArticles.length === 0
+                                ? `
+                            <div class="empty-state compact" style="grid-column: 1 / -1; padding: 24px; text-align: center;">
+                                <div class="empty-state-icon">${components.icon('file-text', 32)}</div>
+                                <h2 class="empty-state-title">No popular articles yet</h2>
+                                <p class="empty-state-description">Popular articles will appear here after article activity is available.</p>
+                            </div>
+                        `
+                                : popularArticles
+                                      .map((article) => {
+                                          const categoryIcons = {
+                                              Basics: '🚀',
+                                              Integrations: '🔗',
+                                              Analytics: '📊',
+                                              Automations: '⚡',
+                                              Inventory: '📦',
+                                              Pricing: '💰',
+                                              Shipping: '📬',
+                                              Account: '👤',
+                                          };
+                                          const icon = categoryIcons[article.category] || '📄';
+                                          return `
                             <button class="popular-article-card" onclick="modals.viewArticle('${article.slug || article.id}')">
                                 <div style="font-size: 24px; margin-bottom: 8px;" aria-hidden="true">${icon}</div>
                                 <div class="article-category">${escapeHtml(article.category)}</div>
@@ -3410,8 +3252,9 @@ Upload photos once, use them across all your listings.`,
                                         : ''
                                 }
                             </button>`;
-                            })
-                            .join('')}
+                                      })
+                                      .join('')
+                        }
                     </div>
                 </div>
             </div>
@@ -3453,7 +3296,7 @@ Upload photos once, use them across all your listings.`,
                             </div>
                             <h3>Live Chat</h3>
                             <p>Chat with our support team in real-time</p>
-                            <span class="response-time" style="color: var(--success);">Online now</span>
+                            <span class="response-time" style="color: ${liveChatStatusColor};">${liveChatStatusLabel}</span>
                         </div>
                         <div class="contact-method-card">
                             <div class="contact-method-icon">
@@ -3909,11 +3752,11 @@ Upload photos once, use them across all your listings.`,
                         <table style="width: 100%; border-collapse: collapse;">
                             <thead>
                                 <tr style="border-bottom: 1px solid var(--gray-200);">
-                                    <th style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: var(--gray-500);">Rank</th>
-                                    <th style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: var(--gray-500);">Title</th>
-                                    <th style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: var(--gray-500);">Type</th>
-                                    <th style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: var(--gray-500);">Status</th>
-                                    <th style="padding: 12px 16px; text-align: right; font-size: 12px; text-transform: uppercase; color: var(--gray-500);">Net Votes</th>
+                                    <th scope="col" style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: var(--gray-500);">Rank</th>
+                                    <th scope="col" style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: var(--gray-500);">Title</th>
+                                    <th scope="col" style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: var(--gray-500);">Type</th>
+                                    <th scope="col" style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: var(--gray-500);">Status</th>
+                                    <th scope="col" style="padding: 12px 16px; text-align: right; font-size: 12px; text-transform: uppercase; color: var(--gray-500);">Net Votes</th>
                                 </tr>
                             </thead>
                             <tbody>

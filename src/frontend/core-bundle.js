@@ -16953,7 +16953,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '545a3dc6';
+    const v = '7983a55d';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function (resolve, reject) {
@@ -20424,7 +20424,7 @@ const pages = {
                     ? `
                 <div class="dashboard-whats-new-banner">
                     <div class="whats-new-banner-content">
-                        <span class="whats-new-badge-pill">New in v1.6.0</span>
+                        <span class="whats-new-badge-pill">Latest updates</span>
                         <span class="whats-new-banner-text">Sidebar Icon-Only Mode, Pie Charts, and more</span>
                     </div>
                     <div class="whats-new-banner-actions">
@@ -21836,15 +21836,15 @@ const pages = {
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>Date</th>
-                                    <th>Item</th>
-                                    <th>Platform</th>
-                                    <th>Sale Price</th>
-                                    <th>Item Cost</th>
-                                    <th>Customer Ship</th>
-                                    <th>Seller Ship</th>
-                                    <th>Platform Fee</th>
-                                    <th>Net Profit</th>
+                                    <th scope="col">Date</th>
+                                    <th scope="col">Item</th>
+                                    <th scope="col">Platform</th>
+                                    <th scope="col">Sale Price</th>
+                                    <th scope="col">Item Cost</th>
+                                    <th scope="col">Customer Ship</th>
+                                    <th scope="col">Seller Ship</th>
+                                    <th scope="col">Platform Fee</th>
+                                    <th scope="col">Net Profit</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -23818,6 +23818,7 @@ const pages = {
                     <div class="card-body">
                         <div class="text-center mb-6">
                             <img src="/assets/logo/lockups/vertical-1024.svg" alt="VaultLister" class="auth-logo">
+                            <h1 class="sr-only">VaultLister Login</h1>
                             <p class="text-gray-600">Sign in to your account</p>
                         </div>
                         <div id="login-alert" class="login-alert"></div>
@@ -23846,8 +23847,8 @@ const pages = {
                                 <span class="field-error-text" id="login-password-error" role="alert">Password is required</span>
                             </div>
                             <div class="auth-bottom-row">
-                                <label class="remember-me-label">
-                                    <input type="checkbox" id="remember-me" aria-label="Remember Me"> Remember me
+                                <label class="remember-me-label" for="remember-me">
+                                    <input type="checkbox" id="remember-me"> Remember me
                                 </label>
                                 <a href="#forgot-password" class="forgot-password-link">Forgot Password?</a>
                             </div>
@@ -23885,6 +23886,7 @@ const pages = {
                     <div class="card-body">
                         <div class="text-center mb-6">
                             <img src="/assets/logo/lockups/vertical-1024.svg" alt="VaultLister" class="auth-logo">
+                            <h1 class="sr-only">VaultLister Registration</h1>
                             <p class="text-gray-600">Create your account</p>
                         </div>
                         <form id="register-form" onsubmit="auth.register(event)">
@@ -23999,7 +24001,7 @@ const pages = {
                         <form id="forgot-password-form" onsubmit="handlers.requestPasswordReset(event)">
                             <div class="form-group">
                                 <label for="forgot-email" class="form-label">Email Address</label>
-                                <input id="forgot-email" type="email" class="form-input" name="email" required placeholder="you@example.com" autocomplete="email" aria-label="Email address" data-testid="forgot-email">
+                                <input id="forgot-email" type="email" class="form-input" name="email" required placeholder="you@example.com" autocomplete="email" data-testid="forgot-email">
                             </div>
                             <button type="submit" class="btn btn-primary w-full mb-4">Send Reset Link</button>
                             <div class="text-center">
@@ -31677,7 +31679,7 @@ function renderApp(pageContent) {
                 <div class="app-body">
                     ${components.sidebar()}
                     <div class="sidebar-backdrop ${store.state.sidebarOpen ? 'active' : ''}"
-                         role="button" tabindex="0" onclick="store.setState({ sidebarOpen: false }); renderApp(pages[store.state.currentPage]())"></div>
+                         role="button" tabindex="0" aria-label="Close sidebar" onclick="store.setState({ sidebarOpen: false }); renderApp(pages[store.state.currentPage]())"></div>
                     <div class="sidebar-overlay" role="button" tabindex="0" aria-label="Close sidebar" onclick="store.setState({sidebarOpen:false});document.querySelector('.sidebar')?.classList.remove('open');this.classList.remove('visible');"></div>
                     <div class="mobile-header">
                         <button class="mobile-menu-btn" onclick="const _open=!store.state.sidebarOpen;store.setState({sidebarOpen:_open});document.querySelector('.sidebar')?.classList.toggle('open',_open);document.querySelector('.sidebar-overlay')?.classList.toggle('visible',_open);" aria-label="Open menu">

@@ -496,7 +496,7 @@ Object.assign(pages, {
                                             const listing = store.state.listings.find((l) => l.id === offer.listing_id);
                                             return `
                                             <tr>
-                                                <td>${escapeHtml(listing?.title || 'Unknown')}</td>
+                                                <td>${escapeHtml(listing?.title || offer.listing_title || 'Unknown')}</td>
                                                 <td>${escapeHtml(offer.buyer_name || 'Anonymous')}</td>
                                                 <td>C$${offer.amount.toFixed(2)}</td>
                                                 <td><span class="badge badge-${offer.status === 'accepted' ? 'success' : offer.status === 'countered' ? 'primary' : 'error'}">${offer.status}</span></td>
@@ -2530,7 +2530,7 @@ Object.assign(pages, {
                                                     ? `<td>
                                                 <span class="badge badge-${statusColor}" style="color: #111; font-weight: 600;">${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span>
                                                 ${
-                                                    order.priority
+                                                    order.priority && order.priority !== 'normal'
                                                         ? (() => {
                                                               const priorityColors = {
                                                                   low: '#6b7280',
