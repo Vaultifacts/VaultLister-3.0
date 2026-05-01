@@ -3418,16 +3418,17 @@ Object.assign(pages, {
         ];
 
         // Financial ratios
-        const financialRatiosData = {
-            currentAssets: totalRevenue * 0.3,
-            currentLiabilities: totalExpenses * 0.2,
-            totalAssets: totalRevenue * 0.5,
-            totalLiabilities: totalExpenses * 0.3,
-            totalEquity: netProfit * 0.5,
+        const balanceSheet = store.state.balanceSheet;
+        const financialRatiosData = balanceSheet ? {
+            currentAssets: balanceSheet.totalCurrentAssets || 0,
+            currentLiabilities: balanceSheet.totalCurrentLiabilities || 0,
+            totalAssets: balanceSheet.totalAssets || 0,
+            totalLiabilities: balanceSheet.totalLiabilities || 0,
+            totalEquity: balanceSheet.totalEquity || 0,
             revenue: totalRevenue,
             cogs: totalExpenses * 0.6,
             netIncome: netProfit,
-        };
+        } : null;
 
         // Budget data
         const budgetData = Array.isArray(store.state.budgets)
@@ -3619,7 +3620,9 @@ Object.assign(pages, {
                         <button class="widget-collapse-btn" aria-label="Collapse" onclick="const c=this.closest('.collapsible-card');c.classList.toggle('collapsed');this.textContent=c.classList.contains('collapsed')?'\u25BC':'\u25B2';" title="Collapse/Expand">&#x25B2;</button>
                     </div>
                     <div class="card-body">
-                        ${financialRatios.render(financialRatios.calculate(financialRatiosData))}
+                        ${financialRatiosData
+                            ? financialRatios.render(financialRatios.calculate(financialRatiosData))
+                            : '<p class="text-sm text-gray-400 text-center py-4">Financial ratios require balance sheet data. Add accounts to calculate ratios.</p>'}
                     </div>
                 </div>
                 <div class="card collapsible-card">
@@ -3811,8 +3814,8 @@ Object.assign(pages, {
                 </div>
             </div>
 
-            <!-- Financial Goal Tracking -->
-            <div class="card mb-6">
+            <!-- Financial Goal Tracking (dev-only: post-launch feature) -->
+            <div class="card mb-6" style="${window.location.hostname !== 'localhost' ? 'display:none' : ''}">
                 <div class="card-header">
                     <h2 class="card-title">${components.icon('target', 18)} Financial Goals</h2>
                     <button class="btn btn-sm btn-primary" onclick="handlers.addFinancialGoal()">+ Add Goal</button>
