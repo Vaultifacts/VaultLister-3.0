@@ -54,6 +54,10 @@ jobs:
               echo "status=ok" >> "$GITHUB_OUTPUT"
               echo "detail=Pool metrics not present in /api/monitoring/metrics (not yet instrumented)" >> "$GITHUB_OUTPUT"
             fi
+          elif [ "$HTTP_STATUS" = "401" ]; then
+            echo "status=ok" >> "$GITHUB_OUTPUT"
+            echo "detail=Metrics endpoint live (HTTP 401 — admin-auth required, as designed)" >> "$GITHUB_OUTPUT"
+            echo "::notice::Connection pool metrics require admin auth — endpoint is reachable"
           else
             echo "status=warn" >> "$GITHUB_OUTPUT"
             echo "detail=Metrics endpoint returned HTTP ${HTTP_STATUS}" >> "$GITHUB_OUTPUT"
@@ -115,6 +119,14 @@ jobs:
             echo "status=fail" >> "$GITHUB_OUTPUT"
             echo "detail=Endpoint unreachable (connection failed)" >> "$GITHUB_OUTPUT"
             echo "::warning::Prometheus metrics endpoint unreachable"
+            exit 0
+          fi
+
+          # 401 means the endpoint exists but requires admin auth — that's expected (not a failure)
+          if [ "$HTTP_STATUS" = "401" ]; then
+            echo "status=ok" >> "$GITHUB_OUTPUT"
+            echo "detail=Endpoint live (HTTP 401 — admin-auth required, as designed)" >> "$GITHUB_OUTPUT"
+            echo "Metrics endpoint reachable; requires admin authentication"
             exit 0
           fi
 
