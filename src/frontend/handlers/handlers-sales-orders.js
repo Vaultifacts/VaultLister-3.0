@@ -1440,12 +1440,17 @@ Object.assign(handlers, {
         renderApp(window.pages.analytics());
     },
 
-    refreshAnalytics: function () {
+    refreshAnalytics: async function () {
         toast.info('Refreshing analytics data...');
-        setTimeout(() => {
-            toast.success('Analytics updated');
+        try {
+            const period = store.state.analyticsPeriod || '30d';
+            const data = await api.request('GET', `/api/analytics/dashboard?period=${period}`);
+            store.setState({ analyticsData: data });
             renderApp(window.pages.analytics());
-        }, 1000);
+            toast.success('Analytics updated');
+        } catch (err) {
+            toast.error('Failed to refresh analytics');
+        }
     },
 
     showGoalSettings: function () {
