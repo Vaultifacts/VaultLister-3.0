@@ -1406,8 +1406,9 @@ Object.assign(pages, {
                             </button>
                         </div>
                     `;
+                }
 
-                case 'integrations':
+                case 'integrations': {
                     const connectedShops = (store.state.shops || []).filter((shop) => shop.is_connected);
                     const shopByPlatform = new Map(connectedShops.map((shop) => [shop.platform, shop]));
                     const launchPlatforms =
