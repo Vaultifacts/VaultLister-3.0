@@ -1088,11 +1088,16 @@ Object.assign(handlers, {
         modals.close();
     },
 
-    refreshCompetitorActivity: function () {
+    refreshCompetitorActivity: async function () {
         toast.info('Refreshing competitor activity...');
-        setTimeout(() => {
+        try {
+            const data = await api.request('GET', '/api/market-intel/competitors');
+            store.setState({ competitors: data.competitors || [] });
+            renderApp(window.pages.intelligence());
             toast.success('Activity feed updated');
-        }, 1000);
+        } catch (err) {
+            toast.error('Failed to refresh competitor activity');
+        }
     },
 
     showSWOTAnalysis: function () {

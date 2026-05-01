@@ -1,13 +1,15 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-05-01 MST (UI bugs F35/F36/F42/F44/F46 fixed + README corrected in 8ca589c2; GitHub issues resolved; fs mock leak fixed in tests)
+**Updated:** 2026-05-01 MST (UI audit batch: F25/F29/F30/F33/F34/F35/F36/F37/F42/F44/F46/F48 fixed across 3 commits 8ca589c2→fc83118d; GitHub issues resolved; fs mock leak fixed)
 
 ## Completed This Session (2026-05-01)
 
-### Live verification pass — 26 "fixed pending" items (commit 59ecb960)
+### Fix 3 undeployed items (commits 5b747691, ec3a91a1)
+- P3-pub-11: search bar added to public/request-feature.html (fr-search input + CSS)
+- P3-pub-12: search bar added to public/learning.html (learning-search in page-hero)
+- P1-pub-1: sidebar-brand logo link + CSS in components.js + base.css; bundle rebuilt bc158941
 
-- Ran browser automation against vaultlister.com for all items marked "live/manual recheck pending"
+### Live verification pass — 26 "fixed pending" items (commit 59ecb960)
 - **17 VERIFIED LIVE ✅**: P3-pub-3/6/7/8/9/10, P4-pub-1, P3-pub-1/4, P1-pub-2, P0-pub-2/3, changelog-33, MANUAL-listings-1/2, MANUAL-settings-3, settings-34
-- **3 NOT DEPLOYED ❌**: P3-pub-11 (feature-requests search), P3-pub-12 (learning search), P1-pub-1 (sidebar logo) — local patches never committed
 - **5 INCONCLUSIVE**: P0-pub-1, P0-pub-4, P1-pub-3, P3-pub-2, P3-pub-5
 - **1 CONFIRMED N/A**: L-18
 
@@ -1196,7 +1198,7 @@ Added full BrowserStack infrastructure for real-device iOS mobile auditing:
 - Bundle on live site: `17d54beb` (confirmed via core-bundle.js script tag)
 
 ## In Progress
-- None
+- F31 Notification settings — connecting checkbox state/save handling to real notification preferences.
 
 ## Completed This Session (2026-04-12, session 19)
 
@@ -1391,7 +1393,7 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 
 ## Next Tasks
 
-### UI Audit Findings — 100 Items (2026-05-01, exhaustive discovery + continuation sessions)
+### UI Audit Findings — 109 Items (2026-05-01, exhaustive discovery + continuation sessions)
 
 **Fake/Simulated Actions (setTimeout + Toast with No Real API Call)**
 - F49: Automation History fake fallback — shows "Daily Closet Share — Shared 45 items", "Send Offers to Likers — Sent 12 offers" when no real run history; comment says "mock fallback" (`pages-deferred.js:1691-1707`)
@@ -1450,6 +1452,15 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 - F98: "Time saved today" automation stat is a mock calculation — hardcoded minutes per automation type (`sharing: 45, engagement: 20, offers: 15, bundles: 10, pricing: 25, maintenance: 30`) multiplied by active automation count; displayed as a prominent stat card on the Automations page; no actual timing data from backend (`pages-deferred.js:1802-1813`, `pages-inventory-catalog.js:1669-1683`)
 - F99: `saveBudgetSettings()` state-only — saves `monthlyBudget` to `store.state` only; `store.persist()` does not include this key; budget setting lost on every page refresh; no backend endpoint (`handlers-sales-orders.js:1428-1433`, `handlers-deferred.js:4637-4643`)
 - F100: `saveCompetitorAlerts()` state-only — competitor price-drop/new-listing alert settings saved to `store.state.competitorAlerts` only; no backend endpoint for competitor alerts in `marketIntel.js`; settings lost on refresh (`handlers-deferred.js:5775-5784`)
+- F101: `connectIntegration(platform)` fake — `setTimeout(() => toast.success(platform + ' connected successfully!'), 1500)` with no API call; platform credentials not stored; listed on Settings as "Connect" buttons for unsupported platforms (`handlers-settings-account.js:938-944`)
+- F102: `manageIntegration(platform)` modal — "Last Synced: 2 hours ago" and "Items Synced: 127" are hardcoded literals for ALL platforms; "Sync Now" does `toast.info('Syncing...')` only; "Disconnect" does `toast.warning('Integration disconnected')` only — neither makes any API call (`handlers-settings-account.js:905-935`)
+- F103: `saveShopBranding(platform)` state-only — logo URL, primary color, tagline, banner text, bio all saved to `store.state.shopBranding[platform]` only; no backend branding endpoint exists; all settings lost on refresh (`handlers-settings-account.js:111-124`)
+- F104: `saveSyncSettings()` state-only — multi-shop sync config (mode, frequency, syncQuantity, syncPrice per platform) saved to `store.state.shopSyncConfig` only; no backend endpoint; config lost on refresh (`handlers-settings-account.js:195-218`)
+- F105: `trendingKeywords.render()` hardcoded fallback — when `keywords` array is empty, widget shows 5 hardcoded fake search terms: "vintage levis" 2.4k +15%, "y2k fashion" 1.8k +32%, "designer bags" 1.5k −5%, "nike dunks" 1.2k +8%, "cottagecore" 0.98k +22%; presented as live market data (`widgets.js:7226-7263`)
+- F106: `opportunityCards.render()` hardcoded fallback — when `opportunities` is empty, shows 3 hardcoded fake cards: "Vintage Denim" score 92 $2,400/mo, "Designer Bags" score 87 $3,100/mo, "Sneakers" score 78 $1,800/mo; presented as real AI market intelligence (`widgets.js:7157-7222`)
+- F107: `pricePositionChart.render()` hardcoded fallback — when `data.competitors` is empty, plots 3 hardcoded "Comp A/B/C" dots with arbitrary price/quality values; when `data.yourPosition` is empty, defaults to `{ price: 45, quality: 75 }`; shown as user's real market position (`widgets.js:7266-7286`)
+- F108: `OAUTH_MODE` defaults to `'mock'` — all four OAuth call sites use `process.env.OAUTH_MODE || 'mock'`; if `OAUTH_MODE` is removed from Railway env, all platform OAuth flows silently return fake tokens; startup warning logged but fallback is dangerous (`oauth.js:99,180,319,413`)
+- F109: `showShopSettings(platform)` Save button — inline onclick `toast.success('Settings saved'); modals.close()` discards all user input (auto-sync interval, sync checkboxes); no API call; values never stored (`handlers-settings-account.js:56`)
 
 ---
 
@@ -1481,15 +1492,15 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 - F19: "Live" badge on Market Trends Radar — FIXED 2026-05-01 (uncommitted): fake live badge replaced with `Snapshot` / `No data` status based on available market data (`pages-intelligence.js`, `pages-deferred.js`)
 - F20: Competitor `tracked_since` — FIXED 2026-05-01 (uncommitted): fake `Jan 2024` fallback replaced with neutral unavailable state and escaped real dates (`pages-intelligence.js`, `pages-deferred.js`)
 - F21: Cross-Platform Comparison table — FIXED 2026-05-01 (uncommitted): static platform comparison matrix removed; section now renders real comparison rows/platforms from state or a no-data state (`pages-intelligence.js`, `pages-deferred.js`)
-- F22: Price Trends sparklines — fallback generates fake values from `list_price × [0.9,0.95,0.92,1.02,0.98,1.05,1.0]` (`pages-core.js:1207-1213`)
-- F23: Analytics "vs prev" — always `+0.0%`; `prevPeriodRevenue = 0` hardcoded (`pages-core.js:2558-2560,2710-2711`)
-- F24: Analytics KPI `change` — hardcoded `0` for Revenue/Sales/Margin/Sell-Through; no period-over-period calc (`pages-core.js:2542-2554`)
-- F25: Budget Categories — hardcoded defaults (Marketing $200 / Shipping $500 / Supplies $300 / Fees $400) displayed as user's data; `store.state.budgetCategories` never populated from backend (`pages-core.js:1873-1878`, `pages-sales-orders.js:1723`)
-- F26: Demand Radar fallback — `[0.3, 0.5, 0.8, 0.4]` hardcoded when no category data (`widgets.js:6776`)
-- F27: Supplier Price History sparkline — `[45, 42, 48, 44, 40, 38, 35]` hardcoded fake history (`widgets.js:7008`)
-- F28: Price Position Chart — Comp A/B/C at fixed coordinates + `yourPosition:{price:45,quality:75}` when no real data (`widgets.js:7267-7274`)
-- F29: Analytics Reports period label — always `'last 30 days'`; const, never reflects actual filter (`pages-deferred.js:17849`)
-- F30: Analytics Reports "Most Common Error" — always `'Sync Error'` for any non-zero error count (`pages-deferred.js:17913`)
+- F22: Price Trends sparklines — FIXED 2026-05-01 (uncommitted): dashboard price trends no longer synthesize history from list-price multipliers; inventory fallback now renders only real `price_history`/`priceHistory` data or a no-data state (`pages-core.js`, generated bundle rebuilt)
+- F23: Analytics "vs prev" — FIXED 2026-05-01 (uncommitted): hero revenue comparison now derives from real previous-period stats or loaded prior sales and otherwise shows `No prior period data` instead of `+0.0% vs prev` (`pages-core.js`, generated bundle rebuilt)
+- F24: Analytics KPI `change` — FIXED 2026-05-01 (uncommitted): KPI change fields now use real prior-period revenue/sales/margin/sell-through when available and remain blank when no baseline exists (`pages-core.js`, generated bundle rebuilt)
+- F25: Budget Categories — FIXED 2026-05-01 (uncommitted): removed seeded Marketing/Shipping/Supplies/Fees budget fallbacks; budget panels now use real `budgets`/`budgetCategories` state or a no-data state (`pages-core.js`, `pages-sales-orders.js`, `pages-deferred.js`, `widgets.js`, generated bundle rebuilt)
+- F26: Demand Radar fallback — FIXED 2026-05-01 (uncommitted): demand heatmap now renders only provided category rows or a no-data state instead of seeded `[0.3, 0.5, 0.8, 0.4]` values (`widgets.js`, generated bundle rebuilt)
+- F27: Supplier Price History sparkline — FIXED 2026-05-01 (uncommitted): supplier cards now render real `price_history`/`priceHistory` arrays or the sparkline no-data state instead of fake `[45, 42, 48, 44, 40, 38, 35]` history (`widgets.js`, generated bundle rebuilt)
+- F28: Price Position Chart — FIXED 2026-05-01 (uncommitted): price-position chart no longer fabricates `yourPosition` or Comp A/B/C points; it renders only valid real position points or a no-data state (`widgets.js`, generated bundle rebuilt)
+- F29: Analytics Reports period label — VERIFIED FIXED 2026-05-01 (current uncommitted source): reports header uses the active analytics period map instead of a constant period label (`pages-deferred.js`, generated bundle rebuilt)
+- F30: Analytics Reports "Most Common Error" — VERIFIED FIXED 2026-05-01 (current uncommitted source): error summary shows `None`/`—` from real error state and no longer hardcodes `Sync Error` (`pages-deferred.js`, generated bundle rebuilt)
 
 **Settings Bugs**
 - F31: Notification checkboxes — Email/Push hardcoded `checked`, SMS unchecked; never loaded from backend, `saveSettings()` never reads them (`pages-settings-account.js:1154-1168`)

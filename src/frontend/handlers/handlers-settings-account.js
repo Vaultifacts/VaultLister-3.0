@@ -2532,6 +2532,30 @@ Object.assign(handlers, {
                 changes.push('Dark Mode: ' + (darkModeToggle.checked ? 'Enabled' : 'Disabled'));
             }
         }
+        const emailNotifications = document.getElementById('settings-email-notifications');
+        const pushNotifications = document.getElementById('settings-push-notifications');
+        const smsNotifications = document.getElementById('settings-sms-notifications');
+        const currentNotificationPrefs =
+            store.state.notificationPreferences || store.state.user?.preferences?.notifications || {};
+        const currentEmailNotifications = Boolean(
+            currentNotificationPrefs.email_enabled ?? currentNotificationPrefs.email ?? false,
+        );
+        const currentPushNotifications = Boolean(
+            store.state.pushSettings?.enabled ??
+                currentNotificationPrefs.push_enabled ??
+                currentNotificationPrefs.push ??
+                false,
+        );
+        const currentSmsNotifications = Boolean(currentNotificationPrefs.sms_enabled ?? currentNotificationPrefs.sms ?? false);
+        if (emailNotifications && emailNotifications.checked !== currentEmailNotifications) {
+            changes.push('Email Notifications: ' + (emailNotifications.checked ? 'Enabled' : 'Disabled'));
+        }
+        if (pushNotifications && pushNotifications.checked !== currentPushNotifications) {
+            changes.push('Push Notifications: ' + (pushNotifications.checked ? 'Enabled' : 'Disabled'));
+        }
+        if (smsNotifications && smsNotifications.checked !== currentSmsNotifications) {
+            changes.push('SMS Notifications: ' + (smsNotifications.checked ? 'Enabled' : 'Disabled'));
+        }
 
         // If we detected specific changes, show them; otherwise generic message
         const summary = changes.length > 0 ? changes.map((c) => '\u2022 ' + c).join('\n') : '\u2022 Settings modified';
@@ -2568,6 +2592,38 @@ Object.assign(handlers, {
         if (language) {
             store.setState({ userLanguage: language.value });
             localStorage.setItem('vaultlister_language', language.value);
+        }
+        if (emailNotifications || pushNotifications || smsNotifications) {
+            const notificationPreferences = {
+                ...currentNotificationPrefs,
+                email_enabled: emailNotifications ? emailNotifications.checked : currentEmailNotifications,
+                push_enabled: pushNotifications ? pushNotifications.checked : currentPushNotifications,
+                sms_enabled: smsNotifications ? smsNotifications.checked : currentSmsNotifications,
+            };
+            const user = store.state.user || {};
+            const userPreferences =
+                user.preferences && typeof user.preferences === 'object' && !Array.isArray(user.preferences)
+                    ? user.preferences
+                    : {};
+            const pushSettings = {
+                ...(store.state.pushSettings || {}),
+                enabled: pushNotifications ? pushNotifications.checked : currentPushNotifications,
+                categories: store.state.pushSettings?.categories || {},
+            };
+            store.setState({
+                notificationPreferences,
+                pushSettings,
+                user: {
+                    ...user,
+                    preferences: {
+                        ...userPreferences,
+                        notifications: notificationPreferences,
+                    },
+                },
+            });
+            if (pushNotifications) {
+                await api.put('/push-subscriptions/settings', pushSettings);
+            }
         }
 
         store.setState({ settingsChanged: false });
@@ -2840,10 +2896,19 @@ Object.assign(handlers, {
             });
             toast.success('Profile settings reset to defaults');
         } else if (section === 'notifications') {
-            // Reset notifications settings
-            document.getElementById('settings-email-notifications').checked = true;
-            document.getElementById('settings-push-notifications').checked = true;
-            document.getElementById('settings-sms-notifications').checked = false;
+            const notificationPrefs =
+                store.state.notificationPreferences || store.state.user?.preferences?.notifications || {};
+            const emailEnabled = Boolean(notificationPrefs.email_enabled ?? notificationPrefs.email ?? false);
+            const pushEnabled = Boolean(
+                store.state.pushSettings?.enabled ?? notificationPrefs.push_enabled ?? notificationPrefs.push ?? false,
+            );
+            const smsEnabled = Boolean(notificationPrefs.sms_enabled ?? notificationPrefs.sms ?? false);
+            const emailInput = document.getElementById('settings-email-notifications');
+            const pushInput = document.getElementById('settings-push-notifications');
+            const smsInput = document.getElementById('settings-sms-notifications');
+            if (emailInput) emailInput.checked = emailEnabled;
+            if (pushInput) pushInput.checked = pushEnabled;
+            if (smsInput) smsInput.checked = smsEnabled;
             const quietHourSelects = document.querySelectorAll('select[onchange*="markSettingsChanged"]');
             if (quietHourSelects.length >= 2) {
                 quietHourSelects[0].value = '22:00';

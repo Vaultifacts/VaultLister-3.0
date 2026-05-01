@@ -1173,22 +1173,30 @@ Object.assign(pages, {
                     `;
                 }
 
-                case 'notifications':
+                case 'notifications': {
+                    const notificationPrefs =
+                        store.state.notificationPreferences || store.state.user?.preferences?.notifications || {};
+                    const pushSettings = store.state.pushSettings || {};
+                    const emailEnabled = Boolean(notificationPrefs.email_enabled ?? notificationPrefs.email ?? false);
+                    const pushEnabled = Boolean(
+                        pushSettings.enabled ?? notificationPrefs.push_enabled ?? notificationPrefs.push ?? false,
+                    );
+                    const smsEnabled = Boolean(notificationPrefs.sms_enabled ?? notificationPrefs.sms ?? false);
                     return `
                         <div class="settings-section">
                             <h3 class="settings-section-title">Email Notifications</h3>
                             <label class="settings-toggle">
-                                <input type="checkbox" id="settings-email-notifications" checked onchange="handlers.markSettingsChanged()" aria-label="Enable email notifications">
+                                <input type="checkbox" id="settings-email-notifications" ${emailEnabled ? 'checked' : ''} onchange="handlers.markSettingsChanged()" aria-label="Enable email notifications">
                                 <span class="toggle-slider"></span>
                                 <span class="toggle-label">Enable email notifications</span>
                             </label>
                             <label class="settings-toggle" style="margin-top: 12px;">
-                                <input type="checkbox" id="settings-push-notifications" checked onchange="handlers.markSettingsChanged()" aria-label="Enable push notifications">
+                                <input type="checkbox" id="settings-push-notifications" ${pushEnabled ? 'checked' : ''} onchange="handlers.markSettingsChanged()" aria-label="Enable push notifications">
                                 <span class="toggle-slider"></span>
                                 <span class="toggle-label">Enable push notifications</span>
                             </label>
                             <label class="settings-toggle" style="margin-top: 12px;">
-                                <input type="checkbox" id="settings-sms-notifications" onchange="handlers.markSettingsChanged()" aria-label="Enable SMS notifications">
+                                <input type="checkbox" id="settings-sms-notifications" ${smsEnabled ? 'checked' : ''} onchange="handlers.markSettingsChanged()" aria-label="Enable SMS notifications">
                                 <span class="toggle-slider"></span>
                                 <span class="toggle-label">Enable SMS notifications</span>
                             </label>
@@ -1506,6 +1514,7 @@ Object.assign(pages, {
                             </div>
                         </div>
                     `;
+                }
 
                 case 'tools':
                     return `

@@ -1686,46 +1686,7 @@ Object.assign(pages, {
 
         const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-        // Use real run history from state (loaded via API), with mock fallback
-        const hasRealRunHistory = !!store.state.automationHistoryRuns;
-        const runHistory = store.state.automationHistoryRuns || [
-            {
-                timestamp: new Date(Date.now() - 3600000).toISOString(),
-                action: 'Daily Closet Share',
-                status: 'success',
-                result: 'Shared 45 items',
-            },
-            {
-                timestamp: new Date(Date.now() - 7200000).toISOString(),
-                action: 'Send Offers to Likers',
-                status: 'success',
-                result: 'Sent 12 offers',
-            },
-            {
-                timestamp: new Date(Date.now() - 10800000).toISOString(),
-                action: 'Relist Stale Items',
-                status: 'success',
-                result: 'Relisted 3 items (60+ days stale)',
-            },
-            {
-                timestamp: new Date(Date.now() - 14400000).toISOString(),
-                action: 'Delist Stale Items',
-                status: 'success',
-                result: 'Delisted 2 items (90+ days inactive)',
-            },
-            {
-                timestamp: new Date(Date.now() - 18000000).toISOString(),
-                action: 'Follow Back',
-                status: 'success',
-                result: 'Followed 8 users',
-            },
-            {
-                timestamp: new Date(Date.now() - 86400000).toISOString(),
-                action: 'Weekly Price Drop',
-                status: 'failed',
-                result: 'API rate limit exceeded',
-            },
-        ];
+        const runHistory = store.state.automationHistoryRuns || [];
 
         // Count recent failures for alert banner
         const recentFailures = runHistory.filter((r) => r.status === 'failed');
@@ -1796,7 +1757,7 @@ Object.assign(pages, {
         const totalRuns = apiStats.totalRuns ?? runHistory.length;
         const failedRuns =
             apiStats.failedRuns ??
-            (hasRealRunHistory ? runHistory.filter((r) => r.status === 'failed' || r.status === 'failure').length : 0);
+            runHistory.filter((r) => r.status === 'failed' || r.status === 'failure').length;
         const successRate = totalRuns > 0 ? Math.round((successfulRuns / totalRuns) * 100) : 100;
 
         // Calculate time saved (mock calculation based on active automations)

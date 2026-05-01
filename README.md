@@ -14,12 +14,12 @@ Zero-cost, offline-capable multi-channel reselling platform. List to 9 marketpla
 ## Prerequisites
 - Bun 1.3+ (`curl -fsSL https://bun.sh/install | bash`)
 - Node.js 18+ (for Playwright and some scripts)
-- Git 2.30+
+- Git
 
 ## Quick Start
 ```bash
 git clone https://github.com/Vaultifacts/VaultLister-3.0.git
-cd vaultlister-3
+cd VaultLister-3.0
 cp .env.example .env        # Edit with your keys
 bun install
 bun run db:init              # Create database + run migrations
@@ -117,7 +117,7 @@ Worker deployment notes:
 bun scripts/launch-ops-check.mjs https://vaultlister.com --task-queue --queue-metrics --json
 ```
 
-- GitHub Actions runs `.github/workflows/production-smoke.yml` every 15 minutes and after successful deploys.
+- GitHub Actions runs `.github/workflows/production-smoke.yml` every 15 minutes and after each Deploy workflow completes.
 - If production smoke fails, GitHub automatically opens or updates a `production-smoke-failure` issue with the failing run link.
 
 ## Project Structure
