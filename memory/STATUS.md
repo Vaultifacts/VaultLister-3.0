@@ -1,5 +1,14 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-30 MST (session 6: listings cache bust, CI dedup, header bar removal; session 4: a11y 102 close-button fixes in commit 551d3bd1; automations page 3 sections removed)
+**Updated:** 2026-04-30 MST (session 7: docker cache bust, nav init fix, open-items refresh, CI 401 fix; session 6: listings cache bust, CI dedup, header bar removal; session 4: a11y 102 close-button fixes in commit 551d3bd1; automations page 3 sections removed)
+
+## Completed This Session (2026-04-30, session 7 — parallel)
+
+- **debd30f8** fix(docker): bust build cache to force fresh COPY of handler fixes
+- **d23a3888** fix(nav): remove reports and plans-billing route registrations from init.js
+- **2d0c9922** docs(open-items): refresh report after issue changes
+- **bfb4dabd** fix(ci): treat HTTP 401 as OK in observability Prometheus/pool checks
+
+---
 
 ## Completed This Session (2026-04-30, session 6 — parallel)
 
@@ -1383,11 +1392,15 @@ NOTE: CR-9 (Analytics Sales Funnel) + M-2 (Radar labels) are already VERIFIED �
 NOTE: CR-4 (EasyPost) was historically marked RESOLVED 2026-04-20, but 2026-04-22 live verification reopened it: production currently returns `503 {"error":"EasyPost not configured"}`.
 
 ## Unstaged Changes (as of 2026-04-30)
-- `.claude/scheduled_tasks.lock` — modified
-- `.claude/settings.local.json` — modified
-- `.serena/project.yml` — modified
+- `.claude/scheduled_tasks.lock` — modified (unstaged)
+- `.claude/settings.local.json` — modified (unstaged)
+- `.serena/project.yml` — modified (unstaged)
 - `public/sw.js` — modified (staged)
+- `src/backend/services/platformSync/imageHasher.js` — modified (unstaged)
 - `src/frontend/core-bundle.js` — modified (staged)
-- `src/frontend/core/router.js` — modified (staged)
-- `src/frontend/index.html` — modified (staged)
-- `src/frontend/styles/main.css` — modified (staged)
+- `src/frontend/index.html` — modified (unstaged)
+- `src/frontend/pages/pages-deferred.js` — modified (staged)
+- `src/frontend/pages/pages-tools-tasks.js` — modified (staged)
+- `src/frontend/styles/features.css` — modified (staged)
+- `src/frontend/styles/main.css` — modified (unstaged)
+- `src/tests/rate-limit-enforcement.test.js` — modified (unstaged)
