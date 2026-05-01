@@ -32,15 +32,19 @@ mock.module('../backend/shared/logger.js', () => ({
     logger: { info: mock(), warn: mock(), error: mock() }
 }));
 
-// Mock fs to prevent real file I/O
-mock.module('fs', () => ({
-    appendFileSync: mock(() => {}),
-    existsSync: mock(() => false),
-    readFileSync: mock(() => '[]'),
-    writeFileSync: mock(() => {}),
-    mkdirSync: mock(() => {}),
-    unlinkSync: mock(() => {}),
-}));
+// Mock fs to prevent real file I/O — spread real module so readdirSync etc. stay available
+mock.module('fs', () => {
+    const actual = require('fs');
+    return {
+        ...actual,
+        appendFileSync: mock(() => {}),
+        existsSync: mock(() => false),
+        readFileSync: mock(() => '[]'),
+        writeFileSync: mock(() => {}),
+        mkdirSync: mock(() => {}),
+        unlinkSync: mock(() => {}),
+    };
+});
 
 mock.module('path', () => {
     const actual = require('path');
