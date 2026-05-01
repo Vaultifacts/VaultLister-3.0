@@ -1928,7 +1928,10 @@ export async function automationsRouter(ctx) {
                     [user.id],
                 );
 
-                const isHealthy = workerStatus.running && Date.now() - new Date(workerStatus.lastRun).getTime() < 30000;
+                const timeSinceLastRun = workerStatus.lastRun
+                    ? Date.now() - new Date(workerStatus.lastRun).getTime()
+                    : 0;
+                const isHealthy = workerStatus.running && timeSinceLastRun < 300000;
 
                 return {
                     status: 200,

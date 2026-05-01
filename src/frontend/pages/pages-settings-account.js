@@ -212,7 +212,7 @@ Object.assign(pages, {
                                     ${components.icon('heart', 20)}
                                 </div>
                                 <div class="shop-stat-content">
-                                    <div class="shop-stat-value">${avgHealthScore}%</div>
+                                    <div class="shop-stat-value">${avgHealthScore !== null ? avgHealthScore + '%' : 'N/A'}</div>
                                     <div class="shop-stat-label">Avg Health</div>
                                 </div>
                             </div>
@@ -1087,40 +1087,50 @@ Object.assign(pages, {
                         <!-- Security Summary Card -->
                         <div class="settings-section">
                             <h3 class="settings-section-title">Security Overview</h3>
-                            <div class="security-summary-card">
-                                <div class="security-summary-header">
-                                    <div class="security-score">
-                                        <svg width="48" height="48" viewBox="0 0 48 48">
-                                            <circle cx="24" cy="24" r="20" fill="none" stroke="var(--gray-200)" stroke-width="4"></circle>
-                                            <circle cx="24" cy="24" r="20" fill="none" stroke="var(--success)" stroke-width="4" stroke-dasharray="${Math.round(126 * 0.75)} 126" transform="rotate(-90 24 24)"></circle>
-                                        </svg>
-                                        <span>75%</span>
+                            ${(() => {
+                                const hasMFA = !!(user.mfa_enabled || user.totp_enabled);
+                                const emailVerified = !!(user.email_verified || user.email);
+                                const hasRecentLogin = !!(user.last_login_at || user.created_at);
+                                const scoreChecks = [emailVerified, hasRecentLogin, hasMFA];
+                                const scorePct = 40 + scoreChecks.filter(Boolean).length * 20;
+                                const scoreLabel = scorePct >= 80 ? 'Strong' : scorePct >= 60 ? 'Good' : 'Fair';
+                                const scoreColor = scorePct >= 80 ? 'var(--success)' : scorePct >= 60 ? 'var(--warning)' : 'var(--danger)';
+                                const checkIcon = (ok) => ok
+                                    ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>`
+                                    : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>`;
+                                return `
+                                <div class="security-summary-card">
+                                    <div class="security-summary-header">
+                                        <div class="security-score">
+                                            <svg width="48" height="48" viewBox="0 0 48 48">
+                                                <circle cx="24" cy="24" r="20" fill="none" stroke="var(--gray-200)" stroke-width="4"></circle>
+                                                <circle cx="24" cy="24" r="20" fill="none" stroke="${scoreColor}" stroke-width="4" stroke-dasharray="${Math.round(126 * scorePct / 100)} 126" transform="rotate(-90 24 24)"></circle>
+                                            </svg>
+                                            <span>${scorePct}%</span>
+                                        </div>
+                                        <div class="security-summary-info">
+                                            <h3>Security Score: ${scoreLabel}</h3>
+                                            <p>${hasMFA ? 'Your account is well protected.' : 'Enable 2FA to improve your score.'}</p>
+                                        </div>
                                     </div>
-                                    <div class="security-summary-info">
-                                        <h3>Security Score: Good</h3>
-                                        <p>Your account is mostly secure. Enable 2FA to improve.</p>
+                                    <div class="security-checklist">
+                                        <div class="security-check-item ${emailVerified ? 'completed' : ''}">
+                                            ${checkIcon(emailVerified)}
+                                            <span>Email verified</span>
+                                        </div>
+                                        <div class="security-check-item ${hasRecentLogin ? 'completed' : ''}">
+                                            ${checkIcon(hasRecentLogin)}
+                                            <span>Recent login reviewed</span>
+                                        </div>
+                                        <div class="security-check-item ${hasMFA ? 'completed' : ''}">
+                                            ${checkIcon(hasMFA)}
+                                            <span>Two-factor authentication</span>
+                                            ${hasMFA ? '' : '<button class="btn btn-sm btn-primary" disabled style="opacity:0.5;cursor:not-allowed;" title="2FA setup coming soon">Enable</button>'}
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="security-checklist">
-                                    <div class="security-check-item completed">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                        <span>Strong password</span>
-                                    </div>
-                                    <div class="security-check-item completed">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                        <span>Email verified</span>
-                                    </div>
-                                    <div class="security-check-item">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>
-                                        <span>Two-factor authentication</span>
-                                        <button class="btn btn-sm btn-primary" disabled style="opacity:0.5;cursor:not-allowed;" title="2FA setup coming soon">Enable</button>
-                                    </div>
-                                    <div class="security-check-item completed">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                        <span>Recent login reviewed</span>
-                                    </div>
-                                </div>
-                            </div>
+                                `;
+                            })()}
                         </div>
                     `;
 
