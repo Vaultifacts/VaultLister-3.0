@@ -1013,7 +1013,7 @@ const pages = {
                                     description: p.vendor || 'Purchase',
                                 })),
                             ]
-                                .sort(() => Math.random() - 0.5)
+                                .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
                                 .slice(0, 6);
                             return transactions.length > 0
                                 ? cashFlowTicker.render(transactions)

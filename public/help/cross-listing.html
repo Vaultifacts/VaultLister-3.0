@@ -361,7 +361,7 @@
                         title="Change currency"
                         aria-expanded="false"
                         aria-haspopup="listbox"
-                    >
+                     aria-label="Change currency">
                         <span id="current-currency-code">CAD</span>
                         <svg aria-hidden="true"
                             width="12"
@@ -374,12 +374,12 @@
                             <path d="M6 9l6 6 6-6" />
                         </svg>
                     </button>
-                    <div class="currency-dropdown" id="currency-dropdown">
-                        <button type="button" class="currency-option" data-currency="CAD" data-symbol="$">$ CAD</button>
-                        <button type="button" class="currency-option" data-currency="USD" data-symbol="$">$ USD</button>
-                        <button type="button" class="currency-option" data-currency="GBP" data-symbol="£">£ GBP</button>
-                        <button type="button" class="currency-option" data-currency="EUR" data-symbol="€">€ EUR</button>
-                        <button type="button" class="currency-option" data-currency="AUD" data-symbol="$">$ AUD</button>
+                    <div class="currency-dropdown" id="currency-dropdown" role="listbox" aria-label="Select currency">
+                        <button type="button" class="currency-option" data-currency="CAD" data-symbol="$" role="option">$ CAD</button>
+                        <button type="button" class="currency-option" data-currency="USD" data-symbol="$" role="option">$ USD</button>
+                        <button type="button" class="currency-option" data-currency="GBP" data-symbol="£" role="option">£ GBP</button>
+                        <button type="button" class="currency-option" data-currency="EUR" data-symbol="€" role="option">€ EUR</button>
+                        <button type="button" class="currency-option" data-currency="AUD" data-symbol="$" role="option">$ AUD</button>
                     </div>
                 </div>
                 <div class="lang-selector">
@@ -389,7 +389,7 @@
                         title="Change language"
                         aria-expanded="false"
                         aria-haspopup="listbox"
-                    >
+                     aria-label="Change language">
                         <span class="lang-code" id="current-lang-code">EN</span>
                         <svg aria-hidden="true"
                             width="12"
@@ -402,17 +402,17 @@
                             <path d="M6 9l6 6 6-6" />
                         </svg>
                     </button>
-                    <div class="lang-dropdown" id="lang-dropdown">
-                        <button type="button" class="lang-option" data-lang="en">English</button>
-                        <button type="button" class="lang-option" data-lang="es">Spanish</button>
-                        <button type="button" class="lang-option" data-lang="fr">French</button>
-                        <button type="button" class="lang-option" data-lang="de">German</button>
-                        <button type="button" class="lang-option" data-lang="it">Italian</button>
-                        <button type="button" class="lang-option" data-lang="pt">Portuguese</button>
-                        <button type="button" class="lang-option" data-lang="ja">Japanese</button>
-                        <button type="button" class="lang-option" data-lang="zh">Chinese</button>
-                        <button type="button" class="lang-option" data-lang="ko">Korean</button>
-                        <button type="button" class="lang-option" data-lang="ar">Arabic</button>
+                    <div class="lang-dropdown" id="lang-dropdown" role="listbox" aria-label="Select language">
+                        <button type="button" class="lang-option" data-lang="en" role="option">English</button>
+                        <button type="button" class="lang-option" data-lang="es" role="option">Spanish</button>
+                        <button type="button" class="lang-option" data-lang="fr" role="option">French</button>
+                        <button type="button" class="lang-option" data-lang="de" role="option">German</button>
+                        <button type="button" class="lang-option" data-lang="it" role="option">Italian</button>
+                        <button type="button" class="lang-option" data-lang="pt" role="option">Portuguese</button>
+                        <button type="button" class="lang-option" data-lang="ja" role="option">Japanese</button>
+                        <button type="button" class="lang-option" data-lang="zh" role="option">Chinese</button>
+                        <button type="button" class="lang-option" data-lang="ko" role="option">Korean</button>
+                        <button type="button" class="lang-option" data-lang="ar" role="option">Arabic</button>
                     </div>
                 </div>
                 <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
@@ -434,11 +434,11 @@
 
             <section aria-label="Cross-listing FAQ" class="faq-section">
                 <div class="faq-item">
-                    <button type="button" class="faq-question" aria-expanded="false">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-1" id="faq-question-1">
                         What does cross-listing mean?
                         <span class="faq-icon" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer">
+                    <div class="faq-answer" id="faq-answer-1" role="region" aria-labelledby="faq-question-1">
                         Cross-listing means publishing a single inventory item as an active listing on multiple
                         marketplaces simultaneously. Instead of logging into each platform and recreating the listing
                         manually, VaultLister lets you create the item once — with photos, title, description, price,
@@ -449,11 +449,11 @@
                 </div>
 
                 <div class="faq-item">
-                    <button type="button" class="faq-question" aria-expanded="false">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-2" id="faq-question-2">
                         Which marketplaces does VaultLister support?
                         <span class="faq-icon" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer">
+                    <div class="faq-answer" id="faq-answer-2" role="region" aria-labelledby="faq-question-2">
                         VaultLister currently supports cross-listing to
                         <strong>Poshmark, eBay, Depop, Shopify, Facebook Marketplace, and Whatnot</strong> as live
                         integrations. Mercari, Grailed, and Etsy are in active development and will be available in a
@@ -465,11 +465,11 @@
                 </div>
 
                 <div class="faq-item">
-                    <button type="button" class="faq-question" aria-expanded="false">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-3" id="faq-question-3">
                         How does VaultLister handle platform-specific listing fields?
                         <span class="faq-icon" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer">
+                    <div class="faq-answer" id="faq-answer-3" role="region" aria-labelledby="faq-question-3">
                         Every marketplace has unique required fields — eBay needs item specifics (brand, size,
                         material), Poshmark requires a category and sub-category, Shopify needs product type and vendor.
                         VaultLister maps your core listing data to each platform's schema automatically where possible.
@@ -480,11 +480,11 @@
                 </div>
 
                 <div class="faq-item">
-                    <button type="button" class="faq-question" aria-expanded="false">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-4" id="faq-question-4">
                         What happens when an item sells on one marketplace?
                         <span class="faq-icon" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer">
+                    <div class="faq-answer" id="faq-answer-4" role="region" aria-labelledby="faq-question-4">
                         VaultLister monitors for sales via webhooks and periodic polling. When a sale is confirmed on
                         any platform, VaultLister immediately marks the item as "Sold" in your inventory and queues
                         delistings on every other platform where the item was active. For API-connected platforms,
@@ -495,11 +495,11 @@
                 </div>
 
                 <div class="faq-item">
-                    <button type="button" class="faq-question" aria-expanded="false">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-5" id="faq-question-5">
                         Can I customize a listing per marketplace?
                         <span class="faq-icon" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer">
+                    <div class="faq-answer" id="faq-answer-5" role="region" aria-labelledby="faq-question-5">
                         Yes. In the cross-listing panel, each platform has an optional "Override" section where you can
                         set a different price, title, or description for that platform only. For example, you might
                         price a jacket at $45 on Depop but $55 on eBay to account for different fee structures or buyer
@@ -509,11 +509,11 @@
                 </div>
 
                 <div class="faq-item">
-                    <button type="button" class="faq-question" aria-expanded="false">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-6" id="faq-question-6">
                         How often does VaultLister sync my listings?
                         <span class="faq-icon" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer">
+                    <div class="faq-answer" id="faq-answer-6" role="region" aria-labelledby="faq-question-6">
                         VaultLister uses a combination of real-time webhooks (where supported by the platform) and
                         scheduled polling to stay in sync. For eBay and Shopify, webhooks fire immediately on order
                         creation, so sale detection is near-instant. For platforms without webhook support, VaultLister
@@ -524,11 +524,11 @@
                 </div>
 
                 <div class="faq-item">
-                    <button type="button" class="faq-question" aria-expanded="false">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-7" id="faq-question-7">
                         What if a listing fails to publish?
                         <span class="faq-icon" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer">
+                    <div class="faq-answer" id="faq-answer-7" role="region" aria-labelledby="faq-question-7">
                         If a listing fails to publish on one platform, VaultLister records the error and shows it in the
                         item's listing status panel. Common reasons include missing required fields (e.g., eBay item
                         specifics), an expired OAuth token, or a platform-side API outage. VaultLister will not silently
@@ -619,7 +619,7 @@
                 </div>
             </div>
             <div class="footer-inner">
-                <div class="footer-cols">
+                <nav aria-label="Footer navigation"><div class="footer-cols">
                     <div class="footer-col">
                         <h3 class="footer-col-label">Resources</h3>
                         <a href="/blog/index.html">Blog</a>
@@ -652,7 +652,7 @@
                         <a href="/compare/primelister.html">Primelister</a>
                         <a href="/compare/vendoo.html">Vendoo</a>
                     </div>
-                </div>
+                </div></nav>
                 <div class="footer-bottom">
                     <p>© 2026 VaultLister, Inc. All rights reserved.</p>
                 </div>

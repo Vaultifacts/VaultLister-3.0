@@ -361,7 +361,7 @@
                         title="Change currency"
                         aria-expanded="false"
                         aria-haspopup="listbox"
-                    >
+                     aria-label="Change currency">
                         <span id="current-currency-code">CAD</span>
                         <svg aria-hidden="true"
                             width="12"
@@ -374,12 +374,12 @@
                             <path d="M6 9l6 6 6-6" />
                         </svg>
                     </button>
-                    <div class="currency-dropdown" id="currency-dropdown">
-                        <button type="button" class="currency-option" data-currency="CAD" data-symbol="$">$ CAD</button>
-                        <button type="button" class="currency-option" data-currency="USD" data-symbol="$">$ USD</button>
-                        <button type="button" class="currency-option" data-currency="GBP" data-symbol="£">£ GBP</button>
-                        <button type="button" class="currency-option" data-currency="EUR" data-symbol="€">€ EUR</button>
-                        <button type="button" class="currency-option" data-currency="AUD" data-symbol="$">$ AUD</button>
+                    <div class="currency-dropdown" id="currency-dropdown" role="listbox" aria-label="Select currency">
+                        <button type="button" class="currency-option" data-currency="CAD" data-symbol="$" role="option">$ CAD</button>
+                        <button type="button" class="currency-option" data-currency="USD" data-symbol="$" role="option">$ USD</button>
+                        <button type="button" class="currency-option" data-currency="GBP" data-symbol="£" role="option">£ GBP</button>
+                        <button type="button" class="currency-option" data-currency="EUR" data-symbol="€" role="option">€ EUR</button>
+                        <button type="button" class="currency-option" data-currency="AUD" data-symbol="$" role="option">$ AUD</button>
                     </div>
                 </div>
                 <div class="lang-selector">
@@ -389,7 +389,7 @@
                         title="Change language"
                         aria-expanded="false"
                         aria-haspopup="listbox"
-                    >
+                     aria-label="Change language">
                         <span class="lang-code" id="current-lang-code">EN</span>
                         <svg aria-hidden="true"
                             width="12"
@@ -402,17 +402,17 @@
                             <path d="M6 9l6 6 6-6" />
                         </svg>
                     </button>
-                    <div class="lang-dropdown" id="lang-dropdown">
-                        <button type="button" class="lang-option" data-lang="en">English</button>
-                        <button type="button" class="lang-option" data-lang="es">Spanish</button>
-                        <button type="button" class="lang-option" data-lang="fr">French</button>
-                        <button type="button" class="lang-option" data-lang="de">German</button>
-                        <button type="button" class="lang-option" data-lang="it">Italian</button>
-                        <button type="button" class="lang-option" data-lang="pt">Portuguese</button>
-                        <button type="button" class="lang-option" data-lang="ja">Japanese</button>
-                        <button type="button" class="lang-option" data-lang="zh">Chinese</button>
-                        <button type="button" class="lang-option" data-lang="ko">Korean</button>
-                        <button type="button" class="lang-option" data-lang="ar">Arabic</button>
+                    <div class="lang-dropdown" id="lang-dropdown" role="listbox" aria-label="Select language">
+                        <button type="button" class="lang-option" data-lang="en" role="option">English</button>
+                        <button type="button" class="lang-option" data-lang="es" role="option">Spanish</button>
+                        <button type="button" class="lang-option" data-lang="fr" role="option">French</button>
+                        <button type="button" class="lang-option" data-lang="de" role="option">German</button>
+                        <button type="button" class="lang-option" data-lang="it" role="option">Italian</button>
+                        <button type="button" class="lang-option" data-lang="pt" role="option">Portuguese</button>
+                        <button type="button" class="lang-option" data-lang="ja" role="option">Japanese</button>
+                        <button type="button" class="lang-option" data-lang="zh" role="option">Chinese</button>
+                        <button type="button" class="lang-option" data-lang="ko" role="option">Korean</button>
+                        <button type="button" class="lang-option" data-lang="ar" role="option">Arabic</button>
                     </div>
                 </div>
                 <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
@@ -435,11 +435,11 @@
 
             <section aria-label="Automations FAQ" class="faq-section">
                 <div class="faq-item">
-                    <button type="button" class="faq-question" aria-expanded="false">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-1" id="faq-question-1">
                         What automations does VaultLister offer?
                         <span class="faq-icon" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer">
+                    <div class="faq-answer" id="faq-answer-1" role="region" aria-labelledby="faq-question-1">
                         VaultLister currently offers three automation types:
                         <strong>Poshmark closet sharing</strong> (share your entire closet or specific items on a
                         configurable schedule), <strong>follow-back automation</strong> (automatically follow users who
@@ -451,11 +451,11 @@
                 </div>
 
                 <div class="faq-item">
-                    <button type="button" class="faq-question" aria-expanded="false">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-2" id="faq-question-2">
                         How does Poshmark closet sharing work?
                         <span class="faq-icon" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer">
+                    <div class="faq-answer" id="faq-answer-2" role="region" aria-labelledby="faq-question-2">
                         The closet sharing bot opens a headless Poshmark session and shares each active listing in your
                         closet, one at a time, with randomized delays between shares to mimic natural browsing behavior.
                         You can configure the schedule (e.g., share once every 3 hours), the order (newest first, oldest
@@ -467,11 +467,11 @@
                 </div>
 
                 <div class="faq-item">
-                    <button type="button" class="faq-question" aria-expanded="false">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-3" id="faq-question-3">
                         Can VaultLister follow new users automatically?
                         <span class="faq-icon" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer">
+                    <div class="faq-answer" id="faq-answer-3" role="region" aria-labelledby="faq-question-3">
                         Yes. The follow-back automation monitors your Poshmark follower list and automatically follows
                         back any new users who follow you. You can set a daily follow limit (recommended: no more than
                         200&ndash;300 per day) and a minimum delay between follows. The automation does not follow users
@@ -482,11 +482,11 @@
                 </div>
 
                 <div class="faq-item">
-                    <button type="button" class="faq-question" aria-expanded="false">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-4" id="faq-question-4">
                         How do I set up auto-offers?
                         <span class="faq-icon" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer">
+                    <div class="faq-answer" id="faq-answer-4" role="region" aria-labelledby="faq-question-4">
                         Go to <strong>Automations &rarr; Offer Rules</strong> and click "New Rule." You can configure
                         the offer as a percentage discount off the listing price (e.g., 10% off) or a fixed amount, and
                         set conditions such as "only send to likers who liked the item more than 24 hours ago" or "only
@@ -498,11 +498,11 @@
                 </div>
 
                 <div class="faq-item">
-                    <button type="button" class="faq-question" aria-expanded="false">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-5" id="faq-question-5">
                         Are there rate limits I need to worry about?
                         <span class="faq-icon" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer">
+                    <div class="faq-answer" id="faq-answer-5" role="region" aria-labelledby="faq-question-5">
                         Yes, and VaultLister enforces them automatically. Each platform has rate limits on how quickly
                         actions can be performed — Poshmark, for example, recommends spacing shares at least 3&ndash;5
                         seconds apart and limiting total daily shares to a reasonable volume. VaultLister's automation
@@ -514,11 +514,11 @@
                 </div>
 
                 <div class="faq-item">
-                    <button type="button" class="faq-question" aria-expanded="false">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-6" id="faq-question-6">
                         Will automations trigger account flags or bans?
                         <span class="faq-icon" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer">
+                    <div class="faq-answer" id="faq-answer-6" role="region" aria-labelledby="faq-question-6">
                         VaultLister is designed to operate within safe usage patterns, but no third-party automation
                         tool can guarantee zero risk of detection or account action — this is an inherent limitation of
                         any tool that automates marketplace interactions. VaultLister uses randomized delays, human-like
@@ -610,7 +610,7 @@
                 </div>
             </div>
             <div class="footer-inner">
-                <div class="footer-cols">
+                <nav aria-label="Footer navigation"><div class="footer-cols">
                     <div class="footer-col">
                         <h3 class="footer-col-label">Resources</h3>
                         <a href="/blog/index.html">Blog</a>
@@ -643,7 +643,7 @@
                         <a href="/compare/primelister.html">Primelister</a>
                         <a href="/compare/vendoo.html">Vendoo</a>
                     </div>
-                </div>
+                </div></nav>
                 <div class="footer-bottom">
                     <p>© 2026 VaultLister, Inc. All rights reserved.</p>
                 </div>

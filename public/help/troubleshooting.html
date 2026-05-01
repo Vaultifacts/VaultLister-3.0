@@ -361,7 +361,7 @@
                         title="Change currency"
                         aria-expanded="false"
                         aria-haspopup="listbox"
-                    >
+                     aria-label="Change currency">
                         <span id="current-currency-code">CAD</span>
                         <svg aria-hidden="true"
                             width="12"
@@ -374,12 +374,12 @@
                             <path d="M6 9l6 6 6-6" />
                         </svg>
                     </button>
-                    <div class="currency-dropdown" id="currency-dropdown">
-                        <button type="button" class="currency-option" data-currency="CAD" data-symbol="$">$ CAD</button>
-                        <button type="button" class="currency-option" data-currency="USD" data-symbol="$">$ USD</button>
-                        <button type="button" class="currency-option" data-currency="GBP" data-symbol="£">£ GBP</button>
-                        <button type="button" class="currency-option" data-currency="EUR" data-symbol="€">€ EUR</button>
-                        <button type="button" class="currency-option" data-currency="AUD" data-symbol="$">$ AUD</button>
+                    <div class="currency-dropdown" id="currency-dropdown" role="listbox" aria-label="Select currency">
+                        <button type="button" class="currency-option" data-currency="CAD" data-symbol="$" role="option">$ CAD</button>
+                        <button type="button" class="currency-option" data-currency="USD" data-symbol="$" role="option">$ USD</button>
+                        <button type="button" class="currency-option" data-currency="GBP" data-symbol="£" role="option">£ GBP</button>
+                        <button type="button" class="currency-option" data-currency="EUR" data-symbol="€" role="option">€ EUR</button>
+                        <button type="button" class="currency-option" data-currency="AUD" data-symbol="$" role="option">$ AUD</button>
                     </div>
                 </div>
                 <div class="lang-selector">
@@ -389,7 +389,7 @@
                         title="Change language"
                         aria-expanded="false"
                         aria-haspopup="listbox"
-                    >
+                     aria-label="Change language">
                         <span class="lang-code" id="current-lang-code">EN</span>
                         <svg aria-hidden="true"
                             width="12"
@@ -402,17 +402,17 @@
                             <path d="M6 9l6 6 6-6" />
                         </svg>
                     </button>
-                    <div class="lang-dropdown" id="lang-dropdown">
-                        <button type="button" class="lang-option" data-lang="en">English</button>
-                        <button type="button" class="lang-option" data-lang="es">Spanish</button>
-                        <button type="button" class="lang-option" data-lang="fr">French</button>
-                        <button type="button" class="lang-option" data-lang="de">German</button>
-                        <button type="button" class="lang-option" data-lang="it">Italian</button>
-                        <button type="button" class="lang-option" data-lang="pt">Portuguese</button>
-                        <button type="button" class="lang-option" data-lang="ja">Japanese</button>
-                        <button type="button" class="lang-option" data-lang="zh">Chinese</button>
-                        <button type="button" class="lang-option" data-lang="ko">Korean</button>
-                        <button type="button" class="lang-option" data-lang="ar">Arabic</button>
+                    <div class="lang-dropdown" id="lang-dropdown" role="listbox" aria-label="Select language">
+                        <button type="button" class="lang-option" data-lang="en" role="option">English</button>
+                        <button type="button" class="lang-option" data-lang="es" role="option">Spanish</button>
+                        <button type="button" class="lang-option" data-lang="fr" role="option">French</button>
+                        <button type="button" class="lang-option" data-lang="de" role="option">German</button>
+                        <button type="button" class="lang-option" data-lang="it" role="option">Italian</button>
+                        <button type="button" class="lang-option" data-lang="pt" role="option">Portuguese</button>
+                        <button type="button" class="lang-option" data-lang="ja" role="option">Japanese</button>
+                        <button type="button" class="lang-option" data-lang="zh" role="option">Chinese</button>
+                        <button type="button" class="lang-option" data-lang="ko" role="option">Korean</button>
+                        <button type="button" class="lang-option" data-lang="ar" role="option">Arabic</button>
                     </div>
                 </div>
                 <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
@@ -434,11 +434,11 @@
 
             <section aria-label="Troubleshooting FAQ" class="faq-section">
                 <div class="faq-item">
-                    <button type="button" class="faq-question" aria-expanded="false">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-1" id="faq-question-1">
                         A marketplace connection shows "disconnected." How do I fix it?
                         <span class="faq-icon" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer">
+                    <div class="faq-answer" id="faq-answer-1" role="region" aria-labelledby="faq-question-1">
                         Go to <strong>Settings &rarr; Connected Marketplaces</strong> and find the platform showing as
                         disconnected. The most common cause is an expired or revoked OAuth token — this happens when you
                         change your marketplace password, revoke app permissions, or the token expires naturally. Click
@@ -451,11 +451,11 @@
                 </div>
 
                 <div class="faq-item">
-                    <button type="button" class="faq-question" aria-expanded="false">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-2" id="faq-question-2">
                         My listings aren't syncing. What should I check?
                         <span class="faq-icon" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer">
+                    <div class="faq-answer" id="faq-answer-2" role="region" aria-labelledby="faq-question-2">
                         First, check that the marketplace connection is active (green status in Settings). Second, open
                         the affected inventory item and look at the <strong>Listing Status</strong> panel — it shows the
                         last sync time and any errors per platform. If a listing shows "Pending," a sync job may be
@@ -467,11 +467,11 @@
                 </div>
 
                 <div class="faq-item">
-                    <button type="button" class="faq-question" aria-expanded="false">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-3" id="faq-question-3">
                         I got a "rate limited" error — what does that mean?
                         <span class="faq-icon" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer">
+                    <div class="faq-answer" id="faq-answer-3" role="region" aria-labelledby="faq-question-3">
                         A rate limit error means VaultLister or you have made too many requests to a marketplace API in
                         a short period. Each platform enforces limits on how many API calls can be made per minute or
                         per day. VaultLister manages this automatically for most operations, but during bulk actions
@@ -484,11 +484,11 @@
                 </div>
 
                 <div class="faq-item">
-                    <button type="button" class="faq-question" aria-expanded="false">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-4" id="faq-question-4">
                         How do I re-authenticate a marketplace if OAuth expires?
                         <span class="faq-icon" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer">
+                    <div class="faq-answer" id="faq-answer-4" role="region" aria-labelledby="faq-question-4">
                         OAuth tokens for eBay, Shopify, and Depop have expiry periods set by the platform (typically 18
                         months to 2 years for long-lived tokens). When a token is near expiry, VaultLister will show a
                         warning badge on the affected marketplace in Settings. To re-authenticate, go to
@@ -500,11 +500,11 @@
                 </div>
 
                 <div class="faq-item">
-                    <button type="button" class="faq-question" aria-expanded="false">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-5" id="faq-question-5">
                         I imported items but some didn't come through — why?
                         <span class="faq-icon" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer">
+                    <div class="faq-answer" id="faq-answer-5" role="region" aria-labelledby="faq-question-5">
                         Imports can be incomplete for a few reasons. Listings that are in a non-active state on the
                         source platform (draft, sold, or delisted) are skipped by default — VaultLister only imports
                         currently active listings. Listings missing required images are also skipped, since VaultLister
@@ -517,11 +517,11 @@
                 </div>
 
                 <div class="faq-item">
-                    <button type="button" class="faq-question" aria-expanded="false">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-6" id="faq-question-6">
                         Automations are paused. How do I resume them?
                         <span class="faq-icon" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer">
+                    <div class="faq-answer" id="faq-answer-6" role="region" aria-labelledby="faq-question-6">
                         Go to <strong>Automations</strong> and check the status of each automation rule. A paused
                         automation usually means one of the following: the marketplace connection it depends on is
                         disconnected (reconnect in Settings first), the automation encountered a CAPTCHA or
@@ -533,11 +533,11 @@
                 </div>
 
                 <div class="faq-item">
-                    <button type="button" class="faq-question" aria-expanded="false">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-7" id="faq-question-7">
                         The app is slow or unresponsive — how do I report it?
                         <span class="faq-icon" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer">
+                    <div class="faq-answer" id="faq-answer-7" role="region" aria-labelledby="faq-question-7">
                         First check the <a href="/status.html">Status Page</a> — if there is an active incident, it will
                         be posted there with a timeline. If the Status Page shows all systems operational, try a hard
                         refresh (Ctrl+Shift+R / Cmd+Shift+R) to clear any cached resources. If the issue persists, note
@@ -549,11 +549,11 @@
                 </div>
 
                 <div class="faq-item">
-                    <button type="button" class="faq-question" aria-expanded="false">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-8" id="faq-question-8">
                         How do I contact support or report a bug?
                         <span class="faq-icon" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer">
+                    <div class="faq-answer" id="faq-answer-8" role="region" aria-labelledby="faq-question-8">
                         Use the <a href="/contact.html" aria-label="Contact Us">Contact Us</a> to reach the support
                         team. For bugs, include: the steps to reproduce the issue, what you expected to happen, what
                         actually happened, your browser and OS version, and any error messages you saw. Screenshots or
@@ -643,7 +643,7 @@
                 </div>
             </div>
             <div class="footer-inner">
-                <div class="footer-cols">
+                <nav aria-label="Footer navigation"><div class="footer-cols">
                     <div class="footer-col">
                         <h3 class="footer-col-label">Resources</h3>
                         <a href="/blog/index.html">Blog</a>
@@ -676,7 +676,7 @@
                         <a href="/compare/primelister.html">Primelister</a>
                         <a href="/compare/vendoo.html">Vendoo</a>
                     </div>
-                </div>
+                </div></nav>
                 <div class="footer-bottom">
                     <p>© 2026 VaultLister, Inc. All rights reserved.</p>
                 </div>

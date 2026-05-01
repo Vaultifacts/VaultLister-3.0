@@ -16953,7 +16953,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '9501d8ae';
+    const v = '11a43c1b';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function (resolve, reject) {
@@ -21054,7 +21054,7 @@ const pages = {
                                     description: p.vendor || 'Purchase',
                                 })),
                             ]
-                                .sort(() => Math.random() - 0.5)
+                                .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
                                 .slice(0, 6);
                             return transactions.length > 0
                                 ? cashFlowTicker.render(transactions)

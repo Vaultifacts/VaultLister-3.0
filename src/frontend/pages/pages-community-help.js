@@ -2023,7 +2023,8 @@ Upload photos once, use them across all your listings.`,
                                       placeholder="Provide detailed information about your feedback. Include steps to reproduce if reporting a bug."
                                       required
                                       maxlength="2000"
-                                      oninput="document.getElementById('feedback-char-count').textContent=this.value.length+' / 2000'; document.getElementById('feedback-char-count').style.color=this.value.length aria-label="Feedback Description">1800?'var(--danger-600)':'var(--gray-500)'"></textarea>
+                                      oninput="document.getElementById('feedback-char-count').textContent=this.value.length+' / 2000'; document.getElementById('feedback-char-count').style.color=this.value.length &gt; 1800?'var(--danger-600)':'var(--gray-500)';"
+                                      aria-label="Feedback Description"></textarea>
                             <small id="feedback-char-count" style="color: var(--gray-500); font-size: 12px;">0 / 2000</small>
                         </div>
 

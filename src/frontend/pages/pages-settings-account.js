@@ -1122,15 +1122,16 @@ Object.assign(pages, {
                         </div>
                     `;
 
-                case 'appearance':
+                case 'appearance': {
+                    const isDarkMode = store.state.darkMode;
                     return `
                         <div class="settings-section">
                             <h3 class="settings-section-title" id="theme-section-heading">Theme</h3>
                             <div class="theme-options" role="radiogroup" aria-labelledby="theme-section-heading">
-                                <label class="theme-option active">
+                                <label class="theme-option ${!isDarkMode ? 'active' : ''}">
                                     <input type="radio" name="theme-mode" value="light" class="sr-only"
                                            aria-label="Light theme"
-                                           checked
+                                           ${!isDarkMode ? 'checked' : ''}
                                            onchange="handlers.setThemeMode('light')">
                                     <div class="theme-preview theme-preview-light">
                                         <div class="theme-preview-sidebar"></div>
@@ -1141,10 +1142,24 @@ Object.assign(pages, {
                                     </div>
                                     <span>Light</span>
                                 </label>
+                                <label class="theme-option ${isDarkMode ? 'active' : ''}">
+                                    <input type="radio" name="theme-mode" value="dark" class="sr-only"
+                                           aria-label="Dark theme"
+                                           ${isDarkMode ? 'checked' : ''}
+                                           onchange="handlers.setThemeMode('dark')">
+                                    <div class="theme-preview theme-preview-dark">
+                                        <div class="theme-preview-sidebar"></div>
+                                        <div class="theme-preview-content">
+                                            <div class="theme-preview-header"></div>
+                                            <div class="theme-preview-card"></div>
+                                        </div>
+                                    </div>
+                                    <span>Dark</span>
+                                </label>
                             </div>
                         </div>
-
                     `;
+                }
 
                 case 'notifications':
                     return `
@@ -2199,7 +2214,7 @@ Object.assign(pages, {
                             </div>
                             <div>
                                 <h2 style="font-size: 18px; font-weight: 600; margin: 0;">${escapeHtml(user.full_name || user.username || 'User')}</h2>
-                                <p style="color: var(--gray-500); margin: 4px 0 0;">@${escapeHtml(user.username || 'unknown')}</p>
+                                <p style="color: var(--gray-500); margin: 4px 0 0;">@${escapeHtml(user.username || user.email?.split('@')[0] || 'user')}</p>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">

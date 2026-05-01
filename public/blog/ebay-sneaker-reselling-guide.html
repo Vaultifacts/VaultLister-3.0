@@ -509,7 +509,7 @@
                         title="Change currency"
                         aria-expanded="false"
                         aria-haspopup="listbox"
-                    >
+                     aria-label="Change currency">
                         <span id="current-currency-code">CAD</span>
                         <svg aria-hidden="true"
                             width="12"
@@ -522,12 +522,12 @@
                             <path d="M6 9l6 6 6-6" />
                         </svg>
                     </button>
-                    <div class="currency-dropdown" id="currency-dropdown">
-                        <button type="button" class="currency-option" data-currency="CAD" data-symbol="$">$ CAD</button>
-                        <button type="button" class="currency-option" data-currency="USD" data-symbol="$">$ USD</button>
-                        <button type="button" class="currency-option" data-currency="GBP" data-symbol="£">£ GBP</button>
-                        <button type="button" class="currency-option" data-currency="EUR" data-symbol="€">€ EUR</button>
-                        <button type="button" class="currency-option" data-currency="AUD" data-symbol="$">$ AUD</button>
+                    <div class="currency-dropdown" id="currency-dropdown" role="listbox" aria-label="Select currency">
+                        <button type="button" class="currency-option" data-currency="CAD" data-symbol="$" role="option">$ CAD</button>
+                        <button type="button" class="currency-option" data-currency="USD" data-symbol="$" role="option">$ USD</button>
+                        <button type="button" class="currency-option" data-currency="GBP" data-symbol="£" role="option">£ GBP</button>
+                        <button type="button" class="currency-option" data-currency="EUR" data-symbol="€" role="option">€ EUR</button>
+                        <button type="button" class="currency-option" data-currency="AUD" data-symbol="$" role="option">$ AUD</button>
                     </div>
                 </div>
                 <div class="lang-selector">
@@ -537,7 +537,7 @@
                         title="Change language"
                         aria-expanded="false"
                         aria-haspopup="listbox"
-                    >
+                     aria-label="Change language">
                         <img
                             class="lang-flag"
                             id="current-flag"
@@ -558,8 +558,8 @@
                             <path d="M6 9l6 6 6-6" />
                         </svg>
                     </button>
-                    <div class="lang-dropdown" id="lang-dropdown">
-                        <button type="button" class="lang-option" data-lang="en" data-flag="us">
+                    <div class="lang-dropdown" id="lang-dropdown" role="listbox" aria-label="Select language">
+                        <button type="button" class="lang-option" data-lang="en" data-flag="us" role="option">
                             <img
                                 src="https://flagcdn.com/16x12/us.png"
                                 width="16"
@@ -570,7 +570,7 @@
                             English
                         </button>
 
-                        <button type="button" class="lang-option" data-lang="es" data-flag="es">
+                        <button type="button" class="lang-option" data-lang="es" data-flag="es" role="option">
                             <img
                                 src="https://flagcdn.com/16x12/es.png"
                                 width="16"
@@ -580,7 +580,7 @@
                             />
                             Español
                         </button>
-                        <button type="button" class="lang-option" data-lang="fr" data-flag="fr">
+                        <button type="button" class="lang-option" data-lang="fr" data-flag="fr" role="option">
                             <img
                                 src="https://flagcdn.com/16x12/fr.png"
                                 width="16"
@@ -590,7 +590,7 @@
                             />
                             Français
                         </button>
-                        <button type="button" class="lang-option" data-lang="de" data-flag="de">
+                        <button type="button" class="lang-option" data-lang="de" data-flag="de" role="option">
                             <img
                                 src="https://flagcdn.com/16x12/de.png"
                                 width="16"
@@ -600,7 +600,7 @@
                             />
                             Deutsch
                         </button>
-                        <button type="button" class="lang-option" data-lang="it" data-flag="it">
+                        <button type="button" class="lang-option" data-lang="it" data-flag="it" role="option">
                             <img
                                 src="https://flagcdn.com/16x12/it.png"
                                 width="16"
@@ -610,7 +610,7 @@
                             />
                             Italiano
                         </button>
-                        <button type="button" class="lang-option" data-lang="pt" data-flag="pt">
+                        <button type="button" class="lang-option" data-lang="pt" data-flag="pt" role="option">
                             <img
                                 src="https://flagcdn.com/16x12/pt.png"
                                 width="16"
@@ -620,7 +620,7 @@
                             />
                             Português
                         </button>
-                        <button type="button" class="lang-option" data-lang="ja" data-flag="jp">
+                        <button type="button" class="lang-option" data-lang="ja" data-flag="jp" role="option">
                             <img
                                 src="https://flagcdn.com/16x12/jp.png"
                                 width="16"
@@ -630,7 +630,7 @@
                             />
                             日本語
                         </button>
-                        <button type="button" class="lang-option" data-lang="zh" data-flag="cn">
+                        <button type="button" class="lang-option" data-lang="zh" data-flag="cn" role="option">
                             <img
                                 src="https://flagcdn.com/16x12/cn.png"
                                 width="16"
@@ -640,7 +640,7 @@
                             />
                             中文
                         </button>
-                        <button type="button" class="lang-option" data-lang="ko" data-flag="kr">
+                        <button type="button" class="lang-option" data-lang="ko" data-flag="kr" role="option">
                             <img
                                 src="https://flagcdn.com/16x12/kr.png"
                                 width="16"
@@ -650,7 +650,7 @@
                             />
                             한국어
                         </button>
-                        <button type="button" class="lang-option" data-lang="ar" data-flag="sa">
+                        <button type="button" class="lang-option" data-lang="ar" data-flag="sa" role="option">
                             <img
                                 src="https://flagcdn.com/16x12/sa.png"
                                 width="16"
@@ -1086,7 +1086,7 @@
                         ></a>
                     </div>
                 </div>
-                <div class="footer-cols">
+                <nav aria-label="Footer navigation"><div class="footer-cols">
                     <div class="footer-col">
                         <h3 class="footer-col-label">Resources</h3>
                         <a href="/blog/index.html">Blog</a>
@@ -1119,7 +1119,7 @@
                         <a href="/compare/primelister.html">Primelister</a>
                         <a href="/compare/vendoo.html">Vendoo</a>
                     </div>
-                </div>
+                </div></nav>
                 <div class="footer-bottom">
                     <p>© 2026 VaultLister, Inc. All rights reserved.</p>
                 </div>

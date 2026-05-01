@@ -5059,7 +5059,7 @@ Object.assign(pages, {
                             </div>
                             <div>
                                 <h2 style="font-size: 18px; font-weight: 600; margin: 0;">${escapeHtml(user.full_name || user.username || 'User')}</h2>
-                                <p style="color: var(--gray-500); margin: 4px 0 0;">@${escapeHtml(user.username || 'unknown')}</p>
+                                <p style="color: var(--gray-500); margin: 4px 0 0;">@${escapeHtml(user.username || user.email?.split('@')[0] || 'user')}</p>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
@@ -10428,11 +10428,7 @@ Upload photos once, use them across all your listings.`,
         // Recent releases for "What's New" banner
         const recentReleases = allCompleted.slice(0, 3);
 
-        const featureProgress = {
-            'eBay Bot Automation': 70,
-            'EasyPost Shipping Labels': 30,
-            'Stripe Billing & Subscriptions': 85,
-        };
+        const featureProgress = {};
 
         return `
             <div class="page-header">
@@ -10985,7 +10981,8 @@ Upload photos once, use them across all your listings.`,
                                       placeholder="Provide detailed information about your feedback. Include steps to reproduce if reporting a bug."
                                       required
                                       maxlength="2000"
-                                      oninput="document.getElementById('feedback-char-count').textContent=this.value.length+' / 2000'; document.getElementById('feedback-char-count').style.color=this.value.length aria-label="Feedback Description">1800?'var(--danger-600)':'var(--gray-500)'"></textarea>
+                                      oninput="document.getElementById('feedback-char-count').textContent=this.value.length+' / 2000'; document.getElementById('feedback-char-count').style.color=this.value.length &gt; 1800?'var(--danger-600)':'var(--gray-500)';"
+                                      aria-label="Feedback Description"></textarea>
                             <small id="feedback-char-count" style="color: var(--gray-500); font-size: 12px;">0 / 2000</small>
                         </div>
 

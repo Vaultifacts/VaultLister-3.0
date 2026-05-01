@@ -147,7 +147,7 @@
                     </div>
                 </div>
             </div>
-            <button type="button" class="nav-hamburger" aria-label="Open menu" aria-expanded="false">
+            <button type="button" class="nav-hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav-drawer">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -160,7 +160,7 @@
                         title="Change currency"
                         aria-expanded="false"
                         aria-haspopup="listbox"
-                    >
+                     aria-label="Change currency">
                         <span id="current-currency-code">CAD</span>
                         <svg aria-hidden="true"
                             width="12"
@@ -173,12 +173,12 @@
                             <path d="M6 9l6 6 6-6" />
                         </svg>
                     </button>
-                    <div class="currency-dropdown" id="currency-dropdown">
-                        <button type="button" class="currency-option" data-currency="CAD" data-symbol="$">$ CAD</button>
-                        <button type="button" class="currency-option" data-currency="USD" data-symbol="$">$ USD</button>
-                        <button type="button" class="currency-option" data-currency="GBP" data-symbol="£">£ GBP</button>
-                        <button type="button" class="currency-option" data-currency="EUR" data-symbol="€">€ EUR</button>
-                        <button type="button" class="currency-option" data-currency="AUD" data-symbol="$">$ AUD</button>
+                    <div class="currency-dropdown" id="currency-dropdown" role="listbox" aria-label="Select currency">
+                        <button type="button" class="currency-option" data-currency="CAD" data-symbol="$" role="option">$ CAD</button>
+                        <button type="button" class="currency-option" data-currency="USD" data-symbol="$" role="option">$ USD</button>
+                        <button type="button" class="currency-option" data-currency="GBP" data-symbol="£" role="option">£ GBP</button>
+                        <button type="button" class="currency-option" data-currency="EUR" data-symbol="€" role="option">€ EUR</button>
+                        <button type="button" class="currency-option" data-currency="AUD" data-symbol="$" role="option">$ AUD</button>
                     </div>
                 </div>
                 <div class="lang-selector">
@@ -188,7 +188,7 @@
                         title="Change language"
                         aria-expanded="false"
                         aria-haspopup="listbox"
-                    >
+                     aria-label="Change language">
                         <span class="lang-code" id="current-lang-code">EN</span>
                         <svg aria-hidden="true"
                             width="12"
@@ -201,17 +201,17 @@
                             <path d="M6 9l6 6 6-6" />
                         </svg>
                     </button>
-                    <div class="lang-dropdown" id="lang-dropdown">
-                        <button type="button" class="lang-option" data-lang="en">English</button>
-                        <button type="button" class="lang-option" data-lang="es">Spanish</button>
-                        <button type="button" class="lang-option" data-lang="fr">French</button>
-                        <button type="button" class="lang-option" data-lang="de">German</button>
-                        <button type="button" class="lang-option" data-lang="it">Italian</button>
-                        <button type="button" class="lang-option" data-lang="pt">Portuguese</button>
-                        <button type="button" class="lang-option" data-lang="ja">Japanese</button>
-                        <button type="button" class="lang-option" data-lang="zh">Chinese</button>
-                        <button type="button" class="lang-option" data-lang="ko">Korean</button>
-                        <button type="button" class="lang-option" data-lang="ar">Arabic</button>
+                    <div class="lang-dropdown" id="lang-dropdown" role="listbox" aria-label="Select language">
+                        <button type="button" class="lang-option" data-lang="en" role="option">English</button>
+                        <button type="button" class="lang-option" data-lang="es" role="option">Spanish</button>
+                        <button type="button" class="lang-option" data-lang="fr" role="option">French</button>
+                        <button type="button" class="lang-option" data-lang="de" role="option">German</button>
+                        <button type="button" class="lang-option" data-lang="it" role="option">Italian</button>
+                        <button type="button" class="lang-option" data-lang="pt" role="option">Portuguese</button>
+                        <button type="button" class="lang-option" data-lang="ja" role="option">Japanese</button>
+                        <button type="button" class="lang-option" data-lang="zh" role="option">Chinese</button>
+                        <button type="button" class="lang-option" data-lang="ko" role="option">Korean</button>
+                        <button type="button" class="lang-option" data-lang="ar" role="option">Arabic</button>
                     </div>
                 </div>
 
@@ -388,7 +388,7 @@
                     </div>
                 </div>
                 <div class="footer-inner">
-                    <div class="footer-cols">
+                    <nav aria-label="Footer navigation"><div class="footer-cols">
                         <div class="footer-col">
                             <h3 class="footer-col-label">Resources</h3>
                             <a href="/blog/index.html">Blog</a>
@@ -421,8 +421,8 @@
                             <a href="/compare/primelister.html">Primelister</a>
                             <a href="/compare/vendoo.html">Vendoo</a>
                         </div>
-                    </div>
-                    <div class="footer-bottom">
+                    </div></nav>
+                <div class="footer-bottom">
                         <p>© 2026 VaultLister, Inc. All rights reserved.</p>
                     </div>
                 </div>
@@ -623,7 +623,7 @@
                     </div>
                 </div>
                 <div class="footer-inner">
-                    <div class="footer-cols">
+                    <nav aria-label="Footer navigation"><div class="footer-cols">
                         <div class="footer-col">
                             <h3 class="footer-col-label">Resources</h3>
                             <a href="/blog/index.html">Blog</a>
@@ -656,8 +656,8 @@
                             <a href="/compare/primelister.html">Primelister</a>
                             <a href="/compare/vendoo.html">Vendoo</a>
                         </div>
-                    </div>
-                    <div class="footer-bottom">
+                    </div></nav>
+                <div class="footer-bottom">
                         <p>© 2026 VaultLister, Inc. All rights reserved.</p>
                     </div>
                 </div>
@@ -858,7 +858,7 @@
                     </div>
                 </div>
                 <div class="footer-inner">
-                    <div class="footer-cols">
+                    <nav aria-label="Footer navigation"><div class="footer-cols">
                         <div class="footer-col">
                             <h3 class="footer-col-label">Resources</h3>
                             <a href="/blog/index.html">Blog</a>
@@ -891,8 +891,8 @@
                             <a href="/compare/primelister.html">Primelister</a>
                             <a href="/compare/vendoo.html">Vendoo</a>
                         </div>
-                    </div>
-                    <div class="footer-bottom">
+                    </div></nav>
+                <div class="footer-bottom">
                         <p>© 2026 VaultLister, Inc. All rights reserved.</p>
                     </div>
                 </div>

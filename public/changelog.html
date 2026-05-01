@@ -453,7 +453,7 @@
                     </div>
                 </div>
             </div>
-            <button type="button" class="nav-hamburger" aria-label="Open menu" aria-expanded="false">
+            <button type="button" class="nav-hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav-drawer">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -466,7 +466,7 @@
                         title="Change currency"
                         aria-expanded="false"
                         aria-haspopup="listbox"
-                    >
+                     aria-label="Change currency">
                         <span id="current-currency-code">CAD</span>
                         <svg aria-hidden="true"
                             width="12"
@@ -479,12 +479,12 @@
                             <path d="M6 9l6 6 6-6" />
                         </svg>
                     </button>
-                    <div class="currency-dropdown" id="currency-dropdown">
-                        <button type="button" class="currency-option" data-currency="CAD" data-symbol="$">$ CAD</button>
-                        <button type="button" class="currency-option" data-currency="USD" data-symbol="$">$ USD</button>
-                        <button type="button" class="currency-option" data-currency="GBP" data-symbol="£">£ GBP</button>
-                        <button type="button" class="currency-option" data-currency="EUR" data-symbol="€">€ EUR</button>
-                        <button type="button" class="currency-option" data-currency="AUD" data-symbol="$">$ AUD</button>
+                    <div class="currency-dropdown" id="currency-dropdown" role="listbox" aria-label="Select currency">
+                        <button type="button" class="currency-option" data-currency="CAD" data-symbol="$" role="option">$ CAD</button>
+                        <button type="button" class="currency-option" data-currency="USD" data-symbol="$" role="option">$ USD</button>
+                        <button type="button" class="currency-option" data-currency="GBP" data-symbol="£" role="option">£ GBP</button>
+                        <button type="button" class="currency-option" data-currency="EUR" data-symbol="€" role="option">€ EUR</button>
+                        <button type="button" class="currency-option" data-currency="AUD" data-symbol="$" role="option">$ AUD</button>
                     </div>
                 </div>
                 <div class="lang-selector">
@@ -494,7 +494,7 @@
                         title="Change language"
                         aria-expanded="false"
                         aria-haspopup="listbox"
-                    >
+                     aria-label="Change language">
                         <span class="lang-code" id="current-lang-code">EN</span>
                         <svg aria-hidden="true"
                             width="12"
@@ -507,17 +507,17 @@
                             <path d="M6 9l6 6 6-6" />
                         </svg>
                     </button>
-                    <div class="lang-dropdown" id="lang-dropdown">
-                        <button type="button" class="lang-option" data-lang="en">English</button>
-                        <button type="button" class="lang-option" data-lang="es">Spanish</button>
-                        <button type="button" class="lang-option" data-lang="fr">French</button>
-                        <button type="button" class="lang-option" data-lang="de">German</button>
-                        <button type="button" class="lang-option" data-lang="it">Italian</button>
-                        <button type="button" class="lang-option" data-lang="pt">Portuguese</button>
-                        <button type="button" class="lang-option" data-lang="ja">Japanese</button>
-                        <button type="button" class="lang-option" data-lang="zh">Chinese</button>
-                        <button type="button" class="lang-option" data-lang="ko">Korean</button>
-                        <button type="button" class="lang-option" data-lang="ar">Arabic</button>
+                    <div class="lang-dropdown" id="lang-dropdown" role="listbox" aria-label="Select language">
+                        <button type="button" class="lang-option" data-lang="en" role="option">English</button>
+                        <button type="button" class="lang-option" data-lang="es" role="option">Spanish</button>
+                        <button type="button" class="lang-option" data-lang="fr" role="option">French</button>
+                        <button type="button" class="lang-option" data-lang="de" role="option">German</button>
+                        <button type="button" class="lang-option" data-lang="it" role="option">Italian</button>
+                        <button type="button" class="lang-option" data-lang="pt" role="option">Portuguese</button>
+                        <button type="button" class="lang-option" data-lang="ja" role="option">Japanese</button>
+                        <button type="button" class="lang-option" data-lang="zh" role="option">Chinese</button>
+                        <button type="button" class="lang-option" data-lang="ko" role="option">Korean</button>
+                        <button type="button" class="lang-option" data-lang="ar" role="option">Arabic</button>
                     </div>
                 </div>
 
@@ -697,23 +697,23 @@
                         <div class="release-title">Launch readiness, security hardening &amp; cleanup</div>
                         <ul class="change-list">
                             <li class="change-item">
-                                <span class="badge badge-security">Security</span>Auth lockout re-enabled for production
+                                <span class="badge badge-security">Security</span> Auth lockout re-enabled for production
                                 — brute-force protection active
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-security">Security</span>OAUTH_MODE startup assertion — warns
+                                <span class="badge badge-security">Security</span> OAUTH_MODE startup assertion — warns
                                 if marketplace connections use mock tokens
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-fix">Fix</span>Privacy policy and terms of service corrected
+                                <span class="badge badge-fix">Fix</span> Privacy policy and terms of service corrected
                                 for cloud-hosted deployment
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-fix">Fix</span>All placeholder data replaced with proper empty
+                                <span class="badge badge-fix">Fix</span> All placeholder data replaced with proper empty
                                 states across financials, analytics, and settings
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>SKU uniqueness constraint — prevents duplicate
+                                <span class="badge badge-new">New</span> SKU uniqueness constraint — prevents duplicate
                                 inventory SKUs
                             </li>
                             <li class="change-item">
@@ -721,15 +721,15 @@
                                 Account, Calendar, Reports, Community, Roadmap, Import, Receipts)
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>Centralized platform list — consistent
+                                <span class="badge badge-new">New</span> Centralized platform list — consistent
                                 9-platform count across all surfaces
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-fix">Fix</span>Window exposures for richTextEditor, focusMode,
+                                <span class="badge badge-fix">Fix</span> Window exposures for richTextEditor, focusMode,
                                 sessionMonitor — fixes ReferenceErrors on hash-navigated pages
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-fix">Fix</span>RELEASE.md and ARCHITECTURE.md corrected
+                                <span class="badge badge-fix">Fix</span> RELEASE.md and ARCHITECTURE.md corrected
                                 (PostgreSQL, AES-256-GCM, Railway+Cloudflare)
                             </li>
                             <li class="change-item">
@@ -751,26 +751,26 @@
                         <div class="release-title">Landing page, admin dashboard, bundle splitting &amp; SSL</div>
                         <ul class="change-list">
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>Public landing page with feature highlights and
+                                <span class="badge badge-new">New</span> Public landing page with feature highlights and
                                 pricing tiers
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>Admin dashboard with system health, active
+                                <span class="badge badge-new">New</span> Admin dashboard with system health, active
                                 sessions, and audit log viewer
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>Changelog page (you are here)
+                                <span class="badge badge-new">New</span> Changelog page (you are here)
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>Route-group chunk splitting — core bundle down
+                                <span class="badge badge-new">New</span> Route-group chunk splitting — core bundle down
                                 40%, lazy loads per page
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-security">Security</span>SSL/TLS configured with Let's Encrypt
+                                <span class="badge badge-security">Security</span> SSL/TLS configured with Let's Encrypt
                                 + Nginx; HSTS enabled
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>Custom domain routing with www redirect and
+                                <span class="badge badge-new">New</span> Custom domain routing with www redirect and
                                 HTTPS enforcement
                             </li>
                         </ul>
@@ -792,19 +792,19 @@
                                 credentials with full token refresh flow
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>Staging environment on dedicated server with
+                                <span class="badge badge-new">New</span> Staging environment on dedicated server with
                                 environment-parity config
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-fix">Fix</span>QA walkthrough pass — 14 UI/UX issues resolved
+                                <span class="badge badge-fix">Fix</span> QA walkthrough pass — 14 UI/UX issues resolved
                                 from structured test session
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-fix">Fix</span>OAuth popup callback race condition eliminated
+                                <span class="badge badge-fix">Fix</span> OAuth popup callback race condition eliminated
                                 with storage event debounce
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>Automated smoke test run on every staging deploy
+                                <span class="badge badge-new">New</span> Automated smoke test run on every staging deploy
                                 via GitHub Actions
                             </li>
                         </ul>
@@ -822,27 +822,27 @@
                         <div class="release-title">Security hardening, monitoring &amp; backup system</div>
                         <ul class="change-list">
                             <li class="change-item">
-                                <span class="badge badge-security">Security</span>OWASP hardening pass — tightened CSP,
+                                <span class="badge badge-security">Security</span> OWASP hardening pass — tightened CSP,
                                 removed unused response headers
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-security">Security</span>Rate limiting applied to all auth and
+                                <span class="badge badge-security">Security</span> Rate limiting applied to all auth and
                                 public-facing endpoints
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>Prometheus + Grafana monitoring stack deployed;
+                                <span class="badge badge-new">New</span> Prometheus + Grafana monitoring stack deployed;
                                 latency and error-rate dashboards
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>Automated daily PostgreSQL backups with 7-day
+                                <span class="badge badge-new">New</span> Automated daily PostgreSQL backups with 7-day
                                 retention
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>Backup restore script at
+                                <span class="badge badge-new">New</span> Backup restore script at
                                 <code>/opt/vaultlister-staging/restore.sh</code>
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-fix">Fix</span>Health check endpoint now returns DB read
+                                <span class="badge badge-fix">Fix</span> Health check endpoint now returns DB read
                                 latency for faster triage
                             </li>
                         </ul>
@@ -860,24 +860,24 @@
                         <div class="release-title">7 marketplace integrations &amp; Playwright automations</div>
                         <ul class="change-list">
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>Cross-lister supports 7 live platforms:
+                                <span class="badge badge-new">New</span> Cross-lister supports 7 live platforms:
                                 Poshmark, eBay, Depop, Shopify, Facebook Marketplace, Whatnot, Grailed (Mercari, Etsy
                                 coming soon)
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>Playwright automation bots: closet sharing,
+                                <span class="badge badge-new">New</span> Playwright automation bots: closet sharing,
                                 follow-back, and offer rules
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>Automation audit log — every bot action recorded
+                                <span class="badge badge-new">New</span> Automation audit log — every bot action recorded
                                 to <code>data/automation-audit.log</code>
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>Platform rate-limit config with per-platform
+                                <span class="badge badge-new">New</span> Platform rate-limit config with per-platform
                                 minimum action delays
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-security">Security</span>OAuth tokens encrypted with
+                                <span class="badge badge-security">Security</span> OAuth tokens encrypted with
                                 AES-256-GCM before database storage
                             </li>
                         </ul>
@@ -895,26 +895,26 @@
                         <div class="release-title">AI features &amp; Chrome extension</div>
                         <ul class="change-list">
                             <li class="change-item">
-                                <span class="badge badge-ai">AI</span>AI listing generation via Claude — title,
+                                <span class="badge badge-ai">AI</span> AI listing generation via Claude — title,
                                 description, tags, and price suggestion from photos
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-ai">AI</span>Vault Buddy chat assistant for reseller Q&amp;A
+                                <span class="badge badge-ai">AI</span> Vault Buddy chat assistant for reseller Q&amp;A
                                 and workflow guidance
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-ai">AI</span>Image analysis with automatic tagging and
+                                <span class="badge badge-ai">AI</span> Image analysis with automatic tagging and
                                 condition detection
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>Chrome extension (Chromium) for one-click
+                                <span class="badge badge-new">New</span> Chrome extension (Chromium) for one-click
                                 listing capture from marketplace pages
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>AR preview feature for item visualization
+                                <span class="badge badge-new">New</span> AR preview feature for item visualization
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>Blockchain verification for high-value item
+                                <span class="badge badge-new">New</span> Blockchain verification for high-value item
                                 provenance
                             </li>
                         </ul>
@@ -932,27 +932,27 @@
                         <div class="release-title">E2E test suite &amp; Docker setup</div>
                         <ul class="change-list">
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>Playwright E2E test suite covering all primary
+                                <span class="badge badge-new">New</span> Playwright E2E test suite covering all primary
                                 user workflows
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>Bun:test unit test suite with auth, security,
+                                <span class="badge badge-new">New</span> Bun:test unit test suite with auth, security,
                                 and route coverage
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>Docker multi-stage build with non-root user and
+                                <span class="badge badge-new">New</span> Docker multi-stage build with non-root user and
                                 health check at <code>/api/health</code>
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>Docker Compose stack: web + redis + Nginx
+                                <span class="badge badge-new">New</span> Docker Compose stack: web + redis + Nginx
                                 reverse proxy
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>GitHub Actions CI with blocking test gate before
+                                <span class="badge badge-new">New</span> GitHub Actions CI with blocking test gate before
                                 any deploy
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-fix">Fix</span>Pre-commit hooks enforcing test runs and
+                                <span class="badge badge-fix">Fix</span> Pre-commit hooks enforcing test runs and
                                 conventional commit format
                             </li>
                         </ul>
@@ -970,31 +970,31 @@
                         <div class="release-title">Initial release</div>
                         <ul class="change-list">
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>Inventory management with full-text search
+                                <span class="badge badge-new">New</span> Inventory management with full-text search
                                 across all fields
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>Sales tracking and analytics dashboard with
+                                <span class="badge badge-new">New</span> Sales tracking and analytics dashboard with
                                 revenue breakdowns
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>Offer management with accept/counter/decline
+                                <span class="badge badge-new">New</span> Offer management with accept/counter/decline
                                 flows
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>Image bank with batch upload and per-item photo
+                                <span class="badge badge-new">New</span> Image bank with batch upload and per-item photo
                                 management
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>JWT auth with 15-min access tokens, 7-day
+                                <span class="badge badge-new">New</span> JWT auth with 15-min access tokens, 7-day
                                 refresh, and TOTP MFA
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>PostgreSQL database with TSVECTOR full-text
+                                <span class="badge badge-new">New</span> PostgreSQL database with TSVECTOR full-text
                                 search and automated backups
                             </li>
                             <li class="change-item">
-                                <span class="badge badge-new">New</span>WebSocket real-time updates for listings and
+                                <span class="badge badge-new">New</span> WebSocket real-time updates for listings and
                                 offer state changes
                             </li>
                         </ul>
@@ -1059,7 +1059,7 @@
                 </div>
             </div>
             <div class="footer-inner">
-                <div class="footer-cols">
+                <nav aria-label="Footer navigation"><div class="footer-cols">
                     <div class="footer-col">
                         <h3 class="footer-col-label">Resources</h3>
                         <a href="/blog/index.html">Blog</a>
@@ -1092,7 +1092,7 @@
                         <a href="/compare/primelister.html">Primelister</a>
                         <a href="/compare/vendoo.html">Vendoo</a>
                     </div>
-                </div>
+                </div></nav>
                 <div class="footer-bottom">
                     <p>© 2026 VaultLister, Inc. All rights reserved.</p>
                 </div>

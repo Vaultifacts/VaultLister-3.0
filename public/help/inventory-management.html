@@ -361,7 +361,7 @@
                         title="Change currency"
                         aria-expanded="false"
                         aria-haspopup="listbox"
-                    >
+                     aria-label="Change currency">
                         <span id="current-currency-code">CAD</span>
                         <svg aria-hidden="true"
                             width="12"
@@ -374,12 +374,12 @@
                             <path d="M6 9l6 6 6-6" />
                         </svg>
                     </button>
-                    <div class="currency-dropdown" id="currency-dropdown">
-                        <button type="button" class="currency-option" data-currency="CAD" data-symbol="$">$ CAD</button>
-                        <button type="button" class="currency-option" data-currency="USD" data-symbol="$">$ USD</button>
-                        <button type="button" class="currency-option" data-currency="GBP" data-symbol="£">£ GBP</button>
-                        <button type="button" class="currency-option" data-currency="EUR" data-symbol="€">€ EUR</button>
-                        <button type="button" class="currency-option" data-currency="AUD" data-symbol="$">$ AUD</button>
+                    <div class="currency-dropdown" id="currency-dropdown" role="listbox" aria-label="Select currency">
+                        <button type="button" class="currency-option" data-currency="CAD" data-symbol="$" role="option">$ CAD</button>
+                        <button type="button" class="currency-option" data-currency="USD" data-symbol="$" role="option">$ USD</button>
+                        <button type="button" class="currency-option" data-currency="GBP" data-symbol="£" role="option">£ GBP</button>
+                        <button type="button" class="currency-option" data-currency="EUR" data-symbol="€" role="option">€ EUR</button>
+                        <button type="button" class="currency-option" data-currency="AUD" data-symbol="$" role="option">$ AUD</button>
                     </div>
                 </div>
                 <div class="lang-selector">
@@ -389,7 +389,7 @@
                         title="Change language"
                         aria-expanded="false"
                         aria-haspopup="listbox"
-                    >
+                     aria-label="Change language">
                         <span class="lang-code" id="current-lang-code">EN</span>
                         <svg aria-hidden="true"
                             width="12"
@@ -402,17 +402,17 @@
                             <path d="M6 9l6 6 6-6" />
                         </svg>
                     </button>
-                    <div class="lang-dropdown" id="lang-dropdown">
-                        <button type="button" class="lang-option" data-lang="en">English</button>
-                        <button type="button" class="lang-option" data-lang="es">Spanish</button>
-                        <button type="button" class="lang-option" data-lang="fr">French</button>
-                        <button type="button" class="lang-option" data-lang="de">German</button>
-                        <button type="button" class="lang-option" data-lang="it">Italian</button>
-                        <button type="button" class="lang-option" data-lang="pt">Portuguese</button>
-                        <button type="button" class="lang-option" data-lang="ja">Japanese</button>
-                        <button type="button" class="lang-option" data-lang="zh">Chinese</button>
-                        <button type="button" class="lang-option" data-lang="ko">Korean</button>
-                        <button type="button" class="lang-option" data-lang="ar">Arabic</button>
+                    <div class="lang-dropdown" id="lang-dropdown" role="listbox" aria-label="Select language">
+                        <button type="button" class="lang-option" data-lang="en" role="option">English</button>
+                        <button type="button" class="lang-option" data-lang="es" role="option">Spanish</button>
+                        <button type="button" class="lang-option" data-lang="fr" role="option">French</button>
+                        <button type="button" class="lang-option" data-lang="de" role="option">German</button>
+                        <button type="button" class="lang-option" data-lang="it" role="option">Italian</button>
+                        <button type="button" class="lang-option" data-lang="pt" role="option">Portuguese</button>
+                        <button type="button" class="lang-option" data-lang="ja" role="option">Japanese</button>
+                        <button type="button" class="lang-option" data-lang="zh" role="option">Chinese</button>
+                        <button type="button" class="lang-option" data-lang="ko" role="option">Korean</button>
+                        <button type="button" class="lang-option" data-lang="ar" role="option">Arabic</button>
                     </div>
                 </div>
                 <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
@@ -434,11 +434,11 @@
 
             <section aria-label="Inventory management FAQ" class="faq-section">
                 <div class="faq-item">
-                    <button type="button" class="faq-question" aria-expanded="false">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-1" id="faq-question-1">
                         How do I add a new item to my inventory?
                         <span class="faq-icon" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer">
+                    <div class="faq-answer" id="faq-answer-1" role="region" aria-labelledby="faq-question-1">
                         Click <strong>Inventory</strong> in the sidebar, then click the "Add Item" button in the
                         top-right corner. Fill in the item title, description, condition, cost price, selling price, and
                         quantity. You can also add tags and assign the item to a category or collection. Once saved, the
@@ -449,11 +449,11 @@
                 </div>
 
                 <div class="faq-item">
-                    <button type="button" class="faq-question" aria-expanded="false">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-2" id="faq-question-2">
                         Can I import my existing inventory from another platform?
                         <span class="faq-icon" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer">
+                    <div class="faq-answer" id="faq-answer-2" role="region" aria-labelledby="faq-question-2">
                         Yes. Once you've connected a marketplace, go to <strong>Inventory &rarr; Import</strong> and
                         select the platform to pull from. VaultLister will fetch your active listings and create
                         corresponding inventory items. Fields that can be mapped automatically (title, description,
@@ -465,11 +465,11 @@
                 </div>
 
                 <div class="faq-item">
-                    <button type="button" class="faq-question" aria-expanded="false">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-3" id="faq-question-3">
                         How do I edit multiple items at once (bulk edit)?
                         <span class="faq-icon" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer">
+                    <div class="faq-answer" id="faq-answer-3" role="region" aria-labelledby="faq-question-3">
                         In the Inventory list view, check the checkbox next to each item you want to edit. Once two or
                         more items are selected, a "Bulk Actions" toolbar appears at the top of the list. From there you
                         can update the price, condition, tags, or category across all selected items simultaneously.
@@ -480,11 +480,11 @@
                 </div>
 
                 <div class="faq-item">
-                    <button type="button" class="faq-question" aria-expanded="false">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-4" id="faq-question-4">
                         How do I manage product photos?
                         <span class="faq-icon" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer">
+                    <div class="faq-answer" id="faq-answer-4" role="region" aria-labelledby="faq-question-4">
                         Open any inventory item and click the <strong>Photos</strong> tab. You can drag and drop images
                         to reorder them — the first image becomes the cover photo used in listings. VaultLister accepts
                         JPEG, PNG, and WEBP files up to 20 MB each. Photos are stored in VaultLister's image bank and
@@ -495,11 +495,11 @@
                 </div>
 
                 <div class="faq-item">
-                    <button type="button" class="faq-question" aria-expanded="false">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-5" id="faq-question-5">
                         How does VaultLister track stock across marketplaces?
                         <span class="faq-icon" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer">
+                    <div class="faq-answer" id="faq-answer-5" role="region" aria-labelledby="faq-question-5">
                         Each inventory item has a single quantity field. When VaultLister cross-lists an item, all
                         active listings share that quantity. VaultLister polls connected marketplaces for order activity
                         and also listens for webhooks (where supported) to detect sales in near real-time. When a sale
@@ -510,11 +510,11 @@
                 </div>
 
                 <div class="faq-item">
-                    <button type="button" class="faq-question" aria-expanded="false">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-6" id="faq-question-6">
                         What happens to an item after it sells?
                         <span class="faq-icon" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer">
+                    <div class="faq-answer" id="faq-answer-6" role="region" aria-labelledby="faq-question-6">
                         When a sale is detected, the item's status changes to "Sold" and a sale record is created in the
                         <strong>Sales</strong> section automatically. VaultLister queues delistings for all other
                         platforms where the item was active — most API-connected platforms process delistings within
@@ -525,11 +525,11 @@
                 </div>
 
                 <div class="faq-item">
-                    <button type="button" class="faq-question" aria-expanded="false">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-7" id="faq-question-7">
                         How do I organize my inventory with tags, categories, and collections?
                         <span class="faq-icon" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer">
+                    <div class="faq-answer" id="faq-answer-7" role="region" aria-labelledby="faq-question-7">
                         On any item's edit page, the <strong>Organization</strong> section lets you assign tags
                         (free-form labels like "Nike" or "vintage"), a category (e.g., Clothing &gt; Tops), and a
                         collection (a custom grouping you create, like "Summer Haul 2026"). Collections are useful for
@@ -619,7 +619,7 @@
                 </div>
             </div>
             <div class="footer-inner">
-                <div class="footer-cols">
+                <nav aria-label="Footer navigation"><div class="footer-cols">
                     <div class="footer-col">
                         <h3 class="footer-col-label">Resources</h3>
                         <a href="/blog/index.html">Blog</a>
@@ -652,7 +652,7 @@
                         <a href="/compare/primelister.html">Primelister</a>
                         <a href="/compare/vendoo.html">Vendoo</a>
                     </div>
-                </div>
+                </div></nav>
                 <div class="footer-bottom">
                     <p>© 2026 VaultLister, Inc. All rights reserved.</p>
                 </div>
