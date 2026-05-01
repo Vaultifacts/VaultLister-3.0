@@ -2198,27 +2198,7 @@ Object.assign(handlers, {
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
             </div>
             <div class="modal-body">
-                <!-- Primary Option: OAuth -->
-                <div style="text-align: center; margin-bottom: 24px;">
-                    <button class="btn btn-primary btn-lg" onclick="handlers.connectOAuth('${platform}')" style="width: 100%; padding: 14px 24px; font-size: 16px;">
-                        ${components.icon('link', 20)} Connect with OAuth
-                    </button>
-                    <p style="margin-top: 12px; font-size: 14px; color: var(--gray-600);">
-                        Secure authentication - no password needed
-                    </p>
-                </div>
-
-                <!-- Divider -->
-                <div style="text-align: center; margin: 24px 0; position: relative;">
-                    <span style="background: var(--card-background); padding: 0 12px; color: var(--gray-400); font-size: 14px; position: relative; z-index: 1;">OR</span>
-                    <div style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: var(--gray-200); z-index: 0;"></div>
-                </div>
-
-                <!-- Fallback Option: Manual -->
                 <div>
-                    <p style="margin-bottom: 16px; font-size: 14px; color: var(--gray-600);">
-                        Connect manually with username/API key:
-                    </p>
                     <form id="connect-shop-form" onsubmit="handlers.submitShopConnection(event, '${platform}')">
                         <div class="form-group">
                             <label class="form-label" for="hsa-username-2">Username</label>

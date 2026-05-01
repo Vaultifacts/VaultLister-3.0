@@ -6894,9 +6894,12 @@ Object.assign(handlers, {
     loadFinancials: async function () {
         try {
             const [purchases, transactions] = await Promise.all([api.get('/purchases'), api.get('/transactions')]);
+            const allTransactions = transactions.transactions || [];
+            const unmatched = allTransactions.filter((t) => !t.reference_type && !t.reference_id);
             store.setState({
                 purchases: purchases.purchases || [],
-                transactions: transactions.transactions || [],
+                transactions: allTransactions,
+                unmatchedTransactions: unmatched,
             });
         } catch (error) {
             console.error('Failed to load financials:', error);

@@ -704,20 +704,6 @@ Object.assign(pages, {
                 ${components.statCard('Pending Shipments', sales.filter((s) => s.status === 'pending').length, 'inventory')}
             </div>
 
-            <!-- Sales Tools Section -->
-            <div class="grid grid-cols-2 gap-4 mb-6">
-                <button class="card p-4 flex items-center gap-4 cursor-pointer hover:shadow-md transition-shadow" onclick="handlers.showBuyerProfiles()" style="transition: box-shadow 0.15s ease, transform 0.15s ease;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform=''">
-                    <div style="flex-shrink: 0; width: 48px; height: 48px; background: var(--success-50); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--success);">
-                        ${components.icon('users', 24)}
-                    </div>
-                    <div style="flex: 1; text-align: left;">
-                        <h2 style="margin: 0 0 4px 0; font-weight: 600;">Buyer Profiles</h2>
-                        <p style="margin: 0; font-size: 13px; color: #666;">Manage buyer relationships</p>
-                    </div>
-                    <span style="color: var(--gray-400); font-size: 18px;">→</span>
-                </button>
-            </div>
-
             <div class="card">
                 <div class="card-header">
                     <div class="flex gap-4 flex-wrap">
@@ -1677,44 +1663,31 @@ Object.assign(pages, {
         const netProfit = totalRevenue - totalExpenses;
         const profitMargin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
 
-        // Financial dashboard metrics
-        const cashFlow = totalRevenue - totalExpenses;
-        const dashboardMetrics = {
-            revenue: totalRevenue,
-            expenses: totalExpenses,
-            profit: netProfit,
-            margin: profitMargin,
-            cashFlow: cashFlow,
-        };
-
         // Cash flow waterfall data
+        const waterfallShipping = (store.state.sales || []).reduce((sum, s) => sum + (s.shipping_cost || 0), 0);
+        const waterfallFees = (store.state.sales || []).reduce((sum, s) => sum + (s.platform_fee || 0), 0);
+        const waterfallCOGS = Math.max(0, totalExpenses - waterfallShipping - waterfallFees);
         const waterfallData = [
             { label: 'Revenue', value: totalRevenue, type: 'positive' },
-            { label: 'COGS', value: -totalExpenses * 0.6, type: 'negative' },
-            {
-                label: 'Shipping',
-                value: -(store.state.sales || []).reduce((sum, s) => sum + (s.shipping_cost || 0), 0),
-                type: 'negative',
-            },
-            {
-                label: 'Fees',
-                value: -(store.state.sales || []).reduce((sum, s) => sum + (s.platform_fee || 0), 0),
-                type: 'negative',
-            },
+            { label: 'COGS', value: -waterfallCOGS, type: 'negative' },
+            { label: 'Shipping', value: -waterfallShipping, type: 'negative' },
+            { label: 'Fees', value: -waterfallFees, type: 'negative' },
             { label: 'Net', value: netProfit, type: 'total' },
         ];
 
-        // Financial ratios
-        const financialRatiosData = {
-            currentAssets: totalRevenue * 0.3,
-            currentLiabilities: totalExpenses * 0.2,
-            totalAssets: totalRevenue * 0.5,
-            totalLiabilities: totalExpenses * 0.3,
-            totalEquity: netProfit * 0.5,
+        // Financial ratios — require real balance sheet data; show N/A when unavailable
+        const balanceSheet = store.state.balanceSheet;
+        const analyticsCoGs = store.state.analytics?.cogs ?? null;
+        const financialRatiosData = balanceSheet ? {
+            currentAssets: balanceSheet.totalCurrentAssets || 0,
+            currentLiabilities: balanceSheet.totalCurrentLiabilities || 0,
+            totalAssets: balanceSheet.totalAssets || 0,
+            totalLiabilities: balanceSheet.totalLiabilities || 0,
+            equity: balanceSheet.totalEquity || 0,
             revenue: totalRevenue,
-            cogs: totalExpenses * 0.6,
+            cogs: analyticsCoGs !== null ? analyticsCoGs : totalExpenses,
             netIncome: netProfit,
-        };
+        } : null;
 
         // Budget data
         const budgetData = Array.isArray(store.state.budgets)

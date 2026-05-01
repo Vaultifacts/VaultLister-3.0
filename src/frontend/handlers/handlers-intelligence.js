@@ -1542,25 +1542,27 @@ Object.assign(handlers, {
         renderApp(window.pages.marketIntel());
     },
 
-    runSavedSearch: function (id) {
+    runSavedSearch: async function (id) {
         const search = (store.state.savedSearches || []).find((s) => s.id === id);
         if (!search) return;
 
         toast.info('Running search: ' + search.name + '...');
-        setTimeout(() => {
+        try {
+            const params = new URLSearchParams();
+            if (search.query) params.set('q', search.query);
+            if (search.filters?.platform) params.set('platform', search.filters.platform);
+            const qs = params.toString();
+            const data = await api.get('/market-intel/competitors' + (qs ? '?' + qs : ''));
+            const resultCount = (data.competitors || []).length;
             const savedSearches = (store.state.savedSearches || []).map((s) =>
-                s.id === id ? { ...s, lastRun: new Date().toISOString(), results: null } : s,
+                s.id === id ? { ...s, lastRun: new Date().toISOString(), results: resultCount } : s,
             );
-            store.setState({ savedSearches });
-            toast.success(
-                'Found ' +
-                    (savedSearches.find((s) => s.id === id)?.results || 0) +
-                    ' results for "' +
-                    search.name +
-                    '"',
-            );
+            store.setState({ savedSearches, competitors: data.competitors || [] });
+            toast.success('Found ' + resultCount + ' results for "' + escapeHtml(search.name) + '"');
             renderApp(window.pages.marketIntel());
-        }, 1200);
+        } catch (err) {
+            toast.error('Search failed for "' + escapeHtml(search.name) + '"');
+        }
     },
 
     // ==========================================
