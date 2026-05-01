@@ -2,9 +2,9 @@ name: Add to Project Board
 
 on:
   issues:
-    types: [opened, reopened]
+    types: [opened, reopened, labeled]
   pull_request:
-    types: [opened, reopened]
+    types: [opened, reopened, labeled]
 
 permissions:
   issues: read
