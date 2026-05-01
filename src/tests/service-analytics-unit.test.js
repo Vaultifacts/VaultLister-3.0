@@ -941,7 +941,7 @@ describe('analyticsService — extended coverage', () => {
     describe('pg-schema SQL — structural validation', () => {
         let pgSchema;
         beforeEach(async () => {
-            pgSchema = readFileSync(join(process.cwd(), 'src/backend/db/pg-schema.sql'), 'utf8');
+            pgSchema = await Bun.file(join(process.cwd(), 'src/backend/db/pg-schema.sql')).text();
         });
 
         test('defines analytics_events table with all tracked columns', () => {
