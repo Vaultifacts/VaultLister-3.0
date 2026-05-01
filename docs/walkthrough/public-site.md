@@ -3,8 +3,8 @@
 ## Open (Needs Fix)
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
-| MANUAL-pub-8 | Landing | Display main features using the specified format (image-29) | Backlog | STILL OPEN — image-29 shows Vendoo-style alternating left/right sections with full product screenshots per feature. landing.html:1114-1245 has 3-card icon grids per group — no screenshots, no alternating layout. |
-| MANUAL-pub-16 | Landing | Set up the Features outline in the specified format without reviews underneath (image-36) | Backlog | STILL OPEN — image-36 shows Crosslist-style layout with screenshot thumbnails beside feature cards and "See all features" button under each group. landing.html:1114-1245 has 4 feature groups (3-card icon grids) with no product screenshots and no "See all features" buttons. Layout format not matching reference. |
+| MANUAL-pub-8 | Landing | Display main features using the specified format (image-29) | Backlog | PARTIAL — "See all features" button added per group (7212deed); product screenshots deferred (no screenshot assets available). Alternating layout not implemented. |
+| MANUAL-pub-16 | Landing | Set up the Features outline in the specified format without reviews underneath (image-36) | Backlog | PARTIAL — "See all features" button added under each of 4 feature groups (7212deed); screenshot thumbnails deferred (no screenshot assets available). No reviews added. |
 ## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
