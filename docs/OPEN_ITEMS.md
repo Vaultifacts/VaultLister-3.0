@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-04-30T23:35:11.381Z
-Commit: 4fa020d9
+Generated at: 2026-04-30T23:50:29.659Z
+Commit: 2dfc9215
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -1725,7 +1725,7 @@ Command: `rg -n "TODO|FIXME" src public scripts worker design e2e qa data .githu
 |---|---|
 | .github/workflows/ci.yml:591 | if grep -rn "password\s*=\s*['\"][^'\"]*['\"]" src/ --include="*.js" \| grep -v "password.*=.*body" \| grep -v "password.*=.*formData" \| grep -v "password.*=.*process.env" \| grep -v "test" \| grep -v "demo" \| grep -v "placeholder" \| grep -v "TODO"; then |
 | public/status.html:288 | /* TODO: wire to real uptime data (v2) */ |
-| public/status.html:1342 | // TODO (v2): wire per-platform status from /api/health/platforms |
+| public/status.html:1317 | // TODO (v2): wire per-platform status from /api/health/platforms |
 | qa/reports/audits/architecture_reliability_audit.md:178 | - **In-memory monitoring metrics lost on restart** — metrics accumulate in RAM only; code has `// TODO: use Redis` comment (Low) |
 | qa/reports/browserstack/2026-04-23/performance-notes.md:63 | **TODO (future regression risk):** `renderPastIncidents()` replaces the static "No resolved incidents in the last 90 days." text with a dynamically-built `<ul>` of different height when incidents exist. Currently no incidents → no shift. When the first real incident is posted, this will cause CLS. Fix: give `#past-incidents-list` a `min-height` matching the empty state, or pre-render as a `<ul>` with an empty-state `<li>`. |
 | scripts/generate-blog-article.js:126 | - No placeholders or TODOs in the output. |

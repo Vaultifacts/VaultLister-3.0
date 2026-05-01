@@ -7575,7 +7575,7 @@ Object.assign(pages, {
                         <h2>${components.icon('folder', 16)} Folders</h2>
                     </div>
                     <div class="folder-tree">
-                        <div class="folder-item ${!selectedFolder ? 'active' : ''}" role="button" tabindex="0" aria-label="All images" aria-pressed="${!selectedFolder ? 'true' : 'false'}" onclick="handlers.selectFolder(null)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.selectFolder(null)}">
+                        <div class="folder-item ${!selectedFolder ? 'active' : ''}" role="button" tabindex="0" aria-label="All images" aria-pressed="${!selectedFolder ? 'true' : 'false'}" onclick="handlers.selectFolder(null)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.selectFolder(null)}" ondragover="handlers.folderDragOver(event)" ondrop="handlers.folderDrop(event, null)" ondragleave="handlers.folderDragLeave(event)">
                             <span class="folder-item-label">${components.icon('folder')} All Images</span>
                             <span class="badge">${images.length}</span>
                         </div>
@@ -7583,7 +7583,10 @@ Object.assign(pages, {
                             .map(
                                 (folder) => `
                             <div role="button" tabindex="0" class="folder-item ${selectedFolder === folder.id ? 'active' : ''}"
-                                 onclick="handlers.selectFolder('${folder.id}')">
+                                 onclick="handlers.selectFolder('${folder.id}')"
+                                 ondragover="handlers.folderDragOver(event)"
+                                 ondrop="handlers.folderDrop(event, '${folder.id}')"
+                                 ondragleave="handlers.folderDragLeave(event)">
                                 <span class="folder-item-label">${components.icon('folder', 16, folder.color)} ${escapeHtml(folder.name)}</span>
                                 <span class="badge">${images.filter((img) => img.folder_id === folder.id).length}</span>
                                 <button class="btn btn-ghost btn-xs" style="padding: 2px 4px; min-width: auto;" onclick="event.stopPropagation(); handlers.deleteFolder('${folder.id}', '${escapeHtml(folder.name)}');" title="Delete folder">
@@ -7680,7 +7683,10 @@ Object.assign(pages, {
                                 .map(
                                     (image) => `
                                 <div class="image-card ${selectedImages.includes(image.id) ? 'selected' : ''}"
-                                     data-image-id="${image.id}">
+                                     data-image-id="${image.id}"
+                                     draggable="true"
+                                     ondragstart="handlers.imageDragStart(event, '${image.id}')"
+                                     ondragend="handlers.imageDragEnd(event)">
                                     <div class="image-card-checkbox">
                                         <input type="checkbox"
                                                ${selectedImages.includes(image.id) ? 'checked' : ''}

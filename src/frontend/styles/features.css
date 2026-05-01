@@ -88,6 +88,17 @@
     color: #92400e;
 }
 
+.folder-item.drag-over {
+    background: #ddd6fe;
+    border: 2px dashed #7c3aed;
+    color: #5b21b6;
+}
+
+.image-card.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+}
+
 .image-bank-main {
     background: white;
     border-radius: 8px;

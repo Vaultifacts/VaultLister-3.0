@@ -21312,6 +21312,53 @@ Object.assign(handlers, {
         }
     },
 
+    // Image drag-and-drop to folder,
+
+    imageDragStart: function (event, imageId) {
+        event.dataTransfer.setData('text/plain', imageId);
+        event.dataTransfer.effectAllowed = 'move';
+        event.currentTarget.classList.add('dragging');
+    },
+
+    imageDragEnd: function (event) {
+        event.currentTarget.classList.remove('dragging');
+        document.querySelectorAll('.folder-item.drag-over').forEach((el) => el.classList.remove('drag-over'));
+    },
+
+    folderDragOver: function (event) {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+        event.currentTarget.classList.add('drag-over');
+    },
+
+    folderDragLeave: function (event) {
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+            event.currentTarget.classList.remove('drag-over');
+        }
+    },
+
+    folderDrop: async function (event, folderId) {
+        event.preventDefault();
+        event.currentTarget.classList.remove('drag-over');
+        const imageId = event.dataTransfer.getData('text/plain');
+        if (!imageId) return;
+
+        try {
+            await api.post('/image-bank/bulk-move', {
+                image_ids: [imageId],
+                folder_id: folderId,
+            });
+
+            const images = store.state.imageBankImages || [];
+            const updated = images.map((img) => (img.id === imageId ? { ...img, folder_id: folderId } : img));
+            store.setState({ imageBankImages: updated });
+            toast.success('Image moved');
+            renderApp(window.pages.imageBank());
+        } catch (error) {
+            toast.error('Failed to move image: ' + error.message);
+        }
+    },
+
     // Move selected images to folder,
 
     moveSelectedImages: async function () {
