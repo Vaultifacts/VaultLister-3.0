@@ -176,10 +176,10 @@ test.describe('Platforms Page', () => {
         await expect(page.locator('h1')).toContainText('Integrations');
     });
 
-    test('should show 10 platform cards when page loads', async ({ page }) => {
+    test('should show 11 platform cards when page loads', async ({ page }) => {
         await page.goto(`${BASE}/platforms.html`);
         const cards = page.locator('.platform-card');
-        await expect(cards).toHaveCount(10);
+        await expect(cards).toHaveCount(11);
     });
 
     test('should show Live badge on Depop card', async ({ page }) => {
