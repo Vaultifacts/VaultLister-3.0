@@ -2934,8 +2934,7 @@ Object.assign(handlers, {
         const storageLimit = PLAN_STORAGE_GB[user.subscription_tier] || 5;
         const storagePercent = Math.min(100, (estimatedStorageGB / storageLimit) * 100);
 
-        // Mock API usage
-        const apiUsagePercent = 35;
+        const apiUsagePercent = store.state.apiUsagePercent ?? null;
 
         // Get account age
         const createdDate = user.created_at ? new Date(user.created_at) : new Date();
@@ -2943,8 +2942,7 @@ Object.assign(handlers, {
         const accountAgeMs = today - createdDate;
         const accountAgeDays = Math.floor(accountAgeMs / (1000 * 60 * 60 * 24));
 
-        // Mock active sessions
-        const activeSessions = 2;
+        const activeSessions = store.state.activeSessions ?? null;
 
         const getColorStatus = (percent) => {
             if (percent > 95) return { color: '#ef4444', status: 'danger' };
@@ -2953,6 +2951,16 @@ Object.assign(handlers, {
         };
 
         const renderUsageMetric = (label, value, limit, percent, unit = '') => {
+            if (percent === null) {
+                return `
+                <div class="usage-metric-card">
+                    <div class="usage-metric-header">
+                        <h4 class="usage-metric-label">${escapeHtml(label)}</h4>
+                        <span class="usage-metric-value">—</span>
+                    </div>
+                </div>
+            `;
+            }
             const colorInfo = getColorStatus(percent);
             return `
                 <div class="usage-metric-card">
@@ -2986,7 +2994,7 @@ Object.assign(handlers, {
                         </div>
                         <div class="usage-stat-item">
                             <span class="usage-stat-label">Active Sessions</span>
-                            <span class="usage-stat-value">${activeSessions}</span>
+                            <span class="usage-stat-value">${activeSessions ?? '—'}</span>
                         </div>
                         <div class="usage-stat-item">
                             <span class="usage-stat-label">Account Age</span>
@@ -2996,7 +3004,7 @@ Object.assign(handlers, {
 
                     <div class="usage-metrics">
                         ${renderUsageMetric('Storage Usage', estimatedStorageGB.toFixed(2), storageLimit, storagePercent, 'GB')}
-                        ${renderUsageMetric('API Requests', 3500, 10000, apiUsagePercent, '')}
+                        ${renderUsageMetric('API Requests', null, null, apiUsagePercent, '')}
                     </div>
                 </div>
             </div>
@@ -4707,11 +4715,7 @@ Object.assign(handlers, {
     },
 
     regenerateAPIKey: function () {
-        const newKey = 'vl_' + crypto.randomUUID().replace(/-/g, '');
-        store.setState({ apiKey: newKey });
-        const display = document.querySelector('.api-key-display');
-        if (display) display.textContent = newKey;
-        toast.success('API key regenerated');
+        toast.info('Developer API keys are not yet available. Check the roadmap for updates.');
     },
 
     copyAPIKey: function () {
@@ -5125,13 +5129,7 @@ Object.assign(handlers, {
     // Settings,
 
     regenerateAPIKey() {
-        const key =
-            'vl_' +
-            Array.from(crypto.getRandomValues(new Uint8Array(24)))
-                .map((b) => b.toString(16).padStart(2, '0'))
-                .join('');
-        store.setState({ apiKey: key });
-        toast.success('API key regenerated');
+        toast.info('Developer API keys are not yet available. Check the roadmap for updates.');
     },
 
     async copyAPIKey() {
