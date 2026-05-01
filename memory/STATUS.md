@@ -8,7 +8,7 @@
 - **Google OAuth FULLY FIXED + DEPLOYED** — 6 layered bugs fixed, VERIFIED LIVE: route registered, OTT endpoint responds, correct hash logic, raw fetch confirmed.
 - **Post-walkthrough fix plan (6 batches) COMPLETE + VERIFIED** — all batches deployed to live site.
 - **19 open GitHub issues** — dependabot CI failures ×5, automation workflow failures ×4, infra/observability alerts ×4, other ×6. Needs triage.
-- **Active task backlog:** `docs/OPEN_ITEMS.md` (generated) + `docs/superpowers/plans/2026-05-01-fake-data-audit.md` (109 findings). `docs/REMAINING_WORK_EXECUTION_SHEET_2026-04-21.md` is historical — do not use as active plan.
+- **Active task backlog:** `docs/OPEN_ITEMS.md` (generated). `docs/superpowers/plans/2026-05-01-fake-data-audit.md` COMPLETE — all 73 tracked findings resolved (committed). `docs/REMAINING_WORK_EXECUTION_SHEET_2026-04-21.md` is historical — do not use as active plan.
 - **BROWSER NOTE:** Always use `mcp__claude-in-chrome__*` tools. NEVER use `mcp__plugin_chrome-devtools-mcp`.
 
 ## Last Completed Work (2026-05-01 session 2)
@@ -63,6 +63,22 @@
 **IMMEDIATE — 109 Fake-Data Findings**
 See `docs/superpowers/plans/2026-05-01-fake-data-audit.md` — 74 open items tracked in `docs/OPEN_ITEMS.md`.
 Priority order: CRITICAL (F77/F108/F61) → HIGH state-only (F103/F104/F109/F58/F74...) → HIGH fake ops (F101/F102/F62...) → MEDIUM → LOW.
+
+**UI / LANDING PAGE FIXES**
+- [Image #1] Landing page "Coming Soon" section says "3 More on the Way" — should say "4 more on the way" (Kijiji, Etsy, Mercari, Vinted = 4 platforms)
+- [Image #2] Integrations page platform grid does not match the landing page layout/style — should match the landing page exactly; country abbreviations should be visible on platform cards
+- [Image #3] Social media icons in the landing page footer are white — they should not be white (match the colour used on other pages)
+- [Image #4] Customization tab: remove the Webhooks button (users cannot configure API webhooks); remove the entire Listing Defaults section; remove the entire Photo Settings section
+- [Image #5] My Listings page — platform prices expand section is showing duplicate platform entries (e.g. Grailed CA appears twice, Poshmark CA appears twice, etc.); deduplicate
+- [Image #6] Sales tab — remove the "Buyer Profiles / Manage buyer relationships" section entirely
+- [Image #7] Automations page — remove the Scheduler Health section, Schedule Settings section, and Notification Preferences section entirely
+- [Image #8] Automations page — remove the Calendar and Performance buttons from the page header (keep History)
+- [Image #9] Daily Checklist — clicking the "To-Do Lists", "Completed", and "All Tasks" sub-tabs does nothing; tab switching is broken and must be fixed
+- [Image #10] Daily Checklist — add an empty checkbox/box icon to the left of the "Mark All as Incomplete" button text
+- [Global] Rename: every instance of "Image Bank" throughout the entire codebase (UI labels, page titles, nav items, routes, comments, strings) must become "Image Vault"
+- [Image #11] Facebook Marketplace connect dialog — remove the "Connect with OAuth" button and the "Secure authentication - no password needed" copy and the "OR" divider; Facebook does not offer the required OAuth; keep only the manual username/API key form
+- [Image #12] Inventory page — remove the Lookup and Tools buttons from the header action bar (keep Bundle, Restock, Alerts, Add Item)
+- [Image #13] Inventory page — "Out of Stock" status labels in the item rows should have a faint red background highlight to contrast the green highlight used for in-stock items
 
 **PRE-EXISTING**
 0. Use `docs/OPEN_ITEMS.md` as the active task backlog — REMAINING_WORK_EXECUTION_SHEET_2026-04-21.md is historical evidence only.

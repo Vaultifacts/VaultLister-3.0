@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-01T22:20:18.597Z
-Commit: f690bcb5
+Generated at: 2026-05-01T23:28:05.098Z
+Commit: a4df3e29
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -21,9 +21,9 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 | Competitor intelligence gaps | 862 |
 | Anti-detection/design gaps | 14 |
 | Open GitHub issues | 10 |
-| Explicit unchecked checklist items | 413 |
-| Repo-wide unchecked checkbox hits | 637 |
-| Repo-wide unchecked checkbox hits included | 413 |
+| Explicit unchecked checklist items | 359 |
+| Repo-wide unchecked checkbox hits | 583 |
+| Repo-wide unchecked checkbox hits included | 359 |
 | Repo-wide unchecked checkbox hits excluded or review-only | 224 |
 | Open-marker source files discovered | 214 |
 | Source TODO/FIXME hits | 14 |
@@ -63,7 +63,6 @@ Command: `rg -n "^\s*[-*]\s+\[ \]" <document targets> --glob "*.md"`
 | docs/superpowers/plans/2026-04-15-camoufox-migration.md | 28 | 40 | Included as explicit checklist backlog |
 | docs/superpowers/plans/2026-04-15-facebook-mock-test-env.md | 34 | 33 | Included as explicit checklist backlog |
 | docs/superpowers/plans/2026-04-15-facebook-safe-fixes.md | 20 | 28 | Included as explicit checklist backlog |
-| docs/superpowers/plans/2026-05-01-fake-data-audit.md | 54 | 21 | Included as explicit checklist backlog |
 | memory/project_automation_roadmap.md | 59 | 19 | Included as explicit checklist backlog |
 
 ### Open-Marker Source Coverage
@@ -206,7 +205,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | memory/COMPLETED.md | 2 | 61 | Excluded: session memory, promote only after current verification |
 | memory/LAUNCH_PRIORITY.md | 5 | 14 | Excluded: session memory, promote only after current verification |
 | memory/MEMORY.md | 9 | 7 | Excluded: session memory, promote only after current verification |
-| memory/STATUS.md | 13 | 7 | Excluded: session memory, promote only after current verification |
+| memory/STATUS.md | 16 | 7 | Excluded: session memory, promote only after current verification |
 | memory/TIER0_PLAYBOOK.md | 3 | 11 | Excluded: session memory, promote only after current verification |
 | data/qa-report-2026-04-04-chrome-walkthrough.md | 2 | 20 | Excluded: timestamped QA evidence, not current truth |
 | data/qa-report-2026-04-04-exhaustive.md | 4 | 39 | Excluded: timestamped QA evidence, not current truth |
@@ -1690,67 +1689,6 @@ Count: 20
 | **Step 18: Update camoufox-js** | docs/superpowers/plans/2026-04-15-facebook-safe-fixes.md:529 |
 | **Step 19: Syntax check all modified JavaScript files** | docs/superpowers/plans/2026-04-15-facebook-safe-fixes.md:555 |
 | **Step 20: Single commit covering all changes** | docs/superpowers/plans/2026-04-15-facebook-safe-fixes.md:569 |
-
-### Plan: 2026-05-01-fake-data-audit.md
-
-Count: 54
-
-| Item | Source |
-|---|---|
-| F58: financialGoals — create backend goals endpoint; call POST/PUT on save (handlers-deferred.js:15871, handlers-sales-orders.js:4435) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:21 |
-| F80: savePriceWatch() — create backend price-watch endpoint; remove Math.random() seed history (handlers-intelligence.js:1278-1295) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:28 |
-| F57: Budget data (Financials page) — create backend /budget endpoint or load from sales data; currently always zero (pages-deferred.js:3516-3521) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:31 |
-| F66: AI model weights — include modelWeights in /predictions API calls; currently slider values have no effect (handlers-intelligence.js:144-151) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:32 |
-| F101: connectIntegration(platform) — call real OAuth or credential-store endpoint instead of setTimeout toast (handlers-settings-account.js:938-944) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:38 |
-| F102: manageIntegration(platform) — replace hardcoded "2 hours ago" / "127 items synced" with real data; wire "Sync Now" and "Disconnect" to real API calls (handlers-settings-account.js:905-935) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:39 |
-| F62: syncAllShops() — call POST /api/shops/sync or per-platform sync endpoint instead of cosmetic toast (handlers-deferred.js:3392) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:40 |
-| F50: refreshCompetitorActivity() — call GET /api/market-intel/competitors instead of setTimeout toast (handlers-deferred.js:5789) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:41 |
-| F51: runSavedSearch(id) — query backend with saved search parameters instead of setting results to null (handlers-intelligence.js:1517) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:42 |
-| F52: refreshAnalytics() — fetch new data from /api/analytics instead of re-rendering stale state (handlers-deferred.js:4652) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:43 |
-| F54: exportFinancials(format) — implement server-side CSV/PDF generation and trigger download (handlers-deferred.js:4590) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:45 |
-| F63: saveRoadmapSubscription() — POST email to backend or third-party email list endpoint (handlers-community-help.js:182) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:46 |
-| F69: generateLabelsForOrders() — call EasyPost label generation endpoint (handlers-sales-orders.js:4200-4205) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:48 |
-| F72: downloadLegalPDF(docType) — serve pre-generated PDFs from /public/legal/ or generate server-side (handlers-deferred.js:26718-26722) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:49 |
-| F73: downloadReport(reportId) — generate and serve report file from backend (handlers-deferred.js:26886-26891) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:50 |
-| F76: runCleanup() — implement real data deletion endpoint instead of setTimeout toast (handlers-settings-account.js:630-635) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:51 |
-| F105: trendingKeywords.render() — remove 5 hardcoded fake terms; show empty/loading state when no data (widgets.js:7226-7263) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:60 |
-| F106: opportunityCards.render() — remove 3 hardcoded fake opportunity cards; show empty state (widgets.js:7157-7222) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:61 |
-| F107: pricePositionChart.render() — remove Comp A/B/C hardcoded dots and {price:45,quality:75} default; show no-data state (widgets.js:7266-7286) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:62 |
-| F88: showAutomationHistoryMock() error fallback — replace fake history in catch block with real error state or retry prompt (handlers-inventory-catalog.js:1153-1154) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:64 |
-| F95: showAutomationHistoryMock() called from normal navigation — remove calls from close/back/retry buttons; fetch real data instead (handlers-deferred.js:1996,2078,2174) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:65 |
-| F89: _simulateDryRun() — implement real dry-run API endpoint or remove feature; remove hardcoded affected counts and action strings (handlers-inventory-catalog.js:859-1007) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:66 |
-| F64: showPredictionDetails() — remove "Sample Item" hardcoded fallback; show not-found state (handlers-intelligence.js:82-89) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:67 |
-| F91: Prediction accuracy — remove hardcoded {total:156,correct:118,...} fallback; show empty state (pages-intelligence.js:691-698) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:68 |
-| F93: Model Comparison table — remove 3 fake AI models and made-up accuracy figures; show empty or real data (pages-intelligence.js:755-774) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:69 |
-| F55: Financial Ratios — remove fake totalRevenue * 0.3 multiplier formulas; show N/A when real balance sheet data unavailable (pages-deferred.js:3502-3509) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:70 |
-| F70: runAITagging() tools chunk — replace Math.random() tag picker with real Claude /image-bank/analyze call; this version wins for image-bank route (handlers-tools-tasks.js:337-365) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:71 |
-| F81: API usage hardcoded 35% — implement real API call counter or remove stat (handlers-settings-account.js:2872-2873) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:77 |
-| F82: Active sessions hardcoded 2 — query real session count from backend (handlers-settings-account.js:2881-2882) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:78 |
-| F75: Data Retention preview uses Math.random() — replace with real COUNT(*) queries from backend (handlers-settings-account.js:542-548) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:79 |
-| F90: productivityScore "mock calculation" — use real task completion data or remove badge (handlers-deferred.js:2281-2282) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:80 |
-| F98: "Time saved today" arbitrary minutes — use real automation timing from backend or remove stat (pages-deferred.js:1802-1813) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:81 |
-| F94: Cash-flow ticker shuffles on every render — remove Math.random() sort; use stable sort by date (pages-core.js:1016) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:82 |
-| F92: Monthly accuracy chart labels always Mar–Oct — generate labels from real date range (pages-intelligence.js:732) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:83 |
-| F56: Financials cashFlowChange always 0 — derive from real cash flow periods (pages-deferred.js:3485) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:84 |
-| F59: Unmatched transactions panel always empty — add API call to populate store.state.unmatchedTransactions (pages-deferred.js:4038) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:85 |
-| F32: Data Retention defaults shown as user preferences — load from user settings, not hardcoded (pages-settings-account.js:1850-1856) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:91 |
-| F33: Security score always 75% "Good" — compute from real user security posture (pages-settings-account.js:1093-1095) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:92 |
-| F34: Security checklist always green — derive from real account state (password age, email verified, etc.) (pages-settings-account.js:1103-1119) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:93 |
-| F35: Appearance tab light-mode hardcoded — bind radio to store.state.darkMode (pages-settings-account.js:1133) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:94 |
-| F36: "@unknown" username — show email prefix or "Not set" when username is absent (pages-settings-account.js:2181,2202) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:95 |
-| F37: My Shops Avg Health always null% — fix avgHealthScore calculation (pages-settings-account.js:82,213) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:96 |
-| F38: My Shops Performance always '—' — load real conversion rate / days-to-sell / return rate (pages-settings-account.js:606-609) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:97 |
-| F39: Platform status dots all grey — compute from real OAuth connection state (pages-settings-account.js:234-238) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:98 |
-| F40: Connected shops always 0 — derive from real connectedShops state (pages-settings-account.js:79) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:99 |
-| F41: Sync status all "Never" — show real last-sync timestamps (pages-settings-account.js:623-626) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:100 |
-| F43: Notification save shows success even on error — add error handler for notification save API call (handlers-settings-account.js) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:101 |
-| F45: Roadmap in-progress always 50% — use real progress field when available (pages-deferred.js:10527) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:102 |
-| F46: Roadmap 3 features hardcoded — remove hardcoded eBay Bot/EasyPost/Stripe Billing entries (pages-deferred.js:10374-10378) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:103 |
-| F47: Onboarding "0/4" timing bug — wait for API load before checking store.state.shops (core-bundle.js:10208-10211) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:104 |
-| F68: Live Support Chat fake bot — implement real support backend or websocket connection; remove hardcoded "support agent" reply (handlers-community-help.js:1129-1137) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:110 |
-| F83: runRetentionCleanup() stub — implement or remove "coming soon" toast (handlers-deferred.js:6482-6484) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:111 |
-| F84: enhanceQuickPhoto() fake — implement canvas API processing or call Cloudinary enhance endpoint (init.js:1589-1595) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:112 |
-| F85: Offline queue executeAction() empty — implement action replay on reconnect (widgets.js:1094-1098) | docs/superpowers/plans/2026-05-01-fake-data-audit.md:113 |
 
 ## Source TODO/FIXME Scan
 
