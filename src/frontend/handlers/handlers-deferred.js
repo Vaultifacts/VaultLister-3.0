@@ -3392,17 +3392,16 @@ Object.assign(handlers, {
     // My Shops handlers,
 
     syncAllShops: async function () {
-        toast.info('Syncing all shops...', 2000);
-        const shops = store.state.shops || [];
-        const connected = shops.filter((s) => s.is_connected);
-
-        for (const shop of connected) {
-            toast.success(`${shop.platform} synced`);
+        toast.info('Syncing all connected shops...');
+        try {
+            const res = await api.request('POST', '/api/shops/sync-all');
+            const synced = res.platformsSynced || [];
+            store.setState({ lastShopSync: new Date().toISOString() });
+            renderApp(window.pages.shops());
+            toast.success(synced.length ? `Sync queued for: ${synced.join(', ')}` : 'No connected shops to sync');
+        } catch (err) {
+            toast.error('Failed to sync shops');
         }
-
-        store.setState({ lastShopSync: new Date().toISOString() });
-        setTimeout(() => toast.success('Sync complete', 2000), 1500);
-        renderApp(window.pages.shops());
     },
 
     refreshShopHealth: function (platform) {
@@ -7289,9 +7288,20 @@ Object.assign(handlers, {
         );
     },
 
-    saveRoadmapSubscription: function (e) {
+    saveRoadmapSubscription: async function (e) {
         e.preventDefault();
-        toast.success('Subscribed to roadmap updates!');
+        const form = e.target;
+        const prefs = store.state.notificationPreferences || {};
+        prefs.roadmap_voted_features = form.voted_features?.checked ?? true;
+        prefs.roadmap_new_features = form.new_features?.checked ?? true;
+        prefs.roadmap_status_changes = form.status_changes?.checked ?? false;
+        try {
+            await api.request('PUT', '/api/notifications/preferences', prefs);
+            store.setState({ notificationPreferences: prefs });
+            toast.success('Roadmap notification preferences saved');
+        } catch (err) {
+            toast.error('Failed to save preferences');
+        }
         modals.close();
     },
 
@@ -21558,12 +21568,13 @@ Object.assign(handlers, {
     viewImage: async function (imageId) {
         try {
             const image = await api.get(`/image-bank/${imageId}`);
+            const cloudName = store.state.cloudinaryCloudName;
 
             // Show image detail modal
             modals.show(`
                 <div class="image-detail-modal">
                     <div class="image-detail-preview">
-                        <img src="${image.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_limit,w_800/${image.cloudinary_public_id}` : image.file_path}" alt="${escapeHtml(image.title || image.original_filename)}">
+                        <img src="${image.cloudinary_public_id && cloudName ? `https://res.cloudinary.com/${cloudName}/image/upload/c_limit,w_800/${image.cloudinary_public_id}` : image.file_path}" alt="${escapeHtml(image.title || image.original_filename)}">
                     </div>
                     <div class="image-detail-info">
                         <h3>${escapeHtml(image.title || image.original_filename)}</h3>
@@ -21752,6 +21763,7 @@ Object.assign(handlers, {
             await handlers.loadImageBank();
         }
 
+        const cloudName = store.state.cloudinaryCloudName;
         const images = store.state.imageBankImages || [];
 
         modals.show(`
@@ -21774,10 +21786,10 @@ Object.assign(handlers, {
                         ${images
                             .map(
                                 (img) => `
-                            <div class="image-bank-picker-item" data-image-id="${img.id}" data-image-url="${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/${img.cloudinary_public_id}` : escapeHtml(img.file_path)}"
+                            <div class="image-bank-picker-item" data-image-id="${img.id}" data-image-url="${img.cloudinary_public_id && cloudName ? `https://res.cloudinary.com/${cloudName}/image/upload/${img.cloudinary_public_id}` : escapeHtml(img.file_path)}"
                                  role="button" tabindex="0" onclick="handlers.togglePlatformImageSelection(this, '${platform}')"
                                  style="cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; aspect-ratio: 1;">
-                                <img src="${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_fill,w_400,h_400/${img.cloudinary_public_id}` : escapeHtml(img.thumbnail_path || img.file_path)}" alt="${escapeHtml(img.original_name || '')}"
+                                <img src="${img.cloudinary_public_id && cloudName ? `https://res.cloudinary.com/${cloudName}/image/upload/c_fill,w_400,h_400/${img.cloudinary_public_id}` : escapeHtml(img.thumbnail_path || img.file_path)}" alt="${escapeHtml(img.original_name || '')}"
                                      style="width: 100%; height: 100%; object-fit: cover;">
                             </div>
                         `,
@@ -21846,6 +21858,7 @@ Object.assign(handlers, {
                 await handlers.loadImageBank();
             }
 
+            const cloudName = store.state.cloudinaryCloudName;
             const images = store.state.imageBankImages || [];
 
             // Create picker modal
@@ -21875,7 +21888,7 @@ Object.assign(handlers, {
                                     (image) => `
                                 <div class="image-card selectable-image" role="button" tabindex="0" onclick="handlers.toggleImageBankSelection('${image.id}', '${mode}')" data-image-id="${image.id}">
                                     <div class="image-card-thumbnail">
-                                        <img src="${image.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_limit,w_800/${image.cloudinary_public_id}` : escapeHtml(image.file_path)}"
+                                        <img src="${image.cloudinary_public_id && cloudName ? `https://res.cloudinary.com/${cloudName}/image/upload/c_limit,w_800/${image.cloudinary_public_id}` : escapeHtml(image.file_path)}"
                                              alt="${escapeHtml(image.title || image.original_filename)}"
                                              loading="lazy">
                                     </div>

@@ -1206,7 +1206,7 @@ Added full BrowserStack infrastructure for real-device iOS mobile auditing:
 - Bundle on live site: `17d54beb` (confirmed via core-bundle.js script tag)
 
 ## In Progress
-- F33 Security score — replacing hardcoded account security score/label with real account state.
+- F39 My Shops total listings — replacing the hardcoded zero with loaded listing/health stats where available.
 
 ## Completed This Session (2026-04-12, session 19)
 
@@ -1603,12 +1603,12 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 **Settings Bugs**
 - F31: Notification checkboxes — FIXED 2026-05-01 (uncommitted): checkbox state/save/reset now uses real `notificationPreferences` and `pushSettings`; rebuilt bundle verified no stale hardcoded checkbox/reset patterns remain (`pages-settings-account.js`, `handlers-settings-account.js`, `handlers-deferred.js`, generated bundle rebuilt)
 - F32: Data Retention defaults — FIXED 2026-05-01 (uncommitted): retention panel and cleanup preview no longer seed hardcoded 365/180/90/30-day defaults when `dataRetention` is missing; missing values render as `Not configured` / `—` until a real setting exists (`pages-settings-account.js`, `handlers-settings-account.js`, `handlers-deferred.js`, generated bundle rebuilt)
-- F33: Security score always 75% / "Good" for all users (`pages-settings-account.js:1093-1095`)
-- F34: Security checklist always green — "Strong password", "Email verified", "Recent login reviewed" hardcoded completed (`pages-settings-account.js:1103-1119`)
-- F35: Appearance tab light-mode hardcoded — Light radio has `checked` with no `store.state.darkMode` connection; dark mode users see wrong state (`pages-settings-account.js:1133`)
-- F36: "@unknown" username — shown for all users without `username` set (`pages-settings-account.js:2181,2202`)
-- F37: My Shops Avg Health always `null%` — `avgHealthScore = connectedShops.length > 0 ? null : 0` (`pages-settings-account.js:82,213`)
-- F38: My Shops Performance Dashboard — Conversion Rate, Avg Days to Sell, Return Rate always hardcoded `'—'` (`pages-settings-account.js:606-609`)
+- F33: Security score — FIXED 2026-05-01 (uncommitted): security score now derives only from real `email_verified`, MFA flags, and recent login/activity evidence; removed email/created-at fallbacks that inflated every account (`pages-settings-account.js`, generated bundle rebuilt)
+- F34: Security checklist — FIXED 2026-05-01 (uncommitted): checklist completion now follows the same real account evidence and no longer marks email/recent-login complete from generic email or created-at fields (`pages-settings-account.js`, generated bundle rebuilt)
+- F35: Appearance tab light-mode radio — VERIFIED FIXED 2026-05-01 (current uncommitted source): light/dark radio checked/active state is bound to `store.state.darkMode`; stale hardcoded light-radio patterns absent from source and settings chunk (`pages-settings-account.js`, generated bundle rebuilt)
+- F36: Missing username fallback — FIXED 2026-05-01 (uncommitted): profile/account headers now use real display fields and show `No username set` instead of generic fake handles when `username` is absent (`pages-settings-account.js`, generated bundle rebuilt)
+- F37: My Shops Avg Health — FIXED 2026-05-01 (uncommitted): average and per-shop health now use real `health_score` / loaded platform health data and show `N/A` when no health score exists instead of `null%` (`pages-settings-account.js`, `pages-deferred.js`, generated bundle rebuilt)
+- F38: My Shops Performance Dashboard — FIXED 2026-05-01 (uncommitted): conversion rate, average days to sell, and return rate now render from explicit shop/platform metrics or derivable loaded listings/sales/orders; unavailable metrics render `—` without fake `%`/`d` suffixes (`pages-settings-account.js`, `pages-deferred.js`, generated bundle rebuilt)
 - F39: My Shops Total Listings always 0 — no listings count API data loaded (`pages-settings-account.js:74,80`)
 - F40: Plans & Billing usage meters always 0 — `store.state.usage` never populated from backend (`pages-settings-account.js:2693-2714`)
 - F41: Billing History always empty — "No billing history yet" shown for all users including paid plans (`pages-settings-account.js:2980-2983`)

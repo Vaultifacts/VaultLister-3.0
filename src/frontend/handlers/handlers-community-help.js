@@ -179,9 +179,20 @@ Object.assign(handlers, {
         `);
     },
 
-    saveRoadmapSubscription: function (e) {
+    saveRoadmapSubscription: async function (e) {
         e.preventDefault();
-        toast.success('Subscribed to roadmap updates!');
+        const form = e.target;
+        const prefs = store.state.notificationPreferences || {};
+        prefs.roadmap_voted_features = form.voted_features?.checked ?? true;
+        prefs.roadmap_new_features = form.new_features?.checked ?? true;
+        prefs.roadmap_status_changes = form.status_changes?.checked ?? false;
+        try {
+            await api.request('PUT', '/api/notifications/preferences', prefs);
+            store.setState({ notificationPreferences: prefs });
+            toast.success('Roadmap notification preferences saved');
+        } catch (err) {
+            toast.error('Failed to save preferences');
+        }
         modals.close();
     },
 

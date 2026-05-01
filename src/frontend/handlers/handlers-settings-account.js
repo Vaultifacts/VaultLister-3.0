@@ -5,16 +5,15 @@
 Object.assign(handlers, {
     syncAllShops: async function () {
         toast.info('Syncing all connected shops...');
-        const shops = store.state.shops || [];
-        const connected = shops.filter((s) => s.is_connected);
-
-        for (const shop of connected) {
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            toast.success(`${shop.platform} synced`);
+        try {
+            const res = await api.request('POST', '/api/shops/sync-all');
+            const synced = res.platformsSynced || [];
+            store.setState({ lastShopSync: new Date().toISOString() });
+            renderApp(window.pages.shops());
+            toast.success(synced.length ? `Sync queued for: ${synced.join(', ')}` : 'No connected shops to sync');
+        } catch (err) {
+            toast.error('Failed to sync shops');
         }
-
-        store.setState({ lastShopSync: new Date().toISOString() });
-        renderApp(window.pages.shops());
     },
 
     refreshShopHealth: async function (platform) {
