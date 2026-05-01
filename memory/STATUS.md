@@ -710,7 +710,7 @@ Added full BrowserStack infrastructure for real-device iOS mobile auditing:
 ## Current State
 - **Launch Readiness Walkthrough COMPLETE** — all sections in WALKTHROUGH_MASTER_FINDINGS.md fixed + VERIFIED
 - **Master findings doc VERIFIED markers** — `docs/WALKTHROUGH_MASTER_FINDINGS.md` — ALL TABS FULLY VERIFIED: Roadmap (12/14 + 1 OPEN external blocker, b8a38d8), Plans & Billing (15/15, ed6b3f5), Help (17/17, 6784cc7), Changelog (12/13 + F12 N/A, e68a2eb/2f654db), Image Bank (14/14, 66d02de), Calendar (13/13, e68a2eb), Receipts (13/13, 2f654db). Remaining open items now include CR-10 (OAuth), CR-4 (EasyPost not configured on live 2026-04-22), and M-33 (mailbox configuration not fully re-proven).
-- **GitHub operational tracker is empty** — all stale branch-specific CI issues plus the remaining deploy/health/slow-query reminder issues were closed appropriately after verified reruns; there are currently **0 open GitHub issues**.
+- **GitHub operational tracker** — was 0 open issues on 2026-04-23 (session 35). As of 2026-04-30: **19 open issues** (dependabot CI failures ×5, automation workflow failures ×4, infra/observability alerts ×4, other CI/deploy failures ×3, other ×3). Needs triage.
 - **Execution-sheet order is now the active local path** — `docs/REMAINING_WORK_EXECUTION_SHEET_2026-04-21.md` matches the present dirty worktree and should be followed subset-by-subset starting with docs-only cleanup before broader frontend/dev-tooling staging.
 - **7 live platforms** — Grailed promoted from Coming Soon to live (09d9811c). Shopify OAuth fully configured end-to-end (SHOPIFY_CLIENT_ID/SECRET/OAUTH_REDIRECT_URI in Railway).
 - **Post-walkthrough fix plan (6 batches) COMPLETE + VERIFIED** — all batches deployed to live site
