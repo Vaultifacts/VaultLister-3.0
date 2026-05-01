@@ -59,7 +59,7 @@ Copy `.env.example` to `.env` and configure:
 | Stripe | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | For billing |
 | Push | `FIREBASE_PROJECT_ID`, `FIREBASE_PRIVATE_KEY`, `FIREBASE_CLIENT_EMAIL` | For push notifications |
 | Google | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | For Drive/Calendar |
-| Redis | `REDIS_PASSWORD` | For Docker deploy |
+| Redis | `REDIS_PASSWORD` | For production (BullMQ, caching, sessions) |
 | Email | `RESEND_API_KEY` | Resend transactional email |
 
 ## Database Migrations
@@ -152,7 +152,7 @@ chrome-extension/  # MV3 Chrome extension
 
 Run chunked E2E suite:
 ```bash
-PORT=3000 node scripts/run-e2e-chunks.js --summary
+node scripts/run-e2e-chunks.js --summary
 ```
 
 ## Marketplace Integrations
@@ -161,16 +161,16 @@ PORT=3000 node scripts/run-e2e-chunks.js --summary
 |----------|------|---------|------|-----|
 | Poshmark | Credentials | Playwright | Playwright | Share, follow, OTL |
 | eBay | OAuth 2.0 | Sell API | Sell API | — |
-| Mercari | Credentials | Playwright | Playwright | Relist |
+| Mercari | Credentials | Playwright | Playwright | Refresh, Relist |
 | Depop | OAuth 2.0 | REST API | REST API | Refresh |
 | Grailed | Credentials | Playwright | Playwright | Bump |
 | Etsy | OAuth (PKCE) | REST API | REST API | — |
 | Shopify | OAuth 2.0 | Admin API | Admin API | — |
-| Facebook | Credentials | Playwright | Playwright | — |
+| Facebook | Credentials | Playwright | Playwright | Refresh, Relist |
 | Whatnot | Credentials | Playwright | Playwright | Refresh |
 
 ## Health Checks
-- `GET /api/health` — Quick liveness (public)
+- `GET /api/health` — Basic health check (public)
 - `GET /api/health/detailed` — Full system check (public)
 
 ## License
