@@ -1240,7 +1240,7 @@ Object.assign(pages, {
                             </div>
                             <div class="settings-profile-info">
                                 <h2>${escapeHtml(user.full_name || user.username || 'User')}</h2>
-                                <p>@${escapeHtml(user.username || 'username')}</p>
+                                <p>${user.username ? '@' + escapeHtml(user.username) : escapeHtml(user.email?.split('@')[0] || 'Not set')}</p>
                                 <span class="badge ${store.getPlanTier() === 'free' ? 'badge-gray' : 'badge-success'}">${store.getPlanTier() === 'free' ? 'Free Plan' : store.getPlanTier().charAt(0).toUpperCase() + store.getPlanTier().slice(1) + ' Member'}</span>
                             </div>
                         </div>
