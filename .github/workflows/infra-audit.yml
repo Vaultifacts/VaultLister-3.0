@@ -112,7 +112,9 @@ jobs:
             BASENAME=$(basename "$CHUNK")
             # Skip core-bundle.js — it's the main bundle, referenced by script tag
             if [ "$BASENAME" = "core-bundle.js" ]; then continue; fi
-            if ! grep -qr "$BASENAME" src/frontend/index.html public/ 2>/dev/null; then
+            # Strip "chunk-" prefix and ".js" suffix to get the chunk key used in pageChunkMap
+            CHUNK_KEY="${BASENAME#chunk-}"; CHUNK_KEY="${CHUNK_KEY%.js}"
+            if ! grep -qr "$BASENAME\|$CHUNK_KEY" src/frontend/index.html src/frontend/core/router.js public/ 2>/dev/null; then
               ORPHANS=$((ORPHANS + 1))
               ORPHAN_LIST="${ORPHAN_LIST} ${BASENAME}"
             fi
