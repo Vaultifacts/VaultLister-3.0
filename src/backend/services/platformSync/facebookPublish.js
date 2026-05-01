@@ -17,17 +17,17 @@ import { logger } from '../../shared/logger.js';
 let _stealth = null;
 let _botSafety = null;
 async function getBotSafety() {
-    if (!_botSafety) _botSafety = await import('../../../worker/bots/bot-safety.js');
+    if (!_botSafety) _botSafety = await import('../../../../worker/bots/bot-safety.js');
     return _botSafety;
 }
 async function getStealth() {
-    if (!_stealth) _stealth = await import('../../../worker/bots/stealth.js');
+    if (!_stealth) _stealth = await import('../../../../worker/bots/stealth.js');
     return _stealth;
 }
 
 let _profiles = null;
 async function getProfiles() {
-    if (!_profiles) _profiles = await import('../../../worker/bots/browser-profiles.js');
+    if (!_profiles) _profiles = await import('../../../../worker/bots/browser-profiles.js');
     return _profiles;
 }
 import { resolveImageFiles, cleanupTempImages } from './imageUploadHelper.js';
