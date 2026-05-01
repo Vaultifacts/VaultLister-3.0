@@ -567,6 +567,48 @@
                 }
             }
 
+            .feature-group-footer {
+                margin-top: 1.25rem;
+                display: flex;
+                justify-content: center;
+            }
+
+            .feature-see-all {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.4rem;
+                font-size: 0.8125rem;
+                font-weight: 600;
+                color: #a1a1aa;
+                background: transparent;
+                border: 1px solid #3f3f46;
+                border-radius: 8px;
+                padding: 0.45rem 1rem;
+                cursor: pointer;
+                text-decoration: none;
+                transition: color 0.15s, border-color 0.15s;
+            }
+
+            .feature-see-all:hover {
+                color: var(--amber-500);
+                border-color: rgba(245, 158, 11, 0.4);
+            }
+
+            .feature-see-all svg {
+                width: 14px;
+                height: 14px;
+                stroke: currentColor;
+                fill: none;
+                stroke-width: 2;
+                stroke-linecap: round;
+                stroke-linejoin: round;
+                transition: transform 0.15s;
+            }
+
+            .feature-see-all:hover svg {
+                transform: translateY(2px);
+            }
+
             /* ---- Automation differentiator ---- */
             .auto-section {
                 background: #18181b;
@@ -2226,6 +2268,9 @@
                             </p>
                         </div>
                     </div>
+                    <div class="feature-group-footer">
+                        <a href="/features.html#list-everywhere" class="feature-see-all">See all features <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></a>
+                    </div>
                 </div>
 
                 <!-- Group 2: Sell smarter with AI -->
@@ -2276,6 +2321,9 @@
                                 image library, organized and ready for any listing.
                             </p>
                         </div>
+                    </div>
+                    <div class="feature-group-footer">
+                        <a href="/features.html#sell-smarter" class="feature-see-all">See all features <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></a>
                     </div>
                 </div>
 
@@ -2332,6 +2380,9 @@
                             </p>
                         </div>
                     </div>
+                    <div class="feature-group-footer">
+                        <a href="/features.html#track-every-dollar" class="feature-see-all">See all features <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></a>
+                    </div>
                 </div>
 
                 <!-- Group 4: Automate the busywork -->
@@ -2383,6 +2434,9 @@
                                 appearing in search without lifting a finger.
                             </p>
                         </div>
+                    </div>
+                    <div class="feature-group-footer">
+                        <a href="/features.html#automate" class="feature-see-all">See all features <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></a>
                     </div>
                 </div>
             </section>
