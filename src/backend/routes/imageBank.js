@@ -941,6 +941,13 @@ Be specific and accurate. Only include what you can confidently detect from the 
                         upscale: doUpscale,
                         cropWidth,
                         cropHeight,
+                        rotationAngle,
+                        flipHorizontal,
+                        flipVertical,
+                        brightness,
+                        contrast,
+                        saturation,
+                        warmth,
                     } = params || {};
 
                     if (removeBg) transformations.push('e_background_removal');
@@ -953,6 +960,16 @@ Be specific and accurate. Only include what you can confidently detect from the 
                             return { status: 400, data: { error: 'Invalid crop dimensions (1-10000)' } };
                         }
                         transformations.push(`c_fill,g_auto,w_${w},h_${h}`);
+                    }
+                    if (rotationAngle && rotationAngle !== 0) transformations.push(`a_${rotationAngle}`);
+                    if (flipHorizontal) transformations.push('a_hflip');
+                    if (flipVertical) transformations.push('a_vflip');
+                    if (brightness && brightness !== 0) transformations.push(`e_brightness:${brightness}`);
+                    if (contrast && contrast !== 0) transformations.push(`e_contrast:${contrast}`);
+                    if (saturation && saturation !== 0) transformations.push(`e_saturation:${saturation}`);
+                    if (warmth && warmth !== 0) {
+                        const tintColor = warmth > 0 ? 'FF6600' : '0066FF';
+                        transformations.push(`e_tint:${Math.abs(warmth)}:${tintColor}`);
                     }
 
                     if (transformations.length === 0) {

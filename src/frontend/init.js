@@ -657,8 +657,8 @@ function renderApp(pageContent) {
                 <div class="app-body">
                     ${components.sidebar()}
                     <div class="sidebar-backdrop ${store.state.sidebarOpen ? 'active' : ''}"
-                         role="button" tabindex="0" aria-label="Close sidebar" onclick="store.setState({ sidebarOpen: false }); renderApp(pages[store.state.currentPage]())"></div>
-                    <div class="sidebar-overlay" role="button" tabindex="0" aria-label="Close sidebar" onclick="store.setState({sidebarOpen:false});document.querySelector('.sidebar')?.classList.remove('open');this.classList.remove('visible');"></div>
+                         role="button" tabindex="0" aria-label="Close sidebar" onclick="store.setState({ sidebarOpen: false }); renderApp(pages[store.state.currentPage]())" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();store.setState({sidebarOpen:false});renderApp(pages[store.state.currentPage]())}"></div>
+                    <div class="sidebar-overlay" role="button" tabindex="0" aria-label="Close sidebar" onclick="store.setState({sidebarOpen:false});document.querySelector('.sidebar')?.classList.remove('open');this.classList.remove('visible');" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();store.setState({sidebarOpen:false});document.querySelector('.sidebar')?.classList.remove('open');this.classList.remove('visible');}"></div>
                     <div class="mobile-header">
                         <button class="mobile-menu-btn" onclick="const _open=!store.state.sidebarOpen;store.setState({sidebarOpen:_open});document.querySelector('.sidebar')?.classList.toggle('open',_open);document.querySelector('.sidebar-overlay')?.classList.toggle('visible',_open);" aria-label="Open menu">
                             ${components.icon('menu')}

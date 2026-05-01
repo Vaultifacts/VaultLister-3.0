@@ -22148,6 +22148,13 @@ Object.assign(handlers, {
                 upscale: t.upscale,
                 cropWidth: t.cropWidth,
                 cropHeight: t.cropHeight,
+                rotationAngle: t.rotationAngle,
+                flipHorizontal: t.flipHorizontal,
+                flipVertical: t.flipVertical,
+                brightness: t.brightness,
+                contrast: t.contrast,
+                saturation: t.saturation,
+                warmth: t.warmth,
             };
 
             const result = await api.post('/image-bank/cloudinary-edit', {
