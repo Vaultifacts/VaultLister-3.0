@@ -150,7 +150,8 @@
       "WebFetch(domain:oneshop.com)",
       "WebFetch(domain:crosslist.app)",
       "WebFetch(domain:static-assets.browserstack.com)",
-      "Bash(echo \"EXIT: $?\")"
+      "Bash(echo \"EXIT: $?\")",
+      "mcp__plugin_playwright_playwright__browser_run_code_unsafe"
     ]
   },
   "hooks": {

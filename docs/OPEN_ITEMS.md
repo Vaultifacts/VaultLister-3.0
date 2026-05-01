@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-01T21:11:45.161Z
-Commit: d75873da
+Generated at: 2026-05-01T21:30:15.852Z
+Commit: df94e4b6
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -22,10 +22,10 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 | Anti-detection/design gaps | 14 |
 | Open GitHub issues | 9 |
 | Explicit unchecked checklist items | 433 |
-| Repo-wide unchecked checkbox hits | 722 |
+| Repo-wide unchecked checkbox hits | 657 |
 | Repo-wide unchecked checkbox hits included | 433 |
-| Repo-wide unchecked checkbox hits excluded or review-only | 289 |
-| Open-marker source files discovered | 213 |
+| Repo-wide unchecked checkbox hits excluded or review-only | 224 |
+| Open-marker source files discovered | 214 |
 | Source TODO/FIXME hits | 14 |
 
 ## Source Coverage Audit
@@ -38,7 +38,6 @@ Command: `rg -n "^\s*[-*]\s+\[ \]" <document targets> --glob "*.md"`
 
 | Source | Matches | First Match | Treatment |
 |---|---:|---:|---|
-| memory/STATUS.md | 65 | 1435 | Excluded pending source-policy review |
 | .agents/skills/mobile-audit/SKILL.md | 6 | 75 | Excluded: agent skill runbook checklist, not persistent backlog |
 | docs/archive/evidence-2026-03/RUNBOOK_CHECKLIST.md | 4 | 25 | Excluded: historical evidence, verify before promotion |
 | docs/LAUNCH_AUDIT_FINDINGS_2026-04-05.md | 9 | 284 | Excluded: historical evidence, verify before promotion |
@@ -115,6 +114,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | .github/workflows/marketplace-health.yml | 2 | 157 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/npm-audit.yml | 3 | 74 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/observability-health.yml | 2 | 356 | Config/workflow text; parsed separately only if promoted |
+| .github/workflows/open-items-check.yml | 7 | 1 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/orphan-cleanup.yml | 1 | 84 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/production-smoke.yml | 4 | 74 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/project-status-update.yml | 11 | 30 | Config/workflow text; parsed separately only if promoted |
@@ -206,7 +206,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | memory/COMPLETED.md | 2 | 61 | Excluded: session memory, promote only after current verification |
 | memory/LAUNCH_PRIORITY.md | 5 | 13 | Excluded: session memory, promote only after current verification |
 | memory/MEMORY.md | 9 | 7 | Excluded: session memory, promote only after current verification |
-| memory/STATUS.md | 180 | 47 | Excluded: session memory, promote only after current verification |
+| memory/STATUS.md | 10 | 7 | Excluded: session memory, promote only after current verification |
 | memory/TIER0_PLAYBOOK.md | 3 | 11 | Excluded: session memory, promote only after current verification |
 | data/qa-report-2026-04-04-chrome-walkthrough.md | 2 | 20 | Excluded: timestamped QA evidence, not current truth |
 | data/qa-report-2026-04-04-exhaustive.md | 4 | 39 | Excluded: timestamped QA evidence, not current truth |

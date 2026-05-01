@@ -335,6 +335,7 @@ select:focus-visible {
     flex-direction: column;
     z-index: var(--z-dropdown);
     transition: transform var(--transition-base);
+    overflow: hidden;
 }
 
 .sidebar {
@@ -499,7 +500,7 @@ select:focus-visible {
 .sidebar-collapse-btn {
     position: absolute;
     bottom: 20px;
-    right: -12px;
+    right: 8px;
     width: 24px;
     height: 24px;
     background: var(--primary-500);

@@ -213,26 +213,27 @@ Object.assign(handlers, {
         }
     },
 
-    saveNewSupplier: function (e) {
+    saveNewSupplier: async function (e) {
         e.preventDefault();
         const form = e.target;
-        const newSupplier = {
-            id: 'sup_' + Date.now(),
-            name: form.name.value,
-            email: form.email.value,
-            phone: form.phone.value,
-            category: form.category.value,
-            notes: form.notes.value,
-            rating: 0,
-            total_orders: 0,
-            created_at: new Date().toISOString(),
-        };
-
-        const suppliers = [...(store.state.suppliers || []), newSupplier];
-        store.setState({ suppliers });
-        toast.success('Supplier added successfully');
-        modals.close();
-        renderApp(window.pages.suppliers());
+        try {
+            await api.ensureCSRFToken();
+            const result = await api.post('/inventory/suppliers', {
+                name: form.name.value,
+                contact_email: form.email.value || undefined,
+                contact_phone: form.phone.value || undefined,
+                type: form.category.value || undefined,
+                notes: form.notes.value || undefined,
+            });
+            const newSupplier = result.supplier || result;
+            const suppliers = [...(store.state.suppliers || []), newSupplier];
+            store.setState({ suppliers });
+            toast.success('Supplier added successfully');
+            modals.close();
+            renderApp(window.pages.suppliers());
+        } catch (err) {
+            toast.error(err.message || 'Failed to add supplier');
+        }
     },
 
     viewSupplierDetails: function (id) {

@@ -348,7 +348,6 @@ const components = {
 
                 <a class="sidebar-brand" href="/?app=1#dashboard" aria-label="VaultLister home">
                     <img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" height="28" class="sidebar-brand-logo">
-                    <span class="sidebar-brand-wordmark" aria-hidden="true">VaultLister</span>
                 </a>
 
                 ${

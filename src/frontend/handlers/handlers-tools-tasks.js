@@ -449,7 +449,7 @@ Object.assign(handlers, {
         );
     },
 
-    saveWhatnotLiveEvent: function (e, defaultDate) {
+    saveWhatnotLiveEvent: async function (e, defaultDate) {
         e.preventDefault();
         const form = e.target;
         const date = form.date.value;
@@ -459,49 +459,36 @@ Object.assign(handlers, {
         const category = form.category.value;
         const description = form.description.value;
         const addToCalendar = form.addToCalendar.checked;
-
-        // Create Whatnot event
-        const whatnotEvents = store.state.whatnotEvents || [];
-        const newWhatnotEvent = {
-            id: Date.now().toString(),
-            title,
-            start_time: date + 'T' + time + ':00',
-            estimated_duration: duration,
-            category,
-            description,
-            status: 'scheduled',
-            items: [],
-        };
-        store.setState({ whatnotEvents: [...whatnotEvents, newWhatnotEvent] });
-
-        // Add to calendar if checked
-        if (addToCalendar) {
-            const calendarEvents = store.state.calendarEvents || [];
-            const newCalendarEvent = {
-                id: 'whatnot-' + Date.now().toString(),
-                date,
-                title: '📺 ' + title,
-                time,
-                type: 'live',
-                color: 'var(--purple-100)',
-                whatnotEventId: newWhatnotEvent.id,
-            };
-            store.setState({ calendarEvents: [...calendarEvents, newCalendarEvent] });
+        try {
+            const newWhatnotEvent = await api.request('POST', '/api/whatnot/events', {
+                title,
+                start_time: date + 'T' + time + ':00',
+                estimated_duration: duration,
+                category,
+                description,
+                status: 'scheduled',
+            });
+            store.setState({ whatnotEvents: [...(store.state.whatnotEvents || []), newWhatnotEvent] });
+            if (addToCalendar) {
+                const calendarEvents = store.state.calendarEvents || [];
+                store.setState({
+                    calendarEvents: [...calendarEvents, {
+                        id: 'whatnot-' + newWhatnotEvent.id,
+                        date,
+                        title: '📺 ' + title,
+                        time,
+                        type: 'live',
+                        color: 'var(--purple-100)',
+                        whatnotEventId: newWhatnotEvent.id,
+                    }],
+                });
+            }
+            modals.close();
+            toast.success('Whatnot Live show scheduled!');
+            renderApp(window.pages.calendar());
+        } catch (err) {
+            toast.error(err.message || 'Failed to schedule Whatnot event');
         }
-
-        // Update whatnot stats
-        const stats = store.state.whatnotStats || { total_events: 0, upcoming: 0, completed: 0, total_items_sold: 0 };
-        store.setState({
-            whatnotStats: {
-                ...stats,
-                total_events: stats.total_events + 1,
-                upcoming: stats.upcoming + 1,
-            },
-        });
-
-        modals.close();
-        toast.success('Whatnot Live show scheduled!');
-        renderApp(window.pages.calendar());
     },
 
     // Size Charts handlers,
@@ -1213,6 +1200,12 @@ Object.assign(handlers, {
     // My Shops handlers,
 
     _showQuickNotesImpl: function () {
+        if (!store.state.quickNotes) {
+            try {
+                const saved = localStorage.getItem('vl_quick_notes');
+                if (saved) store.setState({ quickNotes: JSON.parse(saved) });
+            } catch (_) {}
+        }
         const notes = store.state.quickNotes || [];
 
         modals.show(`
@@ -1284,6 +1277,11 @@ Object.assign(handlers, {
         `);
     },
 
+    _persistQuickNotes: function (notes) {
+        try { localStorage.setItem('vl_quick_notes', JSON.stringify(notes)); } catch (_) {}
+        store.setState({ quickNotes: notes });
+    },
+
     addQuickNote: function () {
         const input = document.getElementById('new-note-input');
         const colorSelect = document.getElementById('note-color');
@@ -1294,28 +1292,28 @@ Object.assign(handlers, {
             return;
         }
 
-        const notes = store.state.quickNotes || [];
+        const notes = [...(store.state.quickNotes || [])];
         notes.unshift({
             text,
             color: colorSelect?.value || 'default',
             createdAt: new Date().toISOString(),
         });
 
-        store.setState({ quickNotes: notes });
+        handlers._persistQuickNotes(notes);
         toast.success('Note added');
         handlers._showQuickNotesImpl(); // Refresh
     },
 
     deleteQuickNote: function (index) {
-        const notes = store.state.quickNotes || [];
+        const notes = [...(store.state.quickNotes || [])];
         notes.splice(index, 1);
-        store.setState({ quickNotes: notes });
+        handlers._persistQuickNotes(notes);
         toast.success('Note deleted');
         handlers._showQuickNotesImpl(); // Refresh
     },
 
     convertNoteToTask: function (index) {
-        const notes = store.state.quickNotes || [];
+        const notes = [...(store.state.quickNotes || [])];
         const note = notes[index];
         if (note) {
             const tasks = store.state.checklistTasks || [];
@@ -1327,11 +1325,8 @@ Object.assign(handlers, {
                 createdAt: new Date().toISOString(),
             });
             store.setState({ checklistTasks: tasks });
-
-            // Remove from notes
             notes.splice(index, 1);
-            store.setState({ quickNotes: notes });
-
+            handlers._persistQuickNotes(notes);
             toast.success('Converted to task');
             handlers._showQuickNotesImpl(); // Refresh
         }

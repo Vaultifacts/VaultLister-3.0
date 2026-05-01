@@ -10,7 +10,7 @@ import {
     handleDeleteSession,
     handleRevokeAllSessions,
 } from './session.js';
-import { handleProfile, handlePassword, handlePasswordReset, handlePasswordResetConfirm } from './account.js';
+import { handleProfile, handlePassword, handlePasswordReset, handlePasswordResetConfirm, handleRegenerateApiKey } from './account.js';
 
 export async function authRouter(ctx) {
     const { method, path } = ctx;
@@ -33,5 +33,6 @@ export async function authRouter(ctx) {
     if (method === 'POST' && path === '/password-reset/confirm') return handlePasswordResetConfirm(ctx);
     if (method === 'GET' && path === '/verify-email') return handleVerifyEmail(ctx);
     if (method === 'POST' && path === '/resend-verification') return handleResendVerification(ctx);
+    if (method === 'POST' && path === '/api-key/regenerate') return handleRegenerateApiKey(ctx);
     return { status: 404, data: { error: 'Route not found' } };
 }

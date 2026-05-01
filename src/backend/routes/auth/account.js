@@ -154,6 +154,21 @@ export async function handlePasswordReset(ctx) {
     };
 }
 
+export async function handleRegenerateApiKey(ctx) {
+    const { user } = ctx;
+    if (!user) return { status: 401, data: { error: 'Not authenticated' } };
+
+    try {
+        const rawKey = crypto.randomBytes(32).toString('hex');
+        const keyHash = crypto.createHash('sha256').update(rawKey).digest('hex');
+        await query.run('UPDATE users SET api_key_hash = $1 WHERE id = $2', [keyHash, user.id]);
+        return { status: 200, data: { apiKey: rawKey } };
+    } catch (e) {
+        logger.error('[auth] API key regeneration failed', null, { detail: e.message });
+        return { status: 500, data: { error: 'Failed to regenerate API key' } };
+    }
+}
+
 export async function handlePasswordResetConfirm(ctx) {
     const { body } = ctx;
     const resetRateError = await applyRateLimit(ctx, 'mutation');

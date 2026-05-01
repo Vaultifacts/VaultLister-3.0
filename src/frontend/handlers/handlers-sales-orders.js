@@ -1445,9 +1445,10 @@ Object.assign(handlers, {
     },
 
     saveBudgetSettings: function () {
+        // TODO: needs backend budget endpoint
         const budget = document.getElementById('monthly-budget-input')?.value;
         store.setState({ monthlyBudget: parseFloat(budget) || 500 });
-        toast.success('Budget settings saved');
+        toast.info('Budget saved locally — no backend endpoint yet');
         modals.close();
         renderApp(window.pages.financials());
     },

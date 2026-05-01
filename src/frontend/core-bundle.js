@@ -17028,7 +17028,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '7c4663b3';
+    const v = '65a5eceb';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function (resolve, reject) {
@@ -17919,7 +17919,6 @@ const components = {
 
                 <a class="sidebar-brand" href="/?app=1#dashboard" aria-label="VaultLister home">
                     <img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" height="28" class="sidebar-brand-logo">
-                    <span class="sidebar-brand-wordmark" aria-hidden="true">VaultLister</span>
                 </a>
 
                 ${

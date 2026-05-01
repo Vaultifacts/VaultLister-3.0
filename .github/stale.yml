@@ -8,6 +8,17 @@ exemptLabels:
   - automated
   - ci-failure
   - launch-checklist
+  - maintenance
+  - performance
+  - billing
+  - ai-spend
+  - automation-coverage
+  - deploy-failure
+  - infra-audit
+  - infrastructure
+  - internal-health
+  - observability
+  - service-health
 markComment: >
   This issue has been automatically marked as stale because it has not had activity in 60 days.
   It will be closed in 7 days if no further activity occurs.

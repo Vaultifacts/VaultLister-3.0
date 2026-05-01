@@ -53,7 +53,9 @@ CREATE TABLE IF NOT EXISTS users (
     is_admin INTEGER NOT NULL DEFAULT 0,
     -- 102: Stripe
     stripe_customer_id TEXT,
-    stripe_subscription_id TEXT
+    stripe_subscription_id TEXT,
+    -- 032: Developer API key (SHA-256 hash of the raw key; raw key returned only once on generation)
+    api_key_hash TEXT
 );
 
 -- Sessions table for refresh tokens

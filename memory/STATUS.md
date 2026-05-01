@@ -13,6 +13,20 @@
 
 ## Last Completed Work (2026-05-01)
 
+### Display bug sweep — My Shops, Automations, Image Bank (2026-05-01, commits d75873da→273a1003)
+- **Grailed "Coming Soon" fix**: was showing Coming Soon badge despite being a launched platform. Root cause: stale `dist/chunk-deferred.js` in Docker container (built 2 weeks prior, missing LAUNCH_PLATFORMS logic). Fixed by touching `init.js` to change hash, rebuilding all chunks (`bun run build`), and `docker cp` into container. Version bumped to `2a245d0f`.
+- **`getShopHealthScore` null crash**: accessing `.health_score` on `undefined` when `shops.find()` returns undefined for unconnected platforms. Fixed with `shop ? ... : null` guard.
+- **Automations page**: clean — 8 automations render correctly (Grailed/Poshmark/Depop/Facebook/Mercari), no undefined/NaN/placeholder text, all section headings present.
+- **Image Bank page**: clean — proper empty state, search input, stats (0 Total/Folders/Tagged), no broken images.
+- **Settings handlers**: `saveShopBranding` and `saveMultiShopSyncSettings` wired to real PUT /api/shops/:platform API calls (were state-only). Committed in `273a1003`.
+
+### Hide dev-only Analytics tabs on production (2026-05-01, commit d5426e06→d75873da)
+- **Predictions**, **Market Intel**, and **Supplier Analytics** analytics tabs are now hidden on the live site but remain visible on localhost for development.
+- Implementation: `src/frontend/pages/pages-core.js` — `IS_PROD` flag (`hostname !== 'localhost'`) merges `DEV_ONLY_TABS = ['predictions', 'market-intel', 'sourcing']` into `hiddenTabs` and `removedAnalyticsTabs` when running in production.
+- Bundle rebuilt → committed → Railway forced-deploy (CI watch-path skipping required manual "Deploy commit" each time).
+- **VERIFIED LIVE**: `vaultlister.com` shows 6 tabs (Graphs, Heatmaps, Ratio Analysis, Product Analysis, Financials Analytics, Inventory); localhost shows all 9.
+- To re-enable a tab on production, remove it from `DEV_ONLY_TABS` in `pages-core.js` and rebuild the bundle.
+
 ### Fake-data removal — batches 1–3 + live verification (commits 744a80fd→8016d058)
 - F26/F27/F28: budget progress widget and demand heatmap render from real data only
 - F33/F34: notification settings read from store state — no more hardcoded checked=true

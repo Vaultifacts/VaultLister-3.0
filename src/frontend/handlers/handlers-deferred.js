@@ -5546,11 +5546,17 @@ Object.assign(handlers, {
         )
             return;
 
-        const competitors = store.state.competitors?.filter((c) => c.id !== id) || [];
-        store.setState({ competitors });
-        toast.success('Competitor removed');
-        modals.close();
-        renderApp(window.pages.marketIntel());
+        try {
+            await api.ensureCSRFToken();
+            await api.delete('/market-intel/competitors/' + id);
+            const competitors = store.state.competitors?.filter((c) => c.id !== id) || [];
+            store.setState({ competitors });
+            toast.success('Competitor removed');
+            modals.close();
+            renderApp(window.pages.marketIntel());
+        } catch (err) {
+            toast.error(err.message || 'Failed to remove competitor');
+        }
     },
 
     configCompetitorAlerts: function (competitorId) {
