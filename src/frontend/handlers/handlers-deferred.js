@@ -112,6 +112,7 @@ Object.assign(handlers, {
         const grid = document.getElementById(gridId);
         if (!grid) return;
 
+        const cloudName = store.state.cloudinaryCloudName;
         // Load images from store or fetch
         let images = store.state.imageBankImages || [];
         if (images.length === 0) {
@@ -146,10 +147,10 @@ Object.assign(handlers, {
                 .slice(0, 50)
                 .map(
                     (img) => `
-            <div class="imagebank-inline-item" data-image-id="${img.id}" data-image-url="${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/${img.cloudinary_public_id}` : escapeHtml(img.file_path || img.url)}"
-                 role="button" tabindex="0" onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/${img.cloudinary_public_id}` : escapeHtml(img.file_path || img.url)}')"
+            <div class="imagebank-inline-item" data-image-id="${img.id}" data-image-url="${img.cloudinary_public_id && cloudName ? `https://res.cloudinary.com/${cloudName}/image/upload/${img.cloudinary_public_id}` : escapeHtml(img.file_path || img.url)}"
+                 role="button" tabindex="0" onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${img.cloudinary_public_id && cloudName ? `https://res.cloudinary.com/${cloudName}/image/upload/${img.cloudinary_public_id}` : escapeHtml(img.file_path || img.url)}')"
                  style="position: relative; cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; aspect-ratio: 1;">
-                <img src="${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_fill,w_400,h_400/${img.cloudinary_public_id}` : escapeHtml(img.thumbnail_url || img.file_path || img.url)}"
+                <img src="${img.cloudinary_public_id && cloudName ? `https://res.cloudinary.com/${cloudName}/image/upload/c_fill,w_400,h_400/${img.cloudinary_public_id}` : escapeHtml(img.thumbnail_url || img.file_path || img.url)}"
                      alt="${escapeHtml(img.name || 'Image')}"
                      style="width: 100%; height: 100%; object-fit: cover;">
                 <div class="imagebank-check" style="position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; background: var(--primary-600); border-radius: 50%; display: none; align-items: center; justify-content: center; color: white;">
@@ -4587,9 +4588,28 @@ Object.assign(handlers, {
 
     // Financials handlers,
 
-    exportFinancials: function (format) {
-        toast.info(`Generating ${format.toUpperCase()} export...`);
-        setTimeout(() => toast.success('Export ready for download'), 1500);
+    exportFinancials: async function (format) {
+        if (format === 'pdf' || format === 'xlsx') {
+            toast.info('PDF and Excel export coming soon. Exporting as CSV.');
+            format = 'csv';
+        }
+        toast.info('Generating CSV export...');
+        try {
+            const period = store.state.analyticsPeriod || '30d';
+            const res = await api.request('POST', '/api/analytics/export', { type: 'sales', format: 'json', period });
+            const rows = res.export || [];
+            if (!rows.length) { toast.info('No sales data to export'); return; }
+            const headers = Object.keys(rows[0]);
+            const csv = [headers.join(','), ...rows.map((r) => headers.map((h) => JSON.stringify(r[h] ?? '')).join(','))].join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `financials-${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click(); URL.revokeObjectURL(url);
+            toast.success('CSV downloaded');
+        } catch (err) {
+            toast.error('Export failed');
+        }
     },
 
     setFinancialsTab: function (tab) {

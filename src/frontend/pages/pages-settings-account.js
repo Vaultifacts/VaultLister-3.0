@@ -1088,13 +1088,30 @@ Object.assign(pages, {
                         <div class="settings-section">
                             <h3 class="settings-section-title">Security Overview</h3>
                             ${(() => {
-                                const hasMFA = !!(user.mfa_enabled || user.totp_enabled);
-                                const emailVerified = !!(user.email_verified || user.email);
-                                const hasRecentLogin = !!(user.last_login_at || user.created_at);
-                                const scoreChecks = [emailVerified, hasRecentLogin, hasMFA];
-                                const scorePct = 40 + scoreChecks.filter(Boolean).length * 20;
-                                const scoreLabel = scorePct >= 80 ? 'Strong' : scorePct >= 60 ? 'Good' : 'Fair';
-                                const scoreColor = scorePct >= 80 ? 'var(--success)' : scorePct >= 60 ? 'var(--warning)' : 'var(--danger)';
+                                const toBooleanFlag = (value) =>
+                                    value === true || value === 1 || value === '1' || value === 'true';
+                                const isRecentTimestamp = (timestamp) => {
+                                    if (!timestamp) return false;
+                                    const time = new Date(timestamp).getTime();
+                                    if (!Number.isFinite(time)) return false;
+                                    return Date.now() - time <= 30 * 24 * 60 * 60 * 1000;
+                                };
+                                const activityLog = store.state.accountActivityLog || [];
+                                const hasMFA = toBooleanFlag(user.mfa_enabled) || toBooleanFlag(user.totp_enabled);
+                                const emailVerified = toBooleanFlag(user.email_verified);
+                                const hasRecentLogin =
+                                    isRecentTimestamp(user.last_login_at) ||
+                                    activityLog.some(
+                                        (activity) =>
+                                            activity.current ||
+                                            (activity.type === 'login' && isRecentTimestamp(activity.timestamp)),
+                                    );
+                                const scorePct =
+                                    (emailVerified ? 35 : 0) + (hasRecentLogin ? 25 : 0) + (hasMFA ? 40 : 0);
+                                const scoreLabel =
+                                    scorePct >= 80 ? 'Strong' : scorePct >= 50 ? 'Good' : scorePct > 0 ? 'Needs review' : 'Incomplete';
+                                const scoreColor =
+                                    scorePct >= 80 ? 'var(--success)' : scorePct >= 50 ? 'var(--warning)' : 'var(--danger)';
                                 const checkIcon = (ok) => ok
                                     ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>`
                                     : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>`;
@@ -1120,7 +1137,7 @@ Object.assign(pages, {
                                         </div>
                                         <div class="security-check-item ${hasRecentLogin ? 'completed' : ''}">
                                             ${checkIcon(hasRecentLogin)}
-                                            <span>Recent login reviewed</span>
+                                            <span>Recent login recorded</span>
                                         </div>
                                         <div class="security-check-item ${hasMFA ? 'completed' : ''}">
                                             ${checkIcon(hasMFA)}
