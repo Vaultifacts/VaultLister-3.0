@@ -11,27 +11,28 @@ Object.assign(handlers, {
         renderApp(window.pages.predictions());
     },
 
-    runPredictionModel: function () {
+    runPredictionModel: async function () {
         toast.info('Running AI prediction model...');
-        setTimeout(() => {
-            store.setState({
-                predictions:
-                    store.state.predictions?.map((p) => ({
-                        ...p,
-                        confidence: Math.min(100, (p.confidence || 75) + Math.floor(Math.random() * 10)),
-                    })) || [],
-            });
+        try {
+            const data = await api.get('/predictions');
+            store.setState({ predictions: data });
             toast.success('Predictions updated with latest data');
             renderApp(window.pages.predictions());
-        }, 2000);
+        } catch (err) {
+            toast.error(err.message || 'Failed to run prediction model');
+        }
     },
 
-    refreshPredictions: function () {
+    refreshPredictions: async function () {
         toast.info('Refreshing predictions...');
-        setTimeout(() => {
-            toast.success('Predictions refreshed');
+        try {
+            const data = await api.get('/predictions');
+            store.setState({ predictions: data });
             renderApp(window.pages.predictions());
-        }, 1000);
+            toast.success('Predictions refreshed');
+        } catch (err) {
+            toast.error(err.message || 'Failed to refresh predictions');
+        }
     },
 
     viewPredictionDetails: function (id) {
@@ -153,12 +154,16 @@ Object.assign(handlers, {
 
     // Suppliers handlers,
 
-    refreshAllSuppliers: function () {
+    refreshAllSuppliers: async function () {
         toast.info('Refreshing supplier data...');
-        setTimeout(() => {
-            toast.success('Supplier data refreshed');
+        try {
+            const data = await api.get('/inventory/suppliers');
+            store.setState({ suppliers: data.suppliers || data });
             renderApp(window.pages.suppliers());
-        }, 1500);
+            toast.success('Supplier data refreshed');
+        } catch (err) {
+            toast.error(err.message || 'Failed to refresh suppliers');
+        }
     },
 
     showAddSupplier: function () {
@@ -301,11 +306,16 @@ Object.assign(handlers, {
         );
     },
 
-    refreshSupplier: function (id) {
+    refreshSupplier: async function (id) {
         toast.info('Refreshing supplier data...');
-        setTimeout(() => {
+        try {
+            const supplier = await api.get(`/inventory/suppliers/${id}`);
+            const suppliers = (store.state.suppliers || []).map((s) => (s.id === id ? supplier : s));
+            store.setState({ suppliers });
             toast.success('Supplier data updated');
-        }, 1000);
+        } catch (err) {
+            toast.error(err.message || 'Failed to refresh supplier');
+        }
     },
 
     rateSupplier: function (id) {

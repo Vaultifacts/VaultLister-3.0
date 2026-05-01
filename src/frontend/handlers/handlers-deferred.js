@@ -3200,12 +3200,18 @@ Object.assign(handlers, {
         }
     },
 
-    refreshShopHealth: function (platform) {
+    refreshShopHealth: async function (platform) {
         toast.info(`Refreshing ${platform} health metrics...`);
-        setTimeout(() => {
-            toast.success(`${platform} health updated`);
+        try {
+            const data = await api.get('/shops/health');
+            const shopHealth = store.state.shopHealth || {};
+            (data.platforms || []).forEach((h) => { shopHealth[h.platform] = h; });
+            store.setState({ shopHealth });
             renderApp(window.pages.shops());
-        }, 1000);
+            toast.success(`${platform} health updated`);
+        } catch (err) {
+            toast.error('Failed to refresh shop health');
+        }
     },
 
     showShopSettings: function (platform) {
