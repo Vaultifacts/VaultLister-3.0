@@ -1791,7 +1791,7 @@ Object.assign(handlers, {
         modals.show(`
             <div class="modal-header">
                 <h2 class="modal-title">Run Details</h2>
-                <button class="modal-close" aria-label="Close" onclick="handlers.showAutomationHistoryMock()">${components.icon('close')}</button>
+                <button class="modal-close" aria-label="Close" onclick="handlers.showAutomationHistory()">${components.icon('close')}</button>
             </div>
             <div class="modal-body">
                 <div class="flex items-center gap-3 mb-6 pb-4 border-b" style="border-color: var(--gray-200);">
@@ -1873,7 +1873,7 @@ Object.assign(handlers, {
                 <button class="btn btn-secondary" onclick="handlers.retryAutomation('${run.id}')">
                     ${components.icon('refresh-cw', 14)} Retry Now
                 </button>
-                <button class="btn btn-primary" onclick="handlers.showAutomationHistoryMock()">Back to History</button>
+                <button class="btn btn-primary" onclick="handlers.showAutomationHistory()">Back to History</button>
             </div>
         `);
     },
@@ -1969,7 +1969,7 @@ Object.assign(handlers, {
         try {
             await api.post(`/automations/${run.automation_id || 'default'}/run`);
             toast.success('Automation started');
-            handlers.showAutomationHistoryMock();
+            handlers.showAutomationHistory();
         } catch (error) {
             toast.error('Failed to start automation: ' + error.message);
         }
@@ -30097,52 +30097,6 @@ Object.assign(handlers, {
         );
     },
 
-    saveExperiment: async function () {
-        const baseRuleId = document.getElementById('exp-base-rule')?.value;
-        const name = document.getElementById('exp-name')?.value?.trim();
-        const notes = document.getElementById('exp-notes')?.value?.trim();
-        if (!baseRuleId) {
-            toast.error('Select a base rule');
-            return;
-        }
-        try {
-            await api.ensureCSRFToken();
-            await api.post('/automations/experiments', {
-                baseRuleId,
-                name: name || undefined,
-                notes: notes || undefined,
-            });
-            toast.success('Experiment created — variant rule cloned');
-            modals.close();
-            handlers.loadExperiments();
-        } catch (e) {
-            toast.error('Failed to create experiment: ' + (e.message || 'Unknown error'));
-        }
-    },
-
-    completeExperiment: async function (expId, winner) {
-        if (!confirm('Complete this experiment and disable the ' + (winner === 'base' ? 'variant' : 'base') + ' rule?'))
-            return;
-        try {
-            await api.ensureCSRFToken();
-            await api.put('/automations/experiments/' + expId, { status: 'completed', winner });
-            toast.success('Experiment completed — ' + winner + ' wins');
-            handlers.loadExperiments();
-        } catch (e) {
-            toast.error('Failed to complete experiment');
-        }
-    },
-
-    pauseExperiment: async function (expId, newStatus) {
-        try {
-            await api.ensureCSRFToken();
-            await api.put('/automations/experiments/' + expId, { status: newStatus });
-            toast.success('Experiment ' + newStatus);
-            handlers.loadExperiments();
-        } catch (e) {
-            toast.error('Failed to update experiment');
-        }
-    },
 
     exportAutomationRulesJSON: async function () {
         try {
