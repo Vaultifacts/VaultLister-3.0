@@ -656,8 +656,7 @@ Object.assign(pages, {
         }
         if (itemFilter) {
             sales = sales.filter((s) => {
-                const item = store.state.inventory.find((i) => i.id === s.inventory_id);
-                const itemTitle = item ? item.title.toLowerCase() : '';
+                const itemTitle = (s.listing_title || s.inventory_title || '').toLowerCase();
                 return itemTitle.includes(itemFilter.toLowerCase());
             });
         }
@@ -773,9 +772,7 @@ Object.assign(pages, {
                             <tbody>
                                 ${sales
                                     .map((sale) => {
-                                        // Get item title from inventory
-                                        const item = store.state.inventory.find((i) => i.id === sale.inventory_id);
-                                        const itemTitle = item ? item.title : 'Unknown Item';
+                                        const itemTitle = sale.listing_title || sale.inventory_title || 'Unknown Item';
 
                                         // Calculate platform fee percentage
                                         const feePercentage =
