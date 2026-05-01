@@ -12,22 +12,22 @@
 // ============================================
 const SUPPORTED_PLATFORMS = [
     // Launch platforms (can connect now)
-    { id: 'poshmark', name: 'Poshmark (U.S)', icon: '🅿️', logoPath: '/assets/logos/poshmark/logo.png' },
-    { id: 'ebay', name: 'eBay (U.S)', icon: 'Ⓔ', logoPath: '/assets/logos/ebay/logo.svg' },
-    { id: 'depop', name: 'Depop (U.S)', icon: 'Ⓓ', logoPath: '/assets/logos/depop/logo.svg' },
+    { id: 'poshmark', name: 'Poshmark (CA)', icon: '🅿️', logoPath: '/assets/logos/poshmark/logo.png' },
+    { id: 'ebay', name: 'eBay (CA)', icon: 'Ⓔ', logoPath: '/assets/logos/ebay/logo.svg' },
+    { id: 'depop', name: 'Depop (CA)', icon: 'Ⓓ', logoPath: '/assets/logos/depop/logo.svg' },
     { id: 'shopify', name: 'Shopify (CA)', icon: '🛍️', logoPath: '/assets/logos/shopify/logo.svg' },
-    { id: 'facebook', name: 'Facebook Marketplace', icon: 'Ⓕ', logoPath: '/assets/logos/facebook/logo.png' },
-    { id: 'whatnot', name: 'Whatnot', icon: 'Ⓦ', logoPath: '/assets/logos/whatnot/logo.svg' },
-    // Coming soon platforms
-    { id: 'mercari', name: 'Mercari (U.S)', icon: 'Ⓜ️', logoPath: '/assets/logos/mercari/logo.svg' },
+    { id: 'facebook', name: 'Facebook Marketplace (CA)', icon: 'Ⓕ', logoPath: '/assets/logos/facebook/logo.png' },
+    { id: 'whatnot', name: 'Whatnot (CA)', icon: 'Ⓦ', logoPath: '/assets/logos/whatnot/logo.svg' },
     { id: 'grailed', name: 'Grailed (CA)', icon: 'Ⓖ', logoPath: '/assets/logos/grailed/logo.png' },
+    // Coming soon platforms
+    { id: 'mercari', name: 'Mercari (US)', icon: 'Ⓜ️', logoPath: '/assets/logos/mercari/logo.svg' },
     { id: 'etsy', name: 'Etsy (CA)', icon: 'Ⓔ', logoPath: '/assets/logos/etsy/logo.svg' },
-    { id: 'kijiji', name: 'Kijiji (CA)', icon: 'Ⓚ', logoPath: null },
-    { id: 'vinted', name: 'Vinted (U.S)', icon: 'Ⓥ', logoPath: null },
+    { id: 'kijiji', name: 'Kijiji (CA)', icon: 'Ⓚ', logoPath: '/assets/logos/kijiji/logo.png' },
+    { id: 'vinted', name: 'Vinted (US)', icon: 'Ⓥ', logoPath: '/assets/logos/vinted/icon.svg' },
 ];
 
 // Current launch platforms only (post-launch platforms are feature-gated)
-const LAUNCH_PLATFORMS = new Set(['poshmark', 'ebay', 'depop', 'shopify', 'facebook', 'whatnot']);
+const LAUNCH_PLATFORMS = new Set(['poshmark', 'ebay', 'depop', 'shopify', 'facebook', 'whatnot', 'grailed']);
 
 // ============================================
 // Global Error Handlers
@@ -16802,7 +16802,6 @@ const pageChunkMap = {
     offers: 'sales',
     financials: 'sales',
     transactions: 'sales',
-    reports: 'sales',
     'report-builder': 'sales',
     'shipping-labels': 'sales',
 
@@ -16827,7 +16826,6 @@ const pageChunkMap = {
     settings: 'settings',
     account: 'settings',
     teams: 'settings',
-    'plans-billing': 'settings',
     affiliate: 'settings',
     notifications: 'settings',
     connections: 'settings',
@@ -16955,7 +16953,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '38fda118';
+    const v = '8e7a3fce';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function (resolve, reject) {
@@ -17072,8 +17070,6 @@ const router = {
         'feedback-suggestions': { target: 'help-support', tab: 'feedback' },
         'recently-deleted': { target: 'inventory', tab: 'trash' },
         'my-shops': { target: 'shops' },
-        billing: { target: 'plans-billing' },
-        upgrade: { target: 'plans-billing' },
         'terms-of-service': { target: 'help-support', tab: 'terms' },
         'privacy-policy': { target: 'help-support', tab: 'privacy' },
         // admin-metrics: standalone page (no alias — loads admin chunk directly)
@@ -17132,7 +17128,6 @@ const router = {
         // Handle settings deep-linking: #settings/account → set tab and use 'settings' as route.
         const settingsTabAliases = {
             profile: 'account',
-            billing: 'plans-billing',
         };
         const settingsStandaloneRoutes = {
             teams: 'teams',
@@ -17146,7 +17141,6 @@ const router = {
             'integrations',
             'tools',
             'data',
-            'plans-billing',
             'affiliate',
         ];
         if (path.startsWith('settings/')) {
@@ -17240,7 +17234,6 @@ const router = {
             listings: 'Cross-Lister',
             analytics: 'Analytics',
             sales: 'Sales',
-            reports: 'Reports',
             calendar: 'Calendar',
             'image-bank': 'Image Bank',
             settings: 'Settings',
@@ -17260,7 +17253,6 @@ const router = {
             'support-articles': 'Knowledge Base',
             tutorials: 'Tutorials & Guides',
             roadmap: 'Roadmap',
-            'plans-billing': 'Plans & Billing',
             changelog: 'Changelog',
             'receipt-parser': 'Receipts',
         };
@@ -17829,14 +17821,12 @@ const components = {
                         ],
                     },
                     { id: 'image-bank', label: 'Image Bank', icon: 'image' },
-                    { id: 'reports', label: 'Reports', icon: 'list' },
                 ],
             },
             {
                 section: '',
                 divider: true,
                 items: [
-                    { id: 'plans-billing', label: 'Plans & Billing', icon: 'dollar' },
                     { id: 'settings', label: 'Settings', icon: 'settings' },
                     ...(store.state.user?.is_admin ? [{ id: 'admin-metrics', label: 'Admin', icon: 'shield' }] : []),
                 ],
@@ -17970,7 +17960,7 @@ const components = {
                             <div class="sidebar-dropdown-menu">
                                 <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'integrations'});router.navigate('settings/integrations')">Integrations</button>
                                 <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'account'});router.navigate('settings/account')">Account</button>
-                                <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'plans-billing'});router.navigate('settings/plans-billing')">Subscription</button>
+                
                                 <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'affiliate'});router.navigate('settings/affiliate')">Affiliate Program</button>
                                 <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'tools'});router.navigate('settings/tools')">Customization</button>
                                 <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'notifications'});router.navigate('settings/notifications')">Notifications</button>
@@ -18054,7 +18044,6 @@ const components = {
                         .join('')}
                 </nav>
                 <div class="sidebar-footer">
-                    ${store.getPlanTier() === 'free' && store.state.currentPage !== 'plans-billing' ? `<a href="#plans-billing" class="sidebar-upgrade-cta" style="display:block;padding:8px 12px;margin:8px 12px;background:var(--primary);color:white;border-radius:6px;text-align:center;text-decoration:none;font-size:13px;font-weight:500;">Upgrade to Pro</a>` : ''}
                     <div class="sidebar-user-menu dropdown">
                         <button class="sidebar-user-trigger"
                                 type="button"
@@ -18147,7 +18136,7 @@ const components = {
                             </button>
                         </div>
                     </div>
-                    <div class="user-menu dropdown" role="button" aria-haspopup="menu" aria-expanded="false" aria-label="User menu" onclick="const _open=this.classList.toggle('open'); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();const _open=this.classList.toggle('open');this.setAttribute('aria-expanded',_open);}">
+                    <div class="user-menu dropdown" role="button" tabindex="0" aria-haspopup="menu" aria-expanded="false" aria-label="User menu" onclick="const _open=this.classList.toggle('open'); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();const _open=this.classList.toggle('open');this.setAttribute('aria-expanded',_open);}">
                         <div class="user-avatar" aria-hidden="true">${store.state.user?.username?.[0]?.toUpperCase() || 'U'}</div>
                         <div class="dropdown-menu" aria-hidden="true">
                             <button class="dropdown-item" onclick="router.navigate('account')" aria-label="Account">
@@ -18618,7 +18607,6 @@ const components = {
             terms: { label: 'Terms of Service', section: '' },
             privacy: { label: 'Privacy Policy', section: '' },
             sales: { label: 'Sales', section: 'Sell' },
-            reports: { label: 'Reports', section: 'Manage' },
             'report-builder': { label: 'Report Builder', section: 'Manage' },
             heatmaps: { label: 'Heatmaps', section: 'Manage' },
             sourcing: { label: 'Sourcing Hub', section: 'Manage' },
@@ -18630,7 +18618,6 @@ const components = {
             'receipt-parser': { label: 'Receipt Parser', section: 'Manage' },
             'whatnot-live': { label: 'Whatnot Live', section: 'Manage' },
             'shipping-labels': { label: 'Shipping Labels', section: 'Sell' },
-            'plans-billing': { label: 'Plans & Billing', section: '' },
             account: { label: 'Account', section: '' },
             import: { label: 'Import', section: 'Manage' },
             'inventory-import': { label: 'Import', section: 'Manage' },
@@ -21804,7 +21791,6 @@ const pages = {
         const removedAnalyticsTabs = new Set([
             'live',
             'performance',
-            'reports',
             'profitability',
             'sales-analytics',
             'purchases-analytics',
@@ -23111,9 +23097,7 @@ const pages = {
                           })()
                         : currentTab === 'performance'
                           ? performanceTabContent
-                          : currentTab === 'reports'
-                            ? `<div class="card"><div class="card-body text-center py-8"><p class="text-gray-500 mb-4">Detailed reports have moved to the Reports page.</p><button class="btn btn-primary" onclick="router.navigate('reports')">${components.icon('bar-chart', 16)} Go to Reports</button></div></div>`
-                            : currentTab === 'ratio-analysis'
+                          : currentTab === 'ratio-analysis'
                               ? ratioAnalysisTabContent
                               : currentTab === 'profitability'
                                 ? profitabilityTabContent

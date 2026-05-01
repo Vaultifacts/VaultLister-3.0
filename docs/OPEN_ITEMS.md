@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-04-30T23:50:29.659Z
-Commit: 2dfc9215
+Generated at: 2026-05-01T00:04:48.602Z
+Commit: c37fa662
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -20,7 +20,7 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 | Structural/refactor backlog items | 10 |
 | Competitor intelligence gaps | 862 |
 | Anti-detection/design gaps | 14 |
-| Open GitHub issues | 17 |
+| Open GitHub issues | 18 |
 | Explicit unchecked checklist items | 359 |
 | Repo-wide unchecked checkbox hits | 583 |
 | Repo-wide unchecked checkbox hits included | 359 |
@@ -203,7 +203,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | memory/COMPLETED.md | 2 | 61 | Excluded: session memory, promote only after current verification |
 | memory/LAUNCH_PRIORITY.md | 5 | 13 | Excluded: session memory, promote only after current verification |
 | memory/MEMORY.md | 9 | 7 | Excluded: session memory, promote only after current verification |
-| memory/STATUS.md | 88 | 20 | Excluded: session memory, promote only after current verification |
+| memory/STATUS.md | 88 | 36 | Excluded: session memory, promote only after current verification |
 | memory/TIER0_PLAYBOOK.md | 3 | 11 | Excluded: session memory, promote only after current verification |
 | data/qa-report-2026-04-04-chrome-walkthrough.md | 2 | 20 | Excluded: timestamped QA evidence, not current truth |
 | data/qa-report-2026-04-04-exhaustive.md | 4 | 39 | Excluded: timestamped QA evidence, not current truth |
@@ -1254,6 +1254,7 @@ Command: `gh issue list --state open --limit 200 --json number,title,labels,upda
 
 | Issue | Title | Labels | Updated | URL |
 |---|---|---|---|---|
+| #467 | [WAF] Monthly Cloudflare WAF rule review — 2026-05 | security, automated | 2026-05-01T00:01:51Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/467 |
 | #466 | [CI Failure] dependabot/github_actions/googleapis/release-please-action-5 - Run #1455 | ci-failure, automated | 2026-04-30T04:43:31Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/466 |
 | #465 | [CI Failure] dependabot/github_actions/actions/dependency-review-action-4.9.0 - Run #1454 | ci-failure, automated | 2026-04-30T04:43:15Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/465 |
 | #464 | [CI Failure] dependabot/github_actions/aquasecurity/trivy-action-0.36.0 - Run #1453 | ci-failure, automated | 2026-04-30T04:43:00Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/464 |

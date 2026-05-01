@@ -20716,7 +20716,7 @@ Object.assign(handlers, {
                     const fullUrl = img.cloudinary_public_id
                         ? `https://res.cloudinary.com/vaultlister/image/upload/${img.cloudinary_public_id}`
                         : null;
-                    return `<div class="cursor-pointer border-2 border-transparent hover:border-primary-500 rounded-lg p-1" onclick="handlers.selectImageBankForAI('${escapeHtml(fullUrl || '')}', '${escapeHtml(url)}')">
+                    return `<div class="cursor-pointer border-2 border-transparent hover:border-primary-500 rounded-lg p-1" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onclick="handlers.selectImageBankForAI('${escapeHtml(fullUrl || '')}', '${escapeHtml(url)}')">
                     <img src="${url}" alt="${escapeHtml(img.original_filename || 'Image')}" style="width:100px;height:100px;object-fit:cover;border-radius:var(--radius-sm);">
                 </div>`;
                 })

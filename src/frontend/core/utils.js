@@ -10,22 +10,22 @@
 // ============================================
 const SUPPORTED_PLATFORMS = [
     // Launch platforms (can connect now)
-    { id: 'poshmark', name: 'Poshmark (U.S)', icon: '🅿️', logoPath: '/assets/logos/poshmark/logo.png' },
-    { id: 'ebay', name: 'eBay (U.S)', icon: 'Ⓔ', logoPath: '/assets/logos/ebay/logo.svg' },
-    { id: 'depop', name: 'Depop (U.S)', icon: 'Ⓓ', logoPath: '/assets/logos/depop/logo.svg' },
+    { id: 'poshmark', name: 'Poshmark (CA)', icon: '🅿️', logoPath: '/assets/logos/poshmark/logo.png' },
+    { id: 'ebay', name: 'eBay (CA)', icon: 'Ⓔ', logoPath: '/assets/logos/ebay/logo.svg' },
+    { id: 'depop', name: 'Depop (CA)', icon: 'Ⓓ', logoPath: '/assets/logos/depop/logo.svg' },
     { id: 'shopify', name: 'Shopify (CA)', icon: '🛍️', logoPath: '/assets/logos/shopify/logo.svg' },
-    { id: 'facebook', name: 'Facebook Marketplace', icon: 'Ⓕ', logoPath: '/assets/logos/facebook/logo.png' },
-    { id: 'whatnot', name: 'Whatnot', icon: 'Ⓦ', logoPath: '/assets/logos/whatnot/logo.svg' },
-    // Coming soon platforms
-    { id: 'mercari', name: 'Mercari (U.S)', icon: 'Ⓜ️', logoPath: '/assets/logos/mercari/logo.svg' },
+    { id: 'facebook', name: 'Facebook Marketplace (CA)', icon: 'Ⓕ', logoPath: '/assets/logos/facebook/logo.png' },
+    { id: 'whatnot', name: 'Whatnot (CA)', icon: 'Ⓦ', logoPath: '/assets/logos/whatnot/logo.svg' },
     { id: 'grailed', name: 'Grailed (CA)', icon: 'Ⓖ', logoPath: '/assets/logos/grailed/logo.png' },
+    // Coming soon platforms
+    { id: 'mercari', name: 'Mercari (US)', icon: 'Ⓜ️', logoPath: '/assets/logos/mercari/logo.svg' },
     { id: 'etsy', name: 'Etsy (CA)', icon: 'Ⓔ', logoPath: '/assets/logos/etsy/logo.svg' },
-    { id: 'kijiji', name: 'Kijiji (CA)', icon: 'Ⓚ', logoPath: null },
-    { id: 'vinted', name: 'Vinted (U.S)', icon: 'Ⓥ', logoPath: null },
+    { id: 'kijiji', name: 'Kijiji (CA)', icon: 'Ⓚ', logoPath: '/assets/logos/kijiji/logo.png' },
+    { id: 'vinted', name: 'Vinted (US)', icon: 'Ⓥ', logoPath: '/assets/logos/vinted/icon.svg' },
 ];
 
 // Current launch platforms only (post-launch platforms are feature-gated)
-const LAUNCH_PLATFORMS = new Set(['poshmark', 'ebay', 'depop', 'shopify', 'facebook', 'whatnot']);
+const LAUNCH_PLATFORMS = new Set(['poshmark', 'ebay', 'depop', 'shopify', 'facebook', 'whatnot', 'grailed']);
 
 // ============================================
 // Global Error Handlers
