@@ -7215,24 +7215,21 @@ window.streakCounter = streakCounter;
 // Market Opportunity Cards
 const opportunityCards = {
     render(opportunities) {
-        const mockOpportunities =
-            opportunities.length > 0
-                ? opportunities
-                : [
-                      { category: 'Vintage Denim', score: 92, trend: 'up', potential: '$2,400/mo', competition: 'Low' },
-                      {
-                          category: 'Designer Bags',
-                          score: 87,
-                          trend: 'up',
-                          potential: '$3,100/mo',
-                          competition: 'Medium',
-                      },
-                      { category: 'Sneakers', score: 78, trend: 'stable', potential: '$1,800/mo', competition: 'High' },
-                  ];
+        const realOpportunities = Array.isArray(this.opportunities) && this.opportunities.length > 0
+            ? this.opportunities
+            : Array.isArray(this.data) && this.data.length > 0
+            ? this.data
+            : Array.isArray(opportunities) && opportunities.length > 0
+            ? opportunities
+            : null;
+
+        if (!realOpportunities) {
+            return '<div class="widget-empty-state">No opportunities detected yet.</div>';
+        }
 
         return `
             <div class="opportunity-cards">
-                ${mockOpportunities
+                ${realOpportunities
                     .map((opp) => {
                         // Determine demand level based on score
                         const demandLevel = opp.score >= 80 ? 'hot' : opp.score >= 60 ? 'warm' : 'cool';
@@ -7284,16 +7281,17 @@ const opportunityCards = {
 // Trending Keywords Panel
 const trendingKeywords = {
     render(keywords) {
-        const mockKeywords =
-            keywords.length > 0
-                ? keywords
-                : [
-                      { term: 'vintage levis', volume: 2400, change: 15 },
-                      { term: 'y2k fashion', volume: 1800, change: 32 },
-                      { term: 'designer bags', volume: 1500, change: -5 },
-                      { term: 'nike dunks', volume: 1200, change: 8 },
-                      { term: 'cottagecore', volume: 980, change: 22 },
-                  ];
+        const realKeywords = Array.isArray(this.keywords) && this.keywords.length > 0
+            ? this.keywords
+            : Array.isArray(this.data) && this.data.length > 0
+            ? this.data
+            : Array.isArray(keywords) && keywords.length > 0
+            ? keywords
+            : null;
+
+        if (!realKeywords) {
+            return '<div class="widget-empty-state">No trending keywords yet. Connect platforms to see trending data.</div>';
+        }
 
         return `
             <div class="trending-keywords">
@@ -7302,7 +7300,7 @@ const trendingKeywords = {
                     <span>Trending Searches</span>
                 </div>
                 <div class="trending-list">
-                    ${mockKeywords
+                    ${realKeywords
                         .map(
                             (kw, i) => `
                         <div class="trending-item">
@@ -7341,7 +7339,7 @@ const pricePositionChart = {
         const competitors = Array.isArray(data.competitors) ? data.competitors.map(normalizePoint).filter(Boolean) : [];
 
         if (!yourPosition && competitors.length === 0) {
-            return '<div class="text-gray-500 text-sm text-center py-4">No price position data yet</div>';
+            return '<div class="widget-empty-state">No price position data available.</div>';
         }
 
         return `

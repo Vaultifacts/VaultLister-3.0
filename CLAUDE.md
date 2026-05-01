@@ -196,6 +196,7 @@ The following functions form the auth persistence chain (`src/frontend/core/stor
 - Use `--no-verify` to bypass git hooks
 - Delete `.husky/pre-commit`, `.husky/pre-push`, or `.husky/commit-msg` (modification for improvement is OK)
 - Dismiss or close code scanning alerts via the GitHub API — alerts close automatically when fixed in code. Never use `gh api -X PATCH` on `code-scanning/alerts` with `state=dismissed`.
+- Add any careers-related content, pages, links, or UI — VaultLister will **never** offer careers or hiring. `public/careers.html` was permanently deleted. Never recreate it or add any careers link, section, email (`careers@...`), or reference anywhere in the codebase.
 
 ## Automation Safety Rules (Playwright Bots)
 - NEVER run automations against a live marketplace without explicit user confirmation

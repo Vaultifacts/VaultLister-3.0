@@ -14,7 +14,14 @@ Object.assign(handlers, {
     runPredictionModel: async function () {
         toast.info('Running AI prediction model...');
         try {
-            const data = await api.get('/predictions');
+            const weights = store.state.modelWeights || {};
+            const params = new URLSearchParams();
+            if (weights.market !== undefined) params.set('weight_market', weights.market);
+            if (weights.seasonal !== undefined) params.set('weight_seasonal', weights.seasonal);
+            if (weights.demand !== undefined) params.set('weight_demand', weights.demand);
+            if (weights.history !== undefined) params.set('weight_history', weights.history);
+            const query = params.toString();
+            const data = await api.get('/predictions' + (query ? '?' + query : ''));
             store.setState({ predictions: data });
             toast.success('Predictions updated with latest data');
             renderApp(window.pages.predictions());
@@ -26,7 +33,14 @@ Object.assign(handlers, {
     refreshPredictions: async function () {
         toast.info('Refreshing predictions...');
         try {
-            const data = await api.get('/predictions');
+            const weights = store.state.modelWeights || {};
+            const params = new URLSearchParams();
+            if (weights.market !== undefined) params.set('weight_market', weights.market);
+            if (weights.seasonal !== undefined) params.set('weight_seasonal', weights.seasonal);
+            if (weights.demand !== undefined) params.set('weight_demand', weights.demand);
+            if (weights.history !== undefined) params.set('weight_history', weights.history);
+            const query = params.toString();
+            const data = await api.get('/predictions' + (query ? '?' + query : ''));
             store.setState({ predictions: data });
             renderApp(window.pages.predictions());
             toast.success('Predictions refreshed');

@@ -5830,6 +5830,7 @@ Object.assign(handlers, {
 
         const priceWatchlist = [...(store.state.priceWatchlist || []), newWatch];
         store.setState({ priceWatchlist });
+        try { localStorage.setItem('vl_price_watchlist', JSON.stringify(priceWatchlist)); } catch (_) {}
         toast.success('Now watching "' + newWatch.title + '"');
         modals.close();
         renderApp(window.pages.marketIntel());
@@ -5838,6 +5839,7 @@ Object.assign(handlers, {
     removePriceWatch: function (id) {
         const priceWatchlist = (store.state.priceWatchlist || []).filter((w) => w.id !== id);
         store.setState({ priceWatchlist });
+        try { localStorage.setItem('vl_price_watchlist', JSON.stringify(priceWatchlist)); } catch (_) {}
         toast.success('Item removed from watchlist');
         renderApp(window.pages.marketIntel());
     },
@@ -6584,32 +6586,36 @@ Object.assign(handlers, {
     },
 
     manageIntegration: function (platform) {
+        const shop = (store.state.shops || []).find((s) => s.platform === platform);
+        const lastSync = shop?.last_sync_at ? new Date(shop.last_sync_at).toLocaleString() : 'Never';
+        const itemCount = shop?.item_count ?? shop?.listing_count ?? '—';
+        const platformLabel = escapeHtml(platform.charAt(0).toUpperCase() + platform.slice(1));
         modals.show(
-            'Manage ' + platform.charAt(0).toUpperCase() + platform.slice(1) + ' Integration',
+            'Manage ' + platformLabel + ' Integration',
             `
             <div style="padding: 16px;">
                 <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px;">
                     <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--gray-100); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold;">
-                        ${platform.charAt(0).toUpperCase()}
+                        ${platformLabel.charAt(0)}
                     </div>
                     <div>
-                        <h3 style="margin: 0;">${platform.charAt(0).toUpperCase() + platform.slice(1)}</h3>
+                        <h3 style="margin: 0;">${platformLabel}</h3>
                         <span class="badge badge-success">Connected</span>
                     </div>
                 </div>
                 <div style="display: grid; gap: 12px; margin-bottom: 20px;">
                     <div style="display: flex; justify-content: space-between; padding: 12px; background: var(--gray-50); border-radius: 8px;">
                         <span>Last Synced</span>
-                        <strong>2 hours ago</strong>
+                        <strong>${escapeHtml(lastSync)}</strong>
                     </div>
                     <div style="display: flex; justify-content: space-between; padding: 12px; background: var(--gray-50); border-radius: 8px;">
                         <span>Items Synced</span>
-                        <strong>127</strong>
+                        <strong>${escapeHtml(String(itemCount))}</strong>
                     </div>
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                    <button class="btn btn-secondary" onclick="toast.info('Syncing...'); modals.close();">Sync Now</button>
-                    <button class="btn btn-danger" onclick="toast.warning('Integration disconnected'); modals.close();">Disconnect</button>
+                    <button class="btn btn-secondary" onclick="handlers.syncAllShops(); modals.close();">Sync Now</button>
+                    <button class="btn btn-danger" onclick="handlers.disconnectShop('${escapeHtml(platform)}')">Disconnect</button>
                 </div>
             </div>
         `,
@@ -6617,11 +6623,7 @@ Object.assign(handlers, {
     },
 
     connectIntegration: function (platform) {
-        toast.info('Connecting to ' + platform + '...');
-        setTimeout(() => {
-            toast.success(platform.charAt(0).toUpperCase() + platform.slice(1) + ' connected successfully!');
-            renderApp(window.pages.settings());
-        }, 1500);
+        window.location.href = '/api/oauth/authorize/' + encodeURIComponent(platform);
     },
 
     exportUserData: async function () {
@@ -15718,6 +15720,7 @@ Object.assign(handlers, {
         };
         const financialGoals = [...(store.state.financialGoals || []), newGoal];
         store.setState({ financialGoals });
+        try { localStorage.setItem('vl_financial_goals', JSON.stringify(financialGoals)); } catch (_) {}
         toast.success('Financial goal "' + newGoal.name + '" created');
         modals.close();
         renderApp(window.pages.financials());
@@ -26674,10 +26677,7 @@ Object.assign(handlers, {
     // Download legal PDF,
 
     downloadLegalPDF: function (docType) {
-        toast.info('Downloading ' + docType + ' document...');
-        setTimeout(() => {
-            toast.success('Document download started');
-        }, 500);
+        toast.info('PDF downloads for legal documents are not yet available. Use your browser\'s Print → Save as PDF.');
     },
 
     // Print legal document,
@@ -26841,12 +26841,22 @@ Object.assign(handlers, {
 
     // Download report,
 
-    downloadReport: function (reportId) {
-        toast.info('Preparing report download...');
-        // Generate downloadable report
-        setTimeout(() => {
-            toast.success('Report download started');
-        }, 500);
+    downloadReport: async function (reportId) {
+        toast.info('Generating report...');
+        try {
+            const report = await api.get(`/reports/${encodeURIComponent(reportId)}`);
+            const content = JSON.stringify(report, null, 2);
+            const blob = new Blob([content], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `report-${reportId}-${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            toast.success('Report downloaded');
+        } catch (err) {
+            toast.error(err.message || 'Failed to download report');
+        }
     },
 
     // ============================================

@@ -4226,11 +4226,10 @@ Object.assign(handlers, {
     },
 
     generateLabelsForOrders: async function (orders) {
-        toast.info('Generating shipping labels for ' + orders.length + ' orders...');
-        // This would integrate with the shipping API
-        setTimeout(() => {
-            toast.success('Generated ' + orders.length + ' shipping labels');
-        }, 1500);
+        if (!orders?.length) { toast.info('No orders selected'); return; }
+        store.setState({ pendingLabelOrderIds: orders.map((o) => o.id || o) });
+        router.navigate('shipping-labels');
+        toast.info(`${orders.length} order${orders.length > 1 ? 's' : ''} queued — generate labels from the Shipping Labels page.`);
     },
 
     showBulkLabelModal: function () {
@@ -4462,6 +4461,7 @@ Object.assign(handlers, {
         };
         const financialGoals = [...(store.state.financialGoals || []), newGoal];
         store.setState({ financialGoals });
+        try { localStorage.setItem('vl_financial_goals', JSON.stringify(financialGoals)); } catch (_) {}
         toast.success('Financial goal "' + newGoal.name + '" created');
         modals.close();
         renderApp(window.pages.financials());

@@ -320,6 +320,14 @@ const store = {
                     localStorage.removeItem('vaultlister_changelog_votes');
                 }
             }
+            const savedGoals = localStorage.getItem('vl_financial_goals');
+            if (savedGoals) {
+                try {
+                    this.state.financialGoals = JSON.parse(savedGoals);
+                } catch (_) {
+                    localStorage.removeItem('vl_financial_goals');
+                }
+            }
         } catch (e) {
             console.error('Failed to hydrate state:', e);
         }

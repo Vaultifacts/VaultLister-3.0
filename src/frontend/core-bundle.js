@@ -8688,6 +8688,14 @@ const store = {
                     localStorage.removeItem('vaultlister_changelog_votes');
                 }
             }
+            const savedGoals = localStorage.getItem('vl_financial_goals');
+            if (savedGoals) {
+                try {
+                    this.state.financialGoals = JSON.parse(savedGoals);
+                } catch (_) {
+                    localStorage.removeItem('vl_financial_goals');
+                }
+            }
         } catch (e) {
             console.error('Failed to hydrate state:', e);
         }
@@ -16774,7 +16782,7 @@ const pricePositionChart = {
         const competitors = Array.isArray(data.competitors) ? data.competitors.map(normalizePoint).filter(Boolean) : [];
 
         if (!yourPosition && competitors.length === 0) {
-            return '<div class="text-gray-500 text-sm text-center py-4">No price position data yet</div>';
+            return '<div class="widget-empty-state">No price position data available.</div>';
         }
 
         return `
@@ -17026,7 +17034,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '32e102ec';
+    const v = '2ed33d7d';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function (resolve, reject) {

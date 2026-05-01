@@ -52,6 +52,17 @@
             .swagger-ui .topbar {
                 display: none;
             }
+            /* WCAG 2.1 AA — Swagger UI contrast overrides */
+            .swagger-ui pre.version,
+            .swagger-ui .version-stamp pre.version {
+                background: #18181b !important;
+                color: #ffffff !important;
+                border: 1px solid #52525b;
+            }
+            .swagger-ui span.url,
+            .swagger-ui .info .base-url {
+                color: #18181b !important;
+            }
         </style>
     </head>
     <body>
@@ -328,6 +339,25 @@
                     persistAuthorization: true,
                     displayRequestDuration: true,
                     filter: true,
+                    onComplete: function () {
+                        // Fix missing accessible name on server selector
+                        var sel = document.getElementById('servers');
+                        if (sel && !sel.getAttribute('aria-label')) {
+                            sel.setAttribute('aria-label', 'API server');
+                        }
+                        // Fix nested-interactive: remove nested elements from tab order
+                        function fixNested() {
+                            document.querySelectorAll('.opblock-summary-control').forEach(function (btn) {
+                                btn.querySelectorAll('a[href], button, [tabindex="0"]').forEach(function (el) {
+                                    el.setAttribute('tabindex', '-1');
+                                });
+                            });
+                        }
+                        fixNested();
+                        document.getElementById('swagger-ui').addEventListener('click', function () {
+                            setTimeout(fixNested, 250);
+                        });
+                    },
                 });
             </script>
 
