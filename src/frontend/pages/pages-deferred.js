@@ -17795,7 +17795,8 @@ Upload photos once, use them across all your listings.`,
         const editingReport = store.state.editingReport || null;
         const inventory = store.state.inventory || [];
         const activeItems = inventory.filter((i) => i.status === 'active');
-        const periodLabel = 'last 30 days';
+        const _periodMap = { '7d': 'last 7 days', '30d': 'last 30 days', '90d': 'last 90 days', '6m': 'last 6 months', '1y': 'last year' };
+        const periodLabel = _periodMap[store.state.analyticsPeriod] || 'last 30 days';
 
         if (editingReport) {
             return pages.reportBuilder();
@@ -17859,7 +17860,7 @@ Upload photos once, use them across all your listings.`,
                                 <div class="text-xs text-gray-500">Error Rate</div>
                             </div>
                             <div class="text-center p-3 bg-gray-50 rounded-lg">
-                                <div class="text-2xl font-bold text-primary">${totalErrorCount === 0 ? 'None' : 'Sync Error'}</div>
+                                <div class="text-2xl font-bold text-primary">${totalErrorCount === 0 ? 'None' : '—'}</div>
                                 <div class="text-xs text-gray-500">Most Common Error</div>
                             </div>
                         </div>

@@ -1184,6 +1184,30 @@ const pages = {
                     </div>
                     <div class="card-body">
                         ${(() => {
+                            const parsePricePoint = (point) => {
+                                const value =
+                                    point && typeof point === 'object'
+                                        ? (point.price ?? point.value ?? point.amount ?? point.sale_price ?? point.list_price)
+                                        : point;
+                                const price = parseFloat(value);
+                                return Number.isFinite(price) ? price : null;
+                            };
+
+                            const getPriceHistory = (item) => {
+                                let history = item?.price_history ?? item?.priceHistory;
+                                if (typeof history === 'string') {
+                                    try {
+                                        history = JSON.parse(history);
+                                    } catch {
+                                        history = [];
+                                    }
+                                }
+
+                                return Array.isArray(history)
+                                    ? history.map(parsePricePoint).filter((price) => price !== null)
+                                    : [];
+                            };
+
                             // Get top-selling items with price history
                             const salesByItem = {};
                             (store.state.sales || []).forEach((s) => {
@@ -1199,26 +1223,25 @@ const pages = {
                                 .sort((a, b) => b.count - a.count)
                                 .slice(0, 5);
 
-                            // If no sales data, show from inventory
+                            // If no sales data, show only inventory items with real price history.
                             if (topItems.length === 0) {
-                                const inventoryItems = (store.state.inventory || []).slice(0, 5).map((item) => ({
-                                    title: item.title || 'Untitled',
-                                    prices: [
-                                        parseFloat(item.list_price || 0) * 0.9,
-                                        parseFloat(item.list_price || 0) * 0.95,
-                                        parseFloat(item.list_price || 0) * 0.92,
-                                        parseFloat(item.list_price || 0) * 1.02,
-                                        parseFloat(item.list_price || 0) * 0.98,
-                                        parseFloat(item.list_price || 0) * 1.05,
-                                        parseFloat(item.list_price || 0),
-                                    ],
-                                    count: 0,
-                                    platform: 'inventory',
-                                    currentPrice: parseFloat(item.list_price || 0),
-                                }));
+                                const inventoryItems = (store.state.inventory || [])
+                                    .map((item) => {
+                                        const prices = getPriceHistory(item).slice(-7);
+                                        if (prices.length < 2) return null;
+                                        return {
+                                            title: String(item.title || 'Untitled'),
+                                            prices,
+                                            count: 0,
+                                            platform: item.platform || 'inventory',
+                                            currentPrice: prices[prices.length - 1],
+                                        };
+                                    })
+                                    .filter(Boolean)
+                                    .slice(0, 5);
 
                                 if (inventoryItems.length === 0) {
-                                    return '<div class="text-gray-500 text-sm text-center py-4">Add inventory items to see price trends</div>';
+                                    return '<div class="text-gray-500 text-sm text-center py-4">No price trend data yet. Add sales or price history to see trends.</div>';
                                 }
 
                                 return (
@@ -1871,10 +1894,10 @@ const pages = {
         const finProfitMargin = finRevenue > 0 ? ((finNetProfit / finRevenue) * 100).toFixed(1) : '0.0';
         const finCashFlow = finRevenue - finExpenses;
         const budgetCategories = store.state.budgetCategories || [
-            { name: 'Marketing', spent: 0, budget: 200 },
-            { name: 'Shipping', spent: 0, budget: 500 },
-            { name: 'Supplies', spent: 0, budget: 300 },
-            { name: 'Fees', spent: 0, budget: 400 },
+            { name: 'Marketing', spent: 0, budget: 0 },
+            { name: 'Shipping', spent: 0, budget: 0 },
+            { name: 'Supplies', spent: 0, budget: 0 },
+            { name: 'Fees', spent: 0, budget: 0 },
         ];
 
         const financialsAnalyticsTabContent = `
