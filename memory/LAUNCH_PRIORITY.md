@@ -1,6 +1,7 @@
 # VaultLister — Launch Priority Reference
+> **HISTORICAL — Do not use as current task source. Generated 2026-04-11; superseded by `docs/OPEN_ITEMS.md`.**
+> **CR-4 (EasyPost) was re-opened 2026-04-22: live verification returned 503 {"error":"EasyPost not configured"}. Ignore "RESOLVED" status below.**
 *Generated 2026-04-11 from STATUS.md, LAUNCH_AUDIT_2026-04-03.md, and 17+ walkthrough sessions*
-*This is the operating plan. The ChatGPT master doc is the reference appendix.*
 
 ---
 

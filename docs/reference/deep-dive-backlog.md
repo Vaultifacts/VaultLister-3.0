@@ -2,7 +2,8 @@
 
 > READ-ONLY reference. Do not edit runtime files based on this document without completing all listed verification steps first.
 >
-> All line counts and findings are verified against the codebase as of 2026-04-24, branch `codex/e2e-session-guardrails`.
+> All line counts and findings were verified against branch `codex/e2e-session-guardrails` (merged to master via b9d608ec).
+> **As of 2026-05-01 the following have changed: `server.js` is now 1,464 lines (was 2,087); `routes/auth` is now a directory of 5 files (was a single file); `db/database.js` is a 6-line barrel re-export (was 640 lines). Re-verify R-001/R-011/R-012 before acting on them.**
 
 ---
 

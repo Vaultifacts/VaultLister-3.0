@@ -1,5 +1,5 @@
 # VaultLister — Tier 0 Resolution Playbook
-*Generated 2026-04-11. Exact steps to clear every hard launch blocker.*
+> **HISTORICAL — Generated 2026-04-11. Steps may be outdated. Current blockers in `docs/OPEN_ITEMS.md`.**
 
 ---
 

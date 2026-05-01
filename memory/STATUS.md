@@ -8,7 +8,7 @@
 - **Google OAuth FULLY FIXED + DEPLOYED** — 6 layered bugs fixed, VERIFIED LIVE: route registered, OTT endpoint responds, correct hash logic, raw fetch confirmed.
 - **Post-walkthrough fix plan (6 batches) COMPLETE + VERIFIED** — all batches deployed to live site.
 - **19 open GitHub issues** — dependabot CI failures ×5, automation workflow failures ×4, infra/observability alerts ×4, other ×6. Needs triage.
-- **Execution-sheet order is the active local path** — `docs/REMAINING_WORK_EXECUTION_SHEET_2026-04-21.md` — follow subset-by-subset starting with Subset 1 (docs-only) before broader frontend/dev-tooling staging.
+- **Active task backlog:** `docs/OPEN_ITEMS.md` (generated) + `docs/superpowers/plans/2026-05-01-fake-data-audit.md` (109 findings). `docs/REMAINING_WORK_EXECUTION_SHEET_2026-04-21.md` is historical — do not use as active plan.
 - **BROWSER NOTE:** Always use `mcp__claude-in-chrome__*` tools. NEVER use `mcp__plugin_chrome-devtools-mcp`.
 
 ## Last Completed Work (2026-05-01)
@@ -54,7 +54,7 @@ See `docs/superpowers/plans/2026-05-01-fake-data-audit.md` — 74 open items tra
 Priority order: CRITICAL (F77/F108/F61) → HIGH state-only (F103/F104/F109/F58/F74...) → HIGH fake ops (F101/F102/F62...) → MEDIUM → LOW.
 
 **PRE-EXISTING**
-0. Follow `docs/REMAINING_WORK_EXECUTION_SHEET_2026-04-21.md` in order — Subset 1 (docs-only) → Subset 2 (backend/dev-tooling) → frontend subsets.
+0. Use `docs/OPEN_ITEMS.md` as the active task backlog — REMAINING_WORK_EXECUTION_SHEET_2026-04-21.md is historical evidence only.
 0. [OPTIONAL] Richer sale path test — sale with non-zero payment_fee + packaging_cost + inventory-linked item; verify all 5 ledger rows fire.
 0. [WATCH] Financial regression: (a) no accounting-statement labels reintroduced, (b) new ledger paths don't skip non-zero amounts, (c) no tax schema/copy creep, (d) no duplicate rows on retry/edit.
 1. CR-4: EasyPost shipping integration — OPEN / NOT VERIFIED
