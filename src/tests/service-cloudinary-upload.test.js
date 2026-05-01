@@ -10,7 +10,7 @@ mock.module('../backend/shared/logger.js', () => ({
     default: { info: mock(), error: mock(), warn: mock(), debug: mock() },
 }));
 
-const { default: cloudinaryModule } = await import('../backend/services/cloudinaryService.js');
+const { default: cloudinaryModule, resolveUploadDataUri } = await import('../backend/services/cloudinaryService.js');
 
 const uploadToCloudinary = cloudinaryModule?.uploadToCloudinary || cloudinaryModule?.upload;
 const isCloudinaryConfigured = cloudinaryModule?.isCloudinaryConfigured || cloudinaryModule?.isConfigured;
@@ -92,5 +92,14 @@ describe('uploadToCloudinary', () => {
             if (originalApiSecret) process.env.CLOUDINARY_API_SECRET = originalApiSecret;
             else delete process.env.CLOUDINARY_API_SECRET;
         }
+    });
+});
+
+describe('resolveUploadDataUri', () => {
+    test('reads local public paths as base64 data URIs', async () => {
+        const result = await resolveUploadDataUri('/robots.txt');
+
+        expect(result.startsWith('data:image/jpeg;base64,')).toBe(true);
+        expect(result.length).toBeGreaterThan('data:image/jpeg;base64,'.length);
     });
 });
