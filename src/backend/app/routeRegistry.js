@@ -83,7 +83,7 @@ import { featureRequestsRouter } from '../routes/feature-requests-routes.js';
 import { healthRouter, healthPlatformsRouter, geoRouter, statusRouter, workersHealthRouter } from '../routes/health.js';
 import { featureFlagsRouter } from '../routes/featureFlags.js';
 import { userAnalyticsRouter, csrfTokenRouter, docsRouter, cspReportRouter } from '../routes/systemHandlers.js';
-import { adminUptimeProbeRouter, adminAffiliateApplicationsRouter } from '../routes/adminOps.js';
+import { adminUptimeProbeRouter, adminAffiliateApplicationsRouter, forceLogoutAllRouter } from '../routes/adminOps.js';
 
 export const routeRegistry = {
     '/api/auth': authRouter,
@@ -170,6 +170,7 @@ export const routeRegistry = {
     '/api/docs': docsRouter,
     '/api/admin/workers/uptime-probe/trigger': adminUptimeProbeRouter,
     '/api/admin/affiliate-applications': adminAffiliateApplicationsRouter,
+    '/api/admin/force-logout-all': forceLogoutAllRouter,
     '/api/csp-report': cspReportRouter,
     // Health, status, and operational endpoints
     '/api/health/platforms': healthPlatformsRouter,

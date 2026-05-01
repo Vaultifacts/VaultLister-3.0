@@ -126,12 +126,16 @@ export async function authenticateToken(request) {
 
     // Get user from database (exclude password_hash for security)
     const user = await query.get(
-        'SELECT id, email, full_name, username, subscription_tier, subscription_expires_at, avatar_url, is_active, is_admin, email_verified, is_affiliate, affiliate_applied_at, created_at, updated_at FROM users WHERE id = ? AND is_active = TRUE',
+        'SELECT id, email, full_name, username, subscription_tier, subscription_expires_at, avatar_url, is_active, is_admin, email_verified, is_affiliate, affiliate_applied_at, created_at, updated_at, force_logout_at FROM users WHERE id = ? AND is_active = TRUE',
         [decoded.userId],
     );
 
     if (!user) {
         return { success: false, error: 'User not found' };
+    }
+
+    if (user.force_logout_at && decoded.iat * 1000 < new Date(user.force_logout_at).getTime()) {
+        return { success: false, error: 'Session invalidated — please log in again' };
     }
 
     // SECURITY: Subscription expiry check — if the user's paid subscription has expired,

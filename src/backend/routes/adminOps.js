@@ -7,6 +7,18 @@ export async function adminUptimeProbeRouter(ctx) {
     return { status: 200, data: { ok: true, durationMs: Date.now() - start } };
 }
 
+export async function forceLogoutAllRouter(ctx) {
+    if (!ctx.user?.is_admin) return { status: 403, data: { error: 'Admin required' } };
+    if (ctx.method !== 'POST') return { status: 405, data: { error: 'Method not allowed' } };
+    const { query: dbQuery } = await import('../db/database.js');
+    const now = new Date().toISOString();
+    // Invalidate all refresh tokens
+    const sessions = await dbQuery.run('UPDATE sessions SET is_valid = 0 WHERE is_valid = 1', []);
+    // Set force_logout_at so existing access tokens are rejected on next use
+    await dbQuery.run('UPDATE users SET force_logout_at = $1', [now]);
+    return { status: 200, data: { ok: true, sessionsInvalidated: sessions?.changes ?? 0 } };
+}
+
 export async function adminAffiliateApplicationsRouter(ctx) {
     if (!ctx.user?.is_admin) return { status: 403, data: { error: 'Admin required' } };
     const { query: dbQuery } = await import('../db/database.js');
