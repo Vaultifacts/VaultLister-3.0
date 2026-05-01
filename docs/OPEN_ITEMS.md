@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-01T05:51:04.971Z
-Commit: 02e287a9
+Generated at: 2026-05-01T06:10:01.095Z
+Commit: 3128fd22
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -1254,9 +1254,9 @@ Command: `gh issue list --state open --limit 200 --json number,title,labels,upda
 
 | Issue | Title | Labels | Updated | URL |
 |---|---|---|---|---|
+| #483 | [Automation] Project status update workflow failed — boards may be stale | ci-failure, automated | 2026-05-01T06:07:48Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/483 |
+| #482 | [Automation] Project status update workflow failed — boards may be stale | ci-failure, automated | 2026-05-01T06:07:47Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/482 |
 | #481 | [Deploy Failure] db009ff — Run #1034 | automated, deploy-failure | 2026-05-01T05:05:04Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/481 |
-| #480 | [CI Failure] master - Run #1527 | ci-failure, automated | 2026-05-01T04:37:47Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/480 |
-| #469 | [Automation] Project status update workflow failed — boards may be stale | ci-failure, automated | 2026-05-01T04:22:16Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/469 |
 | #467 | [WAF] Monthly Cloudflare WAF rule review — 2026-05 | security, automated | 2026-05-01T00:01:51Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/467 |
 | #456 | [Automation Coverage] 27 gap(s) detected — 2026-04-27 | automated, automation-coverage | 2026-04-27T15:50:17Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/456 |
 | #455 | [Infra Audit] Issues detected — 2026-04-27 | automated, infra-audit | 2026-04-27T15:08:38Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/455 |
