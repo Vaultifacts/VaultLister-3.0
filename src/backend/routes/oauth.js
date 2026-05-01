@@ -8,11 +8,13 @@ import { createHash, randomBytes } from 'crypto';
 import { queueTask } from '../workers/taskWorker.js';
 import { logger } from '../shared/logger.js';
 
-// Startup warnings — log once at module load time so misconfiguration is visible immediately
+// Startup validation — fail loudly so misconfiguration is never silent
 if (!process.env.OAUTH_MODE) {
-    logger.warn('[OAuth] WARNING: OAUTH_MODE not set — using mock OAuth. Set OAUTH_MODE=real for production.');
+    logger.error('[OAuth] FATAL: OAUTH_MODE is not set. OAuth routes will return 503. Set OAUTH_MODE=real (production) or OAUTH_MODE=mock (local dev).');
 } else if (process.env.OAUTH_MODE === 'mock') {
     logger.warn('[OAuth] WARNING: OAUTH_MODE=mock — OAuth returns fake tokens. Set OAUTH_MODE=real for production.');
+} else if (process.env.OAUTH_MODE !== 'real') {
+    logger.error(`[OAuth] FATAL: OAUTH_MODE="${process.env.OAUTH_MODE}" is not a valid value. Use "real" or "mock".`);
 }
 if (process.env.EBAY_ENVIRONMENT === 'sandbox') {
     logger.warn(
@@ -96,7 +98,7 @@ export async function oauthRouter(ctx) {
         );
 
         // Get OAuth config based on mode
-        const oauthMode = process.env.OAUTH_MODE || 'mock';
+        const oauthMode = process.env.OAUTH_MODE;
         const shopDomainForConfig = platform === 'shopify' ? queryParams?.shop || null : null;
         let config;
         try {
@@ -177,7 +179,7 @@ export async function oauthRouter(ctx) {
         await query.run('UPDATE oauth_states SET used = 1 WHERE id = ?', [stateRecord.id]);
 
         // Exchange code for tokens
-        const oauthMode = process.env.OAUTH_MODE || 'mock';
+        const oauthMode = process.env.OAUTH_MODE;
         const shopDomain =
             stateRecord.platform === 'shopify' && stateRecord.code_verifier ? stateRecord.code_verifier : null;
         let config;
@@ -316,7 +318,7 @@ export async function oauthRouter(ctx) {
 
         try {
             const refreshToken = decryptToken(shop.oauth_refresh_token);
-            const oauthMode = process.env.OAUTH_MODE || 'mock';
+            const oauthMode = process.env.OAUTH_MODE;
             const shopDomainForRefresh =
                 platform === 'shopify' && shop.platform_username && shop.platform_username !== 'shopify-store'
                     ? shop.platform_username
@@ -410,7 +412,7 @@ export async function oauthRouter(ctx) {
         // Immediately attempt token refresh
         try {
             const refreshToken = decryptToken(shop.oauth_refresh_token);
-            const oauthMode = process.env.OAUTH_MODE || 'mock';
+            const oauthMode = process.env.OAUTH_MODE;
             const shopDomainForReconnect =
                 platform === 'shopify' && shop.platform_username && shop.platform_username !== 'shopify-store'
                     ? shop.platform_username
