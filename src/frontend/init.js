@@ -678,7 +678,6 @@ function renderApp(pageContent) {
                         </button>
                     </div>
                     <div class="main-wrapper">
-                        ${components.header()}
                         <main class="main-content" role="main" id="main-content" tabindex="-1" aria-label="Page content">
                             <div class="page-content">
                                 ${store.state.currentPage !== 'dashboard' && store.state.currentPage !== 'login' && store.state.currentPage !== 'register' ? components.breadcrumb(store.state.currentPage) : ''}

@@ -36,6 +36,94 @@
 
 ---
 
+**Updated:** 2026-04-30 MST (13 parallel commits after 21:23 — Lighthouse perf, sales fix, inventory widget, CI/E2E, listings, landing, currency)
+
+## Completed This Session (2026-04-30, session 5 — parallel, HEAD = 02ee96ae)
+
+- **02ee96ae** fix(ci): add syncScheduler to excluded services in coverage audit
+- **dc50a900** perf(landing): preload hero logo, fetchpriority+decoding=sync on LCP, lazy/async on platform logos
+- **4ba89876** fix(sales): use listing_title/inventory_title instead of client-side inventory lookup
+- **149d1d45** chore(sw): bump CACHE_VERSION to v5.27 for landing.html perf update
+- **83e67068** perf(landing): add lazy loading, fetchpriority, and preload for Lighthouse
+- **76f1ed66** fix(inventory): remove listing health bar widget from catalog page; bundle hash bump
+- **a7a11828** fix(ci): expand orphaned-chunk check to include router.js chunk keys
+- **00576a7c** fix(e2e): update platform card count from 10 to 11 (Grailed promoted to live)
+- **99ab0fec** docs(walkthrough): mark MANUAL-pub-8 and MANUAL-pub-16 as partial
+- **09741487** chore(sw): bump CACHE_VERSION to v5.26 for landing.html update
+- **e78d7633** fix(listings): remove inventory_id and char-count display from listing rows; rebuild bundle
+- **7212deed** feat(landing): add 'See all features' buttons to each feature group
+- **29f581dc** fix(currency): update frankfurter API URL to new domain (closes #454)
+
+---
+
+**Updated:** 2026-04-30 MST (router restore, release-please, affiliate fix, listing fee, nav rebuild, analytics test — 12 commits 20:08–21:23)
+
+## Completed This Session (2026-04-30, session 2b — parallel)
+
+- **30f7f2d4** fix(test): use Bun.file() to read pg-schema in analytics test
+- **93184e94** fix(nav): rebuild bundle 25ebe160 after removing Reports and Plans and Billing nav items
+- **a4f9aca0** fix(listings): hide fee span when platform_fee is null; restore plans-billing+reports routes; rebuild bundle
+- **da7fd758** ci: bump googleapis/release-please-action from 4 to 5 (#450)
+- **e1357057** chore(release): add release-please v5 manifest config files
+- **a681aa27** fix(router): restore plans-billing and reports routes deleted by prior agent; rebuild bundle f22187bd
+- **a3d073f4** fix(affiliate): add migration 030 to correct silver/gold tier rates to 25%
+- **eabc65f0** ci: bump actions/github-script from 8.0.0 to 9.0.0 (#449)
+- **728ecbf9** ci: bump actions/dependency-review-action from 4.5.0 to 4.9.0 (#451)
+- **978b357f** ci: bump aquasecurity/trivy-action from 0.35.0 to 0.36.0 (#452)
+- **c6980259** deps(deps): bump @anthropic-ai/sdk from 0.82.0 to 0.91.1 (#457)
+- **1166950e** fix(compare): update stale '3 coming soon' → '4 coming soon' in flyp and nifty pages
+
+---
+
+**Updated:** 2026-04-30 MST (automations page cleanup — removed Scheduler Health, Schedule Settings, Notification Preferences sections)
+
+## Completed This Session (2026-04-30, session 2)
+
+### Automations page — removed 3 sections from UI
+
+- **Scheduler Health** widget card removed (`pages-deferred.js`)
+- **Schedule Settings** card removed (frequency, start/end time, active days, schedule summary)
+- **Notification Preferences** card removed (event types, channels, quick actions)
+- Bundle rebuilt to hash `d99da114`
+
+**Verification:** `grep` on both source and `dist/core-bundle.js` — 0 matches ✅
+
+---
+
+**Updated:** 2026-04-30 MST (a11y, frontend fixes, cloudinary, platformSync, image-bank — 11 parallel commits 17:58–19:16)
+
+## Completed This Session (2026-04-30, session 1b — parallel)
+
+- **7983277c** fix(a11y): add role=button+tabindex to stat cards and pipeline stages; rebuild bundle 73cb0632
+- **e8a4f50e** fix(a11y): add aria-hidden to decorative SVGs across 50 HTML files and icon spans in SPA; rebuild bundle 5538b154
+- **6d408883** fix(cloudinary): resolve local file path for on-disk images
+- **aae9c7fe** fix(settings): fix PLATFORM_DISPLAY_NAMES region suffixes and add grailed to LAUNCH_PLATFORMS
+- **c4ae8a7e** fix(frontend): remove global header bar from app layout
+- **9a99160c** fix(sidebar): dropdown menu pops out to the right instead of clipping below viewport
+- **6c4eb93a** test(platformSync): cover publish dependency preloads
+- **825bf5a4** fix(frontend): compare page updates, router fixes, reports page cleanup
+- **e4f6769e** fix(shops): align My Shops platform names and live/coming-soon split with landing page
+- **1975e64a** fix(platformSync): correct bot utility import paths in 4 publish services
+- **c37fa662** feat(image-bank): add drag-and-drop images to folders
+
+---
+
+**Updated:** 2026-04-30 MST (nav language/currency dropdown cleanup across all 54 public HTML files)
+
+## Completed This Session (2026-04-30, session 1)
+
+### Nav language + currency dropdown cleanup — all 54 public HTML files
+
+- **Removed duplicate English variants**: Removed `en-CA` and `en-US` buttons; single `data-lang="en"` → `English` remains
+- **Removed "Coming Soon" from language dropdown**: English button now appears first; no Coming Soon label
+- **Removed "Coming Soon" from currency dropdown**: Clean list — $ CAD, $ USD, £ GBP, € EUR, $ AUD
+- **Renamed native language names to English**: Español→Spanish, Français→French, Deutsch→German, Italiano→Italian, Português→Portuguese, 日本語→Japanese, 中文→Chinese, 한국어→Korean, العربية→Arabic
+- **SPA settings page**: EN/FR option labels updated to "English" / "Français" in `pages-settings-account.js`; `en-GB` removed from `src/frontend/i18n/index.js`; `core-bundle.js` and `dist/chunk-settings.js` rebuilt
+
+**Verification:** `python -c "..."` audit across all 54 files — `Issues found: 0` ✅
+
+---
+
 **Updated:** 2026-04-26 MST (BrowserStack a11y fixes + security fixes — all now in master)
 
 > Note: `codex/e2e-session-guardrails` is 212 commits behind master — all changes merged. Branch obsolete.
