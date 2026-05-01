@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-01T06:17:07.626Z
-Commit: f5033b3b
+Generated at: 2026-05-01T06:23:34.684Z
+Commit: e5546f8f
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -14,7 +14,7 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 | Section | Count |
 |---|---:|
 | Launch blockers | 2 |
-| Open walkthrough/product items | 1 |
+| Open walkthrough/product items | 0 |
 | Fixed pending live/manual verification | 26 |
 | Deferred/post-launch items | 10 |
 | Structural/refactor backlog items | 10 |
@@ -249,7 +249,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | docs/walkthrough/settings.md | 15 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/shipping.md | 3 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/size-charts.md | 1 | 3 | Included via walkthrough parser when table status is active |
-| docs/walkthrough/source-code-audit.md | 13 | 5 | Included via walkthrough parser when table status is active |
+| docs/walkthrough/source-code-audit.md | 12 | 5 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/transactions.md | 1 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/vault-buddy.md | 4 | 3 | Included via walkthrough parser when table status is active |
 | docs/superpowers/plans/2026-04-12-ui-restructure.md | 3 | 832 | Included when unchecked checklist rows exist |
@@ -293,9 +293,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 
 ## Open Walkthrough / Product Items
 
-| ID | Status | Priority | Area | Item | Source | Next Action | Blocker |
-|---|---|---|---|---|---|---|---|
-| SEC-H41 | OPEN — HIGH security risk; post-launch acceptable if rotation runbook is documented |  | Source Code Audit | No key rotation mechanism for JWT_SECRET or OAUTH_ENCRYPTION_KEY. If JWT_SECRET is compromised, all active sessions can be forged until the secret is manually rotated and all users forced to re-login — no programmatic mechanism exists. OAUTH_ENCRYPTION_KEY has partial support via OAUTH_ENCRYPTION_KEY_OLD, but JWT_SECRET has none. Fix: implement emergency rotation endpoint (invalidate all refresh tokens via DB flag + rotate secret) or document a manual rotation runbook. | docs/walkthrough/source-code-audit.md:9 |  |  |
+_None._
 
 ## Fixed Pending Live / Manual Verification
 

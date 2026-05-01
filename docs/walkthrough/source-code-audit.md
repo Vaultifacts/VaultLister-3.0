@@ -4,9 +4,7 @@ Discovered by automated source code scan of `src/`, `worker/bots/` (excluding le
 
 ## Open (Needs Fix)
 
-| ID | File:Line | Issue | Status |
-|----|-----------|-------|--------|
-| SEC-H41 | `src/backend/utils/encryption.js`, `src/backend/routes/auth.js` | No key rotation mechanism for `JWT_SECRET` or `OAUTH_ENCRYPTION_KEY`. If `JWT_SECRET` is compromised, all active sessions can be forged until the secret is manually rotated and all users forced to re-login — no programmatic mechanism exists. `OAUTH_ENCRYPTION_KEY` has partial support via `OAUTH_ENCRYPTION_KEY_OLD`, but `JWT_SECRET` has none. Fix: implement emergency rotation endpoint (invalidate all refresh tokens via DB flag + rotate secret) or document a manual rotation runbook. | OPEN — HIGH security risk; post-launch acceptable if rotation runbook is documented |
+None — all source code audit findings have been resolved.
 
 ## Completed & Verified
 
@@ -19,6 +17,12 @@ Discovered by automated source code scan of `src/`, `worker/bots/` (excluding le
 | CA-CR-3 | `src/backend/routes/ai.js:73,75` | Mercari/Grailed in active AI templates — these are post-launch platforms. Code executes if triggered. **Fix:** Remove or wrap with feature flag. | `mercari: 'Stylish Fashion Item', grailed: 'Designer Streetwear'` | VERIFIED ✅ — 8a1d58e |
 | CA-CR-4 | `src/backend/db/seeds/demoData.js:383-471` | `Math.random()` in demo order/tracking numbers (7 instances) — non-deterministic demo data. | `order_number: 'PSH-' + Math.random().toString(36).substr(2,8)` | VERIFIED ✅ — grep confirms 0 Math.random() in demoData.js (confirmed in source 2026-04-07) |
 | CA-CR-5 | `app.js:29521` | "Cross-list to all 6 platforms" — legacy file, stale copy (not served but misleading) | `Cross-list to all 6 platforms` | CONFIRMED N/A — root-level app.js does not exist in this repo |
+
+### HIGH — Security Findings
+
+| ID | File:Line | Issue | Status |
+|----|-----------|-------|--------|
+| SEC-H41 | `src/backend/utils/encryption.js`, `src/backend/routes/auth/session.js` | No programmatic key rotation for `JWT_SECRET`. Rotation runbook documented at `docs/JWT-ROTATION-RUNBOOK.md`: invalidate all sessions via `UPDATE sessions SET is_valid = 0`, rotate secret in Railway, redeploy. `OAUTH_ENCRYPTION_KEY` has partial support via `OAUTH_ENCRYPTION_KEY_OLD` fallback. | RESOLVED ✅ 2026-05-01 — manual rotation runbook written |
 
 ### HIGH — Code Audit
 
