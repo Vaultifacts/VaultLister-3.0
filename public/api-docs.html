@@ -359,12 +359,14 @@
                         if (sel && !sel.getAttribute('aria-label')) {
                             sel.setAttribute('aria-label', 'API server');
                         }
-                        // Fix nested-interactive: remove nested elements from tab order
+                        // Fix nested-interactive: decorative anchors inside buttons cause WCAG nesting violation.
+                        // Removing href strips the implicit link role; deep-link navigation still works via the outer button.
                         function fixNested() {
-                            document.querySelectorAll('.opblock-summary-control').forEach(function (btn) {
-                                btn.querySelectorAll('a[href], button, [tabindex="0"]').forEach(function (el) {
-                                    el.setAttribute('tabindex', '-1');
-                                });
+                            document.querySelectorAll('.opblock-summary-control a[href]').forEach(function (el) {
+                                el.dataset.deeplink = el.getAttribute('href');
+                                el.removeAttribute('href');
+                                el.setAttribute('tabindex', '-1');
+                                el.setAttribute('aria-hidden', 'true');
                             });
                         }
                         fixNested();
