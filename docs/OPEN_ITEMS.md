@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-01T06:10:01.095Z
-Commit: 3128fd22
+Generated at: 2026-05-01T06:17:07.626Z
+Commit: f5033b3b
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -14,7 +14,7 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 | Section | Count |
 |---|---:|
 | Launch blockers | 2 |
-| Open walkthrough/product items | 2 |
+| Open walkthrough/product items | 1 |
 | Fixed pending live/manual verification | 26 |
 | Deferred/post-launch items | 10 |
 | Structural/refactor backlog items | 10 |
@@ -25,7 +25,7 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 | Repo-wide unchecked checkbox hits | 583 |
 | Repo-wide unchecked checkbox hits included | 359 |
 | Repo-wide unchecked checkbox hits excluded or review-only | 224 |
-| Open-marker source files discovered | 209 |
+| Open-marker source files discovered | 212 |
 | Source TODO/FIXME hits | 15 |
 
 ## Source Coverage Audit
@@ -133,6 +133,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | .github/workflows/test-baseline-update.yml | 2 | 4 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/uptime-slack-alert.yml | 3 | 74 | Config/workflow text; parsed separately only if promoted |
 | .gitignore | 1 | 150 | Config/workflow text; parsed separately only if promoted |
+| package-lock.json | 8 | 2253 | Config/workflow text; parsed separately only if promoted |
 | package.json | 2 | 70 | Config/workflow text; parsed separately only if promoted |
 | public/api-docs/openapi.yaml | 9 | 3288 | Config/workflow text; parsed separately only if promoted |
 | docs/superpowers/specs/2026-04-12-ui-restructure-design.md | 1 | 120 | Design spec; implementation tasks live in plans/checklists |
@@ -207,6 +208,8 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | memory/TIER0_PLAYBOOK.md | 3 | 11 | Excluded: session memory, promote only after current verification |
 | data/qa-report-2026-04-04-chrome-walkthrough.md | 2 | 20 | Excluded: timestamped QA evidence, not current truth |
 | data/qa-report-2026-04-04-exhaustive.md | 4 | 39 | Excluded: timestamped QA evidence, not current truth |
+| data/qa-report-2026-04-04-final.md | 6 | 32 | Excluded: timestamped QA evidence, not current truth |
+| data/qa-report-2026-04-04.md | 40 | 6 | Excluded: timestamped QA evidence, not current truth |
 | docs/PERFECT_ANTI_DETECTION_SYSTEM.md | 10 | 68 | Included as anti-detection design gap source |
 | docs/COMPETITOR_GAP_INVENTORY_2026-04-19.md | 7 | 31 | Included as competitor intelligence gap source |
 | chrome-extension/README.md | 8 | 43 | Included as explicit checklist source |
@@ -222,12 +225,12 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | docs/walkthrough/community.md | 1 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/connections.md | 5 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/dashboard.md | 7 | 3 | Included via walkthrough parser when table status is active |
-| docs/walkthrough/environment.md | 15 | 38 | Included via walkthrough parser when table status is active |
+| docs/walkthrough/environment.md | 12 | 38 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/financials.md | 5 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/help.md | 3 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/image-bank.md | 1 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/import.md | 1 | 3 | Included via walkthrough parser when table status is active |
-| docs/walkthrough/INDEX.md | 10 | 4 | Included via walkthrough parser when table status is active |
+| docs/walkthrough/INDEX.md | 9 | 4 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/inventory.md | 1 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/listings.md | 5 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/market-intel.md | 3 | 3 | Included via walkthrough parser when table status is active |
@@ -292,7 +295,6 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 
 | ID | Status | Priority | Area | Item | Source | Next Action | Blocker |
 |---|---|---|---|---|---|---|---|
-| ENV-1 | OPEN — set both vars in Railway; value for EBAY_DELETION_ENDPOINT should be https://vaultlister.com/api/webhooks/ebay/account-deletion |  | eBay Compliance | EBAY_DELETION_VERIFICATION_TOKEN and EBAY_DELETION_ENDPOINT not confirmed set in Railway — required for eBay Marketplace Account Deletion webhook. webhooks.js:262 returns HTTP 500 if not set, which violates eBay Developer Program requirements. | docs/walkthrough/environment.md:47 |  |  |
 | SEC-H41 | OPEN — HIGH security risk; post-launch acceptable if rotation runbook is documented |  | Source Code Audit | No key rotation mechanism for JWT_SECRET or OAUTH_ENCRYPTION_KEY. If JWT_SECRET is compromised, all active sessions can be forged until the secret is manually rotated and all users forced to re-login — no programmatic mechanism exists. OAUTH_ENCRYPTION_KEY has partial support via OAUTH_ENCRYPTION_KEY_OLD, but JWT_SECRET has none. Fix: implement emergency rotation endpoint (invalidate all refresh tokens via DB flag + rotate secret) or document a manual rotation runbook. | docs/walkthrough/source-code-audit.md:9 |  |  |
 
 ## Fixed Pending Live / Manual Verification

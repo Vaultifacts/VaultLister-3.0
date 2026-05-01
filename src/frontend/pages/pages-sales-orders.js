@@ -772,7 +772,8 @@ Object.assign(pages, {
                             <tbody>
                                 ${sales
                                     .map((sale) => {
-                                        const itemTitle = sale.listing_title || sale.inventory_title || 'Unknown Item';
+                                        const platformLabel = sale.platform ? sale.platform.charAt(0).toUpperCase() + sale.platform.slice(1) + ' Sale' : 'Manual Sale';
+                                        const itemTitle = sale.listing_title || sale.inventory_title || platformLabel;
 
                                         // Calculate platform fee percentage
                                         const feePercentage =

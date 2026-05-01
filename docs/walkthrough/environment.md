@@ -36,20 +36,20 @@
 | `REDIS_URL` | ✅ Set | BullMQ background jobs |
 | `SENTRY_DSN` | ✅ Set | Error monitoring |
 | `EASYPOST_API_KEY` | ❌ NOT SET | Shipping labels — CR-4 production verification still open |
-| `EBAY_DELETION_VERIFICATION_TOKEN` | ❌ NOT VERIFIED | eBay Marketplace Account Deletion webhook — compliance-required |
-| `EBAY_DELETION_ENDPOINT` | ❌ NOT VERIFIED | eBay Marketplace Account Deletion webhook — compliance-required |
+| `EBAY_DELETION_VERIFICATION_TOKEN` | ✅ Set | eBay Marketplace Account Deletion webhook — compliance-required |
+| `EBAY_DELETION_ENDPOINT` | ✅ Set | eBay Marketplace Account Deletion webhook — compliance-required |
 
 ## Open (Needs Fix)
 
 | ID | Area | Finding | Session | Status |
 |----|------|---------|---------|--------|
 | CR-4 | Shipping | EasyPost production key and authenticated rates/buy/track verification still pending | Session 1 | OPEN / NOT VERIFIED — 2026-04-30 local code fix routes default rates, explicit EasyPost rates/buy, and batch purchase through EasyPost with focused unit coverage; production `EASYPOST_API_KEY` and live authenticated verification still pending |
-| ENV-1 | eBay Compliance | `EBAY_DELETION_VERIFICATION_TOKEN` and `EBAY_DELETION_ENDPOINT` not confirmed set in Railway — required for eBay Marketplace Account Deletion webhook. `webhooks.js:262` returns HTTP 500 if not set, which violates eBay Developer Program requirements. | 2026-05-01 | OPEN — set both vars in Railway; value for EBAY_DELETION_ENDPOINT should be `https://vaultlister.com/api/webhooks/ebay/account-deletion` |
 
 ## Completed & Verified
 
 | ID | Area | Finding | Session | Status |
 |----|------|---------|---------|--------|
+| ENV-1 | eBay Compliance | `EBAY_DELETION_VERIFICATION_TOKEN` and `EBAY_DELETION_ENDPOINT` — required for eBay Marketplace Account Deletion webhook compliance | 2026-05-01 | VERIFIED ✅ 2026-05-01 — both vars confirmed set in Railway Variables tab |
 | M-33 | Privacy Policy | Contact email "privacy@vaultlister.com" — may not be set up | Session 3 | VERIFIED ✅ 2026-04-29 — all 4 Google Workspace groups (hello@, privacy@, billing@, security@vaultlister.com) confirmed sending and receiving. Group settings hardened: "Only invited users" can join, external posting enabled, member visibility restricted to owners/managers |
 | H-18 | Forgot Password | "Send Reset Link" requires `RESEND_API_KEY`/SMTP — will fail silently | Session 2 | DEPLOY CONFIG — email.js gracefully falls back to console log if RESEND_API_KEY unset; set key before launch |
 | H-25 | Forgot Password | "Send Reset Link" requires SMTP — will fail | Session 3 | DEPLOY CONFIG — same as H-18; set RESEND_API_KEY before launch |
