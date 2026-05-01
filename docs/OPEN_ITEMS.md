@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-01T00:04:48.602Z
-Commit: c37fa662
+Generated at: 2026-05-01T04:41:24.489Z
+Commit: bfb4dabd
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -14,13 +14,13 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 | Section | Count |
 |---|---:|
 | Launch blockers | 2 |
-| Open walkthrough/product items | 2 |
+| Open walkthrough/product items | 0 |
 | Fixed pending live/manual verification | 26 |
 | Deferred/post-launch items | 10 |
 | Structural/refactor backlog items | 10 |
 | Competitor intelligence gaps | 862 |
 | Anti-detection/design gaps | 14 |
-| Open GitHub issues | 18 |
+| Open GitHub issues | 9 |
 | Explicit unchecked checklist items | 359 |
 | Repo-wide unchecked checkbox hits | 583 |
 | Repo-wide unchecked checkbox hits included | 359 |
@@ -106,16 +106,16 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | .github/workflows/domain-expiry-check.yml | 5 | 111 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/e2e-regression.yml | 3 | 110 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/image-cleanup.yml | 1 | 64 | Config/workflow text; parsed separately only if promoted |
-| .github/workflows/infra-audit.yml | 1 | 189 | Config/workflow text; parsed separately only if promoted |
+| .github/workflows/infra-audit.yml | 1 | 191 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/internal-service-health.yml | 8 | 179 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/lighthouse.yml | 1 | 112 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/load-test.yml | 1 | 143 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/marketplace-health.yml | 2 | 157 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/npm-audit.yml | 3 | 74 | Config/workflow text; parsed separately only if promoted |
-| .github/workflows/observability-health.yml | 2 | 344 | Config/workflow text; parsed separately only if promoted |
+| .github/workflows/observability-health.yml | 2 | 356 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/orphan-cleanup.yml | 1 | 84 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/production-smoke.yml | 4 | 74 | Config/workflow text; parsed separately only if promoted |
-| .github/workflows/project-status-update.yml | 9 | 30 | Config/workflow text; parsed separately only if promoted |
+| .github/workflows/project-status-update.yml | 13 | 30 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/push-cleanup.yml | 3 | 34 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/queue-health.yml | 1 | 89 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/redis-health.yml | 1 | 97 | Config/workflow text; parsed separately only if promoted |
@@ -203,7 +203,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | memory/COMPLETED.md | 2 | 61 | Excluded: session memory, promote only after current verification |
 | memory/LAUNCH_PRIORITY.md | 5 | 13 | Excluded: session memory, promote only after current verification |
 | memory/MEMORY.md | 9 | 7 | Excluded: session memory, promote only after current verification |
-| memory/STATUS.md | 88 | 36 | Excluded: session memory, promote only after current verification |
+| memory/STATUS.md | 86 | 84 | Excluded: session memory, promote only after current verification |
 | memory/TIER0_PLAYBOOK.md | 3 | 11 | Excluded: session memory, promote only after current verification |
 | data/qa-report-2026-04-04-chrome-walkthrough.md | 2 | 20 | Excluded: timestamped QA evidence, not current truth |
 | data/qa-report-2026-04-04-exhaustive.md | 4 | 39 | Excluded: timestamped QA evidence, not current truth |
@@ -290,10 +290,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 
 ## Open Walkthrough / Product Items
 
-| ID | Status | Priority | Area | Item | Source | Next Action | Blocker |
-|---|---|---|---|---|---|---|---|
-| MANUAL-pub-8 | STILL OPEN — image-29 shows Vendoo-style alternating left/right sections with full product screenshots per feature. landing.html:1114-1245 has 3-card icon grids per group — no screenshots, no alternating layout. |  | Landing | Display main features using the specified format (image-29) | docs/walkthrough/public-site.md:6 |  |  |
-| MANUAL-pub-16 | STILL OPEN — image-36 shows Crosslist-style layout with screenshot thumbnails beside feature cards and "See all features" button under each group. landing.html:1114-1245 has 4 feature groups (3-card icon grids) with no product screenshots and no "See all features" buttons. Layout format not matching reference. |  | Landing | Set up the Features outline in the specified format without reviews underneath (image-36) | docs/walkthrough/public-site.md:7 |  |  |
+_None._
 
 ## Fixed Pending Live / Manual Verification
 
@@ -1254,24 +1251,15 @@ Command: `gh issue list --state open --limit 200 --json number,title,labels,upda
 
 | Issue | Title | Labels | Updated | URL |
 |---|---|---|---|---|
+| #480 | [CI Failure] master - Run #1527 | ci-failure, automated | 2026-05-01T04:37:47Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/480 |
+| #469 | [Automation] Project status update workflow failed — boards may be stale | ci-failure, automated | 2026-05-01T04:22:16Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/469 |
 | #467 | [WAF] Monthly Cloudflare WAF rule review — 2026-05 | security, automated | 2026-05-01T00:01:51Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/467 |
-| #466 | [CI Failure] dependabot/github_actions/googleapis/release-please-action-5 - Run #1455 | ci-failure, automated | 2026-04-30T04:43:31Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/466 |
-| #465 | [CI Failure] dependabot/github_actions/actions/dependency-review-action-4.9.0 - Run #1454 | ci-failure, automated | 2026-04-30T04:43:15Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/465 |
-| #464 | [CI Failure] dependabot/github_actions/aquasecurity/trivy-action-0.36.0 - Run #1453 | ci-failure, automated | 2026-04-30T04:43:00Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/464 |
-| #463 | [CI Failure] dependabot/github_actions/actions/github-script-9.0.0 - Run #1432 | ci-failure, automated | 2026-04-30T01:02:45Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/463 |
-| #460 | [Automation] Project status update workflow failed — boards may be stale | ci-failure, automated | 2026-04-27T17:13:14Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/460 |
-| #459 | [Automation] Project status update workflow failed — boards may be stale | ci-failure, automated | 2026-04-27T17:13:12Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/459 |
-| #458 | [CI Failure] dependabot/npm_and_yarn/anthropic-ai/sdk-0.91.1 - Run #1384 | ci-failure, automated | 2026-04-27T16:18:23Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/458 |
 | #456 | [Automation Coverage] 27 gap(s) detected — 2026-04-27 | automated, automation-coverage | 2026-04-27T15:50:17Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/456 |
 | #455 | [Infra Audit] Issues detected — 2026-04-27 | automated, infra-audit | 2026-04-27T15:08:38Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/455 |
-| #454 | [Service Health] 1 service(s) need attention — 2026-04-27 | automated, service-health | 2026-04-27T14:11:23Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/454 |
 | #453 | [Redis] Health check failed — Redis may be down or misconfigured | infrastructure, automated | 2026-04-27T11:09:35Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/453 |
 | #447 | [Observability] 3 pipeline issue(s) — 2026-04-27 | automated, observability | 2026-04-27T10:21:28Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/447 |
 | #446 | Maintenance: Push subscription cleanup reminder (2026-W17) | maintenance | 2026-04-26T08:47:19Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/446 |
 | #445 | [Lighthouse] Performance score below 50 — immediate attention required | automated, performance | 2026-04-30T00:57:56Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/445 |
-| #443 | [CI Failure] release-please--branches--master--components--vaultlister - Run #1323 | ci-failure, automated | 2026-04-25T04:42:20Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/443 |
-| #442 | [Deploy Failure] 0351ced — Run #899 | automated, deploy-failure | 2026-04-25T04:05:45Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/442 |
-| #441 | [CI Failure] master - Run #1321 | ci-failure, automated | 2026-04-25T01:43:38Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/441 |
 
 ## Explicit Checklist Backlogs
 
