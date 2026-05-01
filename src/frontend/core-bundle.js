@@ -16953,7 +16953,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'ef4e3982';
+    const v = '5538b154';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function (resolve, reject) {
@@ -17734,7 +17734,7 @@ const components = {
         };
         const svg = icons[name] || '';
         const sized = svg ? svg.replace('<svg ', `<svg width="${size}" height="${size}" `) : '';
-        return `<span class="icon" style="width:${size}px;height:${size}px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">${sized}</span>`;
+        return `<span class="icon" aria-hidden="true" style="width:${size}px;height:${size}px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">${sized}</span>`;
     },
 
     // Sidebar component

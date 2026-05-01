@@ -238,7 +238,7 @@ const components = {
         };
         const svg = icons[name] || '';
         const sized = svg ? svg.replace('<svg ', `<svg width="${size}" height="${size}" `) : '';
-        return `<span class="icon" style="width:${size}px;height:${size}px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">${sized}</span>`;
+        return `<span class="icon" aria-hidden="true" style="width:${size}px;height:${size}px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">${sized}</span>`;
     },
 
     // Sidebar component
