@@ -779,6 +779,27 @@ Object.assign(pages, {
                                             categories: 'Required',
                                             shipping: 'Flat or free',
                                         },
+                                        mercari: {
+                                            photos: '1-12',
+                                            titleMax: 40,
+                                            descMax: 1000,
+                                            categories: 'Required',
+                                            shipping: 'Flat rate or free',
+                                        },
+                                        etsy: {
+                                            photos: '1-10',
+                                            titleMax: 140,
+                                            descMax: 10000,
+                                            categories: 'Required',
+                                            shipping: 'Custom profiles',
+                                        },
+                                        grailed: {
+                                            photos: '1-8',
+                                            titleMax: 60,
+                                            descMax: 500,
+                                            categories: 'Required',
+                                            shipping: 'Varies by seller',
+                                        },
                                     };
                                     const r = reqs[shop.platform] || {
                                         photos: 'N/A',
@@ -794,7 +815,7 @@ Object.assign(pages, {
                                         </div>
                                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 12px;">
                                             <div class="text-gray-500">Photos:</div><div class="font-medium">${r.photos}</div>
-                                            <div class="text-gray-500">Title limit:</div><div class="font-medium">${r.titleMax} chars</div>
+                                            <div class="text-gray-500">Title limit:</div><div class="font-medium">${typeof r.titleMax === 'number' ? r.titleMax + ' chars' : r.titleMax}</div>
                                             <div class="text-gray-500">Description:</div><div class="font-medium">${typeof r.descMax === 'number' ? r.descMax + ' chars' : r.descMax}</div>
                                             <div class="text-gray-500">Categories:</div><div class="font-medium">${r.categories}</div>
                                             <div class="text-gray-500">Shipping:</div><div class="font-medium">${r.shipping}</div>

@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-01T05:05:29.763Z
-Commit: 181c6998
+Generated at: 2026-05-01T05:23:35.933Z
+Commit: 665e4ce3
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -14,7 +14,7 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 | Section | Count |
 |---|---:|
 | Launch blockers | 2 |
-| Open walkthrough/product items | 0 |
+| Open walkthrough/product items | 1 |
 | Fixed pending live/manual verification | 26 |
 | Deferred/post-launch items | 10 |
 | Structural/refactor backlog items | 10 |
@@ -25,7 +25,7 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 | Repo-wide unchecked checkbox hits | 583 |
 | Repo-wide unchecked checkbox hits included | 359 |
 | Repo-wide unchecked checkbox hits excluded or review-only | 224 |
-| Open-marker source files discovered | 209 |
+| Open-marker source files discovered | 212 |
 | Source TODO/FIXME hits | 15 |
 
 ## Source Coverage Audit
@@ -133,6 +133,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | .github/workflows/test-baseline-update.yml | 2 | 4 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/uptime-slack-alert.yml | 3 | 74 | Config/workflow text; parsed separately only if promoted |
 | .gitignore | 1 | 150 | Config/workflow text; parsed separately only if promoted |
+| package-lock.json | 8 | 2253 | Config/workflow text; parsed separately only if promoted |
 | package.json | 2 | 70 | Config/workflow text; parsed separately only if promoted |
 | public/api-docs/openapi.yaml | 9 | 3288 | Config/workflow text; parsed separately only if promoted |
 | docs/superpowers/specs/2026-04-12-ui-restructure-design.md | 1 | 120 | Design spec; implementation tasks live in plans/checklists |
@@ -207,6 +208,8 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | memory/TIER0_PLAYBOOK.md | 3 | 11 | Excluded: session memory, promote only after current verification |
 | data/qa-report-2026-04-04-chrome-walkthrough.md | 2 | 20 | Excluded: timestamped QA evidence, not current truth |
 | data/qa-report-2026-04-04-exhaustive.md | 4 | 39 | Excluded: timestamped QA evidence, not current truth |
+| data/qa-report-2026-04-04-final.md | 6 | 32 | Excluded: timestamped QA evidence, not current truth |
+| data/qa-report-2026-04-04.md | 40 | 6 | Excluded: timestamped QA evidence, not current truth |
 | docs/PERFECT_ANTI_DETECTION_SYSTEM.md | 10 | 68 | Included as anti-detection design gap source |
 | docs/COMPETITOR_GAP_INVENTORY_2026-04-19.md | 7 | 31 | Included as competitor intelligence gap source |
 | chrome-extension/README.md | 8 | 43 | Included as explicit checklist source |
@@ -222,12 +225,12 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | docs/walkthrough/community.md | 1 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/connections.md | 5 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/dashboard.md | 7 | 3 | Included via walkthrough parser when table status is active |
-| docs/walkthrough/environment.md | 12 | 38 | Included via walkthrough parser when table status is active |
+| docs/walkthrough/environment.md | 15 | 38 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/financials.md | 5 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/help.md | 3 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/image-bank.md | 1 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/import.md | 1 | 3 | Included via walkthrough parser when table status is active |
-| docs/walkthrough/INDEX.md | 9 | 4 | Included via walkthrough parser when table status is active |
+| docs/walkthrough/INDEX.md | 10 | 4 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/inventory.md | 1 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/listings.md | 5 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/market-intel.md | 3 | 3 | Included via walkthrough parser when table status is active |
@@ -285,12 +288,14 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 
 | ID | Status | Priority | Area | Item | Source | Next Action | Blocker |
 |---|---|---|---|---|---|---|---|
-| CR-4 | OPEN / NOT VERIFIED — 2026-04-30 local code fix routes default rates, explicit EasyPost rates/buy, and batch purchase through EasyPost with focused unit coverage; production EASYPOST_API_KEY and live authenticated verification still pending | launch-blocker | Shipping / EasyPost | EasyPost production key and authenticated rates/buy/track verification still pending | docs/walkthrough/environment.md:44<br>docs/walkthrough/shipping.md:7 | Deploy the EasyPost routing fix, configure EASYPOST_API_KEY in Railway, then run authenticated production EasyPost rates/buy/track verification and update docs/walkthrough/environment.md plus docs/walkthrough/shipping.md. | EasyPost account/API key availability, Railway production environment configuration, and live authenticated verification. |
+| CR-4 | OPEN / NOT VERIFIED — 2026-04-30 local code fix routes default rates, explicit EasyPost rates/buy, and batch purchase through EasyPost with focused unit coverage; production EASYPOST_API_KEY and live authenticated verification still pending | launch-blocker | Shipping / EasyPost | EasyPost production key and authenticated rates/buy/track verification still pending | docs/walkthrough/environment.md:46<br>docs/walkthrough/shipping.md:7 | Deploy the EasyPost routing fix, configure EASYPOST_API_KEY in Railway, then run authenticated production EasyPost rates/buy/track verification and update docs/walkthrough/environment.md plus docs/walkthrough/shipping.md. | EasyPost account/API key availability, Railway production environment configuration, and live authenticated verification. |
 | CR-10 | OPEN -- verified 2026-04-24 | launch-blocker | Connections / Marketplace OAuth | Marketplace connection state is still incomplete: eBay and Shopify OAuth init are live, but Depop OAuth is unconfigured and several remaining marketplace connects still rely on manual / Playwright credential flows | docs/walkthrough/connections.md:7<br>docs/walkthrough/my-shops.md:7<br>docs/walkthrough/platform-readiness.md:21 | Run authenticated end-to-end verification for the remaining marketplace connect flows and update the specific walkthrough area files with the result. | Marketplace credentials, provider access, and live connect-flow verification. |
 
 ## Open Walkthrough / Product Items
 
-_None._
+| ID | Status | Priority | Area | Item | Source | Next Action | Blocker |
+|---|---|---|---|---|---|---|---|
+| ENV-1 | OPEN — set both vars in Railway; value for EBAY_DELETION_ENDPOINT should be https://vaultlister.com/api/webhooks/ebay/account-deletion |  | eBay Compliance | EBAY_DELETION_VERIFICATION_TOKEN and EBAY_DELETION_ENDPOINT not confirmed set in Railway — required for eBay Marketplace Account Deletion webhook. webhooks.js:262 returns HTTP 500 if not set, which violates eBay Developer Program requirements. | docs/walkthrough/environment.md:47 |  |  |
 
 ## Fixed Pending Live / Manual Verification
 
@@ -331,12 +336,12 @@ _None._
 | Analytics-4 | PRE-EXISTING -- requires real platform connections; deferred to post-launch |  | Market Intel / Heatmaps | Platform Engagement shows hardcoded multi-platform data for account with 0 connected shops | docs/walkthrough/market-intel.md:15 |  |  |
 | analytics-33-predictions-tab-displays-hardcoded-sample- | PRE-EXISTING ✅ — requires real ML/AI pipeline with actual sales data; deferred to post-launch |  | Analytics | Predictions Tab Displays Hardcoded Sample Data as Real Insights | docs/walkthrough/analytics.md:33 |  |  |
 | analytics-34-heatmaps-tab-platform-engagement-shows-har | PRE-EXISTING ✅ — requires real platform connections and engagement data; deferred to post-launch |  | Analytics | Heatmaps Tab — Platform Engagement Shows Hardcoded Multi-Platform Data for account with 0 connected shops | docs/walkthrough/analytics.md:34 |  |  |
-| Sentry-1 | DEFERRED |  | Infrastructure | Setup User Feedback | docs/walkthrough/environment.md:63 |  |  |
-| Sentry-2 | DEFERRED |  | Infrastructure | Setup Logs | docs/walkthrough/environment.md:64 |  |  |
-| Sentry-3 | DEFERRED |  | Infrastructure | Setup Profiling | docs/walkthrough/environment.md:65 |  |  |
-| Sentry-4 | DEFERRED |  | Infrastructure | Setup Session Replay | docs/walkthrough/environment.md:66 |  |  |
-| Sentry-5 | DEFERRED |  | Infrastructure | Setup Monitor MCP Servers | docs/walkthrough/environment.md:67 |  |  |
-| Sentry-6 | DEFERRED |  | Infrastructure | Setup Monitor AI Agents | docs/walkthrough/environment.md:68 |  |  |
+| Sentry-1 | DEFERRED |  | Infrastructure | Setup User Feedback | docs/walkthrough/environment.md:66 |  |  |
+| Sentry-2 | DEFERRED |  | Infrastructure | Setup Logs | docs/walkthrough/environment.md:67 |  |  |
+| Sentry-3 | DEFERRED |  | Infrastructure | Setup Profiling | docs/walkthrough/environment.md:68 |  |  |
+| Sentry-4 | DEFERRED |  | Infrastructure | Setup Session Replay | docs/walkthrough/environment.md:69 |  |  |
+| Sentry-5 | DEFERRED |  | Infrastructure | Setup Monitor MCP Servers | docs/walkthrough/environment.md:70 |  |  |
+| Sentry-6 | DEFERRED |  | Infrastructure | Setup Monitor AI Agents | docs/walkthrough/environment.md:71 |  |  |
 
 ## Structural / Refactor Backlog
 

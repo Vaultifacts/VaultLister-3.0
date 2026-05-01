@@ -36,12 +36,15 @@
 | `REDIS_URL` | ✅ Set | BullMQ background jobs |
 | `SENTRY_DSN` | ✅ Set | Error monitoring |
 | `EASYPOST_API_KEY` | ❌ NOT SET | Shipping labels — CR-4 production verification still open |
+| `EBAY_DELETION_VERIFICATION_TOKEN` | ❌ NOT VERIFIED | eBay Marketplace Account Deletion webhook — compliance-required |
+| `EBAY_DELETION_ENDPOINT` | ❌ NOT VERIFIED | eBay Marketplace Account Deletion webhook — compliance-required |
 
 ## Open (Needs Fix)
 
 | ID | Area | Finding | Session | Status |
 |----|------|---------|---------|--------|
 | CR-4 | Shipping | EasyPost production key and authenticated rates/buy/track verification still pending | Session 1 | OPEN / NOT VERIFIED — 2026-04-30 local code fix routes default rates, explicit EasyPost rates/buy, and batch purchase through EasyPost with focused unit coverage; production `EASYPOST_API_KEY` and live authenticated verification still pending |
+| ENV-1 | eBay Compliance | `EBAY_DELETION_VERIFICATION_TOKEN` and `EBAY_DELETION_ENDPOINT` not confirmed set in Railway — required for eBay Marketplace Account Deletion webhook. `webhooks.js:262` returns HTTP 500 if not set, which violates eBay Developer Program requirements. | 2026-05-01 | OPEN — set both vars in Railway; value for EBAY_DELETION_ENDPOINT should be `https://vaultlister.com/api/webhooks/ebay/account-deletion` |
 
 ## Completed & Verified
 

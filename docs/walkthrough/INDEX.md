@@ -11,6 +11,7 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 |----|------|-------|--------|
 | CR-10 | [Connections](connections.md) | OAuth flows for Poshmark/Depop/Grailed/Whatnot not live-verified (credentials now in Railway — need end-to-end OAuth test); Whatnot/Facebook/Mercari still bot-credential-only | OPEN / NOT VERIFIED |
 | env-open | [Environment](environment.md) | `EASYPOST_API_KEY` not in Railway (production shipping verification blocked) — local EasyPost routing fixed 2026-04-30; all other production vars confirmed set 2026-04-26; M-33 email delivery ✅ verified 2026-04-29 | OPEN |
+| ENV-1 | [Environment](environment.md) | `EBAY_DELETION_VERIFICATION_TOKEN` + `EBAY_DELETION_ENDPOINT` not confirmed set in Railway — eBay Marketplace Account Deletion webhook returns HTTP 500 without them (compliance violation). Set `EBAY_DELETION_ENDPOINT=https://vaultlister.com/api/webhooks/ebay/account-deletion` and any 32+ char random token. | OPEN |
 
 ---
 
@@ -57,7 +58,7 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 
 | File | Contents | Open (Needs Fix) | Completed & Verified |
 |------|----------|-----------------|---------------------|
-| [environment.md](environment.md) | Railway env vars, Sentry setup, infrastructure | **1** | 6 |
+| [environment.md](environment.md) | Railway env vars, Sentry setup, infrastructure | **2** | 6 |
 | [platform-readiness.md](platform-readiness.md) | Platform Readiness Matrix, per-platform connection status | **1** | 13 |
 | [public-site.md](public-site.md) | Landing page, public pages, public nav, blog, compare pages | **2** | 66 |
 | [source-code-audit.md](source-code-audit.md) | Static source code audit (CA-*, U-* undocumented fixes) | 0 | 49 |
@@ -82,5 +83,5 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 | Category | Open (Needs Fix) | Completed & Verified |
 |----------|-----------------|---------------------|
 | App area files (32 files) | 3 | 532 |
-| Cross-cutting files (4 files) | 4 | 134 |
-| **Total** | **7** | **666** |
+| Cross-cutting files (4 files) | 5 | 134 |
+| **Total** | **8** | **666** |
