@@ -6,7 +6,7 @@
 // minor resizing, compression, and color adjustments. Not as robust as Meta's
 // PDQ hash but sufficient for pre-flight duplicate screening without external deps.
 
-import fs from 'fs';
+import fs from 'node:fs';
 import path from 'path';
 import crypto from 'crypto';
 

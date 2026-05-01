@@ -3,7 +3,12 @@
 // Direct RateLimiter.check() calls therefore return the documented bypass shape:
 // { allowed: true, remaining: 999, resetTime: ... } with no retryAfter/blocking.
 
-import { describe, test, expect, beforeAll, afterAll, beforeEach } from 'bun:test';
+import { describe, test, expect, beforeAll, afterAll, beforeEach, mock } from 'bun:test';
+
+// Restore real rateLimiter module — other test files mock it without exporting RateLimiter.
+// Using absolute file:// URL bypasses the mocked specifier '../backend/middleware/rateLimiter.js'.
+const _realRateLimiterModule = await import(new URL('../backend/middleware/rateLimiter.js', import.meta.url).href);
+mock.module('../backend/middleware/rateLimiter.js', () => _realRateLimiterModule);
 
 // IS_TEST_RUNTIME is snapshotted at module load in rateLimiter.js.
 // Import first so the snapshot captures the test-runner environment (NODE_ENV=test),

@@ -1867,11 +1867,13 @@ Object.assign(pages, {
                         ${folders
                             .map(
                                 (folder) => `
-                            <div role="button" tabindex="0" class="folder-item ${selectedFolder === folder.id ? 'active' : ''}"
-                                 onclick="handlers.selectFolder('${folder.id}')">
-                                <span class="folder-item-label">${components.icon('folder', 16, folder.color)} ${escapeHtml(folder.name)}</span>
-                                <span class="badge">${images.filter((img) => img.folder_id === folder.id).length}</span>
-                                <button class="btn btn-ghost btn-xs" style="padding: 2px 4px; min-width: auto;" onclick="event.stopPropagation(); handlers.deleteFolder('${folder.id}', '${escapeHtml(folder.name)}');" title="Delete folder">
+                            <div class="folder-item-row">
+                                <div role="button" tabindex="0" class="folder-item ${selectedFolder === folder.id ? 'active' : ''}"
+                                     onclick="handlers.selectFolder('${folder.id}')">
+                                    <span class="folder-item-label">${components.icon('folder', 16, folder.color)} ${escapeHtml(folder.name)}</span>
+                                    <span class="badge">${images.filter((img) => img.folder_id === folder.id).length}</span>
+                                </div>
+                                <button class="btn btn-ghost btn-xs folder-item-delete" style="padding: 2px 4px; min-width: auto; flex-shrink: 0;" onclick="handlers.deleteFolder('${folder.id}', '${escapeHtml(folder.name)}');" title="Delete folder">
                                     ${components.icon('trash', 12)}
                                 </button>
                             </div>

@@ -40,6 +40,26 @@
     gap: 0.25rem;
 }
 
+.folder-item-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.folder-item-row .folder-item {
+    flex: 1;
+    min-width: 0;
+}
+
+.folder-item-row .folder-item-delete {
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.folder-item-row:hover .folder-item-delete {
+    opacity: 1;
+}
+
 .folder-item {
     display: flex;
     align-items: center;
