@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, mock, spyOn, test } from 'bun:test';
 
-const { getRates } = await import('../backend/services/currencyService.js');
+const { getRates } = await import('../backend/services/currencyService.js?service-currency-test');
 
 afterEach(() => {
     mock.restore();

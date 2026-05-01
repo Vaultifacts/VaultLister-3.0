@@ -63,7 +63,6 @@ describe('uploadToCloudinary', () => {
             contentType: 'image/avif',
         }));
 
-        mock.module('../backend/services/imageStorage.js', () => ({ streamFromR2 }));
         fetchMock.respondWith({
             data: {
                 public_id: 'vaultlister/user-1/img-1',
@@ -78,7 +77,7 @@ describe('uploadToCloudinary', () => {
             process.env.CLOUDINARY_API_KEY = 'test-key';
             process.env.CLOUDINARY_API_SECRET = 'test-secret';
 
-            const result = await uploadToCloudinary('r2/products/item.avif', 'user-1', 'img-1');
+            const result = await uploadToCloudinary('r2/products/item.avif', 'user-1', 'img-1', { streamFromR2 });
 
             expect(result.success).toBe(true);
             expect(streamFromR2).toHaveBeenCalledWith('r2/products/item.avif', 'image/avif');

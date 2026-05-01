@@ -45,10 +45,25 @@ function generateSignature(params, apiSecret) {
     return { signature, timestamp };
 }
 
+export async function resolveUploadDataUri(imagePath, options = {}) {
+    const ext = (imagePath.split('.').pop() || '').toLowerCase();
+    const mimeType = MIME_FROM_EXT[ext] || 'image/jpeg';
+
+    if (!imagePath.startsWith('/')) {
+        const streamFromR2 = options.streamFromR2 || (await import('./imageStorage.js')).streamFromR2;
+        const { body, contentType } = await streamFromR2(imagePath, mimeType);
+        return `data:${contentType || mimeType};base64,${body.toString('base64')}`;
+    }
+
+    const absolutePath = join(ROOT_DIR, 'public', imagePath);
+    const imageBuffer = readFileSync(absolutePath);
+    return `data:${mimeType};base64,${imageBuffer.toString('base64')}`;
+}
+
 /**
  * Upload image to Cloudinary
  */
-export async function uploadToCloudinary(imagePath, userId, imageId) {
+export async function uploadToCloudinary(imagePath, userId, imageId, options = {}) {
     if (!isConfigured()) {
         return { success: false, error: 'Cloudinary not configured' };
     }
@@ -58,22 +73,7 @@ export async function uploadToCloudinary(imagePath, userId, imageId) {
         const apiKey = process.env.CLOUDINARY_API_KEY;
         const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
-        // Resolve image to a base64 data URI
-        let fileDataUri;
-        const ext = (imagePath.split('.').pop() || '').toLowerCase();
-        const mimeType = MIME_FROM_EXT[ext] || 'image/jpeg';
-
-        if (!imagePath.startsWith('/')) {
-            // R2 key — fetch buffer via streamFromR2
-            const { streamFromR2 } = await import('./imageStorage.js');
-            const { body, contentType } = await streamFromR2(imagePath, mimeType);
-            fileDataUri = `data:${contentType || mimeType};base64,${body.toString('base64')}`;
-        } else {
-            // Local filesystem path — imagePath is a web path like /uploads/images/...
-            const absolutePath = join(ROOT_DIR, 'public', imagePath);
-            const imageBuffer = readFileSync(absolutePath);
-            fileDataUri = `data:${mimeType};base64,${imageBuffer.toString('base64')}`;
-        }
+        const fileDataUri = await resolveUploadDataUri(imagePath, options);
 
         // Prepare upload parameters
         const params = {
