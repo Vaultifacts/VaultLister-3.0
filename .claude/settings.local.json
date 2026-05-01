@@ -164,6 +164,15 @@
             "command": "python C:/Users/Matt1/OneDrive/Desktop/vaultlister-3/.claude/hooks/block-alert-dismiss.py"
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python C:/Users/Matt1/OneDrive/Desktop/vaultlister-3/.claude/hooks/block-careers.py"
+          }
+        ]
       }
     ],
     "PostToolUse": [
