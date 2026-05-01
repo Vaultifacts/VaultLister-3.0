@@ -4,7 +4,9 @@ Discovered by automated source code scan of `src/`, `worker/bots/` (excluding le
 
 ## Open (Needs Fix)
 
-None — all source code audit findings have been resolved.
+| ID | File:Line | Issue | Status |
+|----|-----------|-------|--------|
+| SEC-H41 | `src/backend/utils/encryption.js`, `src/backend/routes/auth.js` | No key rotation mechanism for `JWT_SECRET` or `OAUTH_ENCRYPTION_KEY`. If `JWT_SECRET` is compromised, all active sessions can be forged until the secret is manually rotated and all users forced to re-login — no programmatic mechanism exists. `OAUTH_ENCRYPTION_KEY` has partial support via `OAUTH_ENCRYPTION_KEY_OLD`, but `JWT_SECRET` has none. Fix: implement emergency rotation endpoint (invalidate all refresh tokens via DB flag + rotate secret) or document a manual rotation runbook. | OPEN — HIGH security risk; post-launch acceptable if rotation runbook is documented |
 
 ## Completed & Verified
 
