@@ -4,8 +4,8 @@
 // Categories: Coverage Model, Admin/Operator, CI/CD
 
 import { describe, expect, test } from 'bun:test';
-import { readFileSync, existsSync, readdirSync } from 'fs';
-import { join } from 'path';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 
 const ROOT = join(import.meta.dir, '../../');
 
