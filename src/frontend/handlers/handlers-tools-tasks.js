@@ -393,7 +393,7 @@ Object.assign(handlers, {
                 <form onsubmit="handlers.saveWhatnotLiveEvent(event, '${date}')">
                     <div class="form-group">
                         <label class="form-label" for="htt-show-title">Show Title</label>
-                        <input id="htt-show-title" aria-label="e.g., Weekend Vintage Drop" type="text" class="form-input" name="title" placeholder="e.g., Weekend Vintage Drop" required>
+                        <inputinput id="htt-show-title" type="text" class="form-input" name="title" placeholder="e.g., Weekend Vintage Drop" required>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
@@ -402,7 +402,7 @@ Object.assign(handlers, {
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="htt-show-time">Start Time</label>
-                            <input id="htt-show-time" aria-label="Time" type="time" class="form-input" name="time" value="19:00" required>
+                            <inputinput id="htt-show-time" type="time" class="form-input" name="time" value="19:00" required>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
@@ -430,7 +430,7 @@ Object.assign(handlers, {
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="htt-show-description">Description</label>
-                        <textarea id="htt-show-description" aria-label="Describe your show..." class="form-input" name="description" rows="3" placeholder="Describe your show..."></textarea>
+                        <textareatextarea id="htt-show-description" class="form-input" name="description" rows="3" placeholder="Describe your show..."></textarea>
                     </div>
                     <div class="form-group">
                         <label class="flex items-center gap-2">
@@ -1487,7 +1487,7 @@ Object.assign(handlers, {
                 <form id="add-checklist-item-form" onsubmit="handlers.addChecklistItem(event)">
                     <div class="form-group">
                         <label class="form-label" for="htt-add-task-title">Task Title *</label>
-                        <input id="htt-add-task-title" aria-label="Title" type="text" name="title" class="form-input" required>
+                        <inputinput id="htt-add-task-title" type="text" name="title" class="form-input" required>
                     </div>
 
                     <div class="form-group">
@@ -1862,7 +1862,7 @@ Object.assign(handlers, {
                 <form id="add-subtask-form" onsubmit="handlers.addSubtask(event, '${parentId}')">
                     <div class="form-group">
                         <label class="form-label" for="htt-subtask-title">Subtask Title *</label>
-                        <input id="htt-subtask-title" aria-label="Enter subtask..." type="text" name="title" class="form-input" required placeholder="Enter subtask...">
+                        <inputinput id="htt-subtask-title" type="text" name="title" class="form-input" required placeholder="Enter subtask...">
                     </div>
                 </form>
             </div>
@@ -1988,7 +1988,7 @@ Object.assign(handlers, {
                 <form id="edit-checklist-item-form" onsubmit="handlers.updateChecklistItem(event, '${itemId}')">
                     <div class="form-group">
                         <label class="form-label" for="htt-edit-task-title">Task Title *</label>
-                        <input id="htt-edit-task-title" aria-label="Title" type="text" name="title" class="form-input" required value="${escapeHtml(item.title || '')}">
+                        <inputinput id="htt-edit-task-title" type="text" name="title" class="form-input" required value="${escapeHtml(item.title || '')}">
                     </div>
 
                     <div class="form-group">
@@ -4523,11 +4523,11 @@ Object.assign(handlers, {
                 <p class="text-gray-600 mb-4">Share your checklist with team members to collaborate on tasks.</p>
                 <div class="form-group">
                     <label class="form-label" for="share-checklist-email">Email or Username</label>
-                    <input type="text" id="share-checklist-email" class="form-input" placeholder="Enter email address or username" aria-label="Share Checklist Email">
+                    <inputinput type="text" id="share-checklist-email" class="form-input" placeholder="Enter email address or username">
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="share-checklist-permission">Permission Level</label>
-                    <select id="share-checklist-permission" class="form-select" aria-label="Share Checklist Permission">
+                    <selectselect id="share-checklist-permission" class="form-select">
                         <option value="view">View Only</option>
                         <option value="edit">Can Edit</option>
                         <option value="admin">Full Access</option>

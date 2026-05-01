@@ -17002,7 +17002,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '2682a1ef';
+    const v = '95b9e555';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function (resolve, reject) {
@@ -29236,7 +29236,7 @@ const handlers = {
             <div class="modal-body">
                 <div class="form-group">
                     <label class="form-label" for="monthly-goal-input">Monthly Revenue Goal (C$)</label>
-                    <input type="number" class="form-input" id="monthly-goal-input" value="${current}" min="0" step="100" aria-label="Monthly Goal Input">
+                    <inputinput type="number" class="form-input" id="monthly-goal-input" value="${current}" min="0" step="100">
                 </div>
             </div>
             <div class="modal-footer">
@@ -30783,7 +30783,7 @@ const handlers = {
                 <div class="grid grid-cols-3 gap-4">
                     <div class="form-group">
                         <label class="form-label" for="custom-metric-a">First Metric</label>
-                        <select id="custom-metric-a" class="form-select" aria-label="Custom Metric A">
+                        <selectselect id="custom-metric-a" class="form-select">
                             <option value="revenue">Revenue</option>
                             <option value="profit">Profit</option>
                             <option value="orders">Orders</option>
@@ -30796,7 +30796,7 @@ const handlers = {
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="custom-metric-op">Operation</label>
-                        <select id="custom-metric-op" class="form-select" aria-label="Custom Metric Op">
+                        <selectselect id="custom-metric-op" class="form-select">
                             <option value="divide">&divide; Divide</option>
                             <option value="multiply">&times; Multiply</option>
                             <option value="add">+ Add</option>
@@ -30805,7 +30805,7 @@ const handlers = {
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="custom-metric-b">Second Metric</label>
-                        <select id="custom-metric-b" class="form-select" aria-label="Custom Metric B">
+                        <selectselect id="custom-metric-b" class="form-select">
                             <option value="orders">Orders</option>
                             <option value="revenue">Revenue</option>
                             <option value="profit">Profit</option>
@@ -30819,7 +30819,7 @@ const handlers = {
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="custom-metric-format">Display Format</label>
-                    <select id="custom-metric-format" class="form-select" aria-label="Custom Metric Format">
+                    <selectselect id="custom-metric-format" class="form-select">
                         <option value="currency">Currency ($)</option>
                         <option value="percentage">Percentage (%)</option>
                         <option value="number">Number (#)</option>
@@ -30873,7 +30873,7 @@ const handlers = {
                 <p class="text-gray-600 mb-4">Receive a summary of your analytics data delivered to your inbox on a regular schedule.</p>
                 <div class="form-group">
                     <label class="form-label" for="digest-email">Email Address</label>
-                    <input type="email" id="digest-email" class="form-input" placeholder="you@example.com" value="${escapeHtml(digestSettings.email || '')}" aria-label="Digest Email">
+                    <inputinput type="email" id="digest-email" class="form-input" placeholder="you@example.com" value="${escapeHtml(digestSettings.email || '')}">
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="digest-frequency">Frequency</label>

@@ -2035,7 +2035,7 @@ Object.assign(handlers, {
             container.innerHTML = sanitizeHTML(`
                 <div class="form-group">
                     <label class="form-label" for="hic-new-status">New Status</label>
-                    <select id="hic-new-status" class="form-select" name="status" aria-label="Status" required>
+                    <selectselect id="hic-new-status" class="form-select" name="status" required>
                         <option value="active">Active</option>
                         <option value="draft">Draft</option>
                         <option value="sold">Sold</option>
@@ -2048,14 +2048,14 @@ Object.assign(handlers, {
             container.innerHTML = sanitizeHTML(`
                 <div class="form-group">
                     <label class="form-label" for="hic-price-adjustment">Price Adjustment</label>
-                    <select id="hic-price-adjustment" class="form-select" name="adjustmentType" aria-label="Adjustment type" required>
+                    <selectselect id="hic-price-adjustment" class="form-select" name="adjustmentType" required>
                         <option value="percentage">Percentage (%)</option>
                         <option value="fixed">Fixed Amount ($)</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="hic-amount">Amount</label>
-                    <input id="hic-amount" aria-label="Adjustment Value" type="number" class="form-input" name="adjustmentValue" required step="0.01">
+                    <inputinput id="hic-amount" type="number" class="form-input" name="adjustmentValue" required step="0.01">
                 </div>
             `);
         } else {
@@ -2461,11 +2461,11 @@ Object.assign(handlers, {
 
                 <div style="margin-bottom: 24px;">
                     <label for="csv-file" class="form-label">Select CSV File</label>
-                    <input type="file"
+                    <inputinput type="file"
                            id="csv-file"
                            accept=".csv"
                            class="form-control"
-                           onchange="handlers.previewCSV(event)" aria-label="Csv File">
+                           onchange="handlers.previewCSV(event)">
                 </div>
 
                 <div id="csv-preview" style="margin-bottom: 24px; display: none;">
@@ -2775,11 +2775,11 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label" for="hic-price">Price ($)</label>
-                            <input id="hic-price" aria-label="Price" type="number" class="form-input" name="price" step="0.01" value="${listing.price || ''}">
+                            <inputinput id="hic-price" type="number" class="form-input" name="price" step="0.01" value="${listing.price || ''}">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="hic-shipping-price">Shipping Price ($)</label>
-                            <input id="hic-shipping-price" aria-label="Shipping Price" type="number" class="form-input" name="shipping_price" step="0.01" value="${listing.shipping_price || 0}">
+                            <inputinput id="hic-shipping-price" type="number" class="form-input" name="shipping_price" step="0.01" value="${listing.shipping_price || 0}">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
@@ -2997,7 +2997,7 @@ Object.assign(handlers, {
                         <div class="flex gap-2">
                             <div class="input-group flex-1">
                                 <span class="input-prefix">$</span>
-                                <input type="number" id="price-drop-amount" class="form-input" value="${(currentPrice * 0.1).toFixed(2)}" min="0.01" max="${currentPrice}" step="0.01" aria-label="Price Drop Amount">
+                                <inputinput type="number" id="price-drop-amount" class="form-input" value="${(currentPrice * 0.1).toFixed(2)}" min="0.01" max="${currentPrice}" step="0.01">
                             </div>
                             <span class="text-gray-500 self-center">or</span>
                             <div class="input-group flex-1">
@@ -3018,7 +3018,7 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label" for="price-drop-timing">When to Drop</label>
-                        <select id="price-drop-timing" class="form-select" aria-label="Price Drop Timing">
+                        <selectselect id="price-drop-timing" class="form-select">
                             <option value="now">Drop now</option>
                             <option value="7days" selected>After 7 days of no activity</option>
                             <option value="14days">After 14 days of no activity</option>
@@ -3029,7 +3029,7 @@ Object.assign(handlers, {
 
                     <div class="form-group" id="custom-date-group" style="display: none;">
                         <label class="form-label" for="price-drop-date">Custom Date</label>
-                        <input type="date" id="price-drop-date" class="form-input" min="${toLocalDate(new Date())}" aria-label="Price Drop Date">
+                        <inputinput type="date" id="price-drop-date" class="form-input" min="${toLocalDate(new Date())}">
                     </div>
 
                     <div class="form-group">
@@ -3043,7 +3043,7 @@ Object.assign(handlers, {
                         <label class="form-label" for="price-drop-floor">Minimum Price (won't drop below)</label>
                         <div class="input-group">
                             <span class="input-prefix">$</span>
-                            <input type="number" id="price-drop-floor" class="form-input" value="${(currentPrice * 0.5).toFixed(2)}" min="0.01" aria-label="Price Drop Floor">
+                            <inputinput type="number" id="price-drop-floor" class="form-input" value="${(currentPrice * 0.5).toFixed(2)}" min="0.01">
                         </div>
                     </div>
                 </div>
@@ -3282,19 +3282,19 @@ Object.assign(handlers, {
                     <div class="profit-calc-inputs">
                         <div class="form-group">
                             <label class="form-label" for="profit-purchase-cost">Purchase Cost ($)</label>
-                            <input type="number" id="profit-purchase-cost" class="form-input" step="0.01" min="0"
+                            <inputinput type="number" id="profit-purchase-cost" class="form-input" step="0.01" min="0"
                                    value="${purchaseCost}" placeholder="0.00"
-                                   onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()" aria-label="Profit Purchase Cost">
+                                   onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="profit-selling-price">Selling Price ($)</label>
-                            <input type="number" id="profit-selling-price" class="form-input" step="0.01" min="0"
+                            <inputinput type="number" id="profit-selling-price" class="form-input" step="0.01" min="0"
                                    value="${listPrice}" placeholder="0.00"
-                                   onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()" aria-label="Profit Selling Price">
+                                   onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="profit-platform-fee">Platform Fee (%)</label>
-                            <select id="profit-platform-fee" class="form-select" onchange="handlers.updateProfitCalc()" aria-label="Profit Platform Fee">
+                            <selectselect id="profit-platform-fee" class="form-select" onchange="handlers.updateProfitCalc()">
                                 <option value="0">No Platform (0%)</option>
                                 <option value="20" selected>Poshmark (20%)</option>
                                 <option value="13">eBay (13%)</option>
@@ -3305,20 +3305,20 @@ Object.assign(handlers, {
                         </div>
                         <div class="form-group" id="custom-fee-group" style="display: none;">
                             <label class="form-label" for="profit-custom-fee">Custom Fee (%)</label>
-                            <input type="number" id="profit-custom-fee" class="form-input" step="0.1" min="0" max="50"
-                                   value="10" onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()" aria-label="Profit Custom Fee">
+                            <inputinput type="number" id="profit-custom-fee" class="form-input" step="0.1" min="0" max="50"
+                                   value="10" onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="profit-shipping-cost">Shipping Cost ($)</label>
-                            <input type="number" id="profit-shipping-cost" class="form-input" step="0.01" min="0"
+                            <inputinput type="number" id="profit-shipping-cost" class="form-input" step="0.01" min="0"
                                    value="0" placeholder="0.00"
-                                   onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()" aria-label="Profit Shipping Cost">
+                                   onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="profit-other-costs">Other Costs ($)</label>
-                            <input type="number" id="profit-other-costs" class="form-input" step="0.01" min="0"
+                            <inputinput type="number" id="profit-other-costs" class="form-input" step="0.01" min="0"
                                    value="0" placeholder="0.00"
-                                   onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()" aria-label="Profit Other Costs">
+                                   onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()">
                         </div>
                     </div>
 
@@ -5272,7 +5272,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="edit-auto-enabled">Status</label>
-                    <select class="form-select" id="edit-auto-enabled" aria-label="Edit Auto Enabled">
+                    <selectselect class="form-select" id="edit-auto-enabled">
                         <option value="true" ${rule.is_active || rule.enabled ? 'selected' : ''}>Active</option>
                         <option value="false" ${!(rule.is_active || rule.enabled) ? 'selected' : ''}>Paused</option>
                     </select>
@@ -5451,7 +5451,7 @@ Object.assign(handlers, {
                     <div>
                         <label class="form-label" for="offer-discount">Discount Percentage</label>
                         <div class="flex items-center gap-2">
-                            <input type="number" class="form-input" id="offer-discount" min="5" max="50" value="20" style="width: 80px;" aria-label="Offer Discount">
+                            <inputinput type="number" class="form-input" id="offer-discount" min="5" max="50" value="20" style="width: 80px;">
                             <span class="text-gray-500">%</span>
                         </div>
                         <p class="text-xs text-gray-400 mt-1">Discount off listing price</p>
@@ -5460,7 +5460,7 @@ Object.assign(handlers, {
                         <label class="form-label" for="offer-min-price">Minimum Price</label>
                         <div class="flex items-center gap-2">
                             <span class="text-gray-500">$</span>
-                            <input type="number" class="form-input" id="offer-min-price" min="0" value="10" style="width: 100px;" aria-label="Offer Min Price">
+                            <inputinput type="number" class="form-input" id="offer-min-price" min="0" value="10" style="width: 100px;">
                         </div>
                         <p class="text-xs text-gray-400 mt-1">Don't send offers below this</p>
                     </div>
@@ -5501,7 +5501,7 @@ Object.assign(handlers, {
                     </div>
                     <div>
                         <label class="form-label" for="automation-max-shares">Max Shares Per Session</label>
-                        <input type="number" class="form-input" id="automation-max-shares" min="10" max="500" value="100" style="width: 100px;" aria-label="Automation Max Shares">
+                        <inputinput type="number" class="form-input" id="automation-max-shares" min="10" max="500" value="100" style="width: 100px;">
                     </div>
                 </div>
                 <div class="mt-4">
@@ -5536,7 +5536,7 @@ Object.assign(handlers, {
                 <div class="mt-4">
                     <label class="form-label" for="hic-apply-to-items-older-than">Apply to items older than</label>
                     <div class="flex items-center gap-2">
-                        <input id="hic-apply-to-items-older-than" type="number" class="form-input" aria-label="Items older than days" min="7" max="180" value="30" style="width: 80px;">
+                        <inputinput id="hic-apply-to-items-older-than" type="number" class="form-input" min="7" max="180" value="30" style="width: 80px;">
                         <span class="text-gray-500">days</span>
                     </div>
                 </div>
@@ -5622,7 +5622,7 @@ Object.assign(handlers, {
                     <div>
                         <label class="form-label" for="hic-price-adjustment-on-relist">Price Adjustment on Relist</label>
                         <div class="flex items-center gap-2">
-                            <select id="hic-price-adjustment-on-relist" class="form-select" aria-label="Price adjustment" style="width: 100px;">
+                            <selectselect id="hic-price-adjustment-on-relist" class="form-select" style="width: 100px;">
                                 <option value="none">None</option>
                                 <option value="decrease">Decrease</option>
                                 <option value="increase">Increase</option>
@@ -5735,7 +5735,7 @@ Object.assign(handlers, {
                         </div>
                         <div>
                             <label class="form-label" for="automation-failure-notify">Failure Notification</label>
-                            <select id="automation-failure-notify" class="form-select" aria-label="Automation Failure Notify">
+                            <selectselect id="automation-failure-notify" class="form-select">
                                 <option value="toast" selected>In-app toast</option>
                                 <option value="email">Email alert</option>
                                 <option value="both">Both</option>
@@ -6581,7 +6581,7 @@ Object.assign(handlers, {
             <div class="form-group">
                 <label class="form-label" for="ai-result-price">Suggested Price</label>
                 <div class="flex items-center gap-4">
-                    <input type="number" id="ai-result-price" class="form-input" value="${data.suggestedPrice || ''}" step="0.01" style="max-width: 150px;" aria-label="Ai Result Price">
+                    <inputinput type="number" id="ai-result-price" class="form-input" value="${data.suggestedPrice || ''}" step="0.01" style="max-width: 150px;">
                     <span class="text-sm text-gray-600">Based on AI analysis</span>
                 </div>
             </div>
@@ -7613,15 +7613,15 @@ Object.assign(handlers, {
                 <div class="modal-body">
                     <div class="form-group">
                         <label class="form-label" for="rr-name">Rule Name *</label>
-                        <input type="text" id="rr-name" class="form-input" placeholder="e.g., 30-day price drop" aria-label="Rr Name">
+                        <inputinput type="text" id="rr-name" class="form-input" placeholder="e.g., 30-day price drop">
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="rr-stale-days">Stale After (days)</label>
-                        <input type="number" id="rr-stale-days" class="form-input" value="30" min="1" aria-label="Rr Stale Days">
+                        <inputinput type="number" id="rr-stale-days" class="form-input" value="30" min="1">
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="rr-strategy">Price Strategy</label>
-                        <select id="rr-strategy" class="form-input" aria-label="Rr Strategy">
+                        <selectselect id="rr-strategy" class="form-input">
                             <option value="fixed">Fixed Reduction</option>
                             <option value="percentage">Percentage Reduction</option>
                             <option value="tiered">Tiered Reduction</option>
@@ -7630,11 +7630,11 @@ Object.assign(handlers, {
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="rr-reduction">Reduction Amount</label>
-                        <input type="number" id="rr-reduction" class="form-input" value="5" min="0" step="0.01" aria-label="Rr Reduction">
+                        <inputinput type="number" id="rr-reduction" class="form-input" value="5" min="0" step="0.01">
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="rr-floor">Price Floor (%)</label>
-                        <input type="number" id="rr-floor" class="form-input" value="50" min="0" max="100" aria-label="Rr Floor">
+                        <inputinput type="number" id="rr-floor" class="form-input" value="50" min="0" max="100">
                     </div>
                     <div class="form-group">
                         <label class="flex items-center gap-2">
@@ -8803,16 +8803,16 @@ Object.assign(handlers, {
                 <div style="display: grid; gap: 12px;">
                     <div class="form-group">
                         <label class="form-label" for="landing-slug">Page Slug</label>
-                        <input type="text" id="landing-slug" class="form-input" placeholder="e.g., my-exclusive-offer" aria-label="Landing Slug">
+                        <inputinput type="text" id="landing-slug" class="form-input" placeholder="e.g., my-exclusive-offer">
                         <span class="form-hint">URL: vaultlister.com/[slug]</span>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="landing-title">Page Title</label>
-                        <input type="text" id="landing-title" class="form-input" placeholder="e.g., VaultLister Pro Offer" aria-label="Landing Title">
+                        <inputinput type="text" id="landing-title" class="form-input" placeholder="e.g., VaultLister Pro Offer">
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="landing-desc">Description</label>
-                        <textarea id="landing-desc" class="form-input" placeholder="Describe your offer..." style="resize: vertical; min-height: 100px;" aria-label="Landing Desc"></textarea>
+                        <textareatextarea id="landing-desc" class="form-input" placeholder="Describe your offer..." style="resize: vertical; min-height: 100px;"></textarea>
                     </div>
                 </div>
                 <button class="btn btn-primary" style="width: 100%; margin-top: 16px;" onclick="handlers.createLandingPage()">

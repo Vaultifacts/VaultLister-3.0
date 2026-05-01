@@ -154,7 +154,7 @@ Object.assign(handlers, {
                 <form onsubmit="handlers.saveRoadmapSubscription(event)">
                     <div class="form-group">
                         <label class="form-label" for="hch-email-subscription">Email Address</label>
-                        <input id="hch-email-subscription" aria-label="you@example.com" type="email" name="email" class="form-input" placeholder="you@example.com" required>
+                        <inputinput id="hch-email-subscription" type="email" name="email" class="form-input" placeholder="you@example.com" required>
                     </div>
                     <div class="form-group">
                         <p class="form-label">Notify me about</p>
@@ -291,7 +291,7 @@ Object.assign(handlers, {
                 <p style="color: var(--gray-600); margin-bottom: 16px;">Get notified when we release new features and improvements.</p>
                 <div class="form-group">
                     <label class="form-label" for="hch-changelog-email">Email Address</label>
-                    <input id="hch-changelog-email" aria-label="you@example.com" type="email" name="email" class="form-input" placeholder="you@example.com" required>
+                    <inputinput id="hch-changelog-email" type="email" name="email" class="form-input" placeholder="you@example.com" required>
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>

@@ -231,6 +231,7 @@ Object.assign(handlers, {
     // Search image bank inline,
 
     searchImageBankInline: function (mode, query) {
+        const cloudName = store.state.cloudinaryCloudName;
         const images = store.state.imageBankImages || [];
         const filtered = query.trim()
             ? images.filter(
@@ -260,10 +261,10 @@ Object.assign(handlers, {
                 .slice(0, 50)
                 .map(
                     (img) => `
-            <div class="imagebank-inline-item" data-image-id="${img.id}" data-image-url="${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/${img.cloudinary_public_id}` : escapeHtml(img.file_path || img.url)}"
-                 role="button" tabindex="0" onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/${img.cloudinary_public_id}` : escapeHtml(img.file_path || img.url)}')"
+            <div class="imagebank-inline-item" data-image-id="${img.id}" data-image-url="${img.cloudinary_public_id && cloudName ? `https://res.cloudinary.com/${cloudName}/image/upload/${img.cloudinary_public_id}` : escapeHtml(img.file_path || img.url)}"
+                 role="button" tabindex="0" onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${img.cloudinary_public_id && cloudName ? `https://res.cloudinary.com/${cloudName}/image/upload/${img.cloudinary_public_id}` : escapeHtml(img.file_path || img.url)}')"
                  style="position: relative; cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; aspect-ratio: 1;">
-                <img src="${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_fill,w_400,h_400/${img.cloudinary_public_id}` : escapeHtml(img.thumbnail_url || img.file_path || img.url)}"
+                <img src="${img.cloudinary_public_id && cloudName ? `https://res.cloudinary.com/${cloudName}/image/upload/c_fill,w_400,h_400/${img.cloudinary_public_id}` : escapeHtml(img.thumbnail_url || img.file_path || img.url)}"
                      alt="${escapeHtml(img.name || 'Image')}"
                      style="width: 100%; height: 100%; object-fit: cover;">
                 <div class="imagebank-check" style="position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; background: var(--primary-600); border-radius: 50%; display: none; align-items: center; justify-content: center; color: white;">
@@ -916,7 +917,7 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label" for="decline-custom-message">Custom Response (optional)</label>
-                        <textarea id="decline-custom-message" class="form-textarea" rows="3" placeholder="Write a personalized message..." aria-label="Decline Custom Message"></textarea>
+                        <textareatextarea id="decline-custom-message" class="form-textarea" rows="3" placeholder="Write a personalized message..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -2572,7 +2573,7 @@ Object.assign(handlers, {
                 <form onsubmit="handlers.saveWhatnotLiveEvent(event, '${date}')">
                     <div class="form-group">
                         <label class="form-label" for="hd-show-title">Show Title</label>
-                        <input id="hd-show-title" aria-label="e.g., Weekend Vintage Drop" type="text" class="form-input" name="title" placeholder="e.g., Weekend Vintage Drop" required>
+                        <inputinput id="hd-show-title" type="text" class="form-input" name="title" placeholder="e.g., Weekend Vintage Drop" required>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
@@ -2581,7 +2582,7 @@ Object.assign(handlers, {
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="hd-start-time">Start Time</label>
-                            <input id="hd-start-time" aria-label="Time" type="time" class="form-input" name="time" value="19:00" required>
+                            <inputinput id="hd-start-time" type="time" class="form-input" name="time" value="19:00" required>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
@@ -2609,7 +2610,7 @@ Object.assign(handlers, {
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="hd-description">Description</label>
-                        <textarea id="hd-description" aria-label="Describe your show..." class="form-input" name="description" rows="3" placeholder="Describe your show..."></textarea>
+                        <textareatextarea id="hd-description" class="form-input" name="description" rows="3" placeholder="Describe your show..."></textarea>
                     </div>
                     <div class="form-group">
                         <label class="flex items-center gap-2">
@@ -3458,7 +3459,7 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <div class="form-group">
                     <label class="form-label" for="branding-logo">Shop Logo URL</label>
-                    <input type="text" class="form-input" id="branding-logo" placeholder="https://example.com/logo.png" value="${escapeHtml(branding.logoUrl || '')}" aria-label="Branding Logo">
+                    <inputinput type="text" class="form-input" id="branding-logo" placeholder="https://example.com/logo.png" value="${escapeHtml(branding.logoUrl || '')}">
                     <p class="form-hint">Square image recommended (200x200px or larger)</p>
                 </div>
                 <div class="form-group">
@@ -3474,11 +3475,11 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="branding-banner">Banner Text</label>
-                    <textarea class="form-input" id="branding-banner" rows="2" placeholder="Sale announcement or shop description" maxlength="200" aria-label="Branding Banner">${escapeHtml(branding.bannerText || '')}</textarea>
+                    <textareatextarea class="form-input" id="branding-banner" rows="2" placeholder="Sale announcement or shop description" maxlength="200">${escapeHtml(branding.bannerText || '')}</textarea>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="branding-bio">About / Bio</label>
-                    <textarea class="form-input" id="branding-bio" rows="3" placeholder="Tell buyers about your shop..." aria-label="Branding Bio">${escapeHtml(branding.bio || '')}</textarea>
+                    <textareatextarea class="form-input" id="branding-bio" rows="3" placeholder="Tell buyers about your shop...">${escapeHtml(branding.bio || '')}</textarea>
                 </div>
             </div>
             <div class="modal-footer">
@@ -4292,7 +4293,7 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <div class="form-group">
                     <label class="form-label" for="recurring-desc">Description</label>
-                    <input type="text" class="form-input" id="recurring-desc" placeholder="e.g., Monthly shipping supplies" required aria-label="Recurring Desc">
+                    <inputinput type="text" class="form-input" id="recurring-desc" placeholder="e.g., Monthly shipping supplies" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="recurring-amount">Amount</label>
@@ -4392,9 +4393,9 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <div class="form-group">
                     <label class="form-label" for="receipt-file-input">Select receipt image (max 2MB)</label>
-                    <input type="file" class="form-input" id="receipt-file-input" accept="image/*,.pdf" onchange="
+                    <inputinput type="file" class="form-input" id="receipt-file-input" accept="image/*,.pdf" onchange="
                         const file = this.files[0];
-                        if (file && file.size  aria-label="Receipt File Input"> 2 * 1024 * 1024) {
+                        if (file && file.size> 2 * 1024 * 1024) {
                             toast.error('File too large (max 2MB)');
                             this.value = '';
                             return;
@@ -4409,7 +4410,7 @@ Object.assign(handlers, {
                 <div id="receipt-preview" style="margin-top: 8px;"></div>
                 <div class="form-group" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--gray-200);">
                     <label class="form-label" for="receipt-url-input">Or enter receipt URL</label>
-                    <input type="url" class="form-input" id="receipt-url-input" placeholder="https://example.com/receipt.pdf" aria-label="Receipt Url Input">
+                    <inputinput type="url" class="form-input" id="receipt-url-input" placeholder="https://example.com/receipt.pdf">
                 </div>
             </div>
             <div class="modal-footer">
@@ -4636,7 +4637,7 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <div class="form-group">
                     <label class="form-label" for="monthly-budget-input">Monthly Expense Budget</label>
-                    <input type="number" class="form-input" value="${store.state.monthlyBudget || 500}" id="monthly-budget-input" aria-label="Monthly Budget Input">
+                    <inputinput type="number" class="form-input" value="${store.state.monthlyBudget || 500}" id="monthly-budget-input">
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="budget-alert-threshold">Budget Alert Threshold</label>
@@ -4692,15 +4693,15 @@ Object.assign(handlers, {
                 <form onsubmit="handlers.saveGoals(event)">
                     <div class="form-group">
                         <label class="form-label" for="budget-monthly-revenue-goal">Monthly Revenue Goal</label>
-                        <input id="budget-monthly-revenue-goal" aria-label="Revenue Goal" type="number" class="form-input" name="revenueGoal" value="${store.state.revenueGoal || 5000}">
+                        <inputinput id="budget-monthly-revenue-goal" type="number" class="form-input" name="revenueGoal" value="${store.state.revenueGoal || 5000}">
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="budget-monthly-sales-goal">Monthly Sales Goal</label>
-                        <input id="budget-monthly-sales-goal" aria-label="Sales Goal" type="number" class="form-input" name="salesGoal" value="${store.state.salesGoal || 50}">
+                        <inputinput id="budget-monthly-sales-goal" type="number" class="form-input" name="salesGoal" value="${store.state.salesGoal || 50}">
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="budget-target-profit-margin">Target Profit Margin (%)</label>
-                        <input id="budget-target-profit-margin" aria-label="Margin Goal" type="number" class="form-input" name="marginGoal" value="${store.state.marginGoal || 40}" min="0" max="100">
+                        <inputinput id="budget-target-profit-margin" type="number" class="form-input" name="marginGoal" value="${store.state.marginGoal || 40}" min="0" max="100">
                     </div>
                     <div class="flex justify-end gap-2 mt-4">
                         <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -4896,12 +4897,12 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="name-contact-email">Contact Email</label>
-                    <input id="name-contact-email" aria-label="supplier@example.com" type="text" name="email" class="form-input" placeholder="supplier@example.com" onblur="handlers.validateSupplierFormField('email', this.value)">
+                    <inputinput id="name-contact-email" type="text" name="email" class="form-input" placeholder="supplier@example.com" onblur="handlers.validateSupplierFormField('email', this.value)">
                     <span id="email-error" class="form-error-text"></span>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="email-phone">Phone</label>
-                    <input id="email-phone" aria-label="(555) 123-4567" type="tel" name="phone" class="form-input" placeholder="(555) 123-4567" onblur="handlers.validateSupplierFormField('phone', this.value)">
+                    <inputinput id="email-phone" type="tel" name="phone" class="form-input" placeholder="(555) 123-4567" onblur="handlers.validateSupplierFormField('phone', this.value)">
                     <span id="phone-error" class="form-error-text"></span>
                 </div>
                 <div class="form-group">
@@ -5053,7 +5054,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="rating-review">Review (Optional)</label>
-                    <textarea id="rating-review" aria-label="Share your experience with this supplier..." name="review" class="form-input" rows="3" placeholder="Share your experience with this supplier..."></textarea>
+                    <textareatextarea id="rating-review" name="review" class="form-input" rows="3" placeholder="Share your experience with this supplier..."></textarea>
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -5095,11 +5096,11 @@ Object.assign(handlers, {
             <form onsubmit="handlers.updateSupplier(event, '${id}')" style="padding: 8px;">
                 <div class="form-group">
                     <label class="form-label" for="rating-supplier-name">Supplier Name *</label>
-                    <input id="rating-supplier-name" aria-label="Name" type="text" name="name" class="form-input" value="${escapeHtml(supplier.name || '')}" required>
+                    <inputinput id="rating-supplier-name" type="text" name="name" class="form-input" value="${escapeHtml(supplier.name || '')}" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="rating-contact-email">Contact Email</label>
-                    <input id="rating-contact-email" aria-label="Email" type="email" name="email" class="form-input" value="${escapeHtml(supplier.email || '')}">
+                    <inputinput id="rating-contact-email" type="email" name="email" class="form-input" value="${escapeHtml(supplier.email || '')}">
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="rating-phone">Phone</label>
@@ -5201,7 +5202,7 @@ Object.assign(handlers, {
                 </p>
                 <div class="form-group" style="margin-bottom: 16px;">
                     <label class="form-label" for="csv-import-input">Select CSV File</label>
-                    <input type="file" id="csv-import-input" class="form-input" accept=".csv,.txt" onchange="handlers.processSupplierCSV(event)" aria-label="Csv Import Input">
+                    <inputinput type="file" id="csv-import-input" class="form-input" accept=".csv,.txt" onchange="handlers.processSupplierCSV(event)">
                 </div>
                 <div id="csv-preview" style="margin-bottom: 16px;"></div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
@@ -5357,16 +5358,16 @@ Object.assign(handlers, {
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div class="form-group">
                         <label class="form-label" for="import-number-of-items">Number of Items</label>
-                        <input id="import-number-of-items" aria-label="Item Count" type="number" name="itemCount" class="form-input" value="1" min="1">
+                        <inputinput id="import-number-of-items" type="number" name="itemCount" class="form-input" value="1" min="1">
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="import-total-amount">Total Amount ($)</label>
-                        <input id="import-total-amount" aria-label="0.00" type="number" name="total" class="form-input" step="0.01" min="0" placeholder="0.00">
+                        <inputinput id="import-total-amount" type="number" name="total" class="form-input" step="0.01" min="0" placeholder="0.00">
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="import-notes">Notes</label>
-                    <textarea id="import-notes" aria-label="Order details, special instructions..." name="notes" class="form-input" rows="2" placeholder="Order details, special instructions..."></textarea>
+                    <textareatextarea id="import-notes" name="notes" class="form-input" rows="2" placeholder="Order details, special instructions..."></textarea>
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -5465,20 +5466,20 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="import-contact-name">Contact Name *</label>
-                    <input id="import-contact-name" aria-label="Full name" type="text" name="name" class="form-input" placeholder="Full name" required>
+                    <inputinput id="import-contact-name" type="text" name="name" class="form-input" placeholder="Full name" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="import-role">Role</label>
-                    <input id="import-role" aria-label="e.g., Sales Rep, Account Manager" type="text" name="role" class="form-input" placeholder="e.g., Sales Rep, Account Manager">
+                    <inputinput id="import-role" type="text" name="role" class="form-input" placeholder="e.g., Sales Rep, Account Manager">
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div class="form-group">
                         <label class="form-label" for="import-email">Email</label>
-                        <input id="import-email" aria-label="contact@supplier.com" type="email" name="email" class="form-input" placeholder="contact@supplier.com">
+                        <inputinput id="import-email" type="email" name="email" class="form-input" placeholder="contact@supplier.com">
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="import-phone">Phone</label>
-                        <input id="import-phone" aria-label="(555) 123-4567" type="tel" name="phone" class="form-input" placeholder="(555) 123-4567">
+                        <inputinput id="import-phone" type="tel" name="phone" class="form-input" placeholder="(555) 123-4567">
                     </div>
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
@@ -5532,7 +5533,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="hd-notes">Notes *</label>
-                    <textarea id="hd-notes" aria-label="Summary of the communication..." name="note" class="form-input" rows="3" placeholder="Summary of the communication..." required></textarea>
+                    <textareatextarea id="hd-notes" name="note" class="form-input" rows="3" placeholder="Summary of the communication..." required></textarea>
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -5612,7 +5613,7 @@ Object.assign(handlers, {
             <form onsubmit="handlers.saveNewCompetitor(event)" style="padding: 8px;">
                 <div class="form-group">
                     <label class="form-label" for="hd-competitor-nameusername">Competitor Name/Username *</label>
-                    <input id="hd-competitor-nameusername" aria-label="Enter store name or username" type="text" name="name" class="form-input" placeholder="Enter store name or username" required>
+                    <inputinput id="hd-competitor-nameusername" type="text" name="name" class="form-input" placeholder="Enter store name or username" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="hd-platform">Platform</label>
@@ -5626,11 +5627,11 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="hd-store-url">Store URL (Optional)</label>
-                    <input id="hd-store-url" aria-label="https://..." type="url" name="url" class="form-input" placeholder="https://...">
+                    <inputinput id="hd-store-url" type="url" name="url" class="form-input" placeholder="https://...">
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="hd-notes-2">Notes</label>
-                    <textarea id="hd-notes-2" aria-label="Why are you tracking this competitor?" name="notes" class="form-input" rows="2" placeholder="Why are you tracking this competitor?"></textarea>
+                    <textareatextarea id="hd-notes-2" name="notes" class="form-input" rows="2" placeholder="Why are you tracking this competitor?"></textarea>
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -5790,7 +5791,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="alert-threshold">Price Drop Threshold (%)</label>
-                    <input type="number" id="alert-threshold" class="form-input" value="${alerts.threshold}" min="1" max="100" step="1" placeholder="e.g. 10 = alert on 10%+ drops" aria-label="Alert Threshold">
+                    <inputinput type="number" id="alert-threshold" class="form-input" value="${alerts.threshold}" min="1" max="100" step="1" placeholder="e.g. 10 = alert on 10%+ drops">
                 </div>
                 <button class="btn btn-primary" style="width: 100%;" onclick="handlers.saveCompetitorAlerts('${competitorId}')">Save Alert Settings</button>
             </div>
@@ -5967,7 +5968,7 @@ Object.assign(handlers, {
             <form onsubmit="handlers.savePriceWatch(event)" style="padding: 8px;">
                 <div class="form-group">
                     <label class="form-label" for="alert-item-title">Item Title *</label>
-                    <input id="alert-item-title" aria-label="e.g., Vintage Rolex Submariner" type="text" name="title" class="form-input" placeholder="e.g., Vintage Rolex Submariner" required>
+                    <inputinput id="alert-item-title" type="text" name="title" class="form-input" placeholder="e.g., Vintage Rolex Submariner" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="alert-platform">Platform</label>
@@ -5992,7 +5993,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="alert-current-price">Current Price ($)</label>
-                    <input id="alert-current-price" aria-label="0.00" type="number" name="price" class="form-input" placeholder="0.00" step="0.01" min="0">
+                    <inputinput id="alert-current-price" type="number" name="price" class="form-input" placeholder="0.00" step="0.01" min="0">
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -6084,7 +6085,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="alert-threshold">Price Change Threshold (%)</label>
-                    <input type="number" id="alert-threshold" class="form-input" value="${alertConfig.threshold}" min="1" max="100" aria-label="Alert Threshold">
+                    <inputinput type="number" id="alert-threshold" class="form-input" value="${alertConfig.threshold}" min="1" max="100">
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="alert-frequency">Alert Frequency</label>
@@ -6170,11 +6171,11 @@ Object.assign(handlers, {
             <form onsubmit="handlers.saveSavedSearch(event)" style="padding: 8px;">
                 <div class="form-group">
                     <label class="form-label" for="alert-search-name">Search Name *</label>
-                    <input id="alert-search-name" aria-label="e.g., Vintage Nike under $50" type="text" name="name" class="form-input" placeholder="e.g., Vintage Nike under $50" required>
+                    <inputinput id="alert-search-name" type="text" name="name" class="form-input" placeholder="e.g., Vintage Nike under $50" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="alert-search-query">Search Query *</label>
-                    <input id="alert-search-query" aria-label="Keywords to search for" type="text" name="query" class="form-input" placeholder="Keywords to search for" required>
+                    <inputinput id="alert-search-query" type="text" name="query" class="form-input" placeholder="Keywords to search for" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="alert-category-2">Category</label>
@@ -6190,11 +6191,11 @@ Object.assign(handlers, {
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div class="form-group">
                         <label class="form-label" for="alert-min-price">Min Price ($)</label>
-                        <input id="alert-min-price" aria-label="0" type="number" name="minPrice" class="form-input" placeholder="0" min="0" step="0.01">
+                        <inputinput id="alert-min-price" type="number" name="minPrice" class="form-input" placeholder="0" min="0" step="0.01">
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="alert-max-price">Max Price ($)</label>
-                        <input id="alert-max-price" aria-label="Any" type="number" name="maxPrice" class="form-input" placeholder="Any" min="0" step="0.01">
+                        <inputinput id="alert-max-price" type="number" name="maxPrice" class="form-input" placeholder="Any" min="0" step="0.01">
                     </div>
                 </div>
                 <div class="form-group">
@@ -6643,7 +6644,7 @@ Object.assign(handlers, {
                         <input type="hidden" name="secret" value="${escapeHtml(data.secret)}">
                         <div class="form-group">
                             <label class="form-label" for="avatar-enter-the-6digit-code-from-your-app">Enter the 6-digit code from your app</label>
-                            <input id="avatar-enter-the-6digit-code-from-your-app" type="text" class="form-input" name="code" maxlength="6" pattern="[0-9]{6}" aria-label="Verification code" placeholder="000000" style="text-align: center; font-size: 24px; letter-spacing: 8px;" required>
+                            <inputinput id="avatar-enter-the-6digit-code-from-your-app" type="text" class="form-input" name="code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" style="text-align: center; font-size: 24px; letter-spacing: 8px;" required>
                         </div>
                         <div class="flex justify-end gap-2 mt-4">
                             <button type="button" class="btn btn-secondary" onclick="handlers.enable2FA()">Back</button>
@@ -6896,11 +6897,11 @@ Object.assign(handlers, {
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="feature-description">Describe the Feature *</label>
-                        <textarea id="feature-description" class="form-textarea" name="description" rows="4" placeholder="Tell us more about what you'd like to see..." required aria-label="Feature Description"></textarea>
+                        <textareatextarea id="feature-description" class="form-textarea" name="description" rows="4" placeholder="Tell us more about what you'd like to see..." required></textarea>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="feature-importance">Why is this important to you? *</label>
-                        <textarea id="feature-importance" class="form-textarea" name="reason" rows="2" placeholder="How would this help your workflow?" aria-label="Feature Importance"></textarea>
+                        <textareatextarea id="feature-importance" class="form-textarea" name="reason" rows="2" placeholder="How would this help your workflow?"></textarea>
                     </div>
                     <div class="flex justify-end gap-2 mt-4">
                         <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -7262,7 +7263,7 @@ Object.assign(handlers, {
                 <form onsubmit="handlers.saveRoadmapSubscription(event)">
                     <div class="form-group">
                         <label class="form-label" for="subscribe-email">Email Address</label>
-                        <input type="email" id="subscribe-email" name="email" class="form-input" value="${prefillEmail}" placeholder="you@example.com" required aria-label="Subscribe Email">
+                        <inputinput type="email" id="subscribe-email" name="email" class="form-input" value="${prefillEmail}" placeholder="you@example.com" required>
                     </div>
                     <div class="form-group">
                         <p class="form-label">Notify me about</p>
@@ -7397,7 +7398,7 @@ Object.assign(handlers, {
                 <p style="color: var(--gray-600); margin-bottom: 16px;">Get notified when we release new features and improvements.</p>
                 <div class="form-group">
                     <label class="form-label" for="rss-email-address">Email Address</label>
-                    <input id="rss-email-address" aria-label="you@example.com" type="email" name="email" class="form-input" placeholder="you@example.com" required>
+                    <inputinput id="rss-email-address" type="email" name="email" class="form-input" placeholder="you@example.com" required>
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -8269,7 +8270,7 @@ Object.assign(handlers, {
             container.innerHTML = sanitizeHTML(`
                 <div class="form-group">
                     <label class="form-label" for="bulk-new-status">New Status</label>
-                    <select id="bulk-new-status" class="form-select" name="status" aria-label="Status" required>
+                    <selectselect id="bulk-new-status" class="form-select" name="status" required>
                         <option value="active">Active</option>
                         <option value="draft">Draft</option>
                         <option value="sold">Sold</option>
@@ -8282,14 +8283,14 @@ Object.assign(handlers, {
             container.innerHTML = sanitizeHTML(`
                 <div class="form-group">
                     <label class="form-label" for="bulk-price-adjustment">Price Adjustment</label>
-                    <select id="bulk-price-adjustment" class="form-select" name="adjustmentType" aria-label="Adjustment type" required>
+                    <selectselect id="bulk-price-adjustment" class="form-select" name="adjustmentType" required>
                         <option value="percentage">Percentage (%)</option>
                         <option value="fixed">Fixed Amount ($)</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="bulk-amount">Amount</label>
-                    <input id="bulk-amount" aria-label="Adjustment Value" type="number" class="form-input" name="adjustmentValue" required step="0.01">
+                    <inputinput id="bulk-amount" type="number" class="form-input" name="adjustmentValue" required step="0.01">
                 </div>
             `);
         } else {
@@ -9018,11 +9019,11 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label" for="edit-price">Price ($)</label>
-                            <input id="edit-price" aria-label="Price" type="number" class="form-input" name="price" step="0.01" value="${listing.price || ''}">
+                            <inputinput id="edit-price" type="number" class="form-input" name="price" step="0.01" value="${listing.price || ''}">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="edit-shipping-price">Shipping Price ($)</label>
-                            <input id="edit-shipping-price" aria-label="Shipping Price" type="number" class="form-input" name="shipping_price" step="0.01" value="${listing.shipping_price || 0}">
+                            <inputinput id="edit-shipping-price" type="number" class="form-input" name="shipping_price" step="0.01" value="${listing.shipping_price || 0}">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
@@ -9260,7 +9261,7 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label" for="price-drop-timing">When to Drop</label>
-                        <select id="price-drop-timing" class="form-select" aria-label="Price Drop Timing">
+                        <selectselect id="price-drop-timing" class="form-select">
                             <option value="now">Drop now</option>
                             <option value="7days" selected>After 7 days of no activity</option>
                             <option value="14days">After 14 days of no activity</option>
@@ -9271,7 +9272,7 @@ Object.assign(handlers, {
 
                     <div class="form-group" id="custom-date-group" style="display: none;">
                         <label class="form-label" for="price-drop-date">Custom Date</label>
-                        <input type="date" id="price-drop-date" class="form-input" min="${toLocalDate(new Date())}" aria-label="Price Drop Date">
+                        <inputinput type="date" id="price-drop-date" class="form-input" min="${toLocalDate(new Date())}">
                     </div>
 
                     <div class="form-group">
@@ -9524,19 +9525,19 @@ Object.assign(handlers, {
                     <div class="profit-calc-inputs">
                         <div class="form-group">
                             <label class="form-label" for="profit-purchase-cost">Purchase Cost ($)</label>
-                            <input type="number" id="profit-purchase-cost" class="form-input" step="0.01" min="0"
+                            <inputinput type="number" id="profit-purchase-cost" class="form-input" step="0.01" min="0"
                                    value="${purchaseCost}" placeholder="0.00"
-                                   onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()" aria-label="Profit Purchase Cost">
+                                   onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="profit-selling-price">Selling Price ($)</label>
-                            <input type="number" id="profit-selling-price" class="form-input" step="0.01" min="0"
+                            <inputinput type="number" id="profit-selling-price" class="form-input" step="0.01" min="0"
                                    value="${listPrice}" placeholder="0.00"
-                                   onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()" aria-label="Profit Selling Price">
+                                   onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="profit-platform-fee">Platform Fee (%)</label>
-                            <select id="profit-platform-fee" class="form-select" onchange="handlers.updateProfitCalc()" aria-label="Profit Platform Fee">
+                            <selectselect id="profit-platform-fee" class="form-select" onchange="handlers.updateProfitCalc()">
                                 <option value="0">No Platform (0%)</option>
                                 <option value="20" selected>Poshmark (20%)</option>
                                 <option value="13">eBay (13%)</option>
@@ -9547,20 +9548,20 @@ Object.assign(handlers, {
                         </div>
                         <div class="form-group" id="custom-fee-group" style="display: none;">
                             <label class="form-label" for="profit-custom-fee">Custom Fee (%)</label>
-                            <input type="number" id="profit-custom-fee" class="form-input" step="0.1" min="0" max="50"
-                                   value="10" onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()" aria-label="Profit Custom Fee">
+                            <inputinput type="number" id="profit-custom-fee" class="form-input" step="0.1" min="0" max="50"
+                                   value="10" onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="profit-shipping-cost">Shipping Cost ($)</label>
-                            <input type="number" id="profit-shipping-cost" class="form-input" step="0.01" min="0"
+                            <inputinput type="number" id="profit-shipping-cost" class="form-input" step="0.01" min="0"
                                    value="0" placeholder="0.00"
-                                   onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()" aria-label="Profit Shipping Cost">
+                                   onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="profit-other-costs">Other Costs ($)</label>
-                            <input type="number" id="profit-other-costs" class="form-input" step="0.01" min="0"
+                            <inputinput type="number" id="profit-other-costs" class="form-input" step="0.01" min="0"
                                    value="0" placeholder="0.00"
-                                   onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()" aria-label="Profit Other Costs">
+                                   onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()">
                         </div>
                     </div>
 
@@ -10224,8 +10225,8 @@ Object.assign(handlers, {
 
                 <div class="form-group">
                     <label class="form-label" for="followup-message">Message Template (optional)</label>
-                    <textarea id="followup-message" class="form-textarea" rows="3"
-                              placeholder="Enter your follow-up message..." aria-label="Followup Message">${existingReminder?.message || ''}</textarea>
+                    <textareatextarea id="followup-message" class="form-textarea" rows="3"
+                              placeholder="Enter your follow-up message...">${existingReminder?.message || ''}</textarea>
                 </div>
 
                 ${
@@ -10416,7 +10417,7 @@ Object.assign(handlers, {
                             </div>
                             <div class="form-group" style="flex: 1">
                                 <label class="form-label" for="expense-amount">Amount ($)</label>
-                                <input type="number" id="expense-amount" class="form-input" step="0.01" min="0" placeholder="0.00" aria-label="Expense Amount">
+                                <inputinput type="number" id="expense-amount" class="form-input" step="0.01" min="0" placeholder="0.00">
                             </div>
                         </div>
                         <div class="form-row">
@@ -11077,7 +11078,7 @@ Object.assign(handlers, {
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="hd-return-tracking">Return Tracking # (optional)</label>
-                        <input id="hd-return-tracking" aria-label="Tracking number for return shipment" type="text" class="form-input" name="return_tracking" placeholder="Tracking number for return shipment">
+                        <inputinput id="hd-return-tracking" type="text" class="form-input" name="return_tracking" placeholder="Tracking number for return shipment">
                     </div>
                     <div class="flex justify-end gap-2 mt-4">
                         <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -11163,7 +11164,7 @@ Object.assign(handlers, {
                 </div>
                 <div style="margin-top: 16px;">
                     <label class="form-label" for="priority-note">Priority Note (optional)</label>
-                    <input type="text" id="priority-note" class="form-input" placeholder="e.g., VIP customer, rush order" aria-label="Priority Note">
+                    <inputinput type="text" id="priority-note" class="form-input" placeholder="e.g., VIP customer, rush order">
                 </div>
             </div>
         `);
@@ -11210,7 +11211,7 @@ Object.assign(handlers, {
                 <p style="margin-bottom: 16px; color: var(--gray-600);">Split this order into multiple shipments:</p>
                 <div style="margin: 12px 0;">
                     <label class="form-label" for="split-count">Number of shipments</label>
-                    <select id="split-count" class="form-select" aria-label="Split Count">
+                    <selectselect id="split-count" class="form-select">
                         <option value="2">2 shipments</option>
                         <option value="3">3 shipments</option>
                         <option value="4">4 shipments</option>
@@ -14258,7 +14259,7 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label" for="bulk-label-service">Service Level</label>
-                        <select class="form-select" id="bulk-label-service" aria-label="Bulk Label Service">
+                        <selectselect class="form-select" id="bulk-label-service">
                             <option value="ground">Ground / Standard</option>
                             <option value="priority">Priority / 2-Day</option>
                             <option value="express">Express / Overnight</option>
@@ -14268,7 +14269,7 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label" for="bulk-label-package">Package Type</label>
-                        <select class="form-select" id="bulk-label-package" aria-label="Bulk Label Package">
+                        <selectselect class="form-select" id="bulk-label-package">
                             <option value="custom">Custom Package</option>
                             <option value="flat_rate_envelope">Flat Rate Envelope</option>
                             <option value="flat_rate_small">Small Flat Rate Box</option>
@@ -14582,7 +14583,7 @@ Object.assign(handlers, {
                 <form id="add-checklist-item-form" onsubmit="handlers.addChecklistItem(event)">
                     <div class="form-group">
                         <label class="form-label" for="add-task-title">Task Title *</label>
-                        <input id="add-task-title" aria-label="Title" type="text" name="title" class="form-input" required>
+                        <inputinput id="add-task-title" type="text" name="title" class="form-input" required>
                     </div>
 
                     <div class="form-group">
@@ -14957,7 +14958,7 @@ Object.assign(handlers, {
                 <form id="add-subtask-form" onsubmit="handlers.addSubtask(event, '${parentId}')">
                     <div class="form-group">
                         <label class="form-label" for="add-subtask-title">Subtask Title *</label>
-                        <input id="add-subtask-title" aria-label="Enter subtask..." type="text" name="title" class="form-input" required placeholder="Enter subtask...">
+                        <inputinput id="add-subtask-title" type="text" name="title" class="form-input" required placeholder="Enter subtask...">
                     </div>
                 </form>
             </div>
@@ -15083,7 +15084,7 @@ Object.assign(handlers, {
                 <form id="edit-checklist-item-form" onsubmit="handlers.updateChecklistItem(event, '${itemId}')">
                     <div class="form-group">
                         <label class="form-label" for="edit-task-title">Task Title *</label>
-                        <input id="edit-task-title" aria-label="Title" type="text" name="title" class="form-input" required value="${escapeHtml(item.title || '')}">
+                        <inputinput id="edit-task-title" type="text" name="title" class="form-input" required value="${escapeHtml(item.title || '')}">
                     </div>
 
                     <div class="form-group">
@@ -15358,7 +15359,7 @@ Object.assign(handlers, {
                 <form id="add-shipping-profile-form" onsubmit="handlers.addShippingProfile(event)">
                     <div class="form-group">
                         <label class="form-label" for="add-profile-name">Profile Name *</label>
-                        <input id="add-profile-name" aria-label="e.g., Standard Shipping" type="text" name="name" class="form-input" required placeholder="e.g., Standard Shipping">
+                        <inputinput id="add-profile-name" type="text" name="name" class="form-input" required placeholder="e.g., Standard Shipping">
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
@@ -15399,34 +15400,34 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-4 gap-4">
                         <div class="form-group">
                             <label class="form-label" for="add-weight">Weight (oz)</label>
-                            <input id="add-weight" aria-label="0" type="number" name="weightOz" class="form-input" step="0.1" min="0" placeholder="0">
+                            <inputinput id="add-weight" type="number" name="weightOz" class="form-input" step="0.1" min="0" placeholder="0">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="add-length">Length</label>
-                            <input id="add-length" aria-label="0" type="number" name="length" class="form-input" step="0.1" min="0" placeholder="0">
+                            <inputinput id="add-length" type="number" name="length" class="form-input" step="0.1" min="0" placeholder="0">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="add-width">Width</label>
-                            <input id="add-width" aria-label="0" type="number" name="width" class="form-input" step="0.1" min="0" placeholder="0">
+                            <inputinput id="add-width" type="number" name="width" class="form-input" step="0.1" min="0" placeholder="0">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="add-height">Height</label>
-                            <input id="add-height" aria-label="0" type="number" name="height" class="form-input" step="0.1" min="0" placeholder="0">
+                            <inputinput id="add-height" type="number" name="height" class="form-input" step="0.1" min="0" placeholder="0">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-3 gap-4">
                         <div class="form-group">
                             <label class="form-label" for="add-domestic-cost">Domestic Cost ($)</label>
-                            <input id="add-domestic-cost" aria-label="0.00" type="number" name="domesticCost" class="form-input" step="0.01" min="0" placeholder="0.00">
+                            <inputinput id="add-domestic-cost" type="number" name="domesticCost" class="form-input" step="0.01" min="0" placeholder="0.00">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="add-international-cost">International Cost ($)</label>
-                            <input id="add-international-cost" aria-label="Leave blank for none" type="number" name="internationalCost" class="form-input" step="0.01" min="0" placeholder="Leave blank for none">
+                            <inputinput id="add-international-cost" type="number" name="internationalCost" class="form-input" step="0.01" min="0" placeholder="Leave blank for none">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="add-free-shipping-over">Free Shipping Over ($)</label>
-                            <input id="add-free-shipping-over" aria-label="Leave blank for none" type="number" name="freeShippingThreshold" class="form-input" step="0.01" min="0" placeholder="Leave blank for none">
+                            <inputinput id="add-free-shipping-over" type="number" name="freeShippingThreshold" class="form-input" step="0.01" min="0" placeholder="Leave blank for none">
                         </div>
                     </div>
 
@@ -15561,7 +15562,7 @@ Object.assign(handlers, {
                 <form id="edit-shipping-profile-form" onsubmit="handlers.updateShippingProfile(event, '${profileId}')">
                     <div class="form-group">
                         <label class="form-label" for="edit-profile-name">Profile Name *</label>
-                        <input id="edit-profile-name" aria-label="Name" type="text" name="name" class="form-input" required value="${escapeHtml(profile.name)}">
+                        <inputinput id="edit-profile-name" type="text" name="name" class="form-input" required value="${escapeHtml(profile.name)}">
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
@@ -15612,7 +15613,7 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-4 gap-4">
                         <div class="form-group">
                             <label class="form-label" for="edit-weight">Weight (oz)</label>
-                            <input id="edit-weight" aria-label="Weight Oz" type="number" name="weightOz" class="form-input" step="0.1" min="0" value="${profile.weight_oz || 0}">
+                            <inputinput id="edit-weight" type="number" name="weightOz" class="form-input" step="0.1" min="0" value="${profile.weight_oz || 0}">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="edit-length">Length</label>
@@ -15631,15 +15632,15 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-3 gap-4">
                         <div class="form-group">
                             <label class="form-label" for="edit-domestic-cost">Domestic Cost ($)</label>
-                            <input id="edit-domestic-cost" aria-label="Domestic Cost" type="number" name="domesticCost" class="form-input" step="0.01" min="0" value="${profile.domestic_cost || 0}">
+                            <inputinput id="edit-domestic-cost" type="number" name="domesticCost" class="form-input" step="0.01" min="0" value="${profile.domestic_cost || 0}">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="edit-international-cost">International Cost ($)</label>
-                            <input id="edit-international-cost" aria-label="International Cost" type="number" name="internationalCost" class="form-input" step="0.01" min="0" value="${profile.international_cost || ''}">
+                            <inputinput id="edit-international-cost" type="number" name="internationalCost" class="form-input" step="0.01" min="0" value="${profile.international_cost || ''}">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="edit-free-shipping-over">Free Shipping Over ($)</label>
-                            <input id="edit-free-shipping-over" aria-label="Free Shipping Threshold" type="number" name="freeShippingThreshold" class="form-input" step="0.01" min="0" value="${profile.free_shipping_threshold || ''}">
+                            <inputinput id="edit-free-shipping-over" type="number" name="freeShippingThreshold" class="form-input" step="0.01" min="0" value="${profile.free_shipping_threshold || ''}">
                         </div>
                     </div>
 
@@ -15846,7 +15847,7 @@ Object.assign(handlers, {
             <form onsubmit="handlers.saveFinancialGoal(event)" style="padding: 8px;">
                 <div class="form-group">
                     <label class="form-label" for="edit-goal-name">Goal Name *</label>
-                    <input id="edit-goal-name" aria-label="e.g., Monthly Revenue Target" type="text" name="name" class="form-input" placeholder="e.g., Monthly Revenue Target" required>
+                    <inputinput id="edit-goal-name" type="text" name="name" class="form-input" placeholder="e.g., Monthly Revenue Target" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="edit-category-2">Category</label>
@@ -15861,11 +15862,11 @@ Object.assign(handlers, {
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div class="form-group">
                         <label class="form-label" for="edit-target-amount">Target Amount ($) *</label>
-                        <input id="edit-target-amount" aria-label="Target" type="number" name="target" class="form-input" min="1" step="0.01" required>
+                        <inputinput id="edit-target-amount" type="number" name="target" class="form-input" min="1" step="0.01" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="edit-current-amount">Current Amount ($)</label>
-                        <input id="edit-current-amount" aria-label="Current" type="number" name="current" class="form-input" min="0" step="0.01" value="0">
+                        <inputinput id="edit-current-amount" type="number" name="current" class="form-input" min="0" step="0.01" value="0">
                     </div>
                 </div>
                 <div class="form-group">
@@ -15908,11 +15909,11 @@ Object.assign(handlers, {
                 <p style="font-size: 13px; color: var(--gray-600); margin-bottom: 16px;">Enter your current bank statement balance to reconcile with your book balance.</p>
                 <div class="form-group">
                     <label class="form-label" for="reconcile-bank-balance">Bank Statement Balance ($)</label>
-                    <input type="number" id="reconcile-bank-balance" class="form-input" value="${store.state.bankBalance || 12450}" step="0.01" aria-label="Reconcile Bank Balance">
+                    <inputinput type="number" id="reconcile-bank-balance" class="form-input" value="${store.state.bankBalance || 12450}" step="0.01">
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="reconcile-date">Statement Date</label>
-                    <input type="date" id="reconcile-date" class="form-input" value="${toLocalDate(new Date())}" aria-label="Reconcile Date">
+                    <inputinput type="date" id="reconcile-date" class="form-input" value="${toLocalDate(new Date())}">
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -15979,14 +15980,14 @@ Object.assign(handlers, {
                             </div>
                             <div class="form-group">
                                 <label class="form-label" for="purchase-link-to-inventory">Link to Inventory</label>
-                                <select id="purchase-link-to-inventory" name="itemInventoryId[]" class="form-select" aria-label="Inventory item">
+                                <selectselect id="purchase-link-to-inventory" name="itemInventoryId[]" class="form-select">
                                     <option value="">-- None --</option>
                                     ${inventoryOptions}
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label class="form-label" for="purchase-qty">Qty *</label>
-                                <input id="purchase-qty" type="number" name="itemQuantity[]" class="form-input" aria-label="Item quantity" min="1" value="1" required>
+                                <inputinput id="purchase-qty" type="number" name="itemQuantity[]" class="form-input" min="1" value="1" required>
                             </div>
                             <div class="form-group">
                                 <label class="form-label" for="purchase-unit-cost">Unit Cost *</label>
@@ -16189,12 +16190,12 @@ Object.assign(handlers, {
                             <div class="grid grid-cols-2 gap-4 mb-3">
                                 <div class="form-group">
                                     <label class="form-label" for="add-pattern">Pattern *</label>
-                                    <input id="add-pattern" aria-label="e.g., Amazon, Shipping, PayPal" type="text" name="pattern" class="form-input" placeholder="e.g., Amazon, Shipping, PayPal" required>
+                                    <inputinput id="add-pattern" type="text" name="pattern" class="form-input" placeholder="e.g., Amazon, Shipping, PayPal" required>
                                     <small class="text-xs text-gray-500">Text to match in transaction description</small>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label" for="add-assign-to-account">Assign to Account *</label>
-                                    <select id="add-assign-to-account" name="accountId" class="form-select" aria-label="Account" required>
+                                    <selectselect id="add-assign-to-account" name="accountId" class="form-select" required>
                                         <option value="">Select account...</option>
                                         ${accounts.map((a) => `<option value="${a.id}">${escapeHtml(a.account_name)} (${a.account_type})</option>`).join('')}
                                     </select>
@@ -16202,7 +16203,7 @@ Object.assign(handlers, {
                             </div>
                             <div class="form-group mb-3">
                                 <label class="form-label" for="add-description">Description</label>
-                                <input id="add-description" aria-label="e.g., Shipping supplies expense" type="text" name="description" class="form-input" placeholder="e.g., Shipping supplies expense">
+                                <inputinput id="add-description" type="text" name="description" class="form-input" placeholder="e.g., Shipping supplies expense">
                             </div>
                             <button type="submit" class="btn btn-primary btn-sm">${components.icon('plus', 14)} Add Rule</button>
                         </form>
@@ -17190,7 +17191,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="edit-auto-enabled">Status</label>
-                    <select class="form-select" id="edit-auto-enabled" aria-label="Edit Auto Enabled">
+                    <selectselect class="form-select" id="edit-auto-enabled">
                         <option value="true" ${rule.is_active || rule.enabled ? 'selected' : ''}>Active</option>
                         <option value="false" ${!(rule.is_active || rule.enabled) ? 'selected' : ''}>Paused</option>
                     </select>
@@ -17395,7 +17396,7 @@ Object.assign(handlers, {
             </div>
             <div class="modal-body">
                 <label class="form-label" for="bulk-schedule-select">Apply schedule to all ${selected.length} selected automations:</label>
-                <select class="form-select" id="bulk-schedule-select" aria-label="Bulk Schedule Select">
+                <selectselect class="form-select" id="bulk-schedule-select">
                     ${presets.map((p) => '<option value="' + p.cron + '">' + p.label + '</option>').join('')}
                 </select>
             </div>
@@ -17460,13 +17461,13 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <div class="mb-4">
                     <label class="form-label" for="schedule-preset">Frequency</label>
-                    <select class="form-select" id="schedule-preset" onchange="(() = aria-label="Schedule Preset"> { const c = document.getElementById('schedule-custom-row'); const ci = document.getElementById('schedule-cron-custom'); if (this.value === 'custom') { c.style.display = 'block'; } else { c.style.display = 'none'; ci.value = this.value; } })()">
+                    <selectselect class="form-select" id="schedule-preset" onchange="(() => { const c = document.getElementById('schedule-custom-row'); const ci = document.getElementById('schedule-cron-custom'); if (this.value === 'custom') { c.style.display = 'block'; } else { c.style.display = 'none'; ci.value = this.value; } })()">
                         ${presets.map((p) => `<option value="${p.cron || 'custom'}" ${(currentMatch && currentMatch.cron === p.cron) || (isCustom && p.label === 'Custom') ? 'selected' : ''}>${p.label}</option>`).join('')}
                     </select>
                 </div>
                 <div id="schedule-custom-row" style="display: ${isCustom ? 'block' : 'none'};" class="mb-4">
                     <label class="form-label" for="schedule-cron-custom">Cron Expression</label>
-                    <input type="text" class="form-input" id="schedule-cron-custom" value="${escapeHtml(currentSchedule || '')}" placeholder="0 */4 * * *" aria-label="Schedule Cron Custom">
+                    <inputinput type="text" class="form-input" id="schedule-cron-custom" value="${escapeHtml(currentSchedule || '')}" placeholder="0 */4 * * *">
                     <p class="text-xs text-gray-400 mt-1">Format: minute hour day-of-month month day-of-week</p>
                 </div>
                 <div class="p-3 callout-info rounded-lg">
@@ -17799,7 +17800,7 @@ Object.assign(handlers, {
                     <div>
                         <label class="form-label" for="offer-discount">Discount Percentage</label>
                         <div class="flex items-center gap-2">
-                            <input type="number" class="form-input" id="offer-discount" min="5" max="50" value="20" style="width: 80px;" aria-label="Offer Discount">
+                            <inputinput type="number" class="form-input" id="offer-discount" min="5" max="50" value="20" style="width: 80px;">
                             <span class="text-gray-500">%</span>
                         </div>
                         <p class="text-xs text-gray-400 mt-1">Discount off listing price</p>
@@ -17849,7 +17850,7 @@ Object.assign(handlers, {
                     </div>
                     <div>
                         <label class="form-label" for="automation-max-shares">Max Shares Per Session</label>
-                        <input type="number" class="form-input" id="automation-max-shares" min="10" max="500" value="100" style="width: 100px;" aria-label="Automation Max Shares">
+                        <inputinput type="number" class="form-input" id="automation-max-shares" min="10" max="500" value="100" style="width: 100px;">
                     </div>
                 </div>
                 <div class="mt-4">
@@ -17884,7 +17885,7 @@ Object.assign(handlers, {
                 <div class="mt-4">
                     <label class="form-label" for="automation-apply-to-items-older-than">Apply to items older than</label>
                     <div class="flex items-center gap-2">
-                        <input id="automation-apply-to-items-older-than" type="number" class="form-input" aria-label="Items older than days" min="7" max="180" value="30" style="width: 80px;">
+                        <inputinput id="automation-apply-to-items-older-than" type="number" class="form-input" min="7" max="180" value="30" style="width: 80px;">
                         <span class="text-gray-500">days</span>
                     </div>
                 </div>
@@ -18083,7 +18084,7 @@ Object.assign(handlers, {
                         </div>
                         <div>
                             <label class="form-label" for="automation-failure-notify">Failure Notification</label>
-                            <select id="automation-failure-notify" class="form-select" aria-label="Automation Failure Notify">
+                            <selectselect id="automation-failure-notify" class="form-select">
                                 <option value="toast" selected>In-app toast</option>
                                 <option value="email">Email alert</option>
                                 <option value="both">Both</option>
@@ -18244,7 +18245,7 @@ Object.assign(handlers, {
             </div>
             <div class="form-group">
                 <label class="form-label" for="automation-account-created">Account Created</label>
-                <input id="automation-account-created" type="text" class="form-input" aria-label="Member since" value="${user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}" disabled>
+                <inputinput id="automation-account-created" type="text" class="form-input" value="${user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}" disabled>
             </div>
             <hr style="margin: 16px 0; border: none; border-top: 1px solid var(--gray-200);">
             <h3 style="margin-bottom: 12px; font-weight: 600;">Change Password</h3>
@@ -18258,7 +18259,7 @@ Object.assign(handlers, {
             </div>
             <div class="form-group">
                 <label class="form-label" for="account-confirm-password">Confirm New Password</label>
-                <input type="password" class="form-input" id="account-confirm-password" placeholder="Confirm new password" autocomplete="new-password" aria-label="Account Confirm Password">
+                <inputinput type="password" class="form-input" id="account-confirm-password" placeholder="Confirm new password" autocomplete="new-password">
             </div>
         `,
             `
@@ -18578,7 +18579,7 @@ Object.assign(handlers, {
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="deletion-reason">Reason (optional)</label>
-                        <select id="deletion-reason" class="form-select" aria-label="Deletion Reason">
+                        <selectselect id="deletion-reason" class="form-select">
                             <option value="">Prefer not to say</option>
                             <option value="not_useful">Not useful enough</option>
                             <option value="too_expensive">Too expensive</option>
@@ -20085,7 +20086,7 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label" for="sync-${provider}-direction">Sync Direction</label>
-                            <select id="sync-${provider}-direction" class="form-select" aria-label="Sync ${Provider} Direction">
+                            <selectselect id="sync-${provider}-direction" class="form-select">
                                 <option value="both" ${setting.sync_direction === 'both' ? 'selected' : ''}>Both (Import & Export)</option>
                                 <option value="import" ${setting.sync_direction === 'import' ? 'selected' : ''}>Import Only</option>
                                 <option value="export" ${setting.sync_direction === 'export' ? 'selected' : ''}>Export Only</option>
@@ -20798,13 +20799,14 @@ Object.assign(handlers, {
                 return toast.info('No images in your Image Bank. Upload one first.');
             }
 
+            const cloudName = store.state.cloudinaryCloudName;
             const grid = images
                 .map((img) => {
-                    const url = img.cloudinary_public_id
-                        ? `https://res.cloudinary.com/vaultlister/image/upload/c_fill,w_120,h_120/${img.cloudinary_public_id}`
+                    const url = img.cloudinary_public_id && cloudName
+                        ? `https://res.cloudinary.com/${cloudName}/image/upload/c_fill,w_120,h_120/${img.cloudinary_public_id}`
                         : escapeHtml(img.file_path || img.url);
-                    const fullUrl = img.cloudinary_public_id
-                        ? `https://res.cloudinary.com/vaultlister/image/upload/${img.cloudinary_public_id}`
+                    const fullUrl = img.cloudinary_public_id && cloudName
+                        ? `https://res.cloudinary.com/${cloudName}/image/upload/${img.cloudinary_public_id}`
                         : null;
                     return `<div class="cursor-pointer border-2 border-transparent hover:border-primary-500 rounded-lg p-1" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onclick="handlers.selectImageBankForAI('${escapeHtml(fullUrl || '')}', '${escapeHtml(url)}')">
                     <img src="${url}" alt="${escapeHtml(img.original_filename || 'Image')}" style="width:100px;height:100px;object-fit:cover;border-radius:var(--radius-sm);">
@@ -20955,7 +20957,7 @@ Object.assign(handlers, {
             <div class="form-group">
                 <label class="form-label" for="ai-result-price">Suggested Price</label>
                 <div class="flex items-center gap-4">
-                    <input type="number" id="ai-result-price" class="form-input" value="${data.suggestedPrice || ''}" step="0.01" style="max-width: 150px;" aria-label="Ai Result Price">
+                    <inputinput type="number" id="ai-result-price" class="form-input" value="${data.suggestedPrice || ''}" step="0.01" style="max-width: 150px;">
                     <span class="text-sm text-gray-600">Based on AI analysis</span>
                 </div>
             </div>
@@ -23907,7 +23909,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="bank-csv-file">Select CSV File</label>
-                    <input type="file" id="bank-csv-file" class="form-input" accept=".csv" onchange="handlers.previewBankCSV(this)" aria-label="Bank Csv File">
+                    <inputinput type="file" id="bank-csv-file" class="form-input" accept=".csv" onchange="handlers.previewBankCSV(this)">
                 </div>
                 <div id="bank-csv-preview" style="display: none;">
                     <div style="font-weight: 500; margin-bottom: 8px;">Preview (first 5 rows):</div>
@@ -23915,15 +23917,15 @@ Object.assign(handlers, {
                     <div style="margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
                         <div class="form-group">
                             <label class="form-label" for="bank-col-date" style="font-size: 11px;">Date Column</label>
-                            <select id="bank-col-date" class="form-select" style="font-size: 12px;" aria-label="Bank Col Date"></select>
+                            <selectselect id="bank-col-date" class="form-select" style="font-size: 12px;"></select>
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="bank-col-desc" style="font-size: 11px;">Description Column</label>
-                            <select id="bank-col-desc" class="form-select" style="font-size: 12px;" aria-label="Bank Col Desc"></select>
+                            <selectselect id="bank-col-desc" class="form-select" style="font-size: 12px;"></select>
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="bank-col-amount" style="font-size: 11px;">Amount Column</label>
-                            <select id="bank-col-amount" class="form-select" style="font-size: 12px;" aria-label="Bank Col Amount"></select>
+                            <selectselect id="bank-col-amount" class="form-select" style="font-size: 12px;"></select>
                         </div>
                     </div>
                     <div id="bank-csv-count" style="font-size: 12px; color: var(--gray-500); margin-top: 4px;"></div>
@@ -24071,7 +24073,7 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label" for="add-vendorstore">Vendor/Store *</label>
-                            <input id="add-vendorstore" aria-label="e.g., Goodwill, ThriftBooks" type="text" name="vendorName" class="form-input" required placeholder="e.g., Goodwill, ThriftBooks">
+                            <inputinput id="add-vendorstore" type="text" name="vendorName" class="form-input" required placeholder="e.g., Goodwill, ThriftBooks">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="add-purchase-date-2">Purchase Date *</label>
@@ -24081,13 +24083,13 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label" for="add-item-description">Item Description</label>
-                        <input id="add-item-description" aria-label="What did you buy?" type="text" name="itemDescription" class="form-input" placeholder="What did you buy?">
+                        <inputinput id="add-item-description" type="text" name="itemDescription" class="form-input" placeholder="What did you buy?">
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label" for="add-amount">Amount *</label>
-                            <input id="add-amount" aria-label="0.00" type="number" name="amount" class="form-input" step="0.01" required placeholder="0.00">
+                            <inputinput id="add-amount" type="number" name="amount" class="form-input" step="0.01" required placeholder="0.00">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="add-quantity">Quantity</label>
@@ -24193,7 +24195,7 @@ Object.assign(handlers, {
                 <div class="form-group mt-4">
                     <label class="form-label" for="new-custom-tag">Add Custom Tag</label>
                     <div style="display: flex; gap: 8px;">
-                        <input type="text" id="new-custom-tag" class="form-input" placeholder="Enter new tag name..." style="flex: 1;" list="tag-suggestions" autocomplete="off" aria-label="New Custom Tag">
+                        <inputinput type="text" id="new-custom-tag" class="form-input" placeholder="Enter new tag name..." style="flex: 1;" list="tag-suggestions" autocomplete="off">
                         <datalist id="tag-suggestions">
                             ${allTags.map((t) => `<option value="${escapeHtml(t)}">`).join('')}
                         </datalist>
@@ -24822,15 +24824,15 @@ Object.assign(handlers, {
                 <div class="modal-body">
                     <div class="form-group">
                         <label class="form-label" for="rr-name">Rule Name *</label>
-                        <input type="text" id="rr-name" class="form-input" placeholder="e.g., 30-day price drop" aria-label="Rr Name">
+                        <inputinput type="text" id="rr-name" class="form-input" placeholder="e.g., 30-day price drop">
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="rr-stale-days">Stale After (days)</label>
-                        <input type="number" id="rr-stale-days" class="form-input" value="30" min="1" aria-label="Rr Stale Days">
+                        <inputinput type="number" id="rr-stale-days" class="form-input" value="30" min="1">
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="rr-strategy">Price Strategy</label>
-                        <select id="rr-strategy" class="form-input" aria-label="Rr Strategy">
+                        <selectselect id="rr-strategy" class="form-input">
                             <option value="fixed">Fixed Reduction</option>
                             <option value="percentage">Percentage Reduction</option>
                             <option value="tiered">Tiered Reduction</option>
@@ -24839,11 +24841,11 @@ Object.assign(handlers, {
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="rr-reduction">Reduction Amount</label>
-                        <input type="number" id="rr-reduction" class="form-input" value="5" min="0" step="0.01" aria-label="Rr Reduction">
+                        <inputinput type="number" id="rr-reduction" class="form-input" value="5" min="0" step="0.01">
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="rr-floor">Price Floor (%)</label>
-                        <input type="number" id="rr-floor" class="form-input" value="50" min="0" max="100" aria-label="Rr Floor">
+                        <inputinput type="number" id="rr-floor" class="form-input" value="50" min="0" max="100">
                     </div>
                     <div class="form-group">
                         <label class="flex items-center gap-2">
@@ -25006,10 +25008,10 @@ Object.assign(handlers, {
                     </div>
                     <h3 style="margin:16px 0 8px;">Package Details</h3>
                     <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:12px;">
-                        <div class="form-group"><label class="form-label" for="sl-weight">Weight (oz)</label><input type="number" id="sl-weight" class="form-input" step="0.1" aria-label="Sl Weight"></div>
-                        <div class="form-group"><label class="form-label" for="sl-length">Length (in)</label><input type="number" id="sl-length" class="form-input" step="0.1" aria-label="Sl Length"></div>
-                        <div class="form-group"><label class="form-label" for="sl-width">Width (in)</label><input type="number" id="sl-width" class="form-input" step="0.1" aria-label="Sl Width"></div>
-                        <div class="form-group"><label class="form-label" for="sl-height">Height (in)</label><input type="number" id="sl-height" class="form-input" step="0.1" aria-label="Sl Height"></div>
+                        <div class="form-group"><label class="form-label" for="sl-weight">Weight (oz)</label><inputinput type="number" id="sl-weight" class="form-input" step="0.1"></div>
+                        <div class="form-group"><label class="form-label" for="sl-length">Length (in)</label><inputinput type="number" id="sl-length" class="form-input" step="0.1"></div>
+                        <div class="form-group"><label class="form-label" for="sl-width">Width (in)</label><inputinput type="number" id="sl-width" class="form-input" step="0.1"></div>
+                        <div class="form-group"><label class="form-label" for="sl-height">Height (in)</label><inputinput type="number" id="sl-height" class="form-input" step="0.1"></div>
                     </div>
                     <h3 style="margin:16px 0 8px;">From Address</h3>
                     ${
@@ -25124,7 +25126,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="modal-body">
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                        <div class="form-group"><label class="form-label" for="rs-weight">Weight (oz) *</label><input type="number" id="rs-weight" class="form-input" value="16" step="0.1" aria-label="Rs Weight"></div>
+                        <div class="form-group"><label class="form-label" for="rs-weight">Weight (oz) *</label><inputinput type="number" id="rs-weight" class="form-input" value="16" step="0.1"></div>
                         <div class="form-group"><label class="form-label" for="rs-from-zip">From ZIP *</label><input type="text" id="rs-from-zip" class="form-input" placeholder="10001" aria-label="Rs From Zip"></div>
                         <div class="form-group"><label class="form-label" for="rs-to-zip">To ZIP *</label><input type="text" id="rs-to-zip" class="form-input" placeholder="90001" aria-label="Rs To Zip"></div>
                     </div>
@@ -25286,7 +25288,7 @@ Object.assign(handlers, {
                     <div class="form-group"><label class="form-label" for="ra-name">Name *</label><input type="text" id="ra-name" class="form-input" aria-label="Ra Name"></div>
                     <div class="form-group"><label class="form-label" for="ra-company">Company</label><input type="text" id="ra-company" class="form-input" aria-label="Ra Company"></div>
                     <div class="form-group"><label class="form-label" for="ra-street1">Street *</label><input type="text" id="ra-street1" class="form-input" aria-label="Ra Street1"></div>
-                    <div class="form-group"><label class="form-label" for="ra-street2">Street 2</label><input type="text" id="ra-street2" class="form-input" aria-label="Ra Street2"></div>
+                    <div class="form-group"><label class="form-label" for="ra-street2">Street 2</label><inputinput type="text" id="ra-street2" class="form-input"></div>
                     <div style="display:grid; grid-template-columns:2fr 1fr 1fr; gap:12px;">
                         <div class="form-group"><label class="form-label" for="ra-city">City *</label><input type="text" id="ra-city" class="form-input" aria-label="Ra City"></div>
                         <div class="form-group"><label class="form-label" for="ra-state">State *</label><input type="text" id="ra-state" class="form-input" maxlength="2" aria-label="Ra State"></div>
@@ -26310,15 +26312,15 @@ Object.assign(handlers, {
             <form id="edit-goal-form" onsubmit="handlers.updateGoal(event, '${escapeHtml(goalId)}')">
                 <div class="form-group">
                     <label class="form-label" for="edit-goal-name-2">Goal Name</label>
-                    <input id="edit-goal-name-2" aria-label="Name" type="text" class="form-input" name="name" value="${escapeHtml(goal.name || '')}" required>
+                    <inputinput id="edit-goal-name-2" type="text" class="form-input" name="name" value="${escapeHtml(goal.name || '')}" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="edit-target-value">Target Value</label>
-                    <input id="edit-target-value" aria-label="Target" type="number" class="form-input" name="target" value="${goal.target || 0}" min="0" step="0.01" required>
+                    <inputinput id="edit-target-value" type="number" class="form-input" name="target" value="${goal.target || 0}" min="0" step="0.01" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="edit-current-progress">Current Progress</label>
-                    <input id="edit-current-progress" aria-label="Current" type="number" class="form-input" name="current" value="${goal.current || 0}" min="0" step="0.01">
+                    <inputinput id="edit-current-progress" type="number" class="form-input" name="current" value="${goal.current || 0}" min="0" step="0.01">
                 </div>
             </form>
         `,
@@ -27707,11 +27709,11 @@ Object.assign(handlers, {
                 <p class="text-gray-600 mb-4">Share your checklist with team members to collaborate on tasks.</p>
                 <div class="form-group">
                     <label class="form-label" for="share-checklist-email">Email or Username</label>
-                    <input type="text" id="share-checklist-email" class="form-input" placeholder="Enter email address or username" aria-label="Share Checklist Email">
+                    <inputinput type="text" id="share-checklist-email" class="form-input" placeholder="Enter email address or username">
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="share-checklist-permission">Permission Level</label>
-                    <select id="share-checklist-permission" class="form-select" aria-label="Share Checklist Permission">
+                    <selectselect id="share-checklist-permission" class="form-select">
                         <option value="view">View Only</option>
                         <option value="edit">Can Edit</option>
                         <option value="admin">Full Access</option>
@@ -28584,16 +28586,16 @@ Object.assign(handlers, {
                 <div style="display: grid; gap: 12px;">
                     <div class="form-group">
                         <label class="form-label" for="landing-slug">Page Slug</label>
-                        <input type="text" id="landing-slug" class="form-input" placeholder="e.g., my-exclusive-offer" aria-label="Landing Slug">
+                        <inputinput type="text" id="landing-slug" class="form-input" placeholder="e.g., my-exclusive-offer">
                         <span class="form-hint">URL: vaultlister.com/[slug]</span>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="landing-title">Page Title</label>
-                        <input type="text" id="landing-title" class="form-input" placeholder="e.g., VaultLister Pro Offer" aria-label="Landing Title">
+                        <inputinput type="text" id="landing-title" class="form-input" placeholder="e.g., VaultLister Pro Offer">
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="landing-desc">Description</label>
-                        <textarea id="landing-desc" class="form-input" placeholder="Describe your offer..." style="resize: vertical; min-height: 100px;" aria-label="Landing Desc"></textarea>
+                        <textareatextarea id="landing-desc" class="form-input" placeholder="Describe your offer..." style="resize: vertical; min-height: 100px;"></textarea>
                     </div>
                 </div>
                 <button class="btn btn-primary" style="width: 100%; margin-top: 16px;" onclick="handlers.createLandingPage()">
@@ -28635,16 +28637,16 @@ Object.assign(handlers, {
                     <div style="display: grid; gap: 12px;">
                         <div class="form-group">
                             <label class="form-label" for="edit-landing-slug">Page Slug</label>
-                            <input type="text" id="edit-landing-slug" class="form-input" value="${escapeHtml(page.slug || '')}" aria-label="Edit Landing Slug">
+                            <inputinput type="text" id="edit-landing-slug" class="form-input" value="${escapeHtml(page.slug || '')}">
                             <span class="form-hint">URL: vaultlister.com/${escapeHtml(page.slug || '')}</span>
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="edit-landing-title">Page Title</label>
-                            <input type="text" id="edit-landing-title" class="form-input" value="${escapeHtml(page.title || '')}" aria-label="Edit Landing Title">
+                            <inputinput type="text" id="edit-landing-title" class="form-input" value="${escapeHtml(page.title || '')}">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="edit-landing-desc">Description</label>
-                            <textarea id="edit-landing-desc" class="form-input" style="resize: vertical; min-height: 100px;" aria-label="Edit Landing Desc">${escapeHtml(page.description || '')}</textarea>
+                            <textareatextarea id="edit-landing-desc" class="form-input" style="resize: vertical; min-height: 100px;">${escapeHtml(page.description || '')}</textarea>
                         </div>
                     </div>
                     <button class="btn btn-primary" style="width: 100%; margin-top: 16px;" onclick="handlers.saveLandingPage('${pageId}')">
@@ -28964,15 +28966,15 @@ Object.assign(handlers, {
                 <form id="create-report-form" onsubmit="handlers.createReport(event)">
                     <div class="form-group">
                         <label class="form-label" for="create-report-name">Report Name *</label>
-                        <input id="create-report-name" aria-label="e.g., Monthly Sales Report" type="text" class="form-input" name="name" required placeholder="e.g., Monthly Sales Report">
+                        <inputinput id="create-report-name" type="text" class="form-input" name="name" required placeholder="e.g., Monthly Sales Report">
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="create-description">Description</label>
-                        <textarea id="create-description" aria-label="What is this report for?" class="form-textarea" name="description" rows="2" placeholder="What is this report for?"></textarea>
+                        <textareatextarea id="create-description" class="form-textarea" name="description" rows="2" placeholder="What is this report for?"></textarea>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="create-report-type">Report Type *</label>
-                        <select id="create-report-type" class="form-select" name="type" aria-label="Type" required>
+                        <selectselect id="create-report-type" class="form-select" name="type" required>
                             <option value="">Select a type</option>
                             <option value="sales">Sales Report</option>
                             <option value="inventory">Inventory Report</option>
@@ -29073,7 +29075,7 @@ Object.assign(handlers, {
                 <form id="edit-report-form" onsubmit="handlers.updateReport('${id}', event)">
                     <div class="form-group">
                         <label class="form-label" for="edit-report-name">Report Name *</label>
-                        <input id="edit-report-name" aria-label="Name" type="text" class="form-input" name="name" required value="${escapeHtml(report.name)}">
+                        <inputinput id="edit-report-name" type="text" class="form-input" name="name" required value="${escapeHtml(report.name)}">
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="edit-description-2">Description</label>
@@ -29242,7 +29244,7 @@ Object.assign(handlers, {
                 <form id="custom-query-form" onsubmit="handlers.executeCustomQuery(event)">
                     <div class="form-group">
                         <label class="form-label" for="custom-sql-query">SQL Query *</label>
-                        <textarea id="custom-sql-query" aria-label="Query" class="form-textarea font-mono" name="query" rows="8" required placeholder="SELECT * FROM sales WHERE created_at > ? LIMIT 100"></textarea>
+                        <textareatextarea id="custom-sql-query" class="form-textarea font-mono" name="query" rows="8" required placeholder="SELECT * FROM sales WHERE created_at > ? LIMIT 100"></textarea>
                         <p class="text-xs text-gray-500 mt-2">Note: Only SELECT queries are allowed for security.</p>
                     </div>
                 </form>
@@ -29655,9 +29657,9 @@ Object.assign(handlers, {
             `
             <div class="modal-header"><h2 class="modal-title">${components.icon('plus', 20)} Create Custom Automation</h2><button class="modal-close" onclick="modals.close()" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>
             <div class="modal-body" style="max-height:70vh;overflow-y:auto;">
-                <div class="form-group mb-4"><label class="form-label" for="custom-auto-name">Automation Name</label><input type="text" id="custom-auto-name" class="form-input" placeholder="e.g., Weekly Price Drop for Stale Items" aria-label="Custom Auto Name"></div>
+                <div class="form-group mb-4"><label class="form-label" for="custom-auto-name">Automation Name</label><inputinput type="text" id="custom-auto-name" class="form-input" placeholder="e.g., Weekly Price Drop for Stale Items"></div>
                 <div class="flex gap-3 mb-4"><div class="form-group" style="flex:1;"><label class="form-label" for="custom-auto-platform">Platform</label><select id="custom-auto-platform" class="form-select" aria-label="Custom Auto Platform">${platforms.map((p) => '<option value="' + p + '">' + (p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1)) + '</option>').join('')}</select></div><div class="form-group" style="flex:1;"><label class="form-label">Category</label><select id="custom-auto-category" class="form-select" aria-label="Custom Auto Category">${categories.map((c) => '<option value="' + c + '">' + c.charAt(0).toUpperCase() + c.slice(1) + '</option>').join('')}</select></div></div>
-                <div class="form-group mb-4"><label class="form-label" for="custom-auto-desc">Description</label><textarea id="custom-auto-desc" class="form-input" rows="2" placeholder="What does this automation do?" aria-label="Custom Auto Desc"></textarea></div>
+                <div class="form-group mb-4"><label class="form-label" for="custom-auto-desc">Description</label><textareatextarea id="custom-auto-desc" class="form-input" rows="2" placeholder="What does this automation do?"></textarea></div>
                 <div class="form-group mb-4"><p class="form-label">Schedule</p><select id="custom-auto-schedule" class="form-select" onchange="document.getElementById('custom-auto-cron-input').style.display = this.value === 'custom' ? 'block' : 'none'" aria-label="Custom Auto Schedule"><option value="0 */6 * * *">Every 6 hours</option><option value="0 9 * * *">Daily at 9 AM</option><option value="0 9,21 * * *">Twice daily</option><option value="0 9 * * 1">Weekly</option><option value="custom">Custom Cron...</option></select><input type="text" id="custom-auto-cron-input" class="form-input mt-2" style="display:none;" placeholder="e.g., 0 */4 * * *" aria-label="Custom Auto Cron Input"></div>
                 <h3 class="text-md font-semibold mb-2">Conditions</h3>
                 <div id="custom-auto-conditions" class="mb-4"><div class="flex gap-2 mb-2 condition-row"><select class="form-select condition-type" aria-label="Condition type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select condition...</option>${conditionTypes.map((c) => '<option value="' + c.value + '" data-input="' + c.input + '" data-placeholder="' + (c.placeholder || '') + '">' + c.label + '</option>').join('')}</select><input type="text" class="form-input condition-value" aria-label="Condition value" style="flex:1;" placeholder="Value"></div></div>
@@ -30265,9 +30267,9 @@ Object.assign(handlers, {
                 components.icon('git-branch', 20) +
                 ' Create A/B Experiment</h2><button class="modal-close" aria-label="Close" onclick="modals.close()">' +
                 components.icon('close') +
-                '</button></div><div class="modal-body"><p class="text-sm text-gray-500 mb-4">Select a base rule to clone as variant B. Modify the variant\'s schedule or conditions to test different approaches.</p><div class="form-group mb-4"><label class="form-label" for="exp-base-rule">Base Rule (A)</label><select id="exp-base-rule" class="form-select" aria-label="Exp Base Rule">' +
+                '</button></div><div class="modal-body"><p class="text-sm text-gray-500 mb-4">Select a base rule to clone as variant B. Modify the variant\'s schedule or conditions to test different approaches.</p><div class="form-group mb-4"><label class="form-label" for="exp-base-rule">Base Rule (A)</label><selectselect id="exp-base-rule" class="form-select">' +
                 ruleOptions +
-                '</select></div><div class="form-group mb-4"><label class="form-label" for="exp-name">Experiment Name (optional)</label><input type="text" id="exp-name" class="form-input" placeholder="e.g., Share frequency test" aria-label="Exp Name"></div><div class="form-group mb-4"><label class="form-label">Notes</label><textarea id="exp-notes" class="form-input" rows="2" placeholder="What are you testing?" aria-label="Exp Notes"></textarea></div></div><div class="modal-footer"><button class="btn btn-ghost" onclick="modals.close()">Cancel</button><button class="btn btn-primary" onclick="handlers.saveExperiment()">' +
+                '</select></div><div class="form-group mb-4"><label class="form-label" for="exp-name">Experiment Name (optional)</label><inputinput type="text" id="exp-name" class="form-input" placeholder="e.g., Share frequency test"></div><div class="form-group mb-4"><label class="form-label">Notes</label><textarea id="exp-notes" class="form-input" rows="2" placeholder="What are you testing?" aria-label="Exp Notes"></textarea></div></div><div class="modal-footer"><button class="btn btn-ghost" onclick="modals.close()">Cancel</button><button class="btn btn-primary" onclick="handlers.saveExperiment()">' +
                 components.icon('git-branch', 14) +
                 ' Create Experiment</button></div>',
         );
@@ -30994,7 +30996,7 @@ Object.assign(handlers, {
                 <p class="text-sm text-gray-500 mb-4">Assign a category to ${selectedIds.length} selected item${selectedIds.length > 1 ? 's' : ''}.</p>
                 <div class="form-group">
                     <label class="form-label" for="bulk-cat-select">Category</label>
-                    <select id="bulk-cat-select" class="form-select" aria-label="Bulk Cat Select">
+                    <selectselect id="bulk-cat-select" class="form-select">
                         <option value="">— Remove category —</option>
                         ${catOptions}
                     </select>
@@ -31594,7 +31596,7 @@ Object.assign(handlers, {
                 <p class="text-sm text-gray-500 mb-4">Paste a URL to a JSON file containing automation rules. The file should have a rules array or a single rule object with name, type, platform, schedule, conditions, and actions fields.</p>
                 <div class="form-group">
                     <label class="form-label" for="import-url-input">JSON URL</label>
-                    <input type="text" id="import-url-input" class="form-input" placeholder="https://example.com/rules.json" aria-label="Import Url Input">
+                    <inputinput type="text" id="import-url-input" class="form-input" placeholder="https://example.com/rules.json">
                 </div>
             </div>
             <div class="modal-footer">
