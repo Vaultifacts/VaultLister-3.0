@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-01T05:35:31.075Z
-Commit: 65cc3eb5
+Generated at: 2026-05-01T05:51:04.971Z
+Commit: 02e287a9
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -25,7 +25,7 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 | Repo-wide unchecked checkbox hits | 583 |
 | Repo-wide unchecked checkbox hits included | 359 |
 | Repo-wide unchecked checkbox hits excluded or review-only | 224 |
-| Open-marker source files discovered | 212 |
+| Open-marker source files discovered | 209 |
 | Source TODO/FIXME hits | 15 |
 
 ## Source Coverage Audit
@@ -133,7 +133,6 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | .github/workflows/test-baseline-update.yml | 2 | 4 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/uptime-slack-alert.yml | 3 | 74 | Config/workflow text; parsed separately only if promoted |
 | .gitignore | 1 | 150 | Config/workflow text; parsed separately only if promoted |
-| package-lock.json | 8 | 2253 | Config/workflow text; parsed separately only if promoted |
 | package.json | 2 | 70 | Config/workflow text; parsed separately only if promoted |
 | public/api-docs/openapi.yaml | 9 | 3288 | Config/workflow text; parsed separately only if promoted |
 | docs/superpowers/specs/2026-04-12-ui-restructure-design.md | 1 | 120 | Design spec; implementation tasks live in plans/checklists |
@@ -208,8 +207,6 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | memory/TIER0_PLAYBOOK.md | 3 | 11 | Excluded: session memory, promote only after current verification |
 | data/qa-report-2026-04-04-chrome-walkthrough.md | 2 | 20 | Excluded: timestamped QA evidence, not current truth |
 | data/qa-report-2026-04-04-exhaustive.md | 4 | 39 | Excluded: timestamped QA evidence, not current truth |
-| data/qa-report-2026-04-04-final.md | 6 | 32 | Excluded: timestamped QA evidence, not current truth |
-| data/qa-report-2026-04-04.md | 40 | 6 | Excluded: timestamped QA evidence, not current truth |
 | docs/PERFECT_ANTI_DETECTION_SYSTEM.md | 10 | 68 | Included as anti-detection design gap source |
 | docs/COMPETITOR_GAP_INVENTORY_2026-04-19.md | 7 | 31 | Included as competitor intelligence gap source |
 | chrome-extension/README.md | 8 | 43 | Included as explicit checklist source |
