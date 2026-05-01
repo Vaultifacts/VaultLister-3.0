@@ -16202,25 +16202,32 @@ window.recommendationCards = recommendationCards;
 
 // Demand Heatmap
 const demandHeatmap = {
-    render(data) {
-        const categories = ['Tops', 'Bottoms', 'Dresses', 'Shoes', 'Bags', 'Accessories'];
+    render(data = {}) {
         const timeSlots = ['Morning', 'Afternoon', 'Evening', 'Night'];
+        const rows = Object.entries(data).filter(([, values]) => Array.isArray(values) && values.length > 0);
+
+        if (rows.length === 0) {
+            return '<div class="text-gray-500 text-sm text-center py-4">No demand heatmap data yet</div>';
+        }
+
+        const slotCount = Math.max(...rows.map(([, values]) => values.length), 1);
+        const visibleSlots = Array.from({ length: slotCount }, (_, index) => timeSlots[index] || `Period ${index + 1}`);
 
         return `
             <div class="demand-heatmap">
                 <div class="heatmap-header">
                     <div class="heatmap-corner"></div>
-                    ${timeSlots.map((t) => `<div class="heatmap-time">${t}</div>`).join('')}
+                    ${visibleSlots.map((t) => `<div class="heatmap-time">${escapeHtml(t)}</div>`).join('')}
                 </div>
-                ${categories
-                    .map((cat) => {
-                        const catData = data[cat] || [0.3, 0.5, 0.8, 0.4];
+                ${rows
+                    .map(([cat, catData]) => {
                         return `
                         <div class="heatmap-row">
-                            <div class="heatmap-category">${cat}</div>
-                            ${catData
-                                .map((val) => {
-                                    const intensity = Math.min(1, val);
+                            <div class="heatmap-category">${escapeHtml(cat)}</div>
+                            ${visibleSlots
+                                .map((slot, index) => {
+                                    const raw = Number(catData[index]) || 0;
+                                    const intensity = Math.max(0, Math.min(1, raw > 1 ? raw / 100 : raw));
                                     const bg =
                                         intensity > 0.7
                                             ? 'var(--success)'
@@ -16408,6 +16415,26 @@ const supplierCardEnhanced = {
                       ? 'Good'
                       : 'Needs Improvement'
                 : 'No Data';
+        let priceHistory = supplier.price_history ?? supplier.priceHistory;
+        if (typeof priceHistory === 'string') {
+            try {
+                priceHistory = JSON.parse(priceHistory);
+            } catch {
+                priceHistory = [];
+            }
+        }
+        const priceHistoryData = Array.isArray(priceHistory)
+            ? priceHistory
+                  .map((point) => {
+                      const value =
+                          point && typeof point === 'object'
+                              ? (point.price ?? point.value ?? point.amount ?? point.avg_price)
+                              : point;
+                      const price = Number(value);
+                      return Number.isFinite(price) ? price : null;
+                  })
+                  .filter((price) => price !== null)
+            : [];
 
         return `
             <div class="supplier-card-enhanced">
@@ -16446,7 +16473,7 @@ const supplierCardEnhanced = {
                     </div>
                     <div class="supplier-sparkline-container">
                         <span class="text-xs text-gray-500">Price History</span>
-                        ${priceTrendSparkline.render(supplier.price_history || [45, 42, 48, 44, 40, 38, 35])}
+                        ${priceTrendSparkline.render(priceHistoryData)}
                     </div>
                 </div>
                 <div class="supplier-card-footer">
@@ -16706,13 +16733,25 @@ const trendingKeywords = {
 
 // Price Position Chart
 const pricePositionChart = {
-    render(data) {
-        const yourPosition = data.yourPosition || { price: 45, quality: 75 };
-        const competitors = data.competitors || [
-            { name: 'Comp A', price: 55, quality: 80 },
-            { name: 'Comp B', price: 35, quality: 60 },
-            { name: 'Comp C', price: 50, quality: 70 },
-        ];
+    render(data = {}) {
+        const clampPosition = (value) => Math.max(0, Math.min(100, value));
+        const normalizePoint = (point) => {
+            if (!point || typeof point !== 'object') return null;
+            const price = Number(point.price ?? point.price_position ?? point.priceScore);
+            const quality = Number(point.quality ?? point.quality_score ?? point.qualityScore);
+            if (!Number.isFinite(price) || !Number.isFinite(quality)) return null;
+            return {
+                name: point.name || point.title || 'Competitor',
+                price: clampPosition(price),
+                quality: clampPosition(quality),
+            };
+        };
+        const yourPosition = normalizePoint(data.yourPosition || data.your_position);
+        const competitors = Array.isArray(data.competitors) ? data.competitors.map(normalizePoint).filter(Boolean) : [];
+
+        if (!yourPosition && competitors.length === 0) {
+            return '<div class="text-gray-500 text-sm text-center py-4">No price position data yet</div>';
+        }
 
         return `
             <div class="price-position-chart">
@@ -16727,10 +16766,14 @@ const pricePositionChart = {
                     <div style="position: absolute; bottom: 10px; right: 10px; font-size: 10px; color: var(--gray-400);">Value</div>
 
                     <!-- Your position -->
-                    <div class="position-dot you" style="position: absolute; left: ${yourPosition.price}%; bottom: ${yourPosition.quality}%; transform: translate(-50%, 50%);">
+                    ${
+                        yourPosition
+                            ? `<div class="position-dot you" style="position: absolute; left: ${yourPosition.price}%; bottom: ${yourPosition.quality}%; transform: translate(-50%, 50%);">
                         <div class="dot-marker" style="width: 16px; height: 16px; background: var(--primary); border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></div>
                         <div class="dot-label" style="position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 600; color: var(--primary); white-space: nowrap;">You</div>
-                    </div>
+                    </div>`
+                            : ''
+                    }
 
                     <!-- Competitors -->
                     ${competitors
@@ -16959,7 +17002,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'b6641fb3';
+    const v = '18e0ed51';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function (resolve, reject) {
@@ -21749,12 +21792,16 @@ const pages = {
                 hiddenTabs = [];
             }
         }
+        const IS_PROD = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+        const DEV_ONLY_TABS = ['predictions', 'market-intel', 'sourcing'];
+        if (IS_PROD) hiddenTabs = [...new Set([...hiddenTabs, ...DEV_ONLY_TABS])];
         const removedAnalyticsTabs = new Set([
             'live',
             'performance',
             'profitability',
             'sales-analytics',
             'purchases-analytics',
+            ...(IS_PROD ? DEV_ONLY_TABS : []),
         ]);
         const requestedTab = store.state.analyticsTab || 'graphs';
         const currentTab = removedAnalyticsTabs.has(requestedTab) ? 'graphs' : requestedTab;
@@ -23846,7 +23893,7 @@ const pages = {
                                                 const inventoryItem = (store.state.inventory || []).find(
                                                     (i) => i.id === item.inventoryId,
                                                 );
-                                                const itemTitle = inventoryItem ? inventoryItem.title : 'Unknown Item';
+                                                const itemTitle = inventoryItem?.title || item.saleTitle || 'Unknown Item';
                                                 const avgSalePrice = item.totalRevenue / item.salesCount;
 
                                                 return `
@@ -23858,7 +23905,7 @@ const pages = {
                                                     </td>
                                                     <td>
                                                         <div class="font-medium">${escapeHtml(itemTitle)}</div>
-                                                        <div class="text-xs text-gray-500">${item.inventoryId}</div>
+                                                        ${item.inventoryId ? `<div class="text-xs text-gray-500">${item.inventoryId}</div>` : ''}
                                                     </td>
                                                     <td class="font-medium">${item.salesCount}</td>
                                                     <td class="font-medium text-success">C$${item.totalRevenue.toFixed(2)}</td>

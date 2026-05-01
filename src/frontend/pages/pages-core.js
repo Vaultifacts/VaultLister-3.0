@@ -1697,25 +1697,34 @@ const pages = {
                 hiddenTabs = [];
             }
         }
+        const IS_PROD = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+        const DEV_ONLY_TABS = ['predictions', 'market-intel', 'sourcing'];
+        if (IS_PROD) hiddenTabs = [...new Set([...hiddenTabs, ...DEV_ONLY_TABS])];
         const removedAnalyticsTabs = new Set([
             'live',
             'performance',
             'profitability',
             'sales-analytics',
             'purchases-analytics',
+            ...(IS_PROD ? DEV_ONLY_TABS : []),
         ]);
         const requestedTab = store.state.analyticsTab || 'graphs';
         const currentTab = removedAnalyticsTabs.has(requestedTab) ? 'graphs' : requestedTab;
+        const toMetricNumber = (value, fallback = 0) => {
+            if (value === null || value === undefined || value === '') return fallback;
+            const number = Number(value);
+            return Number.isFinite(number) ? number : fallback;
+        };
 
         // Calculate stats from data
-        const totalRevenue = analyticsData.stats?.sales?.revenue || 0;
-        const totalProfit = analyticsData.stats?.sales?.profit || 0;
-        const totalSales = analyticsData.stats?.sales?.total || 1;
+        const totalRevenue = toMetricNumber(analyticsData.stats?.sales?.revenue);
+        const totalProfit = toMetricNumber(analyticsData.stats?.sales?.profit);
+        const totalSales = toMetricNumber(analyticsData.stats?.sales?.total);
         const profitMargin = totalRevenue > 0 ? Math.round((totalProfit / totalRevenue) * 100) : 0;
 
-        const totalInventory = analyticsData.stats?.inventory?.total || 1;
-        const soldItems = analyticsData.stats?.inventory?.sold || 0;
-        const sellThrough = Math.round((soldItems / totalInventory) * 100);
+        const totalInventory = toMetricNumber(analyticsData.stats?.inventory?.total);
+        const soldItems = toMetricNumber(analyticsData.stats?.inventory?.sold);
+        const sellThrough = totalInventory > 0 ? Math.round((soldItems / totalInventory) * 100) : 0;
 
         // Prepare chart data - Sales trend (last 30 days)
         const salesTrendData = (salesAnalytics.salesData || [])
@@ -1747,6 +1756,59 @@ const pages = {
 
         // Calculate sales tab stats
         const salesList = store.state.sales || [];
+        const saleDate = (sale) => {
+            const value = sale.sold_at || sale.created_at || sale.sale_date || sale.date;
+            if (!value) return null;
+            const date = new Date(value);
+            return Number.isNaN(date.getTime()) ? null : date;
+        };
+        const calcPercentChange = (current, previous) =>
+            previous !== null && previous > 0 ? ((current - previous) / previous) * 100 : null;
+        const calcPointChange = (current, previous) => (previous !== null ? current - previous : null);
+        const periodDays = { '7d': 7, '30d': 30, '90d': 90, '6m': 183, '1y': 365 }[currentPeriod] || null;
+        const now = new Date();
+        const currentPeriodStart = periodDays ? new Date(now.getTime() - periodDays * 24 * 60 * 60 * 1000) : null;
+        const previousPeriodStart = periodDays
+            ? new Date(now.getTime() - periodDays * 2 * 24 * 60 * 60 * 1000)
+            : null;
+        const previousPeriodSales =
+            currentPeriodStart && previousPeriodStart
+                ? salesList.filter((sale) => {
+                      const date = saleDate(sale);
+                      return date && date >= previousPeriodStart && date < currentPeriodStart;
+                  })
+                : [];
+        const previousStats = analyticsData.previousStats || analyticsData.previousPeriod || salesAnalytics.previousPeriod || null;
+        const prevPeriodRevenue = previousStats
+            ? toMetricNumber(previousStats.sales?.revenue ?? previousStats.revenue, null)
+            : previousPeriodSales.length > 0
+              ? previousPeriodSales.reduce((sum, sale) => sum + toMetricNumber(sale.sale_price), 0)
+              : null;
+        const previousSalesCount = previousStats
+            ? toMetricNumber(previousStats.sales?.total ?? previousStats.salesCount, null)
+            : previousPeriodSales.length > 0
+              ? previousPeriodSales.length
+              : null;
+        const previousProfit = previousStats
+            ? toMetricNumber(previousStats.sales?.profit ?? previousStats.profit, null)
+            : previousPeriodSales.length > 0
+              ? previousPeriodSales.reduce((sum, sale) => sum + toMetricNumber(sale.net_profit), 0)
+              : null;
+        const previousProfitMargin =
+            prevPeriodRevenue !== null && prevPeriodRevenue > 0 && previousProfit !== null
+                ? Math.round((previousProfit / prevPeriodRevenue) * 100)
+                : null;
+        const previousInventoryTotal = previousStats
+            ? toMetricNumber(previousStats.inventory?.total ?? previousStats.inventoryTotal, null)
+            : null;
+        const previousSoldItems = previousStats
+            ? toMetricNumber(previousStats.inventory?.sold ?? previousStats.soldItems, null)
+            : null;
+        const previousSellThrough =
+            previousInventoryTotal !== null && previousInventoryTotal > 0 && previousSoldItems !== null
+                ? Math.round((previousSoldItems / previousInventoryTotal) * 100)
+                : null;
+        const revenueGrowth = calcPercentChange(totalRevenue, prevPeriodRevenue);
         const salesTabStats = {
             totalSales: salesList.length,
             totalRevenue: salesList.reduce((sum, s) => sum + (s.sale_price || 0), 0),
@@ -1893,12 +1955,7 @@ const pages = {
         const finNetProfit = finRevenue - finExpenses;
         const finProfitMargin = finRevenue > 0 ? ((finNetProfit / finRevenue) * 100).toFixed(1) : '0.0';
         const finCashFlow = finRevenue - finExpenses;
-        const budgetCategories = store.state.budgetCategories || [
-            { name: 'Marketing', spent: 0, budget: 0 },
-            { name: 'Shipping', spent: 0, budget: 0 },
-            { name: 'Supplies', spent: 0, budget: 0 },
-            { name: 'Fees', spent: 0, budget: 0 },
-        ];
+        const budgetCategories = Array.isArray(store.state.budgetCategories) ? store.state.budgetCategories : [];
 
         const financialsAnalyticsTabContent = `
     <div class="grid grid-cols-2 gap-6 mb-6">
@@ -1962,21 +2019,28 @@ const pages = {
             <div class="card-header"><h2 class="card-title">${components.icon('pie-chart', 18)} Budget Progress</h2></div>
             <div class="card-body">
                 <div class="flex flex-col gap-3">
-                    ${budgetCategories
-                        .map(
-                            (cat) => `
+                    ${
+                        budgetCategories.length === 0
+                            ? '<div class="text-gray-500 text-sm text-center py-4">No budget categories yet</div>'
+                            : budgetCategories
+                                  .map((cat) => {
+                                      const spent = toMetricNumber(cat.spent ?? cat.actual);
+                                      const budget = toMetricNumber(cat.budget);
+                                      const percent = budget > 0 ? Math.min(100, (spent / budget) * 100) : 0;
+                                      return `
                         <div>
                             <div class="flex justify-between text-sm mb-1">
-                                <span>${cat.name}</span>
-                                <span class="text-gray-500">C$${cat.spent} / C$${cat.budget}</span>
+                                <span>${escapeHtml(cat.name || cat.category || 'Uncategorized')}</span>
+                                <span class="text-gray-500">C$${spent} / C$${budget}</span>
                             </div>
                             <div style="height:6px;background:var(--gray-200);border-radius:3px;">
-                                <div style="width:${Math.min(100, (cat.spent / cat.budget) * 100)}%;height:100%;background:var(--primary);border-radius:3px;"></div>
+                                <div style="width:${percent}%;height:100%;background:var(--primary);border-radius:3px;"></div>
                             </div>
                         </div>
-                    `,
-                        )
-                        .join('')}
+                    `;
+                                  })
+                                  .join('')
+                    }
                 </div>
             </div>
         </div>
@@ -2562,29 +2626,44 @@ const pages = {
             {
                 label: 'Revenue',
                 value: 'C$' + totalRevenue.toFixed(0),
-                change: 0,
+                change: revenueGrowth,
                 target: totalRevenue * 1.2,
                 actual: totalRevenue,
             },
             {
                 label: 'Sales Count',
                 value: totalSales.toString(),
-                change: 0,
+                change: calcPercentChange(totalSales, previousSalesCount),
                 target: Math.ceil(totalSales * 1.15),
                 actual: totalSales,
             },
-            { label: 'Profit Margin', value: profitMargin + '%', change: 0, target: 35, actual: profitMargin },
-            { label: 'Sell-Through', value: sellThrough + '%', change: 0, target: 40, actual: sellThrough },
+            {
+                label: 'Profit Margin',
+                value: profitMargin + '%',
+                change: calcPointChange(profitMargin, previousProfitMargin),
+                target: 35,
+                actual: profitMargin,
+            },
+            {
+                label: 'Sell-Through',
+                value: sellThrough + '%',
+                change: calcPointChange(sellThrough, previousSellThrough),
+                target: 40,
+                actual: sellThrough,
+            },
         ];
 
-        // Calculate performance trends
-        const prevPeriodRevenue = 0; // No historical comparison data
-        const revenueGrowth =
-            prevPeriodRevenue > 0 ? ((totalRevenue - prevPeriodRevenue) / prevPeriodRevenue) * 100 : 0;
+        const revenueGrowthLabel =
+            revenueGrowth === null
+                ? 'No prior period data'
+                : `${revenueGrowth >= 0 ? '+' : ''}${revenueGrowth.toFixed(1)}% vs prev`;
         const avgOrderValue = totalSales > 0 ? totalRevenue / totalSales : 0;
 
         // Performance indicators
-        const performanceLevel = revenueGrowth >= 10 ? 'growing' : revenueGrowth >= 0 ? 'stable' : 'declining';
+        const performanceLevel =
+            revenueGrowth === null ? 'stable' : revenueGrowth >= 10 ? 'growing' : revenueGrowth >= 0 ? 'stable' : 'declining';
+        const performanceLabel =
+            revenueGrowth === null ? 'No prior data' : performanceLevel.charAt(0).toUpperCase() + performanceLevel.slice(1);
 
         return `
             <div class="page-header">
@@ -2722,7 +2801,7 @@ const pages = {
                                       ? components.icon('minus', 16)
                                       : components.icon('trending-down', 16)
                             }
-                            <span>${performanceLevel.charAt(0).toUpperCase() + performanceLevel.slice(1)}</span>
+                            <span>${performanceLabel}</span>
                         </div>
                     </div>
 
@@ -2730,8 +2809,8 @@ const pages = {
                         <div class="snapshot-metric primary">
                             <div class="metric-value-large">C$${totalRevenue.toLocaleString()}</div>
                             <div class="metric-label">Total Revenue</div>
-                            <div class="metric-change ${revenueGrowth >= 0 ? 'positive' : 'negative'}">
-                                ${revenueGrowth >= 0 ? '+' : ''}${revenueGrowth.toFixed(1)}% vs prev
+                            <div class="metric-change ${revenueGrowth === null ? '' : revenueGrowth >= 0 ? 'positive' : 'negative'}">
+                                ${revenueGrowthLabel}
                             </div>
                         </div>
                         <div class="snapshot-metric">
@@ -3677,6 +3756,7 @@ const pages = {
                             if (!revenueByItem[sale.inventory_id]) {
                                 revenueByItem[sale.inventory_id] = {
                                     inventoryId: sale.inventory_id,
+                                    saleTitle: sale.inventory_title || sale.listing_title || null,
                                     totalRevenue: 0,
                                     totalProfit: 0,
                                     salesCount: 0,
@@ -3718,7 +3798,7 @@ const pages = {
                                                 const inventoryItem = (store.state.inventory || []).find(
                                                     (i) => i.id === item.inventoryId,
                                                 );
-                                                const itemTitle = inventoryItem ? inventoryItem.title : 'Unknown Item';
+                                                const itemTitle = inventoryItem?.title || item.saleTitle || 'Unknown Item';
                                                 const avgSalePrice = item.totalRevenue / item.salesCount;
 
                                                 return `
@@ -3730,7 +3810,7 @@ const pages = {
                                                     </td>
                                                     <td>
                                                         <div class="font-medium">${escapeHtml(itemTitle)}</div>
-                                                        <div class="text-xs text-gray-500">${item.inventoryId}</div>
+                                                        ${item.inventoryId ? `<div class="text-xs text-gray-500">${item.inventoryId}</div>` : ''}
                                                     </td>
                                                     <td class="font-medium">${item.salesCount}</td>
                                                     <td class="font-medium text-success">C$${item.totalRevenue.toFixed(2)}</td>
