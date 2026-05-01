@@ -16953,7 +16953,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '89e5b54e';
+    const v = '9501d8ae';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function (resolve, reject) {
@@ -19816,7 +19816,7 @@ const components = {
             { id: 'landscape', label: 'Landscape (16:9)', width: 1200, height: 800 },
             { id: 'ebay', label: 'eBay (1600x1600)', width: 1600, height: 1600 },
             { id: 'poshmark', label: 'Poshmark (1080x1080)', width: 1080, height: 1080 },
-            { id: 'whatnot', label: 'Mercari (1280x1280)', width: 1280, height: 1280 },
+            { id: 'whatnot', label: 'Whatnot (1280x1280)', width: 1280, height: 1280 },
         ];
 
         return `

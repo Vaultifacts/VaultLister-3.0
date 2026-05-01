@@ -968,8 +968,8 @@ Be specific and accurate. Only include what you can confidently detect from the 
                     if (contrast && contrast !== 0) transformations.push(`e_contrast:${contrast}`);
                     if (saturation && saturation !== 0) transformations.push(`e_saturation:${saturation}`);
                     if (warmth && warmth !== 0) {
-                        const tintColor = warmth > 0 ? 'FF6600' : '0066FF';
-                        transformations.push(`e_tint:${Math.abs(warmth)}:${tintColor}`);
+                        transformations.push(`e_blue:${-warmth}`);
+                        transformations.push(`e_red:${warmth}`);
                     }
 
                     if (transformations.length === 0) {

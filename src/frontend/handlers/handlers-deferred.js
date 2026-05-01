@@ -21922,6 +21922,7 @@ Object.assign(handlers, {
             return;
         }
 
+        const _cloudName = store.state.cloudinaryCloudName;
         store.setState({
             photoEditorOpen: true,
             photoEditorImageId: imageId,
@@ -21934,8 +21935,8 @@ Object.assign(handlers, {
                 cropHeight: null,
                 cropPreset: null,
             },
-            photoEditorPreviewUrl: image.cloudinary_public_id
-                ? `https://res.cloudinary.com/vaultlister/image/upload/c_limit,w_800/${image.cloudinary_public_id}`
+            photoEditorPreviewUrl: image.cloudinary_public_id && _cloudName
+                ? `https://res.cloudinary.com/${_cloudName}/image/upload/c_limit,w_800/${image.cloudinary_public_id}`
                 : `/api/image-bank/${image.id}/file`,
             photoEditorCloudinaryRequired: false,
             photoEditorLoading: false,
@@ -22067,8 +22068,8 @@ Object.assign(handlers, {
 
         if (!photoEditorImage) return;
 
-        const localUrl = photoEditorImage.cloudinary_public_id
-            ? `https://res.cloudinary.com/vaultlister/image/upload/c_limit,w_800/${photoEditorImage.cloudinary_public_id}`
+        const localUrl = photoEditorImage.cloudinary_public_id && cloudinaryCloudName
+            ? `https://res.cloudinary.com/${cloudinaryCloudName}/image/upload/c_limit,w_800/${photoEditorImage.cloudinary_public_id}`
             : `/api/image-bank/${photoEditorImage.id}/file`;
         if (!cloudinaryConfigured) {
             // Cloudinary not set up — use local file, AI transformations unavailable
