@@ -1248,12 +1248,7 @@ Object.assign(pages, {
                                                 ? `
                                             <td>
                                                 <div class="font-medium">${escapeHtml(listing.title)}</div>
-                                                <div class="text-xs text-gray-500">
-                                                    ${listing.inventory_id}
-                                                    <span class="listing-char-count ${(listing.title || '').length < 20 ? 'short' : (listing.title || '').length > 80 ? 'long' : 'good'}" style="margin-left: 8px;">
-                                                        ${(listing.title || '').length} chars
-                                                    </span>
-                                                </div>
+
                                             </td>
                                         `
                                                 : ''

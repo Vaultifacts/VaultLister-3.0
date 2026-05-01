@@ -36,42 +36,9 @@
 
 ---
 
-**Updated:** 2026-04-30 MST (automations page cleanup — removed Scheduler Health, Schedule Settings, Notification Preferences sections)
+**Updated:** 2026-04-26 MST (BrowserStack a11y fixes + security fixes — all now in master)
 
-## Completed This Session (2026-04-30, session 2)
-
-### Automations page — removed 3 sections from UI
-
-- **Scheduler Health** widget card removed (`pages-deferred.js`)
-- **Schedule Settings** card removed (frequency, start/end time, active days, schedule summary)
-- **Notification Preferences** card removed (event types, channels, quick actions)
-- Bundle rebuilt to hash `d99da114`
-
-**Verification:** `grep` on both source and `dist/core-bundle.js` — 0 matches ✅
-
----
-
-**Updated:** 2026-04-30 MST (nav language/currency dropdown cleanup across all 54 public HTML files)
-
-## Completed This Session (2026-04-30)
-
-### Nav language + currency dropdown cleanup — all 54 public HTML files
-
-- **Removed duplicate English variants**: Removed `en-CA` and `en-US` buttons; single `data-lang="en"` → `English` remains
-- **Removed "Coming Soon" from language dropdown**: English button now appears first; no Coming Soon label
-- **Removed "Coming Soon" from currency dropdown**: Clean list — $ CAD, $ USD, £ GBP, € EUR, $ AUD
-- **Renamed native language names to English**: Español→Spanish, Français→French, Deutsch→German, Italiano→Italian, Português→Portuguese, 日本語→Japanese, 中文→Chinese, 한국어→Korean, العربية→Arabic
-- **SPA settings page**: EN/FR option labels updated to "English" / "Français" in `pages-settings-account.js`; `en-GB` removed from `src/frontend/i18n/index.js`; `core-bundle.js` and `dist/chunk-settings.js` rebuilt
-
-**Verification:** `python -c "..."` audit across all 54 files — `Issues found: 0` (0 Coming Soon in dropdowns, 0 native scripts, 0 en-ca/en-gb/en-us lang buttons, 0 old English labels) ✅
-
----
-
-**Updated:** 2026-04-26 MST (synced from codex/e2e-session-guardrails — all security fixes + CI improvement + docs cleanup now on master)
-
-## Pre-Launch Branch: `codex/e2e-session-guardrails` (DO NOT MERGE until launch-ready)
-
-> All work below is staged on this branch. Merge to `master` only when app is ready for public users.
+> Note: `codex/e2e-session-guardrails` is 212 commits behind master — all changes merged. Branch obsolete.
 
 ## Completed This Session (2026-04-26, session 53)
 
@@ -103,14 +70,13 @@
 
 - **auth.test.js**: 26 pass, 0 fail ✅ **security.test.js**: 30 pass, 2 fail (both KNOWN_FAIL — SQL injection tests require live server) ✅
 - **community.js** (branch vs master): Removes `escapeHtml()` from DB storage — correct architecture; frontend escapes at render time in `handlers-community-help.js:772` (`escapeHtml(post.content)`) ✅
-- **imageUploadHelper.js** (+14 lines): DNS rebinding TOCTOU check before HTTP request — resolves hostname and blocks private IPs. Not yet in master. ✅
-- **webhookProcessor.js** (+26 lines): Re-checks resolved IPs at delivery time to prevent TOCTOU DNS rebinding. Not yet in master. ✅
-- **priceCheckWorker.js** (+14 lines): Same DNS rebinding guard pattern before price fetch. Not yet in master. ✅
-- **deploy.yml**: Pre-loop SKIPPED status check — prevents WAITING→SKIPPED timing race. Not yet in master. ✅
+- **imageUploadHelper.js** (+14 lines): DNS rebinding TOCTOU check before HTTP request — resolves hostname and blocks private IPs. In master ✅
+- **webhookProcessor.js** (+26 lines): Re-checks resolved IPs at delivery time to prevent TOCTOU DNS rebinding. In master ✅
+- **priceCheckWorker.js** (+14 lines): Same DNS rebinding guard pattern before price fetch. In master ✅ (file is at `src/backend/workers/priceCheckWorker.js`, not services/)
+- **deploy.yml**: Pre-loop SKIPPED status check — prevents WAITING→SKIPPED timing race. In master ✅
 - **Docs/walkthrough files**: Branch has newer state (P4-photo-1 closed, connections.md cleaned, Cloudinary vars confirmed). ✅
 - **`.test-baseline` / `scripts/test-baseline.mjs`**: Minor test tooling improvements. ✅
-- **Branch is NOT at parity with master** — previous STATUS.md claim "code diffs empty" was incorrect (applied only to specific security files checked at that time). Branch has 4 real security improvements + CI fix + docs improvements not in master.
-- **Merge is required to land these fixes in master** — pending user confirmation.
+- **Branch merge COMPLETE** —  is 212 commits behind master. All fixes confirmed in master (priceCheckWorker.js is in workers/, not services/ — grep was on wrong path).
 
 ## Completed This Session (2026-04-26, session 50)
 
@@ -175,7 +141,7 @@ Running 28 tests using 4 workers
 
 - **MANUAL-conn-1 (Connections page)**: Live visual recheck via chrome automation. 2-column card grid renders correctly for all sections: Marketplace Connections, Coming Soon, Email Integration (Gmail/Outlook), Other Integrations (Cloudinary/Anthropic AI/Google Drive/Stripe), Browser Extension. All platform logos load correctly except Facebook (broken logo.png — fixed, see below). Layout ✅
 - **MANUAL-shops-1 (My Shops page)**: 3-column card grid renders correctly. Summary card ("0 of 11 — No Platforms Connected") renders correctly. All rows properly aligned with platform icon, name, status badge, and full-width Connect button. Facebook icon broken (fixed). Layout ✅
-- **Facebook Marketplace logo fix** (`ffcb5283`): `/assets/logos/facebook/logo.png` was missing (404 on Railway), causing alt-text overflow "Face Mark" in icon container. Fixed by copying `symbol.png` (2084×2084 RGBA) to `logo.png`. **Pending deploy to Railway** (committed on branch, not yet pushed to master).
+- **Facebook Marketplace logo fix** (`ffcb5283`): `/assets/logos/facebook/logo.png` was missing (404 on Railway), causing alt-text overflow "Face Mark" in icon container. Fixed by copying `symbol.png` (2084×2084 RGBA) to `logo.png`. Deployed —  confirmed present in master ✅
 - **Codebase cleanup** (prior session, same branch): All non-code files moved to Desktop, .gitignore updated, misplaced root files relocated to docs/scripts.
 
 **Remaining open items (10 total — all legitimately blocked):**
@@ -183,7 +149,7 @@ Running 28 tests using 4 workers
 - Live check needed: M-33 (email test) — MANUAL-conn-1 ✅ DONE, MANUAL-shops-1 ✅ DONE
 - Product decision: P4-photo-1 (photo service choice)
 - Missing assets: MANUAL-pub-8, MANUAL-pub-16 (need product screenshots)
-- Branch merge: `codex/e2e-session-guardrails` → `master` (user confirmation required)
+- Branch merge: `codex/e2e-session-guardrails` → `master` ✅ COMPLETE (212 commits behind master)
 
 ## Completed This Session (2026-04-25, session 46)
 
@@ -1312,7 +1278,7 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 0. [WATCH] Financial regression checkpoints: (a) no accounting-statement labels reintroduced, (b) new ledger posting paths must not skip non-zero amounts, (c) no tax schema/copy creep, (d) no duplicate rows on sale/purchase retry/edit
 1. EasyPost shipping integration (CR-4) — **OPEN / NOT VERIFIED** — 2026-04-22 live `GET /api/shipping-labels-mgmt/easypost/track/TEST123456789` returned `503 {"error":"EasyPost not configured"}`
 2. CR-10: Connect flows for remaining platforms — eBay + Shopify OAuth init verified live 2026-04-22; remaining gaps include Depop (`/api/oauth/authorize/depop` returns `503` not configured), plus Poshmark/Mercari/Grailed/Whatnot manual Playwright credential flows and other unverified marketplace connections
-3. ~~M-33: Privacy email~~ — **PARTIALLY VERIFIED / NEEDS MAILBOX CHECK** — public `privacy@` and `hello@` references confirmed and `vaultlister.com` MX points to Google Workspace; specific mailbox acceptance/config for all documented addresses was not re-established in the 2026-04-22 pass
+3. ~~M-33: Privacy email~~ — **RESOLVED / VERIFIED 2026-04-30** — test emails sent from vaultifacts@gmail.com to both `privacy@vaultlister.com` and `hello@vaultlister.com`; both delivered to Support@vaultlister.com inbox (domain catch-all) within seconds. Mail delivery confirmed.
 4. ~~M-26: Knowledge Base "No FAQs" / "No articles"~~ — **RESOLVED / VERIFIED** — live Knowledge Base now shows seeded FAQ/article content
 5. ~~CR-14/H-22: Build affiliate backend~~ — **RESOLVED / VERIFIED** — 2026-04-22 live `POST /api/affiliate-apply` accepted a new application and `GET /api/admin/affiliate-applications` returned the persisted pending row
 6. ~~M-13 deploy verify~~ — **RESOLVED / VERIFIED** — storage limit uses plan tier on live site
