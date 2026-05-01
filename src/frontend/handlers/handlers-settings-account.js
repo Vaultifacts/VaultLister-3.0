@@ -744,77 +744,53 @@ Object.assign(handlers, {
         );
     },
 
-    setup2FAAuthenticator: function () {
-        // Generate a mock TOTP secret for demo purposes
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-        let secret = '';
-        const secretBytes = crypto.getRandomValues(new Uint8Array(16));
-        for (let i = 0; i < 16; i++) secret += chars[secretBytes[i] & 0x1f]; // 0x1F=31, chars.length=32=2^5, no modulo bias
-        const formatted = secret.match(/.{1,4}/g).join(' ');
-
-        modals.show(`
-            <div class="modal-header">
-                <h2 class="modal-title">${components.icon('lock', 20)} Authenticator App Setup</h2>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
-            </div>
-            <div class="modal-body">
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <p style="color: var(--gray-600); margin-bottom: 16px;">Scan this QR code with your authenticator app, or enter the secret key manually.</p>
-                    <div style="width: 180px; height: 180px; background: var(--gray-100); border-radius: 12px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; border: 2px dashed var(--gray-300);">
-                        <div style="text-align: center; color: var(--gray-500); font-size: 12px;">
-                            ${components.icon('qrCode', 48)}
-                            <div style="margin-top: 8px;">QR Code</div>
-                        </div>
-                    </div>
-                    <div style="background: var(--gray-50); padding: 12px; border-radius: 8px; font-family: monospace; font-size: 16px; letter-spacing: 2px; user-select: all;">
-                        ${formatted}
-                    </div>
-                    <p style="font-size: 12px; color: var(--gray-500); margin-top: 8px;">Save this secret key — you'll need it if you lose your device</p>
+    setup2FAAuthenticator: async function () {
+        try {
+            const data = await api.request('POST', '/api/security/mfa/setup');
+            const formattedSecret = data.secret.match(/.{1,4}/g).join(' ');
+            modals.show(`
+                <div class="modal-header">
+                    <h2 class="modal-title">${components.icon('lock', 20)} Authenticator App Setup</h2>
+                    <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
                 </div>
-                <form onsubmit="handlers.verify2FACode(event, 'authenticator')">
-                    <div class="form-group">
-                        <label class="form-label" for="hsa-enter-the-6-digit-code-from-your-app">Enter the 6-digit code from your app</label>
-                        <inputinput id="hsa-enter-the-6-digit-code-from-your-app" type="text" class="form-input" name="code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" style="text-align: center; font-size: 24px; letter-spacing: 8px;" required>
+                <div class="modal-body">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <p style="color: var(--gray-600); margin-bottom: 16px;">Scan this QR code with your authenticator app, or enter the secret key manually.</p>
+                        <div style="width: 180px; height: 180px; border-radius: 12px; overflow: hidden; margin: 0 auto 16px;">
+                            <img src="${escapeHtml(data.qrCode)}" alt="Authenticator QR code" style="width: 100%; height: 100%;" />
+                        </div>
+                        <div style="background: var(--gray-50); padding: 12px; border-radius: 8px; font-family: monospace; font-size: 16px; letter-spacing: 2px; user-select: all;">
+                            ${escapeHtml(formattedSecret)}
+                        </div>
+                        <p style="font-size: 12px; color: var(--gray-500); margin-top: 8px;">Save this secret key — you'll need it if you lose your device</p>
                     </div>
-                    <div class="flex justify-end gap-2 mt-4">
-                        <button type="button" class="btn btn-secondary" onclick="handlers.enable2FA()">Back</button>
-                        <button type="submit" class="btn btn-primary">Verify & Enable</button>
-                    </div>
-                </form>
-            </div>
-        `);
+                    <form onsubmit="handlers.verify2FACode(event, 'authenticator')">
+                        <input type="hidden" name="setupToken" value="${escapeHtml(data.setupToken)}">
+                        <input type="hidden" name="secret" value="${escapeHtml(data.secret)}">
+                        <div class="form-group">
+                            <label class="form-label" for="hsa-enter-the-6-digit-code-from-your-app">Enter the 6-digit code from your app</label>
+                            <input id="hsa-enter-the-6-digit-code-from-your-app" type="text" class="form-input" name="code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" style="text-align: center; font-size: 24px; letter-spacing: 8px;" required>
+                        </div>
+                        <div class="flex justify-end gap-2 mt-4">
+                            <button type="button" class="btn btn-secondary" onclick="handlers.enable2FA()">Back</button>
+                            <button type="submit" class="btn btn-primary">Verify & Enable</button>
+                        </div>
+                    </form>
+                </div>
+            `);
+        } catch (err) {
+            toast.error(err.message || 'Failed to initialize 2FA setup');
+        }
     },
 
     setup2FASMS: function () {
-        modals.show(`
-            <div class="modal-header">
-                <h2 class="modal-title">${components.icon('lock', 20)} SMS Verification Setup</h2>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
-            </div>
-            <div class="modal-body">
-                <p style="color: var(--gray-600); margin-bottom: 16px;">Enter your phone number to receive verification codes via SMS.</p>
-                <form onsubmit="handlers.sendSMS2FACode(event)">
-                    <div class="form-group">
-                        <label class="form-label" for="hsa-phone-number">Phone Number</label>
-                        <inputinput id="hsa-phone-number" type="tel" class="form-input" name="phone" placeholder="+1 (555) 123-4567" required>
-                    </div>
-                    <div class="flex justify-end gap-2 mt-4">
-                        <button type="button" class="btn btn-secondary" onclick="handlers.enable2FA()">Back</button>
-                        <button type="submit" class="btn btn-primary">Send Code</button>
-                    </div>
-                </form>
-            </div>
-        `);
+        toast.info('SMS two-factor authentication is not yet available.');
     },
 
     sendSMS2FACode: function (e) {
         e.preventDefault();
-        const phone = e.target.phone.value.trim();
-        if (!phone) {
-            toast.error('Please enter a phone number');
-            return;
-        }
-        toast.success('Verification code sent to ' + phone);
+        toast.info('SMS two-factor authentication is not yet available.');
+        const _phone = e.target.phone?.value;
         modals.show(`
             <div class="modal-header">
                 <h2 class="modal-title">${components.icon('lock', 20)} Enter SMS Code</h2>

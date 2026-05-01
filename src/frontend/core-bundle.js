@@ -17002,7 +17002,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'a152fd93';
+    const v = '2a245d0f';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function (resolve, reject) {
@@ -20058,7 +20058,7 @@ const components = {
                                                placeholder="Width"
                                                aria-label="Crop width"
                                                value="${transforms.cropWidth || ''}"
-                                               onchange="handlers.setPhotoCropDimensions(this.value, document.querySelector('.photo-editor-dimensions input:last-child').value)"
+                                               onchange="handlers.setPhotoCropDimensions(this.value, this.closest('.photo-editor-dimensions').querySelectorAll('input')[1]?.value || '')"
                                                ${cloudinaryRequired ? 'disabled' : ''}>
                                         <span>x</span>
                                         <input type="number"
@@ -20066,7 +20066,7 @@ const components = {
                                                placeholder="Height"
                                                aria-label="Crop height"
                                                value="${transforms.cropHeight || ''}"
-                                               onchange="handlers.setPhotoCropDimensions(document.querySelector('.photo-editor-dimensions input:first-child').value, this.value)"
+                                               onchange="handlers.setPhotoCropDimensions(this.closest('.photo-editor-dimensions').querySelectorAll('input')[0]?.value || '', this.value)"
                                                ${cloudinaryRequired ? 'disabled' : ''}>
                                         <span>px</span>
                                     </div>

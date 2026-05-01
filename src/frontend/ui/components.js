@@ -2513,7 +2513,7 @@ const components = {
                                                placeholder="Width"
                                                aria-label="Crop width"
                                                value="${transforms.cropWidth || ''}"
-                                               onchange="handlers.setPhotoCropDimensions(this.value, document.querySelector('.photo-editor-dimensions input:last-child').value)"
+                                               onchange="handlers.setPhotoCropDimensions(this.value, this.closest('.photo-editor-dimensions').querySelectorAll('input')[1]?.value || '')"
                                                ${cloudinaryRequired ? 'disabled' : ''}>
                                         <span>x</span>
                                         <input type="number"
@@ -2521,7 +2521,7 @@ const components = {
                                                placeholder="Height"
                                                aria-label="Crop height"
                                                value="${transforms.cropHeight || ''}"
-                                               onchange="handlers.setPhotoCropDimensions(document.querySelector('.photo-editor-dimensions input:first-child').value, this.value)"
+                                               onchange="handlers.setPhotoCropDimensions(this.closest('.photo-editor-dimensions').querySelectorAll('input')[0]?.value || '', this.value)"
                                                ${cloudinaryRequired ? 'disabled' : ''}>
                                         <span>px</span>
                                     </div>

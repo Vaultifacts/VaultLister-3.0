@@ -4066,7 +4066,9 @@ Object.assign(pages, {
             return Number.isFinite(score) ? Math.round(score) : null;
         };
         const getShopHealthScore = (shop) =>
-            toHealthScore(shop.health_score ?? shop.healthScore ?? healthByPlatform.get(shop.platform)?.health_score);
+            shop
+                ? toHealthScore(shop.health_score ?? shop.healthScore ?? healthByPlatform.get(shop.platform)?.health_score)
+                : null;
         const toMetricNumber = (value) => {
             if (value === undefined || value === null || value === '') return null;
             const number = Number(value);
