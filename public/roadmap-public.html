@@ -1,13 +1,13 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
     <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta
             name="description"
             content="VaultLister public roadmap — see what's been shipped, what's in progress, and what's coming next."
-        />
-        <meta name="theme-color" content="#18181B" />
+        >
+        <meta name="theme-color" content="#18181B">
         <title>VaultLister Public Roadmap — Upcoming Features and Plans</title>
         <!-- Google Analytics (GA4) with Consent Mode -->
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
@@ -22,7 +22,7 @@
             gtag('js', new Date());
             gtag('config', 'G-LXETN4PYRM');
         </script>
-        <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png" />
+        <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png">
         <style>
             :root {
                 --green-50: #f0fdf4;
@@ -208,6 +208,39 @@
                 margin-top: 2px;
             }
 
+            .item-progress {
+                margin-top: 0.65rem;
+            }
+
+            .item-progress-track {
+                height: 0.45rem;
+                overflow: hidden;
+                border-radius: 999px;
+                background: var(--gray-200);
+            }
+
+            .item-progress-fill {
+                height: 100%;
+                border-radius: inherit;
+                background: var(--blue-600);
+            }
+
+            .item-progress-label {
+                margin-top: 0.25rem;
+                font-size: 0.75rem;
+                color: var(--gray-500);
+            }
+
+            .roadmap-empty {
+                padding: 1rem;
+                border: 1px dashed var(--gray-200);
+                border-radius: 10px;
+                color: var(--gray-500);
+                font-size: 0.875rem;
+                line-height: 1.5;
+                background: var(--white);
+            }
+
             /* Lang selector */
             .lang-selector {
                 position: relative;
@@ -275,8 +308,8 @@
                 this.onload = null;
                 this.rel = 'stylesheet';
             "
-        />
-        <noscript><link rel="stylesheet" href="/styles/public-base.css" /></noscript>
+        >
+        <noscript><link rel="stylesheet" href="/styles/public-base.css"></noscript>
     </head>
     <body>
         <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -290,7 +323,7 @@
                     width="348"
                     height="87"
                     style="display: block"
-            /></a>
+            ></a>
             <div class="nav-links">
                 <div class="nav-dropdown">
                     <button
@@ -503,61 +536,8 @@
                             </span>
                             <h2>Coming Soon</h2>
                         </div>
-                        <div class="roadmap-items">
-                            <div class="roadmap-item planned">
-                                <span class="item-dot" aria-hidden="true"></span>
-                                <div class="item-body">
-                                    <p class="item-title">AR item preview</p>
-                                    <p class="item-desc">
-                                        Let buyers visualise items in their space using augmented reality previews — a
-                                        selling edge for furniture and decor.
-                                    </p>
-                                </div>
-                                <span class="item-tag">Feature</span>
-                            </div>
-                            <div class="roadmap-item planned">
-                                <span class="item-dot" aria-hidden="true"></span>
-                                <div class="item-body">
-                                    <p class="item-title">Blockchain item verification</p>
-                                    <p class="item-desc">
-                                        Authenticated provenance records for high-value items using blockchain — build
-                                        buyer trust at scale.
-                                    </p>
-                                </div>
-                                <span class="item-tag">Feature</span>
-                            </div>
-                            <div class="roadmap-item planned">
-                                <span class="item-dot" aria-hidden="true"></span>
-                                <div class="item-body">
-                                    <p class="item-title">Etsy OAuth full integration</p>
-                                    <p class="item-desc">
-                                        Complete Etsy listing creation, sync, and renewal via Etsy's official REST API.
-                                    </p>
-                                </div>
-                                <span class="item-tag">Marketplace</span>
-                            </div>
-                            <div class="roadmap-item planned">
-                                <span class="item-dot" aria-hidden="true"></span>
-                                <div class="item-body">
-                                    <p class="item-title">AI price suggestion engine</p>
-                                    <p class="item-desc">
-                                        Analyse sold comps across all connected platforms and suggest optimal listing
-                                        prices per marketplace.
-                                    </p>
-                                </div>
-                                <span class="item-tag">AI</span>
-                            </div>
-                            <div class="roadmap-item planned">
-                                <span class="item-dot" aria-hidden="true"></span>
-                                <div class="item-body">
-                                    <p class="item-title">Mobile app (iOS &amp; Android)</p>
-                                    <p class="item-desc">
-                                        Native mobile apps for listing on the go, photo capture with AI tagging, and
-                                        push notifications for offers and sales.
-                                    </p>
-                                </div>
-                                <span class="item-tag">Platform</span>
-                            </div>
+                        <div class="roadmap-items" id="roadmap-planned-items">
+                            <div class="roadmap-empty">Loading planned features...</div>
                         </div>
                     </div>
 
@@ -574,51 +554,8 @@
                             </span>
                             <h2>Currently Building</h2>
                         </div>
-                        <div class="roadmap-items">
-                            <div class="roadmap-item progress">
-                                <span class="item-dot" aria-hidden="true"></span>
-                                <div class="item-body">
-                                    <p class="item-title">Depop REST API integration</p>
-                                    <p class="item-desc">
-                                        Migrating from automation bot to native OAuth + REST API for improved
-                                        reliability. Current Playwright integration remains live.
-                                    </p>
-                                </div>
-                                <span class="item-tag">Marketplace</span>
-                            </div>
-                            <div class="roadmap-item progress">
-                                <span class="item-dot" aria-hidden="true"></span>
-                                <div class="item-body">
-                                    <p class="item-title">EasyPost shipping integration</p>
-                                    <p class="item-desc">
-                                        Generate shipping labels, compare carrier rates, and track packages from within
-                                        VaultLister.
-                                    </p>
-                                </div>
-                                <span class="item-tag">Shipping</span>
-                            </div>
-                            <div class="roadmap-item progress">
-                                <span class="item-dot" aria-hidden="true"></span>
-                                <div class="item-body">
-                                    <p class="item-title">Chrome extension</p>
-                                    <p class="item-desc">
-                                        List items directly from any marketplace product page with one click.
-                                        Chromium-based browsers.
-                                    </p>
-                                </div>
-                                <span class="item-tag">Extension</span>
-                            </div>
-                            <div class="roadmap-item progress">
-                                <span class="item-dot" aria-hidden="true"></span>
-                                <div class="item-body">
-                                    <p class="item-title">Vault Buddy AI chat</p>
-                                    <p class="item-desc">
-                                        Conversational AI assistant for pricing advice, listing tips, and reselling
-                                        strategy — powered by Claude.
-                                    </p>
-                                </div>
-                                <span class="item-tag">AI</span>
-                            </div>
+                        <div class="roadmap-items" id="roadmap-progress-items">
+                            <div class="roadmap-empty">Loading in-progress features...</div>
                         </div>
                     </div>
 
@@ -634,73 +571,8 @@
                             </span>
                             <h2>Released Features</h2>
                         </div>
-                        <div class="roadmap-items">
-                            <div class="roadmap-item shipped">
-                                <span class="item-dot" aria-hidden="true"></span>
-                                <div class="item-body">
-                                    <p class="item-title">Cross-listing to 6 live marketplaces (3 coming soon)</p>
-                                    <p class="item-desc">
-                                        Poshmark, eBay, Mercari, Depop, Grailed, Etsy, Shopify, Facebook Marketplace,
-                                        and Whatnot — one listing, everywhere.
-                                    </p>
-                                </div>
-                                <span class="item-tag">Core</span>
-                            </div>
-                            <div class="roadmap-item shipped">
-                                <span class="item-dot" aria-hidden="true"></span>
-                                <div class="item-body">
-                                    <p class="item-title">Poshmark closet sharing automation</p>
-                                    <p class="item-desc">
-                                        Schedule automated closet shares with configurable intervals, respecting
-                                        Poshmark rate limits.
-                                    </p>
-                                </div>
-                                <span class="item-tag">Automation</span>
-                            </div>
-                            <div class="roadmap-item shipped">
-                                <span class="item-dot" aria-hidden="true"></span>
-                                <div class="item-body">
-                                    <p class="item-title">AI listing generation (Claude)</p>
-                                    <p class="item-desc">
-                                        Generate optimised titles, descriptions, and keywords for any marketplace using
-                                        Claude AI from Anthropic.
-                                    </p>
-                                </div>
-                                <span class="item-tag">AI</span>
-                            </div>
-                            <div class="roadmap-item shipped">
-                                <span class="item-dot" aria-hidden="true"></span>
-                                <div class="item-body">
-                                    <p class="item-title">Offer management</p>
-                                    <p class="item-desc">
-                                        Automatically send offers to likers based on configurable discount rules and
-                                        minimum price thresholds.
-                                    </p>
-                                </div>
-                                <span class="item-tag">Automation</span>
-                            </div>
-                            <div class="roadmap-item shipped">
-                                <span class="item-dot" aria-hidden="true"></span>
-                                <div class="item-body">
-                                    <p class="item-title">Analytics dashboard</p>
-                                    <p class="item-desc">
-                                        Track sales, revenue, profit margin, average sale price, and platform
-                                        performance in one view.
-                                    </p>
-                                </div>
-                                <span class="item-tag">Analytics</span>
-                            </div>
-                            <div class="roadmap-item shipped">
-                                <span class="item-dot" aria-hidden="true"></span>
-                                <div class="item-body">
-                                    <p class="item-title">Image bank with AI tagging</p>
-                                    <p class="item-desc">
-                                        Centralised photo storage with AI-powered automatic tagging, background removal,
-                                        and reuse across listings.
-                                    </p>
-                                </div>
-                                <span class="item-tag">AI</span>
-                            </div>
+                        <div class="roadmap-items" id="roadmap-shipped-items">
+                            <div class="roadmap-empty">Loading shipped features...</div>
                         </div>
                     </div>
                 </div>
@@ -718,7 +590,7 @@
                         width="144"
                         height="36"
                         style="display: block"
-                /></a>
+                ></a>
                 <div class="footer-social-links">
                     <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"
                         ><svg aria-hidden="true"
@@ -1120,6 +992,116 @@
                         }
                     })
                     .catch(function () {});
+            })();
+        </script>
+        <script>
+            (function () {
+                var columns = {
+                    planned: {
+                        el: document.getElementById('roadmap-planned-items'),
+                        cardClass: 'planned',
+                        empty: 'No planned features are published yet.',
+                    },
+                    in_progress: {
+                        el: document.getElementById('roadmap-progress-items'),
+                        cardClass: 'progress',
+                        empty: 'No in-progress features are published yet.',
+                    },
+                    completed: {
+                        el: document.getElementById('roadmap-shipped-items'),
+                        cardClass: 'shipped',
+                        empty: 'No shipped features are published yet.',
+                    },
+                };
+
+                function escapeHtml(value) {
+                    return String(value == null ? '' : value).replace(/[&<>"']/g, function (ch) {
+                        return {
+                            '&': '&amp;',
+                            '<': '&lt;',
+                            '>': '&gt;',
+                            '"': '&quot;',
+                            "'": '&#39;',
+                        }[ch];
+                    });
+                }
+
+                function normalizeProgress(feature) {
+                    if (feature.progress === null || feature.progress === undefined || feature.progress === '') return null;
+                    var progress = Number(feature.progress);
+                    return Number.isFinite(progress) ? Math.min(100, Math.max(0, Math.round(progress))) : null;
+                }
+
+                function renderProgress(feature) {
+                    if (feature.status !== 'in_progress') return '';
+                    var progress = normalizeProgress(feature);
+                    if (progress === null) {
+                        return '<div class="item-progress-label">Progress not reported</div>';
+                    }
+                    return (
+                        '<div class="item-progress"><div class="item-progress-track"><div class="item-progress-fill" style="width:' +
+                        progress +
+                        '%"></div></div><div class="item-progress-label">' +
+                        progress +
+                        '% complete</div></div>'
+                    );
+                }
+
+                function renderFeature(feature) {
+                    var column = columns[feature.status] || columns.planned;
+                    return (
+                        '<div class="roadmap-item ' +
+                        column.cardClass +
+                        '"><span class="item-dot" aria-hidden="true"></span><div class="item-body"><p class="item-title">' +
+                        escapeHtml(feature.title || 'Untitled feature') +
+                        '</p>' +
+                        (feature.description ? '<p class="item-desc">' + escapeHtml(feature.description) + '</p>' : '') +
+                        renderProgress(feature) +
+                        '</div>' +
+                        (feature.category ? '<span class="item-tag">' + escapeHtml(feature.category) + '</span>' : '') +
+                        '</div>'
+                    );
+                }
+
+                function renderColumn(status, features) {
+                    var column = columns[status];
+                    if (!column.el) return;
+                    column.el.innerHTML = features.length
+                        ? features.map(renderFeature).join('')
+                        : '<div class="roadmap-empty">' + column.empty + '</div>';
+                }
+
+                fetch('/api/roadmap', { headers: { Accept: 'application/json' } })
+                    .then(function (response) {
+                        if (!response.ok) throw new Error('Roadmap request failed');
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        var features = Array.isArray(data.features) ? data.features : [];
+                        renderColumn(
+                            'planned',
+                            features.filter(function (feature) {
+                                return feature.status === 'planned';
+                            }),
+                        );
+                        renderColumn(
+                            'in_progress',
+                            features.filter(function (feature) {
+                                return feature.status === 'in_progress';
+                            }),
+                        );
+                        renderColumn(
+                            'completed',
+                            features.filter(function (feature) {
+                                return feature.status === 'completed';
+                            }),
+                        );
+                    })
+                    .catch(function () {
+                        renderColumn('planned', []);
+                        renderColumn('in_progress', []);
+                        renderColumn('completed', []);
+                    });
             })();
         </script>
         <script src="/public-auth-nav.js" defer></script>

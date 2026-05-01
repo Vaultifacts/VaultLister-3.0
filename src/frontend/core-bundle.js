@@ -10204,11 +10204,37 @@ const onboarding = {
             step.completed = saved[step.id] || false;
         });
 
-        // Check current state
+        this.syncFromState();
+        this.loadPrerequisites();
+    },
+
+    syncFromState() {
         if (store.state.shops?.some((s) => s.is_connected)) this.complete('connect-shop');
         if (store.state.inventory?.length > 0) this.complete('add-item');
         if (store.state.listings?.length > 0) this.complete('create-listing');
         if (store.state.sales?.length > 0) this.complete('first-sale');
+    },
+
+    loadPrerequisites() {
+        if (this._loadingPrerequisites) return;
+        if (!store.state.user && !store.state.token && !store.state.refreshToken) return;
+        if (store.state.shops?.length > 0 || typeof api === 'undefined') return;
+
+        this._loadingPrerequisites = true;
+        api.get('/shops')
+            .then((data) => {
+                store.setState({ shops: data.shops || [] });
+                this.syncFromState();
+                if (store.state.currentPage === 'dashboard' && window.pages?.dashboard) {
+                    renderApp(window.pages.dashboard());
+                }
+            })
+            .catch((error) => {
+                console.warn('Failed to refresh onboarding prerequisites:', error);
+            })
+            .finally(() => {
+                this._loadingPrerequisites = false;
+            });
     },
 
     complete(stepId) {
@@ -17002,7 +17028,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '2a245d0f';
+    const v = 'dbaa352b';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function (resolve, reject) {
@@ -17336,7 +17362,7 @@ const router = {
                 } else if (path === 'automations') {
                     await handlers.loadAutomations();
                 } else if (path === 'shops') {
-                    await handlers.loadShops();
+                    await Promise.all([handlers.loadShops(), handlers.loadPlatformHealth?.()]);
                 } else if (path === 'connections') {
                     await Promise.all([
                         handlers.loadShops(),
@@ -17482,7 +17508,7 @@ const router = {
         } else if (path === 'automations') {
             await handlers.loadAutomations();
         } else if (path === 'shops') {
-            await handlers.loadShops();
+            await Promise.all([handlers.loadShops(), handlers.loadPlatformHealth?.()]);
         } else if (path === 'connections') {
             await Promise.all([handlers.loadShops(), handlers.loadEmailAccounts(), handlers.loadEmailProviders()]);
         } else if (path === 'listings') {
@@ -30043,6 +30069,7 @@ const handlers = {
         try {
             const data = await api.get('/shops');
             store.setState({ shops: data.shops || [] });
+            if (typeof onboarding !== 'undefined') onboarding.syncFromState?.();
         } catch (error) {
             console.error('Failed to load shops:', error);
             // Set empty state and show error to user

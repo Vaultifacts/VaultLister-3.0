@@ -3394,8 +3394,8 @@ Object.assign(handlers, {
     syncAllShops: async function () {
         toast.info('Syncing all connected shops...');
         try {
-            const res = await api.request('POST', '/api/shops/sync-all');
-            const synced = res.platformsSynced || [];
+            const res = await api.post('/shops/sync-all');
+            const synced = res.platforms_synced || res.platformsSynced || [];
             store.setState({ lastShopSync: new Date().toISOString() });
             renderApp(window.pages.shops());
             toast.success(synced.length ? `Sync queued for: ${synced.join(', ')}` : 'No connected shops to sync');
@@ -4596,7 +4596,7 @@ Object.assign(handlers, {
         toast.info('Generating CSV export...');
         try {
             const period = store.state.analyticsPeriod || '30d';
-            const res = await api.request('POST', '/api/analytics/export', { type: 'sales', format: 'json', period });
+            const res = await api.post('/analytics/export', { type: 'sales', format: 'json', period });
             const rows = res.export || [];
             if (!rows.length) { toast.info('No sales data to export'); return; }
             const headers = Object.keys(rows[0]);
@@ -4673,7 +4673,7 @@ Object.assign(handlers, {
         toast.info('Refreshing analytics data...');
         try {
             const period = store.state.analyticsPeriod || '30d';
-            const data = await api.request('GET', `/api/analytics/dashboard?period=${period}`);
+            const data = await api.get(`/analytics/dashboard?period=${period}`);
             store.setState({ analyticsData: data });
             renderApp(window.pages.analytics());
             toast.success('Analytics updated');
@@ -5814,7 +5814,7 @@ Object.assign(handlers, {
     refreshCompetitorActivity: async function () {
         toast.info('Refreshing competitor activity...');
         try {
-            const data = await api.request('GET', '/api/market-intel/competitors');
+            const data = await api.get('/market-intel/competitors');
             store.setState({ competitors: data.competitors || [] });
             renderApp(window.pages.intelligence());
             toast.success('Activity feed updated');
@@ -7296,7 +7296,7 @@ Object.assign(handlers, {
         prefs.roadmap_new_features = form.new_features?.checked ?? true;
         prefs.roadmap_status_changes = form.status_changes?.checked ?? false;
         try {
-            await api.request('PUT', '/api/notifications/preferences', prefs);
+            await api.put('/notifications/preferences', prefs);
             store.setState({ notificationPreferences: prefs });
             toast.success('Roadmap notification preferences saved');
         } catch (err) {
@@ -18384,19 +18384,28 @@ Object.assign(handlers, {
                 enabled: pushNotifications ? pushNotifications.checked : currentPushNotifications,
                 categories: store.state.pushSettings?.categories || {},
             };
-            store.setState({
-                notificationPreferences,
-                pushSettings,
-                user: {
-                    ...user,
-                    preferences: {
-                        ...userPreferences,
-                        notifications: notificationPreferences,
+            const nextPreferences = {
+                ...userPreferences,
+                notifications: notificationPreferences,
+            };
+            try {
+                const profileResult = await api.put('/auth/profile', { preferences: nextPreferences });
+                const savedPushSettings = pushNotifications
+                    ? await api.put('/push-subscriptions/settings', pushSettings)
+                    : pushSettings;
+                store.setState({
+                    notificationPreferences,
+                    pushSettings: savedPushSettings || pushSettings,
+                    user: {
+                        ...user,
+                        ...(profileResult.user || {}),
+                        preferences: nextPreferences,
                     },
-                },
-            });
-            if (pushNotifications) {
-                await api.put('/push-subscriptions/settings', pushSettings);
+                });
+            } catch (err) {
+                console.error('Failed to save notification settings:', err);
+                toast.error(err.message || 'Failed to save notification settings');
+                return;
             }
         }
 
@@ -20198,8 +20207,24 @@ Object.assign(handlers, {
             return;
         }
 
-        const progressPercent =
-            feature.status === 'completed' ? 100 : feature.status === 'in_progress' ? feature.progress || 50 : 0;
+        const normalizeRoadmapProgress = (item) => {
+            if (item.status === 'completed') return 100;
+            if (item.status !== 'in_progress') return 0;
+            if (item.progress === null || item.progress === undefined || item.progress === '') return null;
+            const progress = Number(item.progress);
+            return Number.isFinite(progress) ? Math.min(100, Math.max(0, Math.round(progress))) : null;
+        };
+        const progressPercent = normalizeRoadmapProgress(feature);
+        const progressMarkup =
+            feature.status === 'in_progress'
+                ? progressPercent === null
+                    ? '<div style="margin-bottom: 16px;"><div style="font-size: 12px; color: var(--gray-500); margin-bottom: 4px;">Progress</div><div style="font-size: 12px; color: var(--gray-500);">Progress not reported</div></div>'
+                    : '<div style="margin-bottom: 16px;"><div style="font-size: 12px; color: var(--gray-500); margin-bottom: 4px;">Progress</div><div style="height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden;"><div style="height: 100%; width: ' +
+                      progressPercent +
+                      '%; background: var(--primary-500); border-radius: 4px;"></div></div><div style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">' +
+                      progressPercent +
+                      '% complete</div></div>'
+                : '';
         const statusLabels = { planned: 'Planned', in_progress: 'In Progress', completed: 'Completed' };
         const statusColors = {
             planned: 'var(--gray-500)',
@@ -20225,7 +20250,7 @@ Object.assign(handlers, {
 
                 ${feature.description ? '<div style="color: var(--gray-600); margin-bottom: 16px; line-height: 1.6;">' + escapeHtml(feature.description) + '</div>' : '<div style="color: var(--gray-400); margin-bottom: 16px; font-style: italic;">No description available.</div>'}
 
-                ${feature.status === 'in_progress' ? '<div style="margin-bottom: 16px;"><div style="font-size: 12px; color: var(--gray-500); margin-bottom: 4px;">Progress</div><div style="height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden;"><div style="height: 100%; width: ' + progressPercent + '%; background: var(--primary-500); border-radius: 4px;"></div></div><div style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">' + progressPercent + '% complete</div></div>' : ''}
+                ${progressMarkup}
 
                 ${feature.eta ? '<div style="margin-bottom: 12px;"><span style="font-size: 12px; font-weight: 600; color: var(--gray-500);">Expected: </span><span style="font-size: 13px;">' + escapeHtml(feature.eta) + '</span></div>' : ''}
 

@@ -6,8 +6,8 @@ Object.assign(handlers, {
     syncAllShops: async function () {
         toast.info('Syncing all connected shops...');
         try {
-            const res = await api.request('POST', '/api/shops/sync-all');
-            const synced = res.platformsSynced || [];
+            const res = await api.post('/shops/sync-all');
+            const synced = res.platforms_synced || res.platformsSynced || [];
             store.setState({ lastShopSync: new Date().toISOString() });
             renderApp(window.pages.shops());
             toast.success(synced.length ? `Sync queued for: ${synced.join(', ')}` : 'No connected shops to sync');
@@ -19,7 +19,7 @@ Object.assign(handlers, {
     refreshShopHealth: async function (platform) {
         toast.info(`Refreshing ${escapeHtml(platform)} health metrics...`);
         try {
-            const data = await api.request('GET', `/api/shops/${encodeURIComponent(platform)}`);
+            const data = await api.get(`/shops/${encodeURIComponent(platform)}`);
             const shops = (store.state.shops || []).map((s) => (s.platform === platform ? data.shop : s));
             store.setState({ shops });
             renderApp(window.pages.shops());
@@ -746,7 +746,7 @@ Object.assign(handlers, {
 
     setup2FAAuthenticator: async function () {
         try {
-            const data = await api.request('POST', '/api/security/mfa/setup');
+            const data = await api.post('/security/mfa/setup');
             const formattedSecret = data.secret.match(/.{1,4}/g).join(' ');
             modals.show(`
                 <div class="modal-header">
@@ -790,25 +790,6 @@ Object.assign(handlers, {
     sendSMS2FACode: function (e) {
         e.preventDefault();
         toast.info('SMS two-factor authentication is not yet available.');
-        const _phone = e.target.phone?.value;
-        modals.show(`
-            <div class="modal-header">
-                <h2 class="modal-title">${components.icon('lock', 20)} Enter SMS Code</h2>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
-            </div>
-            <div class="modal-body">
-                <p style="color: var(--gray-600); margin-bottom: 16px;">Enter the 6-digit code sent to ${escapeHtml(phone)}</p>
-                <form onsubmit="handlers.verify2FACode(event, 'sms')">
-                    <div class="form-group">
-                        <input type="text" class="form-input" name="code" maxlength="6" pattern="[0-9]{6}" aria-label="Verification code" placeholder="000000" style="text-align: center; font-size: 24px; letter-spacing: 8px;" required>
-                    </div>
-                    <div class="flex justify-end gap-2 mt-4">
-                        <button type="button" class="btn btn-secondary" onclick="handlers.setup2FASMS()">Resend</button>
-                        <button type="submit" class="btn btn-primary">Verify & Enable</button>
-                    </div>
-                </form>
-            </div>
-        `);
     },
 
     verifyMfaLogin: async function (e) {
@@ -837,19 +818,51 @@ Object.assign(handlers, {
         }
     },
 
-    verify2FACode: function (e, method) {
+    verify2FACode: async function (e, method) {
         e.preventDefault();
         const code = e.target.code.value.trim();
         if (code.length !== 6) {
             toast.error('Please enter a 6-digit code');
             return;
         }
-        store.setState({ twoFactorEnabled: true, twoFactorMethod: method });
-        // 2FA status is managed server-side via mfa_enabled — no localStorage needed
-        toast.success('Two-factor authentication enabled!');
-        if (typeof gtag === 'function') gtag('event', 'mfa_enabled');
-        modals.close();
-        renderApp();
+        if (method !== 'authenticator') {
+            toast.info('SMS two-factor authentication is not yet available.');
+            return;
+        }
+        const setupToken = e.target.setupToken?.value;
+        const secret = e.target.secret?.value;
+        if (!setupToken || !secret) {
+            toast.error('Setup session expired. Please start over.');
+            return;
+        }
+        try {
+            const data = await api.post('/security/mfa/verify-setup', { setupToken, code, secret });
+            store.setState({ user: { ...store.state.user, mfa_enabled: true } });
+            if (typeof gtag === 'function') gtag('event', 'mfa_enabled');
+            modals.close();
+            if (data.backupCodes?.length) {
+                modals.show(`
+                    <div class="modal-header">
+                        <h2 class="modal-title">${components.icon('lock', 20)} Save Your Backup Codes</h2>
+                        <button class="modal-close" aria-label="Close" onclick="modals.close(); renderApp();">${components.icon('close')}</button>
+                    </div>
+                    <div class="modal-body">
+                        <p style="color: var(--gray-600); margin-bottom: 16px;">Two-factor authentication is now enabled. Save these backup codes in a safe place — each can be used once if you lose your device.</p>
+                        <div style="background: var(--gray-50); padding: 16px; border-radius: 8px; font-family: monospace; font-size: 14px; line-height: 2;">
+                            ${data.backupCodes.map(c => escapeHtml(c)).join('<br>')}
+                        </div>
+                        <div class="flex justify-end mt-4">
+                            <button class="btn btn-primary" onclick="modals.close(); renderApp();">Done</button>
+                        </div>
+                    </div>
+                `);
+            } else {
+                toast.success('Two-factor authentication enabled!');
+                renderApp();
+            }
+        } catch (err) {
+            toast.error(err.message || 'Invalid verification code');
+        }
     },
 
     resetAppearanceToDefaults: function () {
@@ -2586,19 +2599,28 @@ Object.assign(handlers, {
                 enabled: pushNotifications ? pushNotifications.checked : currentPushNotifications,
                 categories: store.state.pushSettings?.categories || {},
             };
-            store.setState({
-                notificationPreferences,
-                pushSettings,
-                user: {
-                    ...user,
-                    preferences: {
-                        ...userPreferences,
-                        notifications: notificationPreferences,
+            const nextPreferences = {
+                ...userPreferences,
+                notifications: notificationPreferences,
+            };
+            try {
+                const profileResult = await api.put('/auth/profile', { preferences: nextPreferences });
+                const savedPushSettings = pushNotifications
+                    ? await api.put('/push-subscriptions/settings', pushSettings)
+                    : pushSettings;
+                store.setState({
+                    notificationPreferences,
+                    pushSettings: savedPushSettings || pushSettings,
+                    user: {
+                        ...user,
+                        ...(profileResult.user || {}),
+                        preferences: nextPreferences,
                     },
-                },
-            });
-            if (pushNotifications) {
-                await api.put('/push-subscriptions/settings', pushSettings);
+                });
+            } catch (err) {
+                console.error('Failed to save notification settings:', err);
+                toast.error(err.message || 'Failed to save notification settings');
+                return;
             }
         }
 

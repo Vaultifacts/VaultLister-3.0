@@ -521,7 +521,7 @@ const router = {
                 } else if (path === 'automations') {
                     await handlers.loadAutomations();
                 } else if (path === 'shops') {
-                    await handlers.loadShops();
+                    await Promise.all([handlers.loadShops(), handlers.loadPlatformHealth?.()]);
                 } else if (path === 'connections') {
                     await Promise.all([
                         handlers.loadShops(),
@@ -667,7 +667,7 @@ const router = {
         } else if (path === 'automations') {
             await handlers.loadAutomations();
         } else if (path === 'shops') {
-            await handlers.loadShops();
+            await Promise.all([handlers.loadShops(), handlers.loadPlatformHealth?.()]);
         } else if (path === 'connections') {
             await Promise.all([handlers.loadShops(), handlers.loadEmailAccounts(), handlers.loadEmailProviders()]);
         } else if (path === 'listings') {

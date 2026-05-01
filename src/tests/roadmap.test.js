@@ -14,8 +14,7 @@ beforeAll(async () => {
 describe('Roadmap - Auth Guard', () => {
     test('GET /roadmap is public (no auth needed)', async () => {
         const res = await fetch(`${BASE_URL}/roadmap`);
-        // Roadmap list is a public endpoint
-        expect([200, 401]).toContain(res.status);
+        expect(res.status).toBe(200);
     });
 });
 

@@ -1091,7 +1091,7 @@ Object.assign(handlers, {
     refreshCompetitorActivity: async function () {
         toast.info('Refreshing competitor activity...');
         try {
-            const data = await api.request('GET', '/api/market-intel/competitors');
+            const data = await api.get('/market-intel/competitors');
             store.setState({ competitors: data.competitors || [] });
             renderApp(window.pages.intelligence());
             toast.success('Activity feed updated');

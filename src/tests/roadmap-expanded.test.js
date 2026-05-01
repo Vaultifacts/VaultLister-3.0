@@ -11,9 +11,9 @@ beforeAll(async () => {
 });
 
 describe('Roadmap - Auth Guard', () => {
-    test('GET /roadmap without auth returns 401', async () => {
+    test('GET /roadmap without auth returns public list', async () => {
         const res = await fetch(`http://localhost:${process.env.PORT || 3000}/api/roadmap`);
-        expect(res.status).toBe(401);
+        expect(res.status).toBe(200);
     });
 });
 

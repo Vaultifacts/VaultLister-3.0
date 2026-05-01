@@ -1,7 +1,25 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-05-01 MST (P0-pub-1 + P3-pub-2 VERIFIED LIVE; all walkthrough items closed)
+**Updated:** 2026-05-01 MST (session 019de24c continuation; My Shops F37-F41, F43, F45-F47 fixed/verified locally)
 
 ## Completed This Session (2026-05-01)
+
+### Session 019de24c continuation — F77/API call-shape follow-up (uncommitted)
+- F77 PARTIAL: `verify2FACode()` now calls the real `/api/security/mfa/verify-setup` backend and updates `user.mfa_enabled` only after server validation; backup codes are displayed from the backend response. SMS 2FA remains unavailable rather than fake-successful because no provider-backed SMS setup is wired.
+- Fixed method-first `api.request('POST'|'GET'|'PUT', '/api/...')` calls from this cleanup batch to use the actual frontend API client helpers (`api.post`, `api.get`, `api.put`) so they no longer target `/apiPOST` / `/apiGET`.
+- My Shops total listings (handoff F39 numbering drift) FIXED: total/per-shop listing counts now prefer real shop/API health/analytics listing counts, fall back to loaded listings by platform, and render `—` instead of a fabricated zero when no listing source is loaded.
+- F37 FIXED: My Shops route now loads `/api/shops/health`; average/per-shop health use real `health_score` / loaded platform health and render `N/A` when unavailable instead of `null%`.
+- F38 FIXED: Performance Dashboard conversion rate, average days to sell, and return rate render from real shop/platform metrics or loaded sales/listings/orders; unavailable values render `—` without fake `%`/`d` suffixes.
+- F39 FIXED/VERIFIED: My Shops platform pills/performance dots use the supported-platform color map instead of falling back to grey for Mercari/Grailed/Etsy/Kijiji/Vinted; shop cards already use real `is_connected` + `connection_type` for OAuth/manual/not-connected status.
+- F40 VERIFIED: connected shop count already derives from `/api/shops` via `handlers.loadShops()` and `shops.filter(s => s.is_connected)`; no fake zero source remained.
+- F41 FIXED: Multi-Shop Inventory Sync now uses real `last_sync_at`/`sync_status`/`auto_sync_enabled` from shops and renders `—` when no last sync exists instead of fake `Never` / always-`Syncing`.
+- Fixed My Shops sync toast response-shape drift: frontend now reads backend `platforms_synced` as well as the legacy camelCase fallback.
+- F43 FIXED: `saveSettings()` now persists notification preferences through `/api/auth/profile`, persists push settings through `/api/push-subscriptions/settings`, updates local notification state only after those calls succeed, and returns with an error toast before the generic success toast if either API call fails.
+- F45 FIXED: Roadmap in-progress cards/detail modals now render the real `roadmap_features.progress` value when present, clamp it to 0-100, and show `Progress not reported` instead of fabricating 50% when the API does not provide progress.
+- F46 FIXED: public roadmap static feature cards were removed; `GET /api/roadmap` is public read-only for the feature list, `roadmap-public.html` renders planned/in-progress/shipped cards from the API, and roadmap vote/detail/mutation paths remain authenticated.
+- F47 FIXED: onboarding now performs a silent shops prerequisite load after hydration, re-syncs checklist completion after `/api/shops` returns, re-renders the dashboard checklist when it changes, and re-syncs again whenever `handlers.loadShops()` runs.
+- Rebuilt served frontend artifacts to bundle version `dbaa352b`.
+- Verification: `bun run lint` passed; `bun x html-validate public/roadmap-public.html` passed; served `GET /api/roadmap` returns 200 unauthenticated; served `GET /api/roadmap/nonexistent-id-xyz` still returns 401 unauthenticated; focused roadmap assertions passed (`36 pass`, `0 fail`) though the focused `bun test` command exits 1 because repo coverage thresholds apply to the subset.
+- F47 verification: `node --check src/frontend/ui/widgets.js`, `node --check src/frontend/handlers/handlers-core.js`, generated bundle syntax checks, served app bundle hash `dbaa352b`, `bun run lint`, and `git diff --check` all passed.
 
 ### Stub cleanup batch 2 + INCONCLUSIVE item resolution (commit 8016d058)
 - F35: syncAllShops calls /api/shops/sync-all instead of fake per-shop loop
@@ -1216,7 +1234,7 @@ Added full BrowserStack infrastructure for real-device iOS mobile auditing:
 - Bundle on live site: `17d54beb` (confirmed via core-bundle.js script tag)
 
 ## In Progress
-- F39 My Shops total listings — replacing the hardcoded zero with loaded listing/health stats where available.
+- Next fake-data cleanup item needs re-selection from the remaining open checklist. My Shops F37-F41, F43, and F45-F47 are fixed/verified locally in source and rebuilt artifacts.
 
 ## Completed This Session (2026-04-12, session 19)
 
@@ -1485,15 +1503,15 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 - [ ] F34: Security checklist always green — derive from real account state (password age, email verified, etc.) (`pages-settings-account.js:1103-1119`)
 - [ ] F35: Appearance tab light-mode hardcoded — bind radio to `store.state.darkMode` (`pages-settings-account.js:1133`)
 - [ ] F36: "@unknown" username — show email prefix or "Not set" when username is absent (`pages-settings-account.js:2181,2202`)
-- [ ] F37: My Shops Avg Health always null% — fix `avgHealthScore` calculation (`pages-settings-account.js:82,213`)
-- [ ] F38: My Shops Performance always `'—'` — load real conversion rate / days-to-sell / return rate (`pages-settings-account.js:606-609`)
-- [ ] F39: Platform status dots all grey — compute from real OAuth connection state (`pages-settings-account.js:234-238`)
-- [ ] F40: Connected shops always 0 — derive from real `connectedShops` state (`pages-settings-account.js:79`)
-- [ ] F41: Sync status all "Never" — show real last-sync timestamps (`pages-settings-account.js:623-626`)
-- [ ] F43: Notification save shows success even on error — add error handler for notification save API call (`handlers-settings-account.js`)
-- [ ] F45: Roadmap in-progress always 50% — use real `progress` field when available (`pages-deferred.js:10527`)
-- [ ] F46: Roadmap 3 features hardcoded — remove hardcoded eBay Bot/EasyPost/Stripe Billing entries (`pages-deferred.js:10374-10378`)
-- [ ] F47: Onboarding "0/4" timing bug — wait for API load before checking `store.state.shops` (`core-bundle.js:10208-10211`)
+- [x] F37: My Shops Avg Health always null% — fixed locally 2026-05-01; route loads `/api/shops/health` and renders real health scores or `N/A`
+- [x] F38: My Shops Performance always `'—'` — fixed locally 2026-05-01; metrics derive from shop/platform data or loaded sales/listings/orders
+- [x] F39: Platform status dots all grey — fixed/verified locally 2026-05-01; supported-platform colors cover all platforms and connection status uses real shop state
+- [x] F40: Connected shops always 0 — verified locally 2026-05-01; connected count comes from `/api/shops` state, no code change needed
+- [x] F41: Sync status all "Never" — fixed locally 2026-05-01; sync cards render real `last_sync_at`/`sync_status` or `—`
+- [x] F43: Notification save shows success even on error — fixed locally 2026-05-01; API failures now show an error and prevent the generic success toast
+- [x] F45: Roadmap in-progress always 50% — fixed locally 2026-05-01; uses real `progress` when present and shows `Progress not reported` without synthetic fallback
+- [x] F46: Roadmap 3 features hardcoded — fixed locally 2026-05-01; public roadmap renders from `/api/roadmap` instead of hardcoded feature cards
+- [x] F47: Onboarding "0/4" timing bug — fixed locally 2026-05-01; checklist waits for a silent shops API refresh before finalizing connected-shop completion
 
 **LOW — Minor / Stub Cleanup**
 - [ ] F68: Live Support Chat fake bot — implement real support backend or websocket connection; remove hardcoded "support agent" reply (`handlers-community-help.js:1129-1137`)
@@ -1536,7 +1554,7 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 - F74: `saveGoals()` (revenueGoal/salesGoal/marginGoal) state-only — writes to `store.state` only; `store.persist()` does NOT save these keys (only persists tokens/user); goals are lost on every page refresh; no API call (`handlers-deferred.js:4689-4700`, `handlers-sales-orders.js:1480-1491`)
 - F75: Data Retention cleanup preview uses Math.random() — `getDataCounts()` calls `Math.floor(Math.random() * 50)` to fabricate record counts shown in "What will be cleaned" preview; values change on every render (`handlers-settings-account.js:542-548`)
 - F76: `runCleanup()` is fake — "Simulate cleanup process" comment + 1.5s setTimeout + success toast "Cleanup complete!"; no API call, no actual data deletion (`handlers-settings-account.js:630-635`)
-- F77: 2FA setup UI is entirely fake [CRITICAL] — (a) `setup2FAAuthenticator()` generates client-side TOTP secret never sent to backend; shows placeholder QR code icon instead of real QR; (b) `sendSMS2FACode()` shows "Verification code sent" toast but no SMS API call; (c) `verify2FACode()` accepts any 6-digit input and just sets `twoFactorEnabled: true` in state without calling any backend or validating the TOTP code — 2FA is never actually enabled (`handlers-settings-account.js:747`, `810`, `864-877`; no backend `/mfa-setup` or `/mfa-enable` endpoint exists)
+- F77: 2FA setup UI PARTIAL [CRITICAL] — 2026-05-01 source now calls real `/api/security/mfa/setup` and `/api/security/mfa/verify-setup` for authenticator setup/verification and no longer accepts any 6-digit code locally; SMS 2FA still has no provider-backed implementation and remains unavailable rather than fake-successful (`handlers-settings-account.js:747`, `786`, `818-866`; duplicated in deferred/settings chunks after rebuild)
 - F78: `refreshAllSuppliers()` fake — 1.5s timeout + success toast "Supplier data refreshed" + re-render; no API call to reload supplier data from backend (`handlers-intelligence.js:156-162`, `handlers-deferred.js:4854-4858`)
 - F79: `refreshSupplier(id)` fake — 1s timeout + success toast "Supplier data updated"; no API call (`handlers-intelligence.js:303-308`, `handlers-deferred.js:5001-5005`)
 - F80: `savePriceWatch()` state-only + random history — price watchlist item saved to `store.state` only (lost on refresh, no API call); when price field is empty, history seed is `Math.floor(Math.random() * 50) + 20` — a random fake starting value (`handlers-intelligence.js:1278-1295`)
@@ -1619,7 +1637,8 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 - F36: Missing username fallback — FIXED 2026-05-01 (uncommitted): profile/account headers now use real display fields and show `No username set` instead of generic fake handles when `username` is absent (`pages-settings-account.js`, generated bundle rebuilt)
 - F37: My Shops Avg Health — FIXED 2026-05-01 (uncommitted): average and per-shop health now use real `health_score` / loaded platform health data and show `N/A` when no health score exists instead of `null%` (`pages-settings-account.js`, `pages-deferred.js`, generated bundle rebuilt)
 - F38: My Shops Performance Dashboard — FIXED 2026-05-01 (uncommitted): conversion rate, average days to sell, and return rate now render from explicit shop/platform metrics or derivable loaded listings/sales/orders; unavailable metrics render `—` without fake `%`/`d` suffixes (`pages-settings-account.js`, `pages-deferred.js`, generated bundle rebuilt)
-- F39: My Shops Total Listings always 0 — no listings count API data loaded (`pages-settings-account.js:74,80`)
+- F39: My Shops Total Listings — FIXED 2026-05-01 (uncommitted): total and per-shop listed counts now use explicit shop/API health/analytics fields or loaded listings by platform, and show `—` when no real listing source is available (`pages-settings-account.js`, `pages-deferred.js`, generated bundle rebuilt)
+- F39/F40/F41: My Shops platform status/count/sync — FIXED/VERIFIED 2026-05-01 (uncommitted): platform colors cover all supported platforms, connected count is verified from real `/api/shops` state, and sync cards use real `last_sync_at`/`sync_status` with `—` for missing timestamps (`router.js`, `pages-settings-account.js`, `pages-deferred.js`, generated bundle rebuilt)
 - F40: Plans & Billing usage meters always 0 — `store.state.usage` never populated from backend (`pages-settings-account.js:2693-2714`)
 - F41: Billing History always empty — "No billing history yet" shown for all users including paid plans (`pages-settings-account.js:2980-2983`)
 
@@ -1627,9 +1646,9 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 - F42: Cash Flow widget random shuffle — `.sort(() => Math.random() - 0.5)` reorders transactions on every render (`pages-core.js:1017`)
 - F43: Sales table "Unknown Item" — all sales without explicit title show "Unknown Item" (`pages-sales-orders.js:775`, `pages-core.js:2299`)
 - F44: Textarea HTML parser break — `>` operator in `oninput` attribute closes attribute early; literal JS code renders as visible text (`pages-community-help.js:1979`, `pages-deferred.js:10931`)
-- F45: Roadmap in-progress default 50% — all in-progress features without `progress` field show 50% (`pages-deferred.js:10527`)
-- F46: Roadmap 3 features hardcoded — eBay Bot 70%, EasyPost 30%, Stripe Billing 85% (`pages-deferred.js:10374-10378`)
-- F47: Onboarding "Getting Started 0/4" timing bug — checks `store.state.shops` before API loads (`core-bundle.js:10208-10211`)
+- F45: Roadmap in-progress default 50% — FIXED 2026-05-01 (uncommitted): in-progress roadmap cards/detail modals use real `progress` or show `Progress not reported` (`pages-deferred.js`, `handlers-community-help.js`, `handlers-deferred.js`, generated bundle rebuilt)
+- F46: Roadmap hardcoded features — FIXED 2026-05-01 (uncommitted): public roadmap feature cards render from `/api/roadmap`; unauthenticated list is public read-only while detail/vote/mutations remain authenticated (`server.js`, `public/roadmap-public.html`, roadmap tests updated)
+- F47: Onboarding "Getting Started 0/4" timing bug — FIXED 2026-05-01 (uncommitted): onboarding loads shops after hydration, re-syncs from loaded state, and `handlers.loadShops()` also re-syncs checklist completion (`widgets.js`, `handlers-core.js`, generated bundle rebuilt)
 - F48: Scheduler always Unhealthy on cold start — `lastRun > 30s ago` = Unhealthy; triggers every cold start (`automations.js:1931`)
 
 ---

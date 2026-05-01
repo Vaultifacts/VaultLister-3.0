@@ -1111,6 +1111,7 @@ const handlers = {
         try {
             const data = await api.get('/shops');
             store.setState({ shops: data.shops || [] });
+            if (typeof onboarding !== 'undefined') onboarding.syncFromState?.();
         } catch (error) {
             console.error('Failed to load shops:', error);
             // Set empty state and show error to user

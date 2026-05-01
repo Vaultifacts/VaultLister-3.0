@@ -21,16 +21,105 @@ Object.assign(pages, {
         const shops = store.state.shops || [];
         const connectedShops = shops.filter((s) => s.is_connected);
         const lastSync = store.state.lastShopSync;
+        const platformHealthData = store.state.platformHealth || {};
+        const healthByPlatform = new Map((platformHealthData.platforms || []).map((health) => [health.platform, health]));
+        const toHealthScore = (value) => {
+            if (value === undefined || value === null || value === '') return null;
+            const score = Number(value);
+            return Number.isFinite(score) ? Math.round(score) : null;
+        };
+        const getShopHealthScore = (shop) =>
+            shop
+                ? toHealthScore(shop.health_score ?? shop.healthScore ?? healthByPlatform.get(shop.platform)?.health_score)
+                : null;
+        const toMetricNumber = (value) => {
+            if (value === undefined || value === null || value === '') return null;
+            const number = Number(value);
+            return Number.isFinite(number) ? number : null;
+        };
+        const normalizeMetricRows = (value) => {
+            if (Array.isArray(value)) return value;
+            if (Array.isArray(value?.platforms)) return value.platforms;
+            if (Array.isArray(value?.byPlatform)) return value.byPlatform;
+            return [];
+        };
+        const platformMetricRows = [
+            ...normalizeMetricRows(store.state.platformAnalytics),
+            ...normalizeMetricRows(store.state.analyticsPlatforms),
+            ...normalizeMetricRows(store.state.salesAnalytics?.byPlatform),
+        ];
+        const platformMetricsByPlatform = new Map();
+        platformMetricRows.forEach((row) => {
+            if (row?.platform && !platformMetricsByPlatform.has(row.platform)) {
+                platformMetricsByPlatform.set(row.platform, row);
+            }
+        });
+        const getMetricFromSources = (sources, keys) => {
+            for (const source of sources) {
+                if (!source || typeof source !== 'object') continue;
+                for (const key of keys) {
+                    const value = toMetricNumber(source[key]);
+                    if (value !== null) return value;
+                }
+            }
+            return null;
+        };
+        const parseMetricDate = (value) => {
+            if (!value) return null;
+            const date = new Date(value);
+            return Number.isNaN(date.getTime()) ? null : date;
+        };
+        const daysBetween = (start, end) => {
+            const startDate = parseMetricDate(start);
+            const endDate = parseMetricDate(end);
+            if (!startDate || !endDate || endDate < startDate) return null;
+            return (endDate - startDate) / 86400000;
+        };
+        const averageMetric = (values) => {
+            const validValues = values.filter((value) => value !== null);
+            return validValues.length
+                ? validValues.reduce((sum, value) => sum + value, 0) / validValues.length
+                : null;
+        };
+        const formatPercentMetric = (value) => (value === null ? '—' : `${value.toFixed(1)}%`);
+        const formatDaysMetric = (value) => (value === null ? '—' : `${value.toFixed(1)}d`);
+        const getShopLastSync = (shop, syncConfig = {}) => {
+            const healthData = healthByPlatform.get(shop.platform);
+            return (
+                syncConfig.lastSync ||
+                syncConfig.last_sync_at ||
+                syncConfig.last_synced ||
+                shop.last_sync_at ||
+                shop.lastSync ||
+                shop.last_synced_at ||
+                healthData?.last_sync_at ||
+                healthData?.lastSync ||
+                healthData?.last_synced
+            );
+        };
+        const formatLastSync = (value) => {
+            const date = parseMetricDate(value);
+            return date ? date.toLocaleString() : '—';
+        };
+        const latestShopSync = [lastSync, ...connectedShops.map((shop) => getShopLastSync(shop))]
+            .map(parseMetricDate)
+            .filter(Boolean)
+            .sort((a, b) => b - a)[0];
 
         // Calculate sync status for connected shops
         const syncStatus = {
             syncing: false,
-            lastSync: lastSync || null,
+            lastSync: latestShopSync ? latestShopSync.toISOString() : null,
             pending: 0,
         };
 
         // Calculate actual platform stats from sales data
         const sales = store.state.sales || [];
+        const listings = store.state.listings || [];
+        const inventory = store.state.inventory || [];
+        const orders = store.state.orders || [];
+        const listingsById = new Map(listings.map((listing) => [listing.id, listing]));
+        const inventoryById = new Map(inventory.map((item) => [item.id, item]));
         const platformFeeRates = {
             poshmark: 0.2, // 20% flat fee
             ebay: 0.13, // ~13% average
@@ -65,32 +154,68 @@ Object.assign(pages, {
                 feeRate: platformFeeRates[shop.platform] || 0.1,
             };
         });
+        const getListingCount = (shop) => {
+            const shopStats = shop.stats && typeof shop.stats === 'object' ? shop.stats : {};
+            const healthData = healthByPlatform.get(shop.platform);
+            const metricSources = [
+                shop,
+                shopStats,
+                shopStats.listings,
+                shopStats.metrics,
+                platformMetricsByPlatform.get(shop.platform),
+                healthData,
+                healthData?.listings,
+            ];
+            const explicitCount = getMetricFromSources(metricSources, [
+                'listings',
+                'listing_count',
+                'listingCount',
+                'total_listings',
+                'totalListings',
+                'active_listings',
+                'activeListings',
+                'total',
+                'active',
+            ]);
+            if (explicitCount !== null) return Math.max(0, Math.round(explicitCount));
+            if (listings.length === 0) return null;
+            return listings.filter((listing) => listing.platform === shop.platform).length;
+        };
 
         // Platform comparison data
         const platformData = connectedShops.map((shop) => ({
             platform: shop.platform,
             sales: platformFees[shop.platform]?.salesCount || 0,
             revenue: platformFees[shop.platform]?.totalRevenue || 0,
-            listings: 0,
+            listings: getListingCount(shop),
             fees: platformFees[shop.platform]?.totalFees || 0,
         }));
 
         // Calculate total stats across all connected shops
-        const totalListings = platformData.reduce((sum, p) => sum + p.listings, 0);
+        const listingCounts = platformData.map((p) => p.listings).filter((value) => value !== null);
+        const totalListings = listingCounts.length ? listingCounts.reduce((sum, count) => sum + count, 0) : null;
         const totalRevenue = platformData.reduce((sum, p) => sum + p.revenue, 0);
         const totalSales = platformData.reduce((sum, p) => sum + p.sales, 0);
-        const avgHealthScore = connectedShops.length > 0
-            ? (connectedShops.reduce((sum, s) => sum + (s.health_score || 0), 0) / connectedShops.length) || null
-            : 0;
+        const healthScores = connectedShops.map(getShopHealthScore).filter((score) => score !== null);
+        const platformOverallHealth = toHealthScore(platformHealthData.overall_health);
+        const avgHealthScore =
+            healthScores.length > 0
+                ? Math.round(healthScores.reduce((sum, score) => sum + score, 0) / healthScores.length)
+                : platformOverallHealth;
 
         // Platform colors for visual display
         const platformColors = {
-            poshmark: '#7c3aed',
-            ebay: '#0064d2',
+            poshmark: '#AC1A2F',
+            ebay: '#E53238',
+            mercari: '#FF3B58',
             whatnot: '#ff4757',
             depop: '#ff2300',
             shopify: '#96bf48',
             facebook: '#1877f2',
+            grailed: '#000000',
+            etsy: '#F1641E',
+            kijiji: '#FF8A00',
+            vinted: '#007782',
         };
 
         return `
@@ -152,7 +277,7 @@ Object.assign(pages, {
                                         ? 'Connect your first selling platform to start syncing'
                                         : syncStatus.lastSync
                                           ? `Last sync: ${new Date(syncStatus.lastSync).toLocaleTimeString()}`
-                                          : 'All synced'
+                                          : 'No sync recorded'
                                 }
                             </p>
                             ${
@@ -185,7 +310,7 @@ Object.assign(pages, {
                                     ${components.icon('list', 20)}
                                 </div>
                                 <div class="shop-stat-content">
-                                    <div class="shop-stat-value">${totalListings}</div>
+                                    <div class="shop-stat-value">${totalListings !== null ? totalListings : '—'}</div>
                                     <div class="shop-stat-label">Total Listings</div>
                                 </div>
                             </div>
@@ -464,10 +589,11 @@ Object.assign(pages, {
                                                   feePercentage: 0,
                                                   feeRate: 0.1,
                                               };
+                                              const listingCount = getListingCount(shop);
                                               return `
                                     <div class="shop-quick-stats mb-3" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center;">
                                         <div style="padding: 8px; background: var(--gray-50); border-radius: 6px;">
-                                            <div style="font-size: 16px; font-weight: 600;">—</div>
+                                            <div style="font-size: 16px; font-weight: 600;">${listingCount !== null ? listingCount : '—'}</div>
                                             <div style="font-size: 10px; color: var(--gray-500);">Listed</div>
                                         </div>
                                         <div style="padding: 8px; background: var(--gray-50); border-radius: 6px;">
@@ -604,19 +730,108 @@ Object.assign(pages, {
                                   netRevenue: 0,
                                   totalFees: 0,
                               };
+                              const shopStats = shop.stats && typeof shop.stats === 'object' ? shop.stats : {};
+                              const metricSources = [
+                                  shop,
+                                  shopStats,
+                                  shopStats.performance,
+                                  shopStats.metrics,
+                                  platformMetricsByPlatform.get(shop.platform),
+                                  healthByPlatform.get(shop.platform),
+                              ];
+                              const platformSales = sales.filter((sale) => sale.platform === shop.platform);
+                              const platformListings = listings.filter((listing) => listing.platform === shop.platform);
+                              const platformOrders = orders.filter((order) => order.platform === shop.platform);
+                              const listingViewValues = platformListings
+                                  .map((listing) => toMetricNumber(listing.views ?? listing.total_views))
+                                  .filter((value) => value !== null);
+                              const totalViews =
+                                  getMetricFromSources(metricSources, ['views', 'total_views', 'totalViews', 'view_count', 'viewCount']) ??
+                                  (platformListings.length > 0
+                                      ? listingViewValues.reduce((sum, value) => sum + value, 0)
+                                      : null);
+                              const salesCount =
+                                  getMetricFromSources(metricSources, ['sales', 'sales_count', 'salesCount', 'total_sales', 'totalSales']) ??
+                                  (sales.length > 0 ? fees.salesCount : null);
+                              const conversionRate =
+                                  getMetricFromSources(metricSources, ['conversion_rate', 'conversionRate']) ??
+                                  (totalViews > 0 && salesCount !== null ? (salesCount / totalViews) * 100 : null);
+                              const daysToSellValues = platformSales
+                                  .map((sale) => {
+                                      const listing = listingsById.get(sale.listing_id);
+                                      const item = inventoryById.get(sale.inventory_id);
+                                      const startDate =
+                                          sale.listed_at ||
+                                          listing?.listed_at ||
+                                          listing?.created_at ||
+                                          item?.listed_at ||
+                                          item?.created_at;
+                                      const soldDate = sale.sold_at || sale.created_at || sale.sale_date || sale.date;
+                                      return daysBetween(startDate, soldDate);
+                                  })
+                                  .filter((value) => value !== null);
+                              const avgDaysToSell =
+                                  getMetricFromSources(metricSources, [
+                                      'avg_days_to_sell',
+                                      'avgDaysToSell',
+                                      'avg_days_to_sale',
+                                      'avgDaysToSale',
+                                  ]) ?? averageMetric(daysToSellValues);
+                              const returnedSales = platformSales.filter((sale) =>
+                                  ['returned', 'refunded'].includes(String(sale.status || '').toLowerCase()),
+                              ).length;
+                              const returnedOrders = platformOrders.filter((order) => {
+                                  const status = String(order.status || '').toLowerCase();
+                                  const returnStatus = String(order.return_status || '').toLowerCase();
+                                  return status === 'returned' || ['requested', 'approved', 'received', 'refunded'].includes(returnStatus);
+                              }).length;
+                              const returnCount =
+                                  getMetricFromSources(metricSources, [
+                                      'returns',
+                                      'return_count',
+                                      'returnCount',
+                                      'total_returns',
+                                      'totalReturns',
+                                  ]) ??
+                                  (platformSales.length > 0
+                                      ? returnedSales
+                                      : platformOrders.length > 0
+                                        ? returnedOrders
+                                        : null);
+                              const returnBaseCount =
+                                  getMetricFromSources(metricSources, [
+                                      'orders',
+                                      'order_count',
+                                      'orderCount',
+                                      'total_orders',
+                                      'totalOrders',
+                                      'sales',
+                                      'sales_count',
+                                      'salesCount',
+                                      'total_sales',
+                                      'totalSales',
+                                  ]) ??
+                                  (platformSales.length > 0
+                                      ? platformSales.length
+                                      : platformOrders.length > 0
+                                        ? platformOrders.length
+                                        : null);
                               const avgSalePrice = fees.salesCount > 0 ? fees.totalRevenue / fees.salesCount : 0;
-                              const conversionRate = '—';
                               const salesVelocity = (fees.salesCount / 30).toFixed(1);
-                              const avgDaysToSell = '—';
-                              const returnRate = '—';
+                              const returnRate =
+                                  getMetricFromSources(metricSources, ['return_rate', 'returnRate']) ??
+                                  (returnBaseCount > 0 && returnCount !== null ? (returnCount / returnBaseCount) * 100 : null);
                               return {
                                   platform: shop.platform,
                                   ...fees,
                                   avgSalePrice,
                                   conversionRate,
+                                  conversionRateDisplay: formatPercentMetric(conversionRate),
                                   salesVelocity,
                                   avgDaysToSell,
+                                  avgDaysToSellDisplay: formatDaysMetric(avgDaysToSell),
                                   returnRate,
+                                  returnRateDisplay: formatPercentMetric(returnRate),
                               };
                           });
                           const bestPlatform = perfMetrics.reduce(
@@ -659,10 +874,10 @@ Object.assign(pages, {
                                             <td>${m.salesCount}</td>
                                             <td class="text-success font-medium">C$${m.totalRevenue.toFixed(2)}</td>
                                             <td>C$${m.avgSalePrice.toFixed(2)}</td>
-                                            <td>${m.conversionRate}%</td>
+                                            <td>${m.conversionRateDisplay}</td>
                                             <td>${m.salesVelocity}</td>
-                                            <td>${m.avgDaysToSell}d</td>
-                                            <td>${m.returnRate}%</td>
+                                            <td>${m.avgDaysToSellDisplay}</td>
+                                            <td>${m.returnRateDisplay}</td>
                                             <td class="font-medium">C$${m.netRevenue.toFixed(2)}</td>
                                         </tr>
                                     `,
@@ -694,18 +909,40 @@ Object.assign(pages, {
                             ${connectedShops
                                 .map((shop) => {
                                     const syncConfig = (store.state.shopSyncConfig || {})[shop.platform] || {};
-                                    const isSyncEnabled = syncConfig.enabled !== false;
-                                    const lastSync = syncConfig.lastSync
-                                        ? new Date(syncConfig.lastSync).toLocaleString()
-                                        : 'Never';
+                                    const isSyncEnabled =
+                                        syncConfig.enabled !== undefined
+                                            ? syncConfig.enabled !== false
+                                            : shop.auto_sync_enabled !== false && shop.auto_sync_enabled !== 0;
+                                    const syncState = String(shop.sync_status || syncConfig.status || 'idle').toLowerCase();
+                                    const syncLabel =
+                                        syncState === 'syncing'
+                                            ? 'Syncing'
+                                            : syncState && syncState !== 'idle'
+                                              ? syncState.charAt(0).toUpperCase() + syncState.slice(1)
+                                              : 'On';
+                                    const syncBadgeClass =
+                                        !isSyncEnabled
+                                            ? 'badge-gray'
+                                            : syncState === 'syncing'
+                                              ? 'badge-primary'
+                                              : syncState === 'error' || syncState === 'failed'
+                                                ? 'badge-danger'
+                                                : 'badge-success';
+                                    const lastSync = formatLastSync(getShopLastSync(shop, syncConfig));
+                                    const modeLabel = syncConfig.mode
+                                        ? syncConfig.mode
+                                              .split('-')
+                                              .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+                                              .join(' ')
+                                        : '—';
                                     return `
                                     <div style="padding: 14px; border: 1px solid ${isSyncEnabled ? 'var(--success-200)' : 'var(--gray-200)'}; border-radius: 10px; background: ${isSyncEnabled ? 'var(--success-50)' : 'var(--gray-50)'};">
                                         <div class="flex items-center justify-between mb-2">
                                             <span class="font-medium text-sm">${shop.platform.charAt(0).toUpperCase() + shop.platform.slice(1)}</span>
-                                            <span class="badge ${isSyncEnabled ? 'badge-success' : 'badge-gray'} badge-sm">${isSyncEnabled ? 'Syncing' : 'Off'}</span>
+                                            <span class="badge ${syncBadgeClass} badge-sm">${isSyncEnabled ? syncLabel : 'Off'}</span>
                                         </div>
                                         <div class="text-xs text-gray-500">Last: ${lastSync}</div>
-                                        <div class="text-xs text-gray-400 mt-1">Mode: ${syncConfig.mode || 'Two-way'}</div>
+                                        <div class="text-xs text-gray-400 mt-1">Mode: ${modeLabel}</div>
                                     </div>
                                 `;
                                 })

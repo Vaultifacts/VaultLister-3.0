@@ -1396,7 +1396,7 @@ Object.assign(handlers, {
         toast.info('Generating CSV export...');
         try {
             const period = store.state.analyticsPeriod || '30d';
-            const res = await api.request('POST', '/api/analytics/export', { type: 'sales', format: 'json', period });
+            const res = await api.post('/analytics/export', { type: 'sales', format: 'json', period });
             const rows = res.export || [];
             if (!rows.length) { toast.info('No sales data to export'); return; }
             const headers = Object.keys(rows[0]);
@@ -1463,7 +1463,7 @@ Object.assign(handlers, {
         toast.info('Refreshing analytics data...');
         try {
             const period = store.state.analyticsPeriod || '30d';
-            const data = await api.request('GET', `/api/analytics/dashboard?period=${period}`);
+            const data = await api.get(`/analytics/dashboard?period=${period}`);
             store.setState({ analyticsData: data });
             renderApp(window.pages.analytics());
             toast.success('Analytics updated');

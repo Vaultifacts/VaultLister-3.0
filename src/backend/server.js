@@ -942,6 +942,7 @@ async function main() {
                                         effectivePath === '/api/settings/announcement' && method === 'GET';
                                     const isPublicAffiliateApply =
                                         effectivePath === '/api/affiliate-apply' && method === 'POST';
+                                    const isPublicRoadmapList = effectivePath === '/api/roadmap' && method === 'GET';
                                     const isSocialAuthInit =
                                         /^\/api\/social-auth\/[^/]+$/.test(effectivePath) && method === 'GET';
                                     const isPublicImageFile =
@@ -955,6 +956,7 @@ async function main() {
                                         !isPublicMonitoring &&
                                         !isPublicAnnouncement &&
                                         !isPublicAffiliateApply &&
+                                        !isPublicRoadmapList &&
                                         !isSocialAuthInit &&
                                         !isPublicImageFile
                                     ) {
