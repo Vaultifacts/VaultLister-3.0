@@ -78,6 +78,11 @@ async function humanType(page, selector, text) {
     await enhancedHumanType(page, selector, text, _publishBehavior);
 }
 
+export async function preloadFacebookPublishDependencies() {
+    const [profiles, botSafety, stealth] = await Promise.all([getProfiles(), getBotSafety(), getStealth()]);
+    return { profiles, botSafety, stealth };
+}
+
 /**
  * Publish a VaultLister listing to Facebook Marketplace via browser automation.
  * @param {Object} shop      - Shop row (platform = 'facebook')
