@@ -3,7 +3,7 @@
 // getAdminActivity, generateComplianceReport, getSecurityAlerts, cleanup defaults,
 // auditLogRouter (all routes), redactSensitive edge cases, migration export
 import { mock, describe, test, expect, beforeEach } from 'bun:test';
-import { readFileSync } from 'fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'path';
 import { createMockDb } from './helpers/mockDb.js';
 

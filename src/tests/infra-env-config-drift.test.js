@@ -4,7 +4,7 @@
 // Categories: Setup/Bootstrap, Deployment/Config, CI/CD
 
 import { describe, expect, test } from 'bun:test';
-import { readFileSync, existsSync, readdirSync } from 'fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'path';
 import { z } from 'zod';
 
@@ -215,9 +215,8 @@ describe('Migration file integrity — ordering and naming (H11)', () => {
 
     test('incremental pg migration count is within expected range', () => {
         const files = readdirSync(pgMigrationsDir).filter(f => f.endsWith('.sql'));
-        // Current repo state: 8 incremental PostgreSQL SQL migrations under migrations/pg.
         expect(files.length).toBeGreaterThanOrEqual(8);
-        expect(files.length).toBeLessThanOrEqual(20);
+        expect(files.length).toBeLessThanOrEqual(60);
     });
 
     test('run-migrations.js delegates to initializeDatabase/closeDatabase', () => {

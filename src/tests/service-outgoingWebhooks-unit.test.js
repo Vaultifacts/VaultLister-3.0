@@ -2,7 +2,7 @@
 // Tests: sanitizeWebhookData (indirectly), generateSignature (indirectly),
 // EVENT_TYPES, RETRY_CONFIG behavior, delivery queue, outgoingWebhooksRouter
 import { describe, expect, test, mock, beforeEach } from 'bun:test';
-import { readFileSync } from 'fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'path';
 import { createMockDb } from './helpers/mockDb.js';
 import crypto from 'crypto';

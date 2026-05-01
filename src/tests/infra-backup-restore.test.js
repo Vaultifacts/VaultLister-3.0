@@ -3,7 +3,7 @@
 // Categories: Backup/DR (PostgreSQL pg_dump based)
 
 import { describe, expect, test } from 'bun:test';
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'path';
 
 const ROOT = join(import.meta.dir, '../../');

@@ -1,7 +1,7 @@
 // Email Marketing Service Unit Tests — comprehensive coverage
 // Tests: EMAIL_TEMPLATES, emailMarketing methods, emailMarketingRouter, migration
 import { describe, expect, test, mock, beforeEach, afterAll } from 'bun:test';
-import { readFileSync } from 'fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'path';
 
 // ---------------------------------------------------------------------------

@@ -4,7 +4,7 @@
 // Categories: Build/Packaging, CI/CD, Deployment/Config
 
 import { describe, expect, test, beforeAll } from 'bun:test';
-import { readFileSync, existsSync, statSync, readdirSync } from 'fs';
+import { readFileSync, existsSync, statSync, readdirSync } from 'node:fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
 

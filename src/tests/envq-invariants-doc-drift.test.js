@@ -4,7 +4,7 @@
 // Categories: Documentation/Runbooks, Oracles/Invariants/Reference Truth
 
 import { describe, expect, test, mock, beforeEach } from 'bun:test';
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'path';
 
 // ═══════════════════════════════════════════════════════════════════════════════

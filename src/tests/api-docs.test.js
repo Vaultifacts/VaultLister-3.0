@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'bun:test';
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'path';
 
 const BASE_URL = process.env.TEST_BASE_URL || `http://localhost:${process.env.PORT || 3000}`;

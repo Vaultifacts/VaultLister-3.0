@@ -4,7 +4,7 @@
 // No mock.module usage — avoids cross-file mock contamination in Bun.
 
 import { describe, test, expect, beforeAll } from 'bun:test';
-import { readFileSync } from 'fs';
+import { readFileSync } from 'node:fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
