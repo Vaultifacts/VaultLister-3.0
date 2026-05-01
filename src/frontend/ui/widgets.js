@@ -4753,7 +4753,7 @@ const kanbanBoard = {
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="kanban-task-due">Due Date (optional)</label>
-                        <input aria-label="Kanban Task Due" type="date" id="kanban-task-due" class="form-input">
+                        <inputinput type="date" id="kanban-task-due" class="form-input">
                     </div>
                     <div class="flex justify-end gap-3 mt-4">
                         <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>

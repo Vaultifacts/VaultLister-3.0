@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-01T06:59:41.217Z
-Commit: 48c8fc66
+Generated at: 2026-05-01T19:12:00.733Z
+Commit: dfffe736
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -15,16 +15,16 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 |---|---:|
 | Launch blockers | 2 |
 | Open walkthrough/product items | 0 |
-| Fixed pending live/manual verification | 26 |
+| Fixed pending live/manual verification | 23 |
 | Deferred/post-launch items | 10 |
 | Structural/refactor backlog items | 10 |
 | Competitor intelligence gaps | 862 |
 | Anti-detection/design gaps | 14 |
-| Open GitHub issues | 8 |
+| Open GitHub issues | 9 |
 | Explicit unchecked checklist items | 359 |
-| Repo-wide unchecked checkbox hits | 583 |
+| Repo-wide unchecked checkbox hits | 657 |
 | Repo-wide unchecked checkbox hits included | 359 |
-| Repo-wide unchecked checkbox hits excluded or review-only | 224 |
+| Repo-wide unchecked checkbox hits excluded or review-only | 298 |
 | Open-marker source files discovered | 212 |
 | Source TODO/FIXME hits | 14 |
 
@@ -38,6 +38,7 @@ Command: `rg -n "^\s*[-*]\s+\[ \]" <document targets> --glob "*.md"`
 
 | Source | Matches | First Match | Treatment |
 |---|---:|---:|---|
+| memory/STATUS.md | 74 | 1407 | Excluded pending source-policy review |
 | .agents/skills/mobile-audit/SKILL.md | 6 | 75 | Excluded: agent skill runbook checklist, not persistent backlog |
 | docs/archive/evidence-2026-03/RUNBOOK_CHECKLIST.md | 4 | 25 | Excluded: historical evidence, verify before promotion |
 | docs/LAUNCH_AUDIT_FINDINGS_2026-04-05.md | 9 | 284 | Excluded: historical evidence, verify before promotion |
@@ -204,7 +205,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | memory/COMPLETED.md | 2 | 61 | Excluded: session memory, promote only after current verification |
 | memory/LAUNCH_PRIORITY.md | 5 | 13 | Excluded: session memory, promote only after current verification |
 | memory/MEMORY.md | 9 | 7 | Excluded: session memory, promote only after current verification |
-| memory/STATUS.md | 108 | 4 | Excluded: session memory, promote only after current verification |
+| memory/STATUS.md | 178 | 19 | Excluded: session memory, promote only after current verification |
 | memory/TIER0_PLAYBOOK.md | 3 | 11 | Excluded: session memory, promote only after current verification |
 | data/qa-report-2026-04-04-chrome-walkthrough.md | 2 | 20 | Excluded: timestamped QA evidence, not current truth |
 | data/qa-report-2026-04-04-exhaustive.md | 4 | 39 | Excluded: timestamped QA evidence, not current truth |
@@ -241,7 +242,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | docs/walkthrough/platform-readiness.md | 3 | 14 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/predictions.md | 4 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/privacy.md | 1 | 3 | Included via walkthrough parser when table status is active |
-| docs/walkthrough/public-site.md | 51 | 3 | Included via walkthrough parser when table status is active |
+| docs/walkthrough/public-site.md | 48 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/receipts.md | 2 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/refer-a-friend.md | 1 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/reports.md | 2 | 3 | Included via walkthrough parser when table status is active |
@@ -299,32 +300,29 @@ _None._
 
 | ID | Status | Priority | Area | Item | Source | Next Action | Blocker |
 |---|---|---|---|---|---|---|---|
-| changelog-33-fixed-please-add-a-search-bar-above-the-bu | VERIFIED LIVE ✅ 2026-05-01 — SPA changelog has search bar (class=changelog-search), 5 filter buttons, 25 version elements |  | Changelog | FIXED — Please add a search bar above the button filters on the changelog page, and also please display the Version information and exact date of each change, on the left side of the Dot next to each associated batch of changes (image-72) | docs/walkthrough/changelog.md:33 |  |  |
-| L-18 | CONFIRMED N/A ✅ — connectGmail() has real OAuth popup flow. Functional pending credentials. |  | Connections | Gmail/Outlook/Cloudinary/Google Drive "Connect" buttons -- unclear if functional | docs/walkthrough/connections.md:14 |  |  |
-| MANUAL-listings-1 | VERIFIED LIVE ✅ 2026-05-01 — platformLogo() + renderListingPlatformIcon() confirmed in deployed pages-deferred.js |  | Listings | Platform icons in the Platform dropdown menu of the Listings page are not displaying the correct icons for the platform. (Should show the same associated icons as it does on the My Shops page) | docs/walkthrough/listings.md:12 |  |  |
-| MANUAL-listings-2 | VERIFIED LIVE ✅ 2026-05-01 — 0 error toasts on Listings page render with fake session |  | Listings | When I navigate to the listings page, the following errors show up in the top right corner (image-90) | docs/walkthrough/listings.md:13 |  |  |
-| MANUAL-settings-3 | VERIFIED LIVE ✅ 2026-05-01 — settings-currency + settings-language selects confirmed in deployed pages-settings-account.js |  | Settings | Add Currency (CAD) and Language (EN) dropdown menus next to the Timezone field in Account tab (image-83, image-84) | docs/walkthrough/settings.md:45 |  |  |
-| P0-pub-1 | INCONCLUSIVE — no profile-circle element in landing.html source; may be JS-injected at runtime; cannot verify without unauthenticated session |  | Public Nav | When pressing dropdown menu buttons, user is signed out -- should display profile circle instead (image-86) | docs/walkthrough/public-site.md:62 |  |  |
-| P0-pub-2 | VERIFIED LIVE ✅ 2026-05-01 — SPA sidebar has Status & Updates dropdown with Changelog, Roadmap, Status Page |  | Routes | Different changelog/roadmap pages shown from public vs signed-in sidebar (image-57) | docs/walkthrough/public-site.md:63 |  |  |
-| P0-pub-3 | VERIFIED LIVE ✅ 2026-05-01 — sidebar-user-menu dropdown found in sidebar-footer with aria button |  | Sidebar Profile | Bottom left profile icon not clickable -- should display dropdown options (image-54) | docs/walkthrough/public-site.md:64 |  |  |
-| P0-pub-4 | INCONCLUSIVE — no commit found for this patch; favicon.ico returns text/html on live site; cannot confirm fix is deployed |  | Assets | Old logo showing on page refresh (image-87) | docs/walkthrough/public-site.md:65 |  |  |
-| P1-pub-1 | FIXED 2026-05-01 — sidebar-brand logo link added to components.js aside template; CSS in base.css; bundle rebuilt (5b747691); deploy pending |  | Sidebar | Migrate logo from top bar back to sidebar; sidebar extends to top of page (image-53) | docs/walkthrough/public-site.md:66 |  |  |
-| P1-pub-2 | VERIFIED LIVE ✅ 2026-05-01 — 21 SOON-class elements with vinyl-wrapper-soon aria-labels confirmed on landing.html |  | Landing | Coming-soon platform text brighter white and larger; Soon label larger and more vibrant (image-55) | docs/walkthrough/public-site.md:67 |  |  |
-| P1-pub-3 | INCONCLUSIVE — sidebar restructured multiple times; cannot confirm which 5 tabs without image-105 reference |  | Sidebar | Remove 5 deprecated tabs from the sidebar menu (image-105) | docs/walkthrough/public-site.md:68 |  |  |
-| P3-pub-1 | VERIFIED LIVE ✅ 2026-05-01 — social links present, footer width 1609px vs 1624px viewport (full width) |  | Public Footer | Make social media icons slightly larger and black; bottom bar fully extends entire page width (image-61, image-62) | docs/walkthrough/public-site.md:69 |  |  |
-| P3-pub-2 | INCONCLUSIVE — sections use CSS class-based backgrounds; no inline style detectable from DOM |  | Landing | Make background of a specific landing section white with proper contrasting (image-69) | docs/walkthrough/public-site.md:70 |  |  |
-| P3-pub-3 | VERIFIED LIVE ✅ 2026-05-01 — footer shows "2026 VaultLister, Inc. All rights reserved." |  | Public Footer | Change footer copyright text to 2026 VaultLister, Inc. All rights reserved. (image-63) | docs/walkthrough/public-site.md:71 |  |  |
-| P3-pub-4 | VERIFIED LIVE ✅ 2026-05-01 — div.help-cta with "Still need help?" confirmed in help.html |  | Help Center | Center the orange Still need help popup below Related Articles (image-67) | docs/walkthrough/public-site.md:72 |  |  |
-| P3-pub-5 | INCONCLUSIVE — no [class*=related] elements in help.html; related articles may only appear in article detail pages |  | Help Center | Make all Related Articles buttons display in a single row (image-68) | docs/walkthrough/public-site.md:73 |  |  |
-| P3-pub-6 | VERIFIED LIVE ✅ 2026-05-01 — 10 language options all in English names; no duplicate Canada option |  | Language / Currency Selector | Fix two Canada options; add English (U.S.); Currency dropdown same size as Language; matching colour theme (image-71) | docs/walkthrough/public-site.md:74 |  |  |
-| P3-pub-7 | VERIFIED LIVE ✅ 2026-05-01 — changelog.html has search-shell input, v1.7.0 version, April 2026 date, filter buttons |  | Public Changelog | Add search bar above button filters; display Version info and exact date on left side of dot (image-72) | docs/walkthrough/public-site.md:75 |  |  |
-| P3-pub-8 | VERIFIED LIVE ✅ 2026-05-01 — Sign In (btn-primary) appears before Start Free Trial in nav DOM order |  | Public Nav | Rearrange top nav so Sign in button appears first (image-74) | docs/walkthrough/public-site.md:76 |  |  |
-| P3-pub-9 | VERIFIED LIVE ✅ 2026-05-01 — both Sign In and Start Free Trial have class "btn btn-primary" |  | Public Nav | Make Sign in buttons follow the same colour theme as Start Free Trial (image-75) | docs/walkthrough/public-site.md:77 |  |  |
-| P3-pub-10 | VERIFIED LIVE ✅ 2026-05-01 — hero order: hero-badge → H1 → hero-stars → hero-sub → hero-cta |  | Landing Hero | Reorder and centre hero elements in specified sequence (image-76) | docs/walkthrough/public-site.md:78 |  |  |
-| P3-pub-11 | FIXED 2026-05-01 — fr-search input + fr-search-wrap CSS added to request-feature.html (5b747691); deploy pending |  | Feature Requests | Add a search bar under feature requests (image-78) | docs/walkthrough/public-site.md:79 |  |  |
-| P3-pub-12 | FIXED 2026-05-01 — learning-search input inside page-hero + CSS added to learning.html (5b747691); deploy pending |  | Learning Page | Add a search bar to the Learning page (image-106) | docs/walkthrough/public-site.md:80 |  |  |
-| P4-pub-1 | VERIFIED LIVE ✅ 2026-05-01 — /compare/oneshop.html (200) and /compare/crosslist-magic.html (200) both confirmed |  | Compare Pages | Add an Oneshop Comparison and a Crosslist Magic comparison | docs/walkthrough/public-site.md:81 |  |  |
-| settings-34-fixed-settings-sidebar-tab-targeting-so-th | VERIFIED LIVE ✅ 2026-05-01 — settingsTab routing + validSettingsTabs array confirmed in core-bundle.js line 17128 |  | Settings | FIXED — Settings sidebar tab targeting so the clicked tab renders immediately (image-80) | docs/walkthrough/settings.md:34 |  |  |
+| changelog-33-fixed-please-add-a-search-bar-above-the-bu | FIXED — local changelog source already matches; live/manual recheck pending |  | Changelog | FIXED — Please add a search bar above the button filters on the changelog page, and also please display the Version information and exact date of each change, on the left side of the Dot next to each associated batch of changes (image-72) | docs/walkthrough/changelog.md:33 |  |  |
+| L-18 | CONFIRMED N/A -- connectGmail() has real OAuth popup flow. Functional pending credentials. |  | Connections | Gmail/Outlook/Cloudinary/Google Drive "Connect" buttons -- unclear if functional | docs/walkthrough/connections.md:14 |  |  |
+| MANUAL-listings-1 | FIXED — local Listings dropdown now uses SUPPORTED_PLATFORMS and components.platformLogo() assets to match My Shops; live/manual recheck pending |  | Listings | Platform icons in the Platform dropdown menu of the Listings page are not displaying the correct icons for the platform. (Should show the same associated icons as it does on the My Shops page) | docs/walkthrough/listings.md:12 |  |  |
+| MANUAL-listings-2 | VERIFIED LOCALLY / NO CODE CHANGE — real demo JWT returned 200 for /api/listings and /api/listings/folders; direct #listings load on bundle 0ed2ca33 showed no error toasts; live/manual recheck pending |  | Listings | When I navigate to the listings page, the following errors show up in the top right corner (image-90) | docs/walkthrough/listings.md:13 |  |  |
+| MANUAL-settings-3 | FIXED -- 2026-04-24 local Account tab patch places compact CAD/EN dropdowns beside Timezone with CSS-rendered Canada flags; live/manual recheck pending |  | Settings | Add Currency (CAD) and Language (EN) dropdown menus next to the Timezone field in Account tab (image-83, image-84) | docs/walkthrough/settings.md:45 |  |  |
+| P0-pub-1 | FIXED -- local source patch present; live/manual recheck pending |  | Public Nav | When pressing dropdown menu buttons, user is signed out -- should display profile circle instead (image-86) | docs/walkthrough/public-site.md:62 |  |  |
+| P0-pub-2 | FIXED -- local source patch present; live/manual recheck pending |  | Routes | Different changelog/roadmap pages shown from public vs signed-in sidebar (image-57) | docs/walkthrough/public-site.md:63 |  |  |
+| P0-pub-3 | FIXED -- local source patch present; live/manual recheck pending |  | Sidebar Profile | Bottom left profile icon not clickable -- should display dropdown options (image-54) | docs/walkthrough/public-site.md:64 |  |  |
+| P1-pub-1 | FIXED -- local sidebar source already matches; live/manual recheck pending |  | Sidebar | Migrate logo from top bar back to sidebar; sidebar extends to top of page (image-53) | docs/walkthrough/public-site.md:66 |  |  |
+| P1-pub-2 | FIXED -- 2026-04-24 local landing source patch; live/manual recheck pending |  | Landing | Coming-soon platform text brighter white and larger; Soon label larger and more vibrant (image-55) | docs/walkthrough/public-site.md:67 |  |  |
+| P3-pub-1 | FIXED -- local public footer source already matches; live/manual recheck pending |  | Public Footer | Make social media icons slightly larger and black; bottom bar fully extends entire page width (image-61, image-62) | docs/walkthrough/public-site.md:69 |  |  |
+| P3-pub-2 | FIXED -- 2026-04-24 local landing source patch; live/manual recheck pending |  | Landing | Make background of a specific landing section white with proper contrasting (image-69) | docs/walkthrough/public-site.md:70 |  |  |
+| P3-pub-3 | FIXED -- local public footer source already matches; live/manual recheck pending |  | Public Footer | Change footer copyright text to 2026 VaultLister, Inc. All rights reserved. (image-63) | docs/walkthrough/public-site.md:71 |  |  |
+| P3-pub-4 | FIXED -- local Help Center source already matches; live/manual recheck pending |  | Help Center | Center the orange Still need help popup below Related Articles (image-67) | docs/walkthrough/public-site.md:72 |  |  |
+| P3-pub-6 | FIXED -- 2026-04-24 local selector source patch; live/manual recheck pending |  | Language / Currency Selector | Fix two Canada options; add English (U.S.); Currency dropdown same size as Language; matching colour theme (image-71) | docs/walkthrough/public-site.md:74 |  |  |
+| P3-pub-7 | FIXED -- local changelog source already matches; live/manual recheck pending |  | Public Changelog | Add search bar above button filters; display Version info and exact date on left side of dot (image-72) | docs/walkthrough/public-site.md:75 |  |  |
+| P3-pub-8 | FIXED -- local public nav source already matches; live/manual recheck pending |  | Public Nav | Rearrange top nav so Sign in button appears first (image-74) | docs/walkthrough/public-site.md:76 |  |  |
+| P3-pub-9 | FIXED -- local public nav source already matches; live/manual recheck pending |  | Public Nav | Make Sign in buttons follow the same colour theme as Start Free Trial (image-75) | docs/walkthrough/public-site.md:77 |  |  |
+| P3-pub-10 | FIXED -- 2026-04-24 local landing hero source patch; live/manual recheck pending |  | Landing Hero | Reorder and centre hero elements in specified sequence (image-76) | docs/walkthrough/public-site.md:78 |  |  |
+| P3-pub-11 | FIXED -- 2026-04-24 local feature-request search patch; live/manual recheck pending |  | Feature Requests | Add a search bar under feature requests (image-78) | docs/walkthrough/public-site.md:79 |  |  |
+| P3-pub-12 | FIXED -- 2026-04-24 local learning search patch; live/manual recheck pending |  | Learning Page | Add a search bar to the Learning page (image-106) | docs/walkthrough/public-site.md:80 |  |  |
+| P4-pub-1 | FIXED -- local compare pages present; live/manual recheck pending |  | Compare Pages | Add an Oneshop Comparison and a Crosslist Magic comparison | docs/walkthrough/public-site.md:81 |  |  |
+| settings-34-fixed-settings-sidebar-tab-targeting-so-th | FIXED — 2026-04-23 local route-normalization patch; live/manual recheck pending |  | Settings | FIXED — Settings sidebar tab targeting so the clicked tab renders immediately (image-80) | docs/walkthrough/settings.md:34 |  |  |
 
 ## Deferred / Post-Launch Items
 
@@ -1254,14 +1252,15 @@ Command: `gh issue list --state open --limit 200 --json number,title,labels,upda
 
 | Issue | Title | Labels | Updated | URL |
 |---|---|---|---|---|
+| #489 | [CI Failure] master - Run #1554 | ci-failure, automated | 2026-05-01T18:50:13Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/489 |
+| #488 | [Lighthouse] Performance score below 50 — immediate attention required | automated, performance | 2026-05-01T18:35:25Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/488 |
+| #487 | [Billing] Monthly AI services spend review — 2026-05 | automated, billing, ai-spend | 2026-05-01T12:00:53Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/487 |
+| #486 | [Backup Retention] Monthly B2 backup verification — 2026-05 | automated, maintenance | 2026-05-01T10:24:32Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/486 |
+| #485 | [API Deprecation] Monthly platform changelog review — 2026-05 | automated, maintenance | 2026-05-01T08:52:39Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/485 |
 | #482 | [Automation] Project status update workflow failed — boards may be stale | ci-failure, automated | 2026-05-01T06:07:47Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/482 |
 | #467 | [WAF] Monthly Cloudflare WAF rule review — 2026-05 | security, automated | 2026-05-01T00:01:51Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/467 |
 | #456 | [Automation Coverage] 27 gap(s) detected — 2026-04-27 | automated, automation-coverage | 2026-05-01T06:43:43Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/456 |
-| #455 | [Infra Audit] Issues detected — 2026-04-27 | automated, infra-audit | 2026-05-01T06:43:41Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/455 |
-| #453 | [Redis] Health check failed — Redis may be down or misconfigured | infrastructure, automated | 2026-04-27T11:09:35Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/453 |
-| #447 | [Observability] 3 pipeline issue(s) — 2026-04-27 | automated, observability | 2026-05-01T06:43:42Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/447 |
 | #446 | Maintenance: Push subscription cleanup reminder (2026-W17) | maintenance | 2026-04-26T08:47:19Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/446 |
-| #445 | [Lighthouse] Performance score below 50 — immediate attention required | automated, performance | 2026-04-30T00:57:56Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/445 |
 
 ## Explicit Checklist Backlogs
 

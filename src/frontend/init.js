@@ -1077,7 +1077,7 @@ handlers.showProrationCalculator = async function () {
                 <div style="display: grid; gap: 20px;">
                     <div class="form-group">
                         <label class="form-label" for="proration-plan-select">Select New Plan</label>
-                        <select id="proration-plan-select" class="form-select" onchange="handlers.showProrationCalculator()" aria-label="Proration Plan Select">
+                        <select id="proration-plan-select" class="form-select" onchange="handlers.showProrationCalculator()">
                             ${plans
                                 .filter((p) => p.name !== currentPlan)
                                 .map(
