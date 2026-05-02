@@ -15,6 +15,10 @@ import { cacheForUser } from '../middleware/cache.js';
 export async function notificationsRouter(ctx) {
     const { method, path, body, user, query: queryParams } = ctx;
 
+    if (!user) {
+        return { status: 401, data: { error: 'Authentication required' } };
+    }
+
     // GET /api/notifications - Get all notifications (paginated)
     if (method === 'GET' && path === '/') {
         try {
