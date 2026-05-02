@@ -238,7 +238,7 @@ Object.assign(handlers, {
 
     // Image Vault handlers,
 
-    setImageBankView: function (view) {
+    setImageVaultView: function (view) {
         store.setState({ imageVaultView: view });
         renderApp(window.pages.imageVault());
     },
@@ -2602,7 +2602,7 @@ Object.assign(handlers, {
 
     // Filter roadmap by status,
 
-    handleImageBankUpload: async function (event) {
+    handleImageVaultUpload: async function (event) {
         const files = Array.from(event.target.files);
         if (files.length === 0) return;
 
@@ -2648,11 +2648,11 @@ Object.assign(handlers, {
             await api.ensureCSRFToken();
             const result = await api.post('/image-vault/upload', {
                 images,
-                folderId: store.state.selectedImageBankFolder || null,
+                folderId: store.state.selectedImageVaultFolder || null,
             });
 
             toast.success(`Uploaded ${result.count} image(s)`);
-            await handlers.loadImageBank();
+            await handlers.loadImageVault();
 
             // Clear file input
             event.target.value = '';
@@ -2680,7 +2680,7 @@ Object.assign(handlers, {
             await api.ensureCSRFToken();
             const result = await api.post('/image-vault/folders', { name: name.trim() });
             toast.success('Folder created: ' + (result.folder ? result.folder.name : name.trim()));
-            await handlers.loadImageBank();
+            await handlers.loadImageVault();
             if (store.state.currentPage === 'image-vault') {
                 renderApp(window.pages.imageVault());
             }
@@ -2705,7 +2705,7 @@ Object.assign(handlers, {
             if (store.state.selectedFolder === folderId) {
                 store.setState({ selectedFolder: null });
             }
-            await handlers.loadImageBank();
+            await handlers.loadImageVault();
             if (store.state.currentPage === 'image-vault') {
                 renderApp(window.pages.imageVault());
             }
@@ -2761,7 +2761,7 @@ Object.assign(handlers, {
 
             toast.success(`Moved ${selected.length} image(s)`);
             store.setState({ selectedImages: [] });
-            await handlers.loadImageBank();
+            await handlers.loadImageVault();
         } catch (error) {
             toast.error('Failed to move images: ' + error.message);
         }
@@ -2796,7 +2796,7 @@ Object.assign(handlers, {
 
             toast.success(`Tagged ${selected.length} image(s)`);
             store.setState({ selectedImages: [] });
-            await handlers.loadImageBank();
+            await handlers.loadImageVault();
         } catch (error) {
             toast.error('Failed to tag images: ' + error.message);
         }
@@ -2828,7 +2828,7 @@ Object.assign(handlers, {
 
             toast.success(`Deleted ${selected.length} image(s)`);
             store.setState({ selectedImages: [] });
-            await handlers.loadImageBank();
+            await handlers.loadImageVault();
         } catch (error) {
             toast.error('Failed to delete images: ' + error.message);
         }
@@ -2986,7 +2986,7 @@ Object.assign(handlers, {
             // Close modal if open
             modals.close();
 
-            await handlers.loadImageBank();
+            await handlers.loadImageVault();
 
             // Re-render page to reflect deletion
             if (store.state.currentPage === 'image-vault') {
@@ -3002,7 +3002,7 @@ Object.assign(handlers, {
     searchImages: async function (query) {
         if (!query || query.trim().length === 0) {
             // If empty search, reload all images
-            await handlers.loadImageBank();
+            await handlers.loadImageVault();
             return;
         }
 
@@ -3016,10 +3016,10 @@ Object.assign(handlers, {
 
     // Open Image Vault picker modal for adding images to items,
 
-    openImageBankPickerForPlatform: async function (platform) {
+    openImageVaultPickerForPlatform: async function (platform) {
         // Load images if not already loaded
         if (!store.state.imageVaultImages || store.state.imageVaultImages.length === 0) {
-            await handlers.loadImageBank();
+            await handlers.loadImageVault();
         }
 
         const images = store.state.imageVaultImages || [];
@@ -3066,11 +3066,11 @@ Object.assign(handlers, {
         `);
     },
 
-    openImageBankPicker: async function (mode) {
+    openImageVaultPicker: async function (mode) {
         try {
             // Load images if not already loaded
             if (!store.state.imageVaultImages || store.state.imageVaultImages.length === 0) {
-                await handlers.loadImageBank();
+                await handlers.loadImageVault();
             }
 
             const images = store.state.imageVaultImages || [];
@@ -3100,7 +3100,7 @@ Object.assign(handlers, {
                             ${images
                                 .map(
                                     (image) => `
-                                <div class="image-card selectable-image" role="button" tabindex="0" onclick="handlers.toggleImageBankSelection('${image.id}', '${mode}')" data-image-id="${image.id}">
+                                <div class="image-card selectable-image" role="button" tabindex="0" onclick="handlers.toggleImageVaultSelection('${image.id}', '${mode}')" data-image-id="${image.id}">
                                     <div class="image-card-thumbnail">
                                         <img src="${image.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_limit,w_800/${image.cloudinary_public_id}` : escapeHtml(image.file_path)}"
                                              alt="${escapeHtml(image.title || image.original_filename)}"
@@ -4708,7 +4708,7 @@ Object.assign(handlers, {
         }
     },
 
-    // Image bank selection state,
+    // Image Vault selection state,
 
     showAddEventModal() {
         modals.addCalendarEvent();
@@ -4830,7 +4830,7 @@ Object.assign(handlers, {
 
     // Reports,
 
-    async loadImageBankImages() {
+    async loadImageVaultImages() {
         try {
             const res = await fetch('/api/image-vault', { headers: { Authorization: `Bearer ${store.state.token}` } });
             if (!res.ok) {
