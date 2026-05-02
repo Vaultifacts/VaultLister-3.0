@@ -6,10 +6,10 @@
   "memory_rules": 65,
   "_comment": "Update this file whenever any of the counted sources change.",
   "_sources": {
-    "deny_patterns": ".claude/settings.json \u2014 grep -c '\"Bash(' (lines in deny array)",
-    "validate_bash_patterns": "global \u2014 ~/.claude/settings.json hooks (validate-bash.sh). No project-level hook implemented.",
-    "protected_files": "global \u2014 ~/.claude/settings.json hooks (protect-files.sh). No project-level hook implemented.",
-    "agent_files": ".claude/agents/*.md \u2014 file count",
-    "memory_rules": "~/.claude/projects/C--Users-Matt1-OneDrive-Desktop-vaultlister-3/memory/ \u2014 file count excluding MEMORY.md"
+    "deny_patterns": ".claude/settings.json -- grep -c '\"Bash(' (lines in deny array)",
+    "validate_bash_patterns": "global -- ~/.claude/settings.json hooks (validate-bash.sh). No project-level hook implemented.",
+    "protected_files": "global -- ~/.claude/settings.json hooks (protect-files.sh). No project-level hook implemented.",
+    "agent_files": ".claude/agents/*.md -- file count",
+    "memory_rules": "~/.claude/projects/C--Users-Matt1-OneDrive-Desktop-vaultlister-3/memory/ -- file count excluding MEMORY.md"
   }
 }
