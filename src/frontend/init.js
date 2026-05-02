@@ -1614,7 +1614,7 @@ handlers.addPhotosToBank = async function () {
     }
 
     try {
-        // Upload each photo to image bank
+        // Upload each photo to Image Vault
         for (const photo of photos) {
             const formData = new FormData();
             if (photo.file) {
