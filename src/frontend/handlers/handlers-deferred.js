@@ -105,10 +105,10 @@ Object.assign(handlers, {
         });
     },
 
-    // Load image bank images inline in the tab,
+    // Load Image Vault images inline in the tab,
 
-    loadImageBankInline: async function (mode) {
-        const gridId = `imagebank-grid-${mode}`;
+    loadImageVaultInline: async function (mode) {
+        const gridId = `imagevault-grid-${mode}`;
         const grid = document.getElementById(gridId);
         if (!grid) return;
 
@@ -121,8 +121,8 @@ Object.assign(handlers, {
                 images = res.images || [];
                 store.setState({ imageVaultImages: images });
             } catch (err) {
-                console.error('Failed to load image bank:', err);
-                toast.error('Failed to load image bank');
+                console.error('Failed to load Image Vault:', err);
+                toast.error('Failed to load Image Vault');
             }
         }
 
@@ -147,13 +147,13 @@ Object.assign(handlers, {
                 .slice(0, 50)
                 .map(
                     (img) => `
-            <div class="imagebank-inline-item" data-image-id="${img.id}" data-image-url="${img.cloudinary_public_id && cloudName ? `https://res.cloudinary.com/${cloudName}/image/upload/${img.cloudinary_public_id}` : escapeHtml(img.file_path || img.url)}"
-                 role="button" tabindex="0" onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${img.cloudinary_public_id && cloudName ? `https://res.cloudinary.com/${cloudName}/image/upload/${img.cloudinary_public_id}` : escapeHtml(img.file_path || img.url)}')"
+            <div class="imagevault-inline-item" data-image-id="${img.id}" data-image-url="${img.cloudinary_public_id && cloudName ? `https://res.cloudinary.com/${cloudName}/image/upload/${img.cloudinary_public_id}` : escapeHtml(img.file_path || img.url)}"
+                 role="button" tabindex="0" onclick="handlers.toggleImageVaultInlineSelection('${mode}', '${img.id}', '${img.cloudinary_public_id && cloudName ? `https://res.cloudinary.com/${cloudName}/image/upload/${img.cloudinary_public_id}` : escapeHtml(img.file_path || img.url)}')"
                  style="position: relative; cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; aspect-ratio: 1;">
                 <img src="${img.cloudinary_public_id && cloudName ? `https://res.cloudinary.com/${cloudName}/image/upload/c_fill,w_400,h_400/${img.cloudinary_public_id}` : escapeHtml(img.thumbnail_url || img.file_path || img.url)}"
                      alt="${escapeHtml(img.name || 'Image')}"
                      style="width: 100%; height: 100%; object-fit: cover;">
-                <div class="imagebank-check" style="position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; background: var(--primary-600); border-radius: 50%; display: none; align-items: center; justify-content: center; color: white;">
+                <div class="imagevault-check" style="position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; background: var(--primary-600); border-radius: 50%; display: none; align-items: center; justify-content: center; color: white;">
                     ${components.icon('check', 12)}
                 </div>
             </div>
@@ -165,45 +165,45 @@ Object.assign(handlers, {
 
     // Toggle selection of an image in the inline image bank picker,
 
-    toggleImageBankInlineSelection: function (mode, imageId, imageUrl) {
-        const item = document.querySelector(`.imagebank-inline-item[data-image-id="${imageId}"]`);
+    toggleImageVaultInlineSelection: function (mode, imageId, imageUrl) {
+        const item = document.querySelector(`.imagevault-inline-item[data-image-id="${imageId}"]`);
         if (!item) return;
 
         const isSelected = item.classList.toggle('selected');
-        const checkEl = item.querySelector('.imagebank-check');
+        const checkEl = item.querySelector('.imagevault-check');
 
         if (isSelected) {
             item.style.borderColor = 'var(--primary-600)';
             if (checkEl) checkEl.style.display = 'flex';
 
             // Add to media preview
-            this.addImageBankImageToPreview(mode, imageId, imageUrl);
+            this.addImageVaultImageToPreview(mode, imageId, imageUrl);
         } else {
             item.style.borderColor = 'transparent';
             if (checkEl) checkEl.style.display = 'none';
 
             // Remove from media preview
-            this.removeImageBankImageFromPreview(mode, imageId);
+            this.removeImageVaultImageFromPreview(mode, imageId);
         }
     },
 
     // Add image bank image to the media preview,
 
-    addImageBankImageToPreview: function (mode, imageId, imageUrl) {
+    addImageVaultImageToPreview: function (mode, imageId, imageUrl) {
         const previewContainer = document.getElementById(`media-preview-${mode}`);
         if (!previewContainer) return;
 
         // Check if already added
-        if (previewContainer.querySelector(`[data-imagebank-id="${imageId}"]`)) return;
+        if (previewContainer.querySelector(`[data-imagevault-id="${imageId}"]`)) return;
 
         const previewItem = document.createElement('div');
         previewItem.className = 'media-preview-item';
-        previewItem.setAttribute('data-imagebank-id', imageId);
-        previewItem.setAttribute('data-imagebank-url', imageUrl);
+        previewItem.setAttribute('data-imagevault-id', imageId);
+        previewItem.setAttribute('data-imagevault-url', imageUrl);
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         previewItem.innerHTML = sanitizeHTML(`
             <img src="${escapeHtml(imageUrl)}" alt="Image from Image Vault" style="width: 100%; height: 100%; object-fit: cover;">
-            <button aria-label="Remove" type="button" class="media-preview-remove" onclick="handlers.removeImageBankImageFromPreview('${mode}', '${imageId}')"><span aria-hidden="true">×</span></button>
+            <button aria-label="Remove" type="button" class="media-preview-remove" onclick="handlers.removeImageVaultImageFromPreview('${mode}', '${imageId}')"><span aria-hidden="true">×</span></button>
             <span class="media-preview-source" style="position: absolute; bottom: 2px; left: 2px; background: var(--primary-600); color: white; font-size: 9px; padding: 1px 4px; border-radius: 4px;">Bank</span>
         `);
         previewContainer.appendChild(previewItem);
@@ -211,26 +211,26 @@ Object.assign(handlers, {
 
     // Remove image bank image from preview,
 
-    removeImageBankImageFromPreview: function (mode, imageId) {
+    removeImageVaultImageFromPreview: function (mode, imageId) {
         const previewContainer = document.getElementById(`media-preview-${mode}`);
         if (!previewContainer) return;
 
-        const item = previewContainer.querySelector(`[data-imagebank-id="${imageId}"]`);
+        const item = previewContainer.querySelector(`[data-imagevault-id="${imageId}"]`);
         if (item) item.remove();
 
         // Also deselect in the picker
-        const pickerItem = document.querySelector(`.imagebank-inline-item[data-image-id="${imageId}"]`);
+        const pickerItem = document.querySelector(`.imagevault-inline-item[data-image-id="${imageId}"]`);
         if (pickerItem) {
             pickerItem.classList.remove('selected');
             pickerItem.style.borderColor = 'transparent';
-            const checkEl = pickerItem.querySelector('.imagebank-check');
+            const checkEl = pickerItem.querySelector('.imagevault-check');
             if (checkEl) checkEl.style.display = 'none';
         }
     },
 
     // Search image bank inline,
 
-    searchImageBankInline: function (mode, query) {
+    searchImageVaultInline: function (mode, query) {
         const cloudName = store.state.cloudinaryCloudName;
         const images = store.state.imageVaultImages || [];
         const filtered = query.trim()
@@ -241,7 +241,7 @@ Object.assign(handlers, {
               )
             : images;
 
-        const gridId = `imagebank-grid-${mode}`;
+        const gridId = `imagevault-grid-${mode}`;
         const grid = document.getElementById(gridId);
         if (!grid) return;
 
@@ -261,13 +261,13 @@ Object.assign(handlers, {
                 .slice(0, 50)
                 .map(
                     (img) => `
-            <div class="imagebank-inline-item" data-image-id="${img.id}" data-image-url="${img.cloudinary_public_id && cloudName ? `https://res.cloudinary.com/${cloudName}/image/upload/${img.cloudinary_public_id}` : escapeHtml(img.file_path || img.url)}"
-                 role="button" tabindex="0" onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${img.cloudinary_public_id && cloudName ? `https://res.cloudinary.com/${cloudName}/image/upload/${img.cloudinary_public_id}` : escapeHtml(img.file_path || img.url)}')"
+            <div class="imagevault-inline-item" data-image-id="${img.id}" data-image-url="${img.cloudinary_public_id && cloudName ? `https://res.cloudinary.com/${cloudName}/image/upload/${img.cloudinary_public_id}` : escapeHtml(img.file_path || img.url)}"
+                 role="button" tabindex="0" onclick="handlers.toggleImageVaultInlineSelection('${mode}', '${img.id}', '${img.cloudinary_public_id && cloudName ? `https://res.cloudinary.com/${cloudName}/image/upload/${img.cloudinary_public_id}` : escapeHtml(img.file_path || img.url)}')"
                  style="position: relative; cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; aspect-ratio: 1;">
                 <img src="${img.cloudinary_public_id && cloudName ? `https://res.cloudinary.com/${cloudName}/image/upload/c_fill,w_400,h_400/${img.cloudinary_public_id}` : escapeHtml(img.thumbnail_url || img.file_path || img.url)}"
                      alt="${escapeHtml(img.name || 'Image')}"
                      style="width: 100%; height: 100%; object-fit: cover;">
-                <div class="imagebank-check" style="position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; background: var(--primary-600); border-radius: 50%; display: none; align-items: center; justify-content: center; color: white;">
+                <div class="imagevault-check" style="position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; background: var(--primary-600); border-radius: 50%; display: none; align-items: center; justify-content: center; color: white;">
                     ${components.icon('check', 12)}
                 </div>
             </div>
@@ -2085,7 +2085,7 @@ Object.assign(handlers, {
 
     // Image Vault handlers,
 
-    setImageBankView: function (view) {
+    setImageVaultView: function (view) {
         store.setState({ imageVaultView: view });
         renderApp(window.pages.imageVault());
     },
@@ -20558,7 +20558,7 @@ Object.assign(handlers, {
         reader.readAsDataURL(file);
     },
 
-    openImageBankForAI: async function () {
+    openImageVaultForAI: async function () {
         try {
             await api.ensureCSRFToken();
             const response = await api.get('/image-vault');
@@ -20576,7 +20576,7 @@ Object.assign(handlers, {
                     const fullUrl = img.cloudinary_public_id && cloudName
                         ? `https://res.cloudinary.com/${cloudName}/image/upload/${img.cloudinary_public_id}`
                         : null;
-                    return `<div class="cursor-pointer border-2 border-transparent hover:border-primary-500 rounded-lg p-1" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onclick="handlers.selectImageBankForAI('${escapeHtml(fullUrl || '')}', '${escapeHtml(url)}')">
+                    return `<div class="cursor-pointer border-2 border-transparent hover:border-primary-500 rounded-lg p-1" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onclick="handlers.selectImageVaultForAI('${escapeHtml(fullUrl || '')}', '${escapeHtml(url)}')">
                     <img src="${url}" alt="${escapeHtml(img.original_filename || 'Image')}" style="width:100px;height:100px;object-fit:cover;border-radius:var(--radius-sm);">
                 </div>`;
                 })
@@ -20591,7 +20591,7 @@ Object.assign(handlers, {
         }
     },
 
-    selectImageBankForAI: function (fullUrl, thumbUrl) {
+    selectImageVaultForAI: function (fullUrl, thumbUrl) {
         if (!fullUrl) {
             return toast.error('This image has no Cloudinary URL. Upload it to Cloudinary first.');
         }
@@ -21026,7 +21026,7 @@ Object.assign(handlers, {
 
     // Handle image upload,
 
-    handleImageBankUpload: async function (event) {
+    handleImageVaultUpload: async function (event) {
         const files = Array.from(event.target.files);
         if (files.length === 0) return;
 
@@ -21072,11 +21072,11 @@ Object.assign(handlers, {
             await api.ensureCSRFToken();
             const result = await api.post('/image-vault/upload', {
                 images,
-                folderId: store.state.selectedImageBankFolder || null,
+                folderId: store.state.selectedImageVaultFolder || null,
             });
 
             toast.success(`Uploaded ${result.count} image(s)`);
-            await handlers.loadImageBank();
+            await handlers.loadImageVault();
 
             // Clear file input
             event.target.value = '';
@@ -21108,7 +21108,7 @@ Object.assign(handlers, {
             await api.ensureCSRFToken();
             const result = await api.post('/image-vault/folders', { name: name.trim() });
             toast.success('Folder created: ' + (result.folder ? result.folder.name : name.trim()));
-            await handlers.loadImageBank();
+            await handlers.loadImageVault();
             if (store.state.currentPage === 'image-vault') {
                 renderApp(window.pages.imageVault());
             }
@@ -21133,7 +21133,7 @@ Object.assign(handlers, {
             if (store.state.selectedFolder === folderId) {
                 store.setState({ selectedFolder: null });
             }
-            await handlers.loadImageBank();
+            await handlers.loadImageVault();
             if (store.state.currentPage === 'image-vault') {
                 renderApp(window.pages.imageVault());
             }
@@ -21248,7 +21248,7 @@ Object.assign(handlers, {
 
             toast.success(`Moved ${selected.length} image(s)`);
             store.setState({ selectedImages: [] });
-            await handlers.loadImageBank();
+            await handlers.loadImageVault();
         } catch (error) {
             toast.error('Failed to move images: ' + error.message);
         }
@@ -21283,7 +21283,7 @@ Object.assign(handlers, {
 
             toast.success(`Tagged ${selected.length} image(s)`);
             store.setState({ selectedImages: [] });
-            await handlers.loadImageBank();
+            await handlers.loadImageVault();
         } catch (error) {
             toast.error('Failed to tag images: ' + error.message);
         }
@@ -21315,7 +21315,7 @@ Object.assign(handlers, {
 
             toast.success(`Deleted ${selected.length} image(s)`);
             store.setState({ selectedImages: [] });
-            await handlers.loadImageBank();
+            await handlers.loadImageVault();
         } catch (error) {
             toast.error('Failed to delete images: ' + error.message);
         }
@@ -21474,7 +21474,7 @@ Object.assign(handlers, {
             // Close modal if open
             modals.close();
 
-            await handlers.loadImageBank();
+            await handlers.loadImageVault();
 
             // Re-render page to reflect deletion
             if (store.state.currentPage === 'image-vault') {
@@ -21501,7 +21501,7 @@ Object.assign(handlers, {
     searchImages: async function (query) {
         if (!query || query.trim().length === 0) {
             // If empty search, reload all images
-            await handlers.loadImageBank();
+            await handlers.loadImageVault();
             return;
         }
 
@@ -21515,10 +21515,10 @@ Object.assign(handlers, {
 
     // Open Image Vault picker modal for adding images to items,
 
-    openImageBankPickerForPlatform: async function (platform) {
+    openImageVaultPickerForPlatform: async function (platform) {
         // Load images if not already loaded
         if (!store.state.imageVaultImages || store.state.imageVaultImages.length === 0) {
-            await handlers.loadImageBank();
+            await handlers.loadImageVault();
         }
 
         const cloudName = store.state.cloudinaryCloudName;
@@ -21609,11 +21609,11 @@ Object.assign(handlers, {
         toast.success(`Added ${selectedItems.length} images to ${platform}`);
     },
 
-    openImageBankPicker: async function (mode) {
+    openImageVaultPicker: async function (mode) {
         try {
             // Load images if not already loaded
             if (!store.state.imageVaultImages || store.state.imageVaultImages.length === 0) {
-                await handlers.loadImageBank();
+                await handlers.loadImageVault();
             }
 
             const cloudName = store.state.cloudinaryCloudName;
@@ -21644,7 +21644,7 @@ Object.assign(handlers, {
                             ${images
                                 .map(
                                     (image) => `
-                                <div class="image-card selectable-image" role="button" tabindex="0" onclick="handlers.toggleImageBankSelection('${image.id}', '${mode}')" data-image-id="${image.id}">
+                                <div class="image-card selectable-image" role="button" tabindex="0" onclick="handlers.toggleImageVaultSelection('${image.id}', '${mode}')" data-image-id="${image.id}">
                                     <div class="image-card-thumbnail">
                                         <img src="${image.cloudinary_public_id && cloudName ? `https://res.cloudinary.com/${cloudName}/image/upload/c_limit,w_800/${image.cloudinary_public_id}` : escapeHtml(image.file_path)}"
                                              alt="${escapeHtml(image.title || image.original_filename)}"
@@ -21683,7 +21683,7 @@ Object.assign(handlers, {
 
     // Toggle image selection in picker,
 
-    toggleImageBankSelection: function (imageId, mode) {
+    toggleImageVaultSelection: function (imageId, mode) {
         if (!handlers._imageVaultSelection) {
             handlers._imageVaultSelection = {};
         }
@@ -22029,8 +22029,8 @@ Object.assign(handlers, {
 
             if (result.success) {
                 toast.success('Image transformed successfully!');
-                // Reload image bank to show updated image
-                await handlers.loadImageBank();
+                // Reload Image Vault to show updated image
+                await handlers.loadImageVault();
                 handlers.closePhotoEditor();
             } else {
                 toast.error(result.error || 'Failed to apply transformations');
@@ -22063,7 +22063,7 @@ Object.assign(handlers, {
 
             if (result.success) {
                 toast.success('Image uploaded to Cloudinary');
-                await handlers.loadImageBank();
+                await handlers.loadImageVault();
 
                 // Update current image if in editor
                 if (store.state.photoEditorImageId === targetId) {
@@ -26341,8 +26341,8 @@ Object.assign(handlers, {
             toast.success(
                 `Scan complete: ${result.images_scanned} images checked across ${result.inventory_items_checked} items`,
             );
-            // Reload image bank to show updated usage counts
-            await handlers.loadImageBankImages();
+            // Reload Image Vault to show updated usage counts
+            await handlers.loadImageVaultImages();
             await handlers.loadImageStorageStats();
             renderApp(window.pages.imageVault());
         } catch (error) {
@@ -27838,7 +27838,7 @@ Object.assign(handlers, {
         }
     },
 
-    // Image bank selection state,
+    // Image Vault selection state,
 
     showPredictionModelConfig: async function () {
         try {
@@ -29372,7 +29372,7 @@ Object.assign(handlers, {
 
     // Image Vault,
 
-    async loadImageBankImages() {
+    async loadImageVaultImages() {
         try {
             const res = await fetch('/api/image-vault', { headers: { Authorization: `Bearer ${store.state.token}` } });
             if (!res.ok) {
