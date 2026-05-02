@@ -93,28 +93,28 @@ Priority order: CRITICAL (F77/F108/F61) → HIGH state-only (F103/F104/F109/F58/
 - [Image #3] DONE CURRENT 2026-05-01 — Landing footer social icons are non-white in current browser verification (`rgb(17, 17, 17)` inherited by SVG fill/stroke on white background); no code edit needed.
 - [Image #4] PARTIAL DONE LOCAL 2026-05-01 — Webhooks button removed and `#webhooks` hidden/aliased. Listing Defaults and Photo Settings still need current browser verification before closing the full item.
 - [Image #5] DONE LOCAL 2026-05-01 — My Listings expanded Platform Prices dedupe by platform and preserve the expanded/current listing.
-- [Image #6] Sales tab — remove the "Buyer Profiles / Manage buyer relationships" section entirely
-- [Image #7] DONE LOCAL 2026-05-01 session 3 — Scheduler Health dead code removed; Schedule Settings was a JS variable (no visible section); Notification Preferences is correctly in push-notifications page only
-- [Image #8] DONE LOCAL 2026-05-01 session 3 — Calendar and Performance buttons removed from Automations header
+- [Image #6] DONE CURRENT 2026-05-01 — Sales & Purchases route browser smoke verified no "Buyer Profiles" / "Manage buyer relationships" section remains.
+- [Image #7] DONE CURRENT 2026-05-01 — Automations route browser smoke verified no Scheduler Health, Schedule Settings, or Notification Preferences sections remain.
+- [Image #8] DONE CURRENT 2026-05-01 — Automations route browser smoke verified no Calendar or Performance sections/buttons remain.
 - [Image #9] DONE LOCAL 2026-05-01 — Daily Checklist tab switching rerenders page content; browser smoke verified Completed tab click.
 - [Image #10] DONE LOCAL 2026-05-01 — Daily Checklist "Mark All as Incomplete" renders an empty square SVG icon; browser smoke verified no unicode checkbox placeholder remains.
 - [Global] DONE LOCAL 2026-05-01 session 3 — Image Bank → Image Vault rename complete across all files (commits 4dcfdd7d→fa49ec24)
 - [Image #11] DONE LOCAL 2026-05-01 — Facebook Marketplace connect dialog now shows manual connect only in rebuilt settings chunk.
-- [Image #12] DONE LOCAL 2026-05-01 — Lookup and Tools buttons removed from Inventory page header (commit 63f0150d)
+- [Image #12] DONE CURRENT 2026-05-01 — Inventory route browser smoke verified hero actions are Bundle, Restock, Alerts, Add Item; no Lookup/Tools hero buttons remain.
 - [Image #13] DONE LOCAL 2026-05-01 — Inventory Out of Stock labels now use faint red `inventory-stock-out` badge styling.
 
 **WALKTHROUGH FINDINGS (2026-05-01 browser audit — new)**
-- [Inventory] Inventory Analytics sub-tab click does nothing — same broken tab pattern as Daily Checklist; fix tab switching
+- [Inventory] DONE CURRENT 2026-05-01 — Current Inventory catalog route has no legacy `.inv-tab-btn` sub-tabs; Analytics page Inventory tab click sets `analyticsTab='inventory-analytics'` and renders Stock Status Breakdown.
 - [Inventory] Production DB contains security test payload items: `<img src=x>`, `admin'--`, `>`, `CSRF Reuse Test 1`, etc. — test data leaked to live database; needs cleanup
 - [Webhooks] DONE LOCAL 2026-05-01 — `#webhooks` aliases back to Settings/Integrations; standalone Webhook Management UI is hidden in browser smoke.
 - [Connections] DONE LOCAL 2026-05-01 — Gmail/Outlook unconfigured email cards now show "Coming soon" status and "Coming Soon" disabled action; browser smoke verified no "OAuth not configured" / "Unavailable" text remains.
-- [Analytics] "No prior data" label in the KPI header is styled as an orange pill button — it's a state indicator, not an action; should be a plain text badge/label
-- [Automations] "A/B Experiments" section appears at the bottom of the Automations page for all users — likely dev-only; consider hiding on production
+- [Analytics] DONE CURRENT 2026-05-01 — Analytics route browser smoke verified the "No prior data" pill is not present.
+- [Automations] DONE CURRENT 2026-05-01 — Automations route browser smoke verified "A/B Experiments" is not present.
 - [Daily Checklist] DONE LOCAL 2026-05-01 — Tab switching rerender issue fixed; tabs work when clicked within the same page render.
-- [Reports] DONE LOCAL 2026-05-01 session 3 — Supplier Monitoring tab removed from Reports page
+- [Reports] DONE CURRENT 2026-05-01 — Reports route browser smoke verified Supplier Monitoring is not present.
 - [Suppliers] DONE LOCAL 2026-05-01 session 3 — suppliers() page IS_PROD guard added; redirects to #analytics on production
 - [Plans & Billing] DONE LOCAL 2026-05-01 — Plan cards and public pricing copy now say 7 platforms.
-- [Account] "Current Password" field gets browser-autofilled on the Account/Security page — add `autocomplete="new-password"` to the new-password fields and `autocomplete="current-password"` only to the current password field to prevent unintended autofill on settings forms
+- [Account] DONE CURRENT 2026-05-01 — `#account` browser smoke verified Current Password uses `autocomplete="current-password"` and both new-password fields use `autocomplete="new-password"`.
 - [Image #11 — DIST REBUILD DONE LOCAL 2026-05-01] `dist/chunk-settings.js` rebuilt; Facebook manual-connect-only dialog verified locally. Still needs deploy/live verification before closing as production-fixed.
 
 **PRE-EXISTING**

@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-02T00:50:55.965Z
-Commit: fa2cab0e
+Generated at: 2026-05-02T01:07:45.613Z
+Commit: a6d16fb9
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -20,7 +20,7 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 | Structural/refactor backlog items | 10 |
 | Competitor intelligence gaps | 862 |
 | Anti-detection/design gaps | 14 |
-| Open GitHub issues | 11 |
+| Open GitHub issues | 12 |
 | Explicit unchecked checklist items | 359 |
 | Repo-wide unchecked checkbox hits | 583 |
 | Repo-wide unchecked checkbox hits included | 359 |
@@ -1234,6 +1234,7 @@ Command: `gh issue list --state open --limit 200 --json number,title,labels,upda
 
 | Issue | Title | Labels | Updated | URL |
 |---|---|---|---|---|
+| #492 | [Production Smoke Failure] vaultlister.com | automated, production-smoke-failure | 2026-05-02T00:54:59Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/492 |
 | #491 | [Deploy Failure] 4012693 — Run #1079 | automated, deploy-failure | 2026-05-02T00:15:31Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/491 |
 | #490 | [CI Failure] release-please--branches--master--components--vaultlister - Run #1564 | ci-failure, automated | 2026-05-01T21:53:46Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/490 |
 | #489 | [CI Failure] master - Run #1554 | ci-failure, automated | 2026-05-01T18:50:13Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/489 |
