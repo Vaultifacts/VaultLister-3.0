@@ -69,9 +69,9 @@ Object.assign(handlers, {
             this.enableClipboardPaste();
         }
 
-        // Load image bank if imagebank tab
-        if (tabName === 'imagebank') {
-            this.loadImageBankInline('add');
+        // Load Image Vault if imagevault tab
+        if (tabName === 'imagevault') {
+            this.loadImageVaultInline('add');
         }
     },
 
