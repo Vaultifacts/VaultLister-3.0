@@ -1817,6 +1817,11 @@ button[aria-expanded='true'] .chevron {
     color: var(--error);
 }
 
+.badge-danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+}
+
 .badge-gray {
     background: var(--gray-100);
     color: var(--gray-700);
