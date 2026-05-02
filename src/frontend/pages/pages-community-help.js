@@ -711,7 +711,7 @@ Object.assign(pages, {
                         {
                             date: 'Apr 2026',
                             title: 'Feature Expansion',
-                            description: 'Added calendar, automations, and image bank workflows.',
+                            description: 'Added calendar, automations, and Image Vault workflows.',
                         },
                         {
                             date: 'Apr 2026',
