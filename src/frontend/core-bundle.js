@@ -17041,7 +17041,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '35926379';
+    const v = '30f0e6f9';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function (resolve, reject) {
@@ -17154,7 +17154,6 @@ const router = {
         'market-intel': { target: 'analytics', tab: 'market-intel', storeKey: 'analyticsTab' },
         suppliers: { target: 'analytics', tab: 'sourcing', storeKey: 'analyticsTab' },
         'platform-health': { target: 'shops', tab: 'health' },
-        webhooks: { target: 'settings', tab: 'integrations', storeKey: 'settingsTab' },
         // checklist + calendar: standalone routes (aliases removed — pages.planner() doesn't exist)
         // roadmap: standalone route — pages.roadmap() handles it directly
         'feedback-suggestions': { target: 'help-support', tab: 'feedback' },
@@ -17789,6 +17788,7 @@ const components = {
                 '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>',
             'check-square':
                 '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
+            square: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>',
             'minus-circle':
                 '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>',
             'rotate-ccw':

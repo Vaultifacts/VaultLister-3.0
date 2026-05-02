@@ -13,6 +13,15 @@
 
 ## Last Completed Work (2026-05-01 session 2)
 
+### UI cleanup batch — landing/settings/checklist/listings/inventory (uncommitted local work)
+- **Landing / pricing counts**: landing Coming Soon section now shows exactly 4 cards (Kijiji, Etsy, Mercari, Vinted) and public/app pricing copy uses 7 platforms.
+- **Webhooks**: removed the Settings integrations Webhooks card, aliased `#webhooks` back to Settings/Integrations, and rebuilt bundles so the standalone Webhook Management page is hidden.
+- **Checklist tabs**: `switchChecklistTab` now refreshes the active page content directly; browser smoke verified Completed tab click updates state and active tab styling.
+- **Listings platform prices**: expanded Platform Prices list dedupes by platform while preserving the currently expanded listing for duplicate platforms.
+- **Inventory stock badges**: Out of Stock row badges now carry `inventory-stock-out` styling for the faint red highlight.
+- **Facebook connect dialog**: rebuilt `dist/chunk-settings.js`; browser smoke verified Facebook shows only manual connect, with no OAuth button/copy/divider.
+- **Verification**: `bun run build`, `bun run lint`, `bun run open-items:check`, and targeted Playwright smoke checks all pass on `http://localhost:3000`.
+
 ### Tracking system audit — 26 flaws fixed (commits f8eadc8e→86cd3081)
 - **Flaw 27**: `normalizeForCheck` now strips GitHub Open Issues section — `open-items:check` is deterministic in CI (no longer fails on live issue timestamp changes)
 - **Flaw 28**: `open-items-check.yml` watch paths widened to include 5 source files that feed the generator
@@ -65,20 +74,34 @@ See `docs/superpowers/plans/2026-05-01-fake-data-audit.md` — 74 open items tra
 Priority order: CRITICAL (F77/F108/F61) → HIGH state-only (F103/F104/F109/F58/F74...) → HIGH fake ops (F101/F102/F62...) → MEDIUM → LOW.
 
 **UI / LANDING PAGE FIXES**
-- [Image #1] Landing page "Coming Soon" section says "3 More on the Way" — should say "4 more on the way" (Kijiji, Etsy, Mercari, Vinted = 4 platforms)
+- [Image #1] DONE LOCAL 2026-05-01 — Landing page Coming Soon section shows "4 More on the Way" with Kijiji, Etsy, Mercari, Vinted only.
 - [Image #2] Integrations page platform grid does not match the landing page layout/style — should match the landing page exactly; country abbreviations should be visible on platform cards
 - [Image #3] Social media icons in the landing page footer are white — they should not be white (match the colour used on other pages)
-- [Image #4] Customization tab: remove the Webhooks button (users cannot configure API webhooks); remove the entire Listing Defaults section; remove the entire Photo Settings section
-- [Image #5] My Listings page — platform prices expand section is showing duplicate platform entries (e.g. Grailed CA appears twice, Poshmark CA appears twice, etc.); deduplicate
+- [Image #4] PARTIAL DONE LOCAL 2026-05-01 — Webhooks button removed and `#webhooks` hidden/aliased. Listing Defaults and Photo Settings still need current browser verification before closing the full item.
+- [Image #5] DONE LOCAL 2026-05-01 — My Listings expanded Platform Prices dedupe by platform and preserve the expanded/current listing.
 - [Image #6] Sales tab — remove the "Buyer Profiles / Manage buyer relationships" section entirely
 - [Image #7] Automations page — remove the Scheduler Health section, Schedule Settings section, and Notification Preferences section entirely
 - [Image #8] Automations page — remove the Calendar and Performance buttons from the page header (keep History)
-- [Image #9] Daily Checklist — clicking the "To-Do Lists", "Completed", and "All Tasks" sub-tabs does nothing; tab switching is broken and must be fixed
+- [Image #9] DONE LOCAL 2026-05-01 — Daily Checklist tab switching rerenders page content; browser smoke verified Completed tab click.
 - [Image #10] Daily Checklist — add an empty checkbox/box icon to the left of the "Mark All as Incomplete" button text
 - [Global] Rename: every instance of "Image Bank" throughout the entire codebase (UI labels, page titles, nav items, routes, comments, strings) must become "Image Vault"
-- [Image #11] Facebook Marketplace connect dialog — remove the "Connect with OAuth" button and the "Secure authentication - no password needed" copy and the "OR" divider; Facebook does not offer the required OAuth; keep only the manual username/API key form
+- [Image #11] DONE LOCAL 2026-05-01 — Facebook Marketplace connect dialog now shows manual connect only in rebuilt settings chunk.
 - [Image #12] Inventory page — remove the Lookup and Tools buttons from the header action bar (keep Bundle, Restock, Alerts, Add Item)
-- [Image #13] Inventory page — "Out of Stock" status labels in the item rows should have a faint red background highlight to contrast the green highlight used for in-stock items
+- [Image #13] DONE LOCAL 2026-05-01 — Inventory Out of Stock labels now use faint red `inventory-stock-out` badge styling.
+
+**WALKTHROUGH FINDINGS (2026-05-01 browser audit — new)**
+- [Inventory] Inventory Analytics sub-tab click does nothing — same broken tab pattern as Daily Checklist; fix tab switching
+- [Inventory] Production DB contains security test payload items: `<img src=x>`, `admin'--`, `>`, `CSRF Reuse Test 1`, etc. — test data leaked to live database; needs cleanup
+- [Webhooks] DONE LOCAL 2026-05-01 — `#webhooks` aliases back to Settings/Integrations; standalone Webhook Management UI is hidden in browser smoke.
+- [Connections] Outlook email integration shows "OAuth not configured" + "Unavailable" greyed button — inconsistent with the "Coming Soon" styling used for marketplace platforms; should be hidden or styled as Coming Soon
+- [Analytics] "No prior data" label in the KPI header is styled as an orange pill button — it's a state indicator, not an action; should be a plain text badge/label
+- [Automations] "A/B Experiments" section appears at the bottom of the Automations page for all users — likely dev-only; consider hiding on production
+- [Daily Checklist] Tab switching bug clarification: tabs work when navigated to directly (e.g. `pages.planner()` loads To-Do Lists view correctly) but clicking between tabs within the same page render doesn't update content — it's a re-render issue, not a missing view
+- [Reports] "Supplier Monitoring" tab exists on the Reports page — VaultLister has no supplier features; this tab is misleading and should be removed
+- [Suppliers] Full "Supplier Monitoring" standalone page (`window.pages.suppliers()`) exists with Supplier list, Purchase Orders, Lead Time Tracking sections — VaultLister has no supplier features; hide this page entirely on production (same treatment as dev-only analytics tabs)
+- [Plans & Billing] DONE LOCAL 2026-05-01 — Plan cards and public pricing copy now say 7 platforms.
+- [Account] "Current Password" field gets browser-autofilled on the Account/Security page — add `autocomplete="new-password"` to the new-password fields and `autocomplete="current-password"` only to the current password field to prevent unintended autofill on settings forms
+- [Image #11 — DIST REBUILD DONE LOCAL 2026-05-01] `dist/chunk-settings.js` rebuilt; Facebook manual-connect-only dialog verified locally. Still needs deploy/live verification before closing as production-fixed.
 
 **PRE-EXISTING**
 0. Use `docs/OPEN_ITEMS.md` as the active task backlog — REMAINING_WORK_EXECUTION_SHEET_2026-04-21.md is historical evidence only.

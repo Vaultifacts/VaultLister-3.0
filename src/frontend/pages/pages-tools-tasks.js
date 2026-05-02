@@ -213,7 +213,7 @@ Object.assign(pages, {
                         ${components.icon('check-square', 14)} Mark All as Complete
                     </button>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.bulkCompleteChecklist(false)" title="Uncomplete all tasks">
-                        <span aria-hidden="true">☐</span> Mark All as Incomplete
+                        ${components.icon('square', 14)} Mark All as Incomplete
                     </button>
                     `
                             : ''

@@ -114,25 +114,6 @@ Object.assign(pages, {
                             <button class="btn btn-secondary" data-testid="hero-low-stock-alerts" onclick="handlers.showLowStockAlerts()" title="Low Stock Alerts">
                                 ${components.icon('alert-triangle', 16)} Alerts
                             </button>
-                            <button class="btn btn-secondary" data-testid="hero-quick-lookup" onclick="handlers.showQuickLookup()" title="Quick Item Lookup">
-                                ${components.icon('search', 16)} Lookup
-                            </button>
-                            <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
-                                <button aria-haspopup="menu" class="btn btn-secondary" data-testid="hero-tools-dropdown">
-                                    ${components.icon('tool', 16)} Tools
-                                </button>
-                                <div class="dropdown-menu" style="right: 0; min-width: 160px;" aria-hidden="true">
-                                    <button class="dropdown-item" data-testid="tools-bulk-prices" onclick="handlers.showBulkPriceUpdate()">
-                                        ${components.icon('dollar-sign', 16)} Bulk Prices
-                                    </button>
-                                    <button class="dropdown-item" data-testid="tools-age-analysis" onclick="handlers.showInventoryAgeAnalysis()">
-                                        ${components.icon('clock', 16)} Age Analysis
-                                    </button>
-                                    <button class="dropdown-item" data-testid="tools-profit-calculator" onclick="handlers.showProfitCalculator()">
-                                        ${components.icon('calculator', 16)} Calculator
-                                    </button>
-                                </div>
-                            </div>
                             <button class="btn btn-primary" data-testid="hero-add-item" onclick="modals.addItem()">
                                 ${components.icon('plus', 16)} Add Item
                             </button>
@@ -466,7 +447,7 @@ Object.assign(pages, {
                                                 let status, badgeClass;
                                                 if (qty === 0) {
                                                     status = 'Out of Stock';
-                                                    badgeClass = 'badge-danger';
+                                                    badgeClass = 'badge-danger inventory-stock-out';
                                                 } else if (qty <= lowStockThreshold) {
                                                     status = 'Stock Low - Reorder';
                                                     badgeClass = 'badge-warning';
@@ -1072,10 +1053,21 @@ Object.assign(pages, {
                                         const isExpanded = expandedListings.includes(listing.id);
 
                                         // Get all platform prices for this inventory item
-                                        const relatedListings =
-                                            store.state.listings.filter(
+                                        const relatedListings = Array.from(
+                                            ((store.state.listings || []).filter(
                                                 (l) => l.inventory_id === listing.inventory_id,
-                                            ) || [];
+                                            ) || [])
+                                                .reduce((byPlatform, relatedListing) => {
+                                                    if (
+                                                        relatedListing.id === listing.id ||
+                                                        !byPlatform.has(relatedListing.platform)
+                                                    ) {
+                                                        byPlatform.set(relatedListing.platform, relatedListing);
+                                                    }
+                                                    return byPlatform;
+                                                }, new Map())
+                                                .values(),
+                                        );
 
                                         // Calculate stale listing status (stale if listed > 30 days ago with low activity)
                                         const listedDate = listing.listed_at ? new Date(listing.listed_at) : null;
@@ -1803,12 +1795,6 @@ Object.assign(pages, {
                     <p class="page-description">Enable or disable automation rules and configure scheduling</p>
                 </div>
                 <div class="flex gap-2">
-                    <button class="btn btn-ghost" onclick="handlers.showScheduleCalendar()" title="Schedule calendar view">
-                        ${components.icon('calendar', 16)} Calendar
-                    </button>
-                    <button class="btn btn-ghost" onclick="handlers.showAutomationPerformance()" title="Compare rule performance">
-                        ${components.icon('bar-chart', 16)} Performance
-                    </button>
                     ${store.state.automationTagFilter ? '<button class="btn btn-ghost" onclick="handlers.filterByRuleTag(\'\')" title="Clear tag filter" style="color:var(--primary-600);">' + components.icon('x', 16) + ' Tag: ' + escapeHtml(store.state.automationTagFilter) + '</button>' : ''}
                     <button class="btn btn-secondary" onclick="handlers.showAutomationHistory()">
                         ${components.icon('history', 16)} History
@@ -1833,19 +1819,6 @@ Object.assign(pages, {
             `
                     : ''
             }
-
-            <!-- Scheduler Health Widget -->
-            <div class="card mb-6" id="scheduler-health-widget-card">
-                <div class="card-header flex justify-between items-center">
-                    <h2 class="font-semibold">${components.icon('activity', 18)} Scheduler Health</h2>
-                    <button class="btn btn-ghost btn-sm" onclick="handlers.refreshSchedulerStatus()">
-                        ${components.icon('refresh-cw', 14)} Refresh
-                    </button>
-                </div>
-                <div class="card-body" id="scheduler-health-widget">
-                    ${renderSchedulerWidget(store.state.schedulerStatus)}
-                </div>
-            </div>
 
             <!-- Automations Hero Section -->
             <div class="automations-hero mb-6" hidden style="display: none;">
@@ -2068,175 +2041,6 @@ Object.assign(pages, {
                         </div>
                         <div class="text-xs text-gray-500 mt-2 text-center">Next 7 days</div>
                     </div>
-                </div>
-            </div>
-
-            <!-- Scheduling Settings -->
-            <div class="card mb-6">
-                <div class="card-header">
-                    <h2 class="card-title">Schedule Settings</h2>
-                    <p class="text-sm text-gray-500">Configure when automations run</p>
-                </div>
-                <div class="card-body">
-                    <div class="grid grid-cols-4 gap-6">
-                        <!-- Frequency -->
-                        <div>
-                            <label class="form-label" for="pic-frequency">Frequency</label>
-                            <select id="pic-frequency" class="form-select" onchange="handlers.updateAutomationSchedule('frequency', this.value)" aria-label="Automation frequency">
-                                <option value="hourly" ${scheduleSettings.frequency === 'hourly' ? 'selected' : ''}>Hourly</option>
-                                <option value="every_4h" ${scheduleSettings.frequency === 'every_4h' ? 'selected' : ''}>Every 4 Hours</option>
-                                <option value="daily" ${scheduleSettings.frequency === 'daily' ? 'selected' : ''}>Daily</option>
-                                <option value="twice_daily" ${scheduleSettings.frequency === 'twice_daily' ? 'selected' : ''}>Twice Daily</option>
-                                <option value="weekly" ${scheduleSettings.frequency === 'weekly' ? 'selected' : ''}>Weekly</option>
-                            </select>
-                        </div>
-                        <!-- Start Time -->
-                        <div>
-                            <label class="form-label" for="pic-start-time">Start Time</label>
-                            <input id="pic-start-time" aria-label="Start Time" type="time" class="form-input" value="${scheduleSettings.startTime}"
-                                onchange="handlers.updateAutomationSchedule('startTime', this.value)">
-                        </div>
-                        <!-- End Time -->
-                        <div>
-                            <label class="form-label" for="pic-end-time">End Time</label>
-                            <input id="pic-end-time" aria-label="End Time" type="time" class="form-input" value="${scheduleSettings.endTime}"
-                                onchange="handlers.updateAutomationSchedule('endTime', this.value)">
-                        </div>
-                        <!-- Timezone -->
-                        <div>
-                            <p class="form-label">Timezone</p>
-                            <div class="text-sm text-gray-600 p-2 bg-gray-50 rounded">${scheduleSettings.timezone}</div>
-                        </div>
-                    </div>
-                    <!-- Days of Week -->
-                    <div class="mt-4">
-                        <p class="form-label mb-2">Active Days</p>
-                        <div class="flex gap-2">
-                            ${dayNames
-                                .map((day, idx) => {
-                                    const isActive = scheduleSettings.daysOfWeek.includes(idx);
-                                    return `
-                                <label class="flex items-center justify-center px-4 py-3 rounded-lg border-2 cursor-pointer transition-all"
-                                       style="min-width: 60px; ${
-                                           isActive
-                                               ? 'background: var(--success-100); border-color: var(--success-400); color: var(--success-700);'
-                                               : 'background: var(--gray-100); border-color: var(--gray-300); color: var(--gray-400);'
-                                       }">
-                                    <input aria-label="Toggle ${day}" type="checkbox" class="hidden" ${isActive ? 'checked' : ''}
-                                        onchange="handlers.updateAutomationSchedule('toggleDay', ${idx})">
-                                    <span class="text-sm font-semibold">${day}</span>
-                                </label>
-                            `;
-                                })
-                                .join('')}
-                        </div>
-                    </div>
-                    <div class="mt-4 p-3 callout-info rounded-lg">
-                        <div class="text-sm">
-                            <strong>Schedule Summary:</strong> Automations will run
-                            ${
-                                scheduleSettings.frequency === 'hourly'
-                                    ? 'every hour'
-                                    : scheduleSettings.frequency === 'every_4h'
-                                      ? 'every 4 hours'
-                                      : scheduleSettings.frequency === 'daily'
-                                        ? 'once daily'
-                                        : scheduleSettings.frequency === 'twice_daily'
-                                          ? 'twice daily (morning & evening)'
-                                          : 'once per week'
-                            }
-                            between ${scheduleSettings.startTime} and ${scheduleSettings.endTime} on
-                            ${
-                                scheduleSettings.daysOfWeek.length === 7
-                                    ? 'all days'
-                                    : scheduleSettings.daysOfWeek.map((d) => dayNames[d]).join(', ')
-                            }.
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Notification Preferences -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h2 class="card-title">Notification Preferences</h2>
-                    <p class="text-sm text-gray-500">Choose which automation events trigger notifications</p>
-                </div>
-                <div class="card-body">
-                    ${(() => {
-                        const notifPrefs = store.state.automationNotifPrefs || {
-                            on_success: true,
-                            on_failure: true,
-                            on_partial: true,
-                            daily_summary: false,
-                            desktop_enabled: true,
-                            email_enabled: false,
-                        };
-                        return `
-                    <div class="grid grid-cols-3 gap-6">
-                        <div>
-                            <p class="form-label mb-3">Event Types</p>
-                            <div class="flex flex-col gap-3">
-                                <label class="flex items-center gap-3 cursor-pointer">
-                                    <input aria-label="Toggle Successful runs" type="checkbox" ${notifPrefs.on_success ? 'checked' : ''}
-                                        onchange="handlers.updateAutomationNotifPref('on_success', this.checked)"
-                                        style="accent-color: var(--success-500);">
-                                    <span class="text-sm">${components.icon('check-circle', 14)} Successful runs</span>
-                                </label>
-                                <label class="flex items-center gap-3 cursor-pointer">
-                                    <input aria-label="Toggle Failed runs" type="checkbox" ${notifPrefs.on_failure ? 'checked' : ''}
-                                        onchange="handlers.updateAutomationNotifPref('on_failure', this.checked)"
-                                        style="accent-color: var(--error-500);">
-                                    <span class="text-sm">${components.icon('alert-triangle', 14)} Failed runs</span>
-                                </label>
-                                <label class="flex items-center gap-3 cursor-pointer">
-                                    <input aria-label="Toggle Partial completions" type="checkbox" ${notifPrefs.on_partial ? 'checked' : ''}
-                                        onchange="handlers.updateAutomationNotifPref('on_partial', this.checked)"
-                                        style="accent-color: var(--warning-500);">
-                                    <span class="text-sm">${components.icon('alert-circle', 14)} Partial completions</span>
-                                </label>
-                                <label class="flex items-center gap-3 cursor-pointer">
-                                    <input aria-label="Toggle Daily summary digest" type="checkbox" ${notifPrefs.daily_summary ? 'checked' : ''}
-                                        onchange="handlers.updateAutomationNotifPref('daily_summary', this.checked)"
-                                        style="accent-color: var(--primary-500);">
-                                    <span class="text-sm">${components.icon('bar-chart', 14)} Daily summary digest</span>
-                                </label>
-                            </div>
-                        </div>
-                        <div>
-                            <p class="form-label mb-3">Channels</p>
-                            <div class="flex flex-col gap-3">
-                                <label class="flex items-center gap-3 cursor-pointer">
-                                    <input aria-label="Toggle Desktop notifications" type="checkbox" ${notifPrefs.desktop_enabled ? 'checked' : ''}
-                                        onchange="handlers.updateAutomationNotifPref('desktop_enabled', this.checked)"
-                                        style="accent-color: var(--primary-500);">
-                                    ${components.icon('monitor', 16)}
-                                    <span class="text-sm">Desktop notifications</span>
-                                </label>
-                                <label class="flex items-center gap-3 cursor-pointer">
-                                    <input aria-label="Toggle Email notifications" type="checkbox" ${notifPrefs.email_enabled ? 'checked' : ''}
-                                        onchange="handlers.updateAutomationNotifPref('email_enabled', this.checked)"
-                                        style="accent-color: var(--primary-500);">
-                                    <span class="text-sm">${components.icon('mail', 14)} Email notifications</span>
-                                </label>
-                            </div>
-                        </div>
-                        <div>
-                            <p class="form-label mb-3">Quick Actions</p>
-                            <div class="flex flex-col gap-2">
-                                <button class="btn btn-sm btn-primary" onclick="handlers.updateAutomationNotifPref('_enable_all', true)">
-                                    ${components.icon('bell', 14)} Enable All
-                                </button>
-                                <button class="btn btn-sm btn-secondary" onclick="handlers.updateAutomationNotifPref('_mute_all', true)">
-                                    ${components.icon('bell-off', 14)} Mute All
-                                </button>
-                                <button class="btn btn-sm btn-secondary" onclick="handlers.updateAutomationNotifPref('_enable_recommended', true)">
-                                    ${components.icon('bell', 14)} Recommended
-                                </button>
-                            </div>
-                        </div>
-                    </div>`;
-                    })()}
                 </div>
             </div>
 

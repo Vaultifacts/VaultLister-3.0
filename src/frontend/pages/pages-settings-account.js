@@ -1755,24 +1755,6 @@ Object.assign(pages, {
                                 </div>
                             </div>
                         </div>
-
-                        <div class="settings-section">
-                            <h3 class="settings-section-title">Additional Integrations</h3>
-                            <div class="integrations-grid">
-                                <div class="integration-card">
-                                    <div class="integration-icon" style="background: var(--success);">
-                                        ${components.icon('link', 20)}
-                                    </div>
-                                    <div class="integration-info">
-                                        <h3>Webhooks</h3>
-                                        <span class="integration-status">Manage event-driven notifications</span>
-                                    </div>
-                                    <button class="btn btn-sm btn-primary" onclick="router.navigate('webhooks')">
-                                        ${components.icon('settings', 14)} Manage
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
                     `;
                 }
 
@@ -3006,7 +2988,7 @@ Object.assign(pages, {
                             </li>
                             <li class="flex items-center gap-2 text-sm">
                                 <span style="color: var(--success);">${components.icon('check', 16)}</span>
-                                Cross-list to 5 platforms
+                                Cross-list to 7 platforms
                             </li>
                             <li class="flex items-center gap-2 text-sm">
                                 <span style="color: var(--success);">${components.icon('check', 16)}</span>
@@ -3106,7 +3088,7 @@ Object.assign(pages, {
                             </li>
                             <li class="flex items-center gap-2 text-sm">
                                 <span style="color: var(--success);">${components.icon('check', 16)}</span>
-                                Cross-list to all 5 launch platforms
+                                Cross-list to all 7 launch platforms
                             </li>
                             <li class="flex items-center gap-2 text-sm">
                                 <span style="color: var(--success);">${components.icon('check', 16)}</span>
@@ -3711,14 +3693,14 @@ Object.assign(pages, {
                                 <div>
                                     <div class="font-medium">Gmail</div>
                                     <div class="text-xs ${gmailAccount ? 'text-success' : 'text-gray-500'}">
-                                        ${gmailAccount ? `Connected${gmailAccount.email_address ? ` as ${escapeHtml(gmailAccount.email_address)}` : ''}` : gmailConfigured ? 'Not connected' : 'OAuth not configured'}
+                                        ${gmailAccount ? `Connected${gmailAccount.email_address ? ` as ${escapeHtml(gmailAccount.email_address)}` : ''}` : gmailConfigured ? 'Not connected' : 'Coming soon'}
                                     </div>
                                 </div>
                             </div>
                             <button class="btn btn-sm ${gmailAccount || !gmailConfigured ? 'btn-outline' : 'btn-primary'}"
                                     onclick="${gmailAccount ? "router.navigate('receipt-parser')" : 'handlers.connectGmail()'}"
                                     ${!gmailConfigured && !gmailAccount ? 'disabled' : ''}>
-                                ${gmailAccount ? 'Manage' : gmailConfigured ? 'Connect' : 'Unavailable'}
+                                ${gmailAccount ? 'Manage' : gmailConfigured ? 'Connect' : 'Coming Soon'}
                             </button>
                         </div>
                         <div class="flex items-center justify-between p-4 rounded-lg border">
@@ -3727,7 +3709,7 @@ Object.assign(pages, {
                                 <div>
                                     <div class="font-medium">Outlook</div>
                                     <div class="text-xs ${outlookAccount ? 'text-success' : 'text-gray-500'}">
-                                        ${outlookAccount ? `Connected${outlookAccount.email_address ? ` as ${escapeHtml(outlookAccount.email_address)}` : ''}` : outlookConfigured ? 'Not connected' : 'OAuth not configured'}
+                                        ${outlookAccount ? `Connected${outlookAccount.email_address ? ` as ${escapeHtml(outlookAccount.email_address)}` : ''}` : outlookConfigured ? 'Not connected' : 'Coming soon'}
                                     </div>
                                 </div>
                             </div>
@@ -3735,7 +3717,7 @@ Object.assign(pages, {
                                     aria-label="Connect Outlook"
                                     onclick="${outlookAccount ? "router.navigate('receipt-parser')" : 'handlers.connectOutlook()'}"
                                     ${!outlookConfigured && !outlookAccount ? 'disabled' : ''}>
-                                ${outlookAccount ? 'Manage' : outlookConfigured ? 'Connect' : 'Unavailable'}
+                                ${outlookAccount ? 'Manage' : outlookConfigured ? 'Connect' : 'Coming Soon'}
                             </button>
                         </div>
                     </div>

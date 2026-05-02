@@ -473,6 +473,12 @@
     background: var(--red-500);
 }
 
+.badge.inventory-stock-out {
+    background: var(--error-50);
+    border: 1px solid var(--error-200);
+    color: var(--error-700);
+}
+
 .completeness-ring {
     position: relative;
     width: 32px;

@@ -1162,7 +1162,7 @@ const handlers = {
 
     _aiImageData: null,
 
-    loadImageBank: async function () {
+    loadImageVault: async function () {
         try {
             const [imagesRes, foldersRes, jobsRes, presetsRes] = await Promise.all([
                 api.get('/image-vault?limit=1000'),

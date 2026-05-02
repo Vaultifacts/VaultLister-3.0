@@ -1802,67 +1802,6 @@ Object.assign(pages, {
             }
         });
 
-        // Load scheduler status if not cached (non-blocking)
-        if (!store.state.schedulerStatus) {
-            api.get('/automations/scheduler-status')
-                .then((data) => {
-                    store.setState({ schedulerStatus: data });
-                    const widget = document.getElementById('scheduler-health-widget');
-                    if (widget) {
-                        widget.innerHTML = sanitizeHTML(renderSchedulerWidget(data)); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-                    }
-                })
-                .catch(() => {});
-        }
-
-        function renderSchedulerWidget(status) {
-            if (!status) return '<p class="text-sm text-gray-500">Loading scheduler status...</p>';
-
-            const healthColor = status.healthy ? 'text-success-600' : 'text-error-600';
-            const healthIcon = status.healthy ? 'check-circle' : 'alert-triangle';
-            const healthLabel = status.healthy ? 'Healthy' : 'Unhealthy';
-
-            const successRate = status.runs24h?.successRate ?? 100;
-            const rateColor =
-                successRate >= 90 ? 'text-success-600' : successRate >= 70 ? 'text-warning-600' : 'text-error-600';
-
-            const lastRun = status.worker?.lastRun ? new Date(status.worker.lastRun).toLocaleTimeString() : 'Never';
-
-            return `
-                <div class="grid grid-cols-4 gap-4">
-                    <div class="text-center">
-                        <div class="${healthColor} text-lg font-bold">${components.icon(healthIcon, 18)} ${healthLabel}</div>
-                        <div class="text-xs text-gray-500 mt-1">Worker Status</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="${rateColor} text-lg font-bold">${successRate}%</div>
-                        <div class="text-xs text-gray-500 mt-1">Success Rate (24h)</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-lg font-bold">${status.runs24h?.total || 0}</div>
-                        <div class="text-xs text-gray-500 mt-1">Runs (24h)</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-lg font-bold">${status.queue?.pending || 0}</div>
-                        <div class="text-xs text-gray-500 mt-1">Queued Tasks</div>
-                    </div>
-                </div>
-                ${
-                    status.runs24h?.failed > 0
-                        ? `
-                    <div class="mt-3 p-2 bg-error-50 border border-error-200 rounded text-sm text-error-700">
-                        ${components.icon('alert-triangle', 14)} ${status.runs24h.failed} failed run(s) in the last 24 hours
-                    </div>
-                `
-                        : ''
-                }
-                <div class="mt-3 text-xs text-gray-400 flex justify-between">
-                    <span>Last poll: ${lastRun}</span>
-                    <span>${status.enabledRules || 0} active rules</span>
-                </div>
-            `;
-        }
-
         // Group automations by category for breakdown
         const categoryStats = {};
         automations.forEach((a) => {
@@ -1889,12 +1828,6 @@ Object.assign(pages, {
                     <p class="page-description">Enable or disable automation rules and configure scheduling</p>
                 </div>
                 <div class="flex gap-2">
-                    <button class="btn btn-ghost" onclick="handlers.showScheduleCalendar()" title="Schedule calendar view">
-                        ${components.icon('calendar', 16)} Calendar
-                    </button>
-                    <button class="btn btn-ghost" onclick="handlers.showAutomationPerformance()" title="Compare rule performance">
-                        ${components.icon('bar-chart', 16)} Performance
-                    </button>
                     ${store.state.automationTagFilter ? '<button class="btn btn-ghost" onclick="handlers.filterByRuleTag(\'\')" title="Clear tag filter" style="color:var(--primary-600);">' + components.icon('x', 16) + ' Tag: ' + escapeHtml(store.state.automationTagFilter) + '</button>' : ''}
                     <button class="btn btn-secondary" onclick="handlers.showAutomationHistory()">
                         ${components.icon('history', 16)} History
@@ -5894,7 +5827,7 @@ Object.assign(pages, {
                         ${components.icon('check-square', 14)} Mark All as Complete
                     </button>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.bulkCompleteChecklist(false)" title="Uncomplete all tasks">
-                        <span aria-hidden="true">☐</span> Mark All as Incomplete
+                        ${components.icon('square', 14)} Mark All as Incomplete
                     </button>
                     <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                         <button class="btn btn-sm btn-secondary" aria-haspopup="menu">
@@ -9052,14 +8985,14 @@ Object.assign(pages, {
                                 <div>
                                     <div class="font-medium">Gmail</div>
                                     <div class="text-xs ${gmailAccount ? 'text-success' : 'text-gray-500'}">
-                                        ${gmailAccount ? `Connected${gmailAccount.email_address ? ` as ${escapeHtml(gmailAccount.email_address)}` : ''}` : gmailConfigured ? 'Not connected' : 'OAuth not configured'}
+                                        ${gmailAccount ? `Connected${gmailAccount.email_address ? ` as ${escapeHtml(gmailAccount.email_address)}` : ''}` : gmailConfigured ? 'Not connected' : 'Coming soon'}
                                     </div>
                                 </div>
                             </div>
                             <button class="btn btn-sm ${gmailAccount || !gmailConfigured ? 'btn-outline' : 'btn-primary'}"
                                     onclick="${gmailAccount ? "router.navigate('receipt-parser')" : 'handlers.connectGmail()'}"
                                     ${!gmailConfigured && !gmailAccount ? 'disabled' : ''}>
-                                ${gmailAccount ? 'Manage' : gmailConfigured ? 'Connect' : 'Unavailable'}
+                                ${gmailAccount ? 'Manage' : gmailConfigured ? 'Connect' : 'Coming Soon'}
                             </button>
                         </div>
                         <div class="flex items-center justify-between p-4 rounded-lg border">
@@ -9068,7 +9001,7 @@ Object.assign(pages, {
                                 <div>
                                     <div class="font-medium">Outlook</div>
                                     <div class="text-xs ${outlookAccount ? 'text-success' : 'text-gray-500'}">
-                                        ${outlookAccount ? `Connected${outlookAccount.email_address ? ` as ${escapeHtml(outlookAccount.email_address)}` : ''}` : outlookConfigured ? 'Not connected' : 'OAuth not configured'}
+                                        ${outlookAccount ? `Connected${outlookAccount.email_address ? ` as ${escapeHtml(outlookAccount.email_address)}` : ''}` : outlookConfigured ? 'Not connected' : 'Coming soon'}
                                     </div>
                                 </div>
                             </div>
@@ -9076,7 +9009,7 @@ Object.assign(pages, {
                                     aria-label="Connect Outlook"
                                     onclick="${outlookAccount ? "router.navigate('receipt-parser')" : 'handlers.connectOutlook()'}"
                                     ${!outlookConfigured && !outlookAccount ? 'disabled' : ''}>
-                                ${outlookAccount ? 'Manage' : outlookConfigured ? 'Connect' : 'Unavailable'}
+                                ${outlookAccount ? 'Manage' : outlookConfigured ? 'Connect' : 'Coming Soon'}
                             </button>
                         </div>
                     </div>
@@ -13487,6 +13420,11 @@ Upload photos once, use them across all your listings.`,
     },
 
     suppliers() {
+        const IS_PROD = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+        if (IS_PROD) {
+            window.location.hash = 'analytics';
+            return '<div></div>';
+        }
         const suppliers = store.state.suppliers || [];
 
         let displaySuppliers = suppliers;
@@ -17983,7 +17921,6 @@ Upload photos once, use them across all your listings.`,
                 </div>
                 <div class="tabs mb-0" role="tablist" style="padding: 0 1rem;">
                     <button class="tab ${subTab === 'errors' ? 'active' : ''}" role="tab" onclick="store.setState({analyticsReportsSubTab:'errors'}); renderApp(window.pages.reports())">Errors</button>
-                    <button class="tab ${subTab === 'supplier' ? 'active' : ''}" role="tab" onclick="store.setState({analyticsReportsSubTab:'supplier'}); renderApp(window.pages.reports())">Supplier Monitoring</button>
                     <button class="tab ${subTab === 'turnover' ? 'active' : ''}" role="tab" onclick="store.setState({analyticsReportsSubTab:'turnover'}); renderApp(window.pages.reports())">Inventory Turnover</button>
                     <button class="tab ${subTab === 'custom' ? 'active' : ''}" role="tab" onclick="store.setState({analyticsReportsSubTab:'custom'}); renderApp(window.pages.reports())">Custom Reports</button>
                 </div>
@@ -18030,11 +17967,7 @@ Upload photos once, use them across all your listings.`,
                         `
                         }
                     `
-                            : subTab === 'supplier'
-                              ? `
-                        <p class="text-gray-500 text-center py-8">Connect suppliers to enable price monitoring.</p>
-                    `
-                              : subTab === 'turnover'
+                            : subTab === 'turnover'
                                 ? `
                         <div class="grid grid-cols-3 gap-4 mb-4">
                             <div class="text-center p-3 bg-gray-50 rounded-lg">
