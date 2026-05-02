@@ -30664,7 +30664,7 @@ body.dark-mode .shimmer {
         font-size: 0.75rem;
     }
 
-    /* Image bank grid */
+    /* Image Vault grid */
     .image-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 0.5rem;
