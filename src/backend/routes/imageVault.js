@@ -1,4 +1,4 @@
-// Image Bank Routes
+// Image Vault Routes
 import { v4 as uuidv4 } from 'uuid';
 import { readFileSync, existsSync } from 'fs';
 import { parseIntSafe } from '../../shared/utils/validation.js';
@@ -49,7 +49,7 @@ async function optimizeImage(filePath) {
     }
 }
 
-export async function imageBankRouter(ctx) {
+export async function imageVaultRouter(ctx) {
     const { method, path, user, body, query: queryParams } = ctx;
 
     // Reserved paths that should not be treated as image IDs
@@ -70,7 +70,7 @@ export async function imageBankRouter(ctx) {
         '/scan-usage',
     ];
 
-    // POST /api/image-bank/upload - Upload new images
+    // POST /api/image-vault/upload - Upload new images
     if (method === 'POST' && path === '/upload') {
         try {
             const { images, folderId, tags, title, description } = body;
@@ -193,7 +193,7 @@ export async function imageBankRouter(ctx) {
                         );
                 }
 
-                uploadedImages.push({ id: imageId, url: `/api/image-bank/${imageId}/file` });
+                uploadedImages.push({ id: imageId, url: `/api/image-vault/${imageId}/file` });
             }
 
             return { status: 200, data: { images: uploadedImages, count: uploadedImages.length } };
@@ -203,7 +203,7 @@ export async function imageBankRouter(ctx) {
         }
     }
 
-    // GET /api/image-bank - List images with filters
+    // GET /api/image-vault - List images with filters
     if (method === 'GET' && (path === '' || path === '/')) {
         const { folderId, tags, dateFrom, dateTo, used, limit = 50, offset = 0 } = queryParams;
 
@@ -258,7 +258,7 @@ export async function imageBankRouter(ctx) {
         return { status: 200, data: { images, total: count, limit: parseInt(limit), offset: parseInt(offset) } };
     }
 
-    // GET /api/image-bank/:id/file - Serve image binary
+    // GET /api/image-vault/:id/file - Serve image binary
     if (method === 'GET' && path.match(/^\/[a-zA-Z0-9_-]+\/file$/)) {
         const imageId = path.slice(1, -5); // strip leading / and trailing /file
         const image = user
@@ -314,7 +314,7 @@ export async function imageBankRouter(ctx) {
         };
     }
 
-    // GET /api/image-bank/:id - Get single image details
+    // GET /api/image-vault/:id - Get single image details
     if (
         method === 'GET' &&
         path.match(/^\/[a-zA-Z0-9_-]+$/) &&
@@ -341,7 +341,7 @@ export async function imageBankRouter(ctx) {
         return { status: 200, data: image };
     }
 
-    // PATCH /api/image-bank/:id - Update image metadata
+    // PATCH /api/image-vault/:id - Update image metadata
     if (
         method === 'PATCH' &&
         path.match(/^\/[a-zA-Z0-9_-]+$/) &&
@@ -389,7 +389,7 @@ export async function imageBankRouter(ctx) {
         return { status: 200, data: { message: 'Image updated successfully' } };
     }
 
-    // DELETE /api/image-bank/:id - Delete image
+    // DELETE /api/image-vault/:id - Delete image
     if (
         method === 'DELETE' &&
         path.match(/^\/[a-zA-Z0-9_-]+$/) &&
@@ -406,7 +406,7 @@ export async function imageBankRouter(ctx) {
         return { status: 200, data: { message: 'Image deleted successfully' } };
     }
 
-    // POST /api/image-bank/bulk-delete - Delete multiple images
+    // POST /api/image-vault/bulk-delete - Delete multiple images
     if (method === 'POST' && path === '/bulk-delete') {
         const { imageIds } = body;
 
@@ -433,7 +433,7 @@ export async function imageBankRouter(ctx) {
         return { status: 200, data: { deleted: successCount, failed: failCount } };
     }
 
-    // POST /api/image-bank/bulk-move - Move images to folder
+    // POST /api/image-vault/bulk-move - Move images to folder
     if (method === 'POST' && path === '/bulk-move') {
         const { imageIds, folderId } = body;
 
@@ -455,7 +455,7 @@ export async function imageBankRouter(ctx) {
         return { status: 200, data: { message: 'Images moved successfully', count: imageIds.length } };
     }
 
-    // POST /api/image-bank/bulk-tag - Add tags to multiple images
+    // POST /api/image-vault/bulk-tag - Add tags to multiple images
     if (method === 'POST' && path === '/bulk-tag') {
         const { imageIds, tags } = body;
 
@@ -497,7 +497,7 @@ export async function imageBankRouter(ctx) {
         return { status: 200, data: { message: 'Tags added successfully', count: imageIds.length } };
     }
 
-    // GET /api/image-bank/search - Full-text search
+    // GET /api/image-vault/search - Full-text search
     if (method === 'GET' && path === '/search') {
         const { q, limit = 50 } = queryParams;
 
@@ -531,7 +531,7 @@ export async function imageBankRouter(ctx) {
         return { status: 200, data: { images, count: images.length } };
     }
 
-    // POST /api/image-bank/analyze - AI analyze image with Claude Vision
+    // POST /api/image-vault/analyze - AI analyze image with Claude Vision
     if (method === 'POST' && path === '/analyze') {
         const { imageId } = body;
 
@@ -644,7 +644,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
         }
     }
 
-    // POST /api/image-bank/folders - Create folder
+    // POST /api/image-vault/folders - Create folder
     if (method === 'POST' && path === '/folders') {
         const { name, parentId, color, icon } = body;
 
@@ -664,7 +664,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
         return { status: 201, data: { folder: { id: folderId, name, parentId, color, icon } } };
     }
 
-    // GET /api/image-bank/folders - List folders (tree structure)
+    // GET /api/image-vault/folders - List folders (tree structure)
     if (method === 'GET' && path === '/folders') {
         const folders = await query.all(
             'SELECT * FROM image_bank_folders WHERE user_id = ? ORDER BY name ASC LIMIT 1000',
@@ -690,7 +690,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
         return { status: 200, data: { folders: rootFolders } };
     }
 
-    // PATCH /api/image-bank/folders/:id - Update folder
+    // PATCH /api/image-vault/folders/:id - Update folder
     if (method === 'PATCH' && path.startsWith('/folders/')) {
         const folderId = path.substring('/folders/'.length);
         const { name, color, icon, parentId } = body;
@@ -740,7 +740,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
         return { status: 200, data: { folder: updatedFolder } };
     }
 
-    // DELETE /api/image-bank/folders/:id - Delete folder
+    // DELETE /api/image-vault/folders/:id - Delete folder
     if (method === 'DELETE' && path.startsWith('/folders/')) {
         const folderId = path.substring('/folders/'.length);
 
@@ -764,7 +764,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
         return { status: 200, data: { message: 'Folder deleted successfully' } };
     }
 
-    // POST /api/image-bank/import-from-inventory - Import existing inventory images
+    // POST /api/image-vault/import-from-inventory - Import existing inventory images
     if (method === 'POST' && path === '/import-from-inventory') {
         const { inventoryId } = body;
 
@@ -788,7 +788,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
         };
     }
 
-    // GET /api/image-bank/usage/:imageId - Get items using this image
+    // GET /api/image-vault/usage/:imageId - Get items using this image
     if (method === 'GET' && path.startsWith('/usage/')) {
         const imageId = path.substring('/usage/'.length);
 
@@ -810,7 +810,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
         return { status: 200, data: { usage, count: usage.length } };
     }
 
-    // POST /api/image-bank/edit - Apply Canvas edits
+    // POST /api/image-vault/edit - Apply Canvas edits
     if (method === 'POST' && path === '/edit') {
         const { imageId, editType, parameters } = body;
 
@@ -833,7 +833,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
         return { status: 200, data: { message: 'Edit saved', editId } };
     }
 
-    // GET /api/image-bank/cloudinary-status - Check if Cloudinary is configured
+    // GET /api/image-vault/cloudinary-status - Check if Cloudinary is configured
     if (method === 'GET' && path === '/cloudinary-status') {
         const configured = isCloudinaryConfigured();
         return {
@@ -845,7 +845,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
         };
     }
 
-    // POST /api/image-bank/cloudinary-edit - Advanced edits with Cloudinary
+    // POST /api/image-vault/cloudinary-edit - Advanced edits with Cloudinary
     if (method === 'POST' && path === '/cloudinary-edit') {
         const { imageId, operation, params } = body;
 
@@ -1027,7 +1027,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
         }
     }
 
-    // GET /api/image-bank/edit-history/:id - Get edit history
+    // GET /api/image-vault/edit-history/:id - Get edit history
     if (method === 'GET' && path.startsWith('/edit-history/')) {
         const imageId = path.substring('/edit-history/'.length);
 
@@ -1043,7 +1043,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
         return { status: 200, data: { history, count: history.length } };
     }
 
-    // GET /api/image-bank/storage-stats - Real storage usage stats
+    // GET /api/image-vault/storage-stats - Real storage usage stats
     if (method === 'GET' && path === '/storage-stats') {
         try {
             const stats = await query.get(
@@ -1075,7 +1075,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
         }
     }
 
-    // POST /api/image-bank/scan-usage - Scan inventory for image references
+    // POST /api/image-vault/scan-usage - Scan inventory for image references
     if (method === 'POST' && path === '/scan-usage') {
         try {
             // Get all user images
@@ -1154,7 +1154,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
         }
     }
 
-    // POST /api/image-bank/cloudinary-backfill - Upload images missing cloudinary_public_id
+    // POST /api/image-vault/cloudinary-backfill - Upload images missing cloudinary_public_id
     if (method === 'POST' && path === '/cloudinary-backfill') {
         if (!isCloudinaryConfigured()) {
             return { status: 400, data: { error: 'Cloudinary not configured' } };

@@ -38,7 +38,7 @@ describe('Batch Photo - List Jobs', () => {
 describe('Batch Photo - Create Job', () => {
     test('POST /batch-photo/jobs - should create batch job', async () => {
         // First get some image IDs from the image bank
-        const imgResponse = await fetch(`${BASE_URL}/image-bank?limit=2`, {
+        const imgResponse = await fetch(`${BASE_URL}/image-vault?limit=2`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
         const imgData = await imgResponse.json();

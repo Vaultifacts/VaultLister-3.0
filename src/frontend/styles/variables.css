@@ -483,8 +483,8 @@ body.dark-mode #selection-menu span {
     color: #ffffff !important;
 }
 
-/* Image Bank Dark Mode Fixes */
-body.dark-mode .image-bank-sidebar {
+/* Image Vault Dark Mode Fixes */
+body.dark-mode .image-vault-sidebar {
     background: #374151 !important;
 }
 
@@ -519,28 +519,28 @@ body.dark-mode .folder-item.active .badge {
     color: #ffffff !important;
 }
 
-body.dark-mode .image-bank-main {
+body.dark-mode .image-vault-main {
     background: #374151 !important;
 }
 
-body.dark-mode .image-bank-toolbar {
+body.dark-mode .image-vault-toolbar {
     border-color: #4b5563 !important;
     background: #1f2937 !important;
 }
 
-body.dark-mode .image-bank-toolbar .form-input,
-body.dark-mode .image-bank-toolbar .form-select {
+body.dark-mode .image-vault-toolbar .form-input,
+body.dark-mode .image-vault-toolbar .form-select {
     background: #374151 !important;
     border-color: #4b5563 !important;
     color: #ffffff !important;
 }
 
-body.dark-mode .image-bank-toolbar .form-input::placeholder {
+body.dark-mode .image-vault-toolbar .form-input::placeholder {
     color: #9ca3af !important;
 }
 
-body.dark-mode .image-bank-toolbar .form-input:focus,
-body.dark-mode .image-bank-toolbar .form-select:focus {
+body.dark-mode .image-vault-toolbar .form-input:focus,
+body.dark-mode .image-vault-toolbar .form-select:focus {
     border-color: var(--primary-500) !important;
     box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2) !important;
 }
@@ -978,7 +978,7 @@ body.dark-mode .size-chart-table td {
 }
 
 /* Image bank toolbar alignment */
-.image-bank-toolbar {
+.image-vault-toolbar {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
@@ -986,7 +986,7 @@ body.dark-mode .size-chart-table td {
     gap: 12px !important;
 }
 
-.image-bank-toolbar .flex {
+.image-vault-toolbar .flex {
     align-items: center !important;
 }
 
@@ -1253,7 +1253,7 @@ body.dark-mode .dropzone .dropzone-content {
     color: #d1d5db !important;
 }
 
-/* Image Bank - folder name alignment */
+/* Image Vault - folder name alignment */
 .folder-item .folder-item-label {
     text-align: left;
     flex: 1;

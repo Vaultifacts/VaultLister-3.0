@@ -50,7 +50,7 @@ const CHUNKS = [
             'quinn-v3-inventory-table-audit.spec.js',
             'quinn-v3-listings-table-audit.spec.js',
             'quinn-v3-import-flow-audit.spec.js',
-            'imageBank.spec.js',
+            'imageVault.spec.js',
         ]
     },
     {

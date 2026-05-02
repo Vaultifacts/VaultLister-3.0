@@ -114,12 +114,12 @@ Object.assign(handlers, {
 
         const cloudName = store.state.cloudinaryCloudName;
         // Load images from store or fetch
-        let images = store.state.imageBankImages || [];
+        let images = store.state.imageVaultImages || [];
         if (images.length === 0) {
             try {
-                const res = await api.get('/image-bank');
+                const res = await api.get('/image-vault');
                 images = res.images || [];
-                store.setState({ imageBankImages: images });
+                store.setState({ imageVaultImages: images });
             } catch (err) {
                 console.error('Failed to load image bank:', err);
                 toast.error('Failed to load image bank');
@@ -131,10 +131,10 @@ Object.assign(handlers, {
             grid.innerHTML = sanitizeHTML(`
                 <div class="text-center text-gray-500 py-6" style="grid-column: 1 / -1;">
                     <div style="font-size: 32px; margin-bottom: 8px;">${components.icon('image', 32)}</div>
-                    <p style="font-weight: 500;">No images in your Image Bank</p>
-                    <p style="font-size: 12px; margin-top: 4px;">Upload images to your Image Bank to use them here</p>
-                    <button type="button" class="btn btn-primary btn-sm mt-3" onclick="router.navigate('image-bank')">
-                        Go to Image Bank
+                    <p style="font-weight: 500;">No images in your Image Vault</p>
+                    <p style="font-size: 12px; margin-top: 4px;">Upload images to your Image Vault to use them here</p>
+                    <button type="button" class="btn btn-primary btn-sm mt-3" onclick="router.navigate('image-vault')">
+                        Go to Image Vault
                     </button>
                 </div>
             `);
@@ -202,7 +202,7 @@ Object.assign(handlers, {
         previewItem.setAttribute('data-imagebank-url', imageUrl);
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         previewItem.innerHTML = sanitizeHTML(`
-            <img src="${escapeHtml(imageUrl)}" alt="Image from Image Bank" style="width: 100%; height: 100%; object-fit: cover;">
+            <img src="${escapeHtml(imageUrl)}" alt="Image from Image Vault" style="width: 100%; height: 100%; object-fit: cover;">
             <button aria-label="Remove" type="button" class="media-preview-remove" onclick="handlers.removeImageBankImageFromPreview('${mode}', '${imageId}')"><span aria-hidden="true">×</span></button>
             <span class="media-preview-source" style="position: absolute; bottom: 2px; left: 2px; background: var(--primary-600); color: white; font-size: 9px; padding: 1px 4px; border-radius: 4px;">Bank</span>
         `);
@@ -232,7 +232,7 @@ Object.assign(handlers, {
 
     searchImageBankInline: function (mode, query) {
         const cloudName = store.state.cloudinaryCloudName;
-        const images = store.state.imageBankImages || [];
+        const images = store.state.imageVaultImages || [];
         const filtered = query.trim()
             ? images.filter(
                   (img) =>
@@ -2083,33 +2083,33 @@ Object.assign(handlers, {
         );
     },
 
-    // Image Bank handlers,
+    // Image Vault handlers,
 
     setImageBankView: function (view) {
-        store.setState({ imageBankView: view });
-        renderApp(window.pages.imageBank());
+        store.setState({ imageVaultView: view });
+        renderApp(window.pages.imageVault());
     },
 
     selectAllImages: function () {
-        const images = store.state.imageBankImages || [];
+        const images = store.state.imageVaultImages || [];
         store.setState({ selectedImages: images.map((i) => i.id) });
-        renderApp(window.pages.imageBank());
+        renderApp(window.pages.imageVault());
     },
 
     clearImageSelection: function () {
         store.setState({ selectedImages: [] });
-        renderApp(window.pages.imageBank());
+        renderApp(window.pages.imageVault());
     },
 
     bulkMoveImages: async function (folderId) {
         const selected = store.state.selectedImages || [];
         if (selected.length === 0) return toast.error('No images selected');
 
-        const images = store.state.imageBankImages || [];
+        const images = store.state.imageVaultImages || [];
         const updated = images.map((img) => (selected.includes(img.id) ? { ...img, folder_id: folderId } : img));
-        store.setState({ imageBankImages: updated, selectedImages: [] });
+        store.setState({ imageVaultImages: updated, selectedImages: [] });
         toast.success(`Moved ${selected.length} images`);
-        renderApp(window.pages.imageBank());
+        renderApp(window.pages.imageVault());
     },
 
     bulkDeleteImages: async function () {
@@ -2118,11 +2118,11 @@ Object.assign(handlers, {
 
         if (!(await modals.confirm(`Delete ${selected.length} images?`, { danger: true }))) return;
 
-        const images = store.state.imageBankImages || [];
+        const images = store.state.imageVaultImages || [];
         const updated = images.filter((img) => !selected.includes(img.id));
-        store.setState({ imageBankImages: updated, selectedImages: [] });
+        store.setState({ imageVaultImages: updated, selectedImages: [] });
         toast.success(`Deleted ${selected.length} images`);
-        renderApp(window.pages.imageBank());
+        renderApp(window.pages.imageVault());
     },
 
     showAITagging: function (imageId) {
@@ -2169,7 +2169,7 @@ Object.assign(handlers, {
     },
 
     addImageTag: function (imageId, tag) {
-        const images = store.state.imageBankImages || [];
+        const images = store.state.imageVaultImages || [];
         const updated = images.map((img) => {
             if (img.id === imageId) {
                 const tags = img.tags || [];
@@ -2177,13 +2177,13 @@ Object.assign(handlers, {
             }
             return img;
         });
-        store.setState({ imageBankImages: updated });
+        store.setState({ imageVaultImages: updated });
         toast.success(`Added tag: ${tag}`);
     },
 
     runAITagging: async function () {
         const selectedImages = store.state.selectedImages || [];
-        const images = store.state.imageBankImages || [];
+        const images = store.state.imageVaultImages || [];
         const imagesToTag =
             selectedImages.length > 0 ? images.filter((img) => selectedImages.includes(img.id)) : images;
 
@@ -2196,20 +2196,20 @@ Object.assign(handlers, {
         let tagged = 0;
         for (const img of imagesToTag) {
             try {
-                const result = await api.post('/image-bank/analyze', { imageId: img.id });
+                const result = await api.post('/image-vault/analyze', { imageId: img.id });
                 const tags = result && result.tags;
                 if (tags) {
-                    const updated = (store.state.imageBankImages || []).map((i) =>
+                    const updated = (store.state.imageVaultImages || []).map((i) =>
                         i.id === img.id ? { ...i, tags } : i,
                     );
-                    store.setState({ imageBankImages: updated });
+                    store.setState({ imageVaultImages: updated });
                     tagged++;
                 }
             } catch {
                 // continue on individual failure
             }
         }
-        renderApp(window.pages.imageBank());
+        renderApp(window.pages.imageVault());
         toast.success(`AI-tagged ${tagged} of ${imagesToTag.length} image(s).`);
     },
 
@@ -7283,9 +7283,9 @@ Object.assign(handlers, {
                     description: 'Change the date range to see different time periods.',
                 },
             ],
-            'image-bank': [
+            'image-vault': [
                 {
-                    selector: '.image-bank-grid, .image-grid',
+                    selector: '.image-vault-grid, .image-grid',
                     title: 'Image Library',
                     description: 'All your product photos organized in one place.',
                 },
@@ -14945,10 +14945,12 @@ Object.assign(handlers, {
 
     switchChecklistTab: function (tab) {
         store.setState({ checklistTab: tab });
-
-        if (store.state.currentPage === 'checklist') {
-            const pageContent = pages.checklist();
-            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        const pageContent = window.pages.checklist();
+        const page = document.querySelector('.page-content');
+        if (page) {
+            page.innerHTML = sanitizeHTML(pageContent); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        } else {
+            renderApp(pageContent);
         }
     },
 
@@ -20559,10 +20561,10 @@ Object.assign(handlers, {
     openImageBankForAI: async function () {
         try {
             await api.ensureCSRFToken();
-            const response = await api.get('/image-bank');
+            const response = await api.get('/image-vault');
             const images = response.images || response.data?.images || [];
             if (images.length === 0) {
-                return toast.info('No images in your Image Bank. Upload one first.');
+                return toast.info('No images in your Image Vault. Upload one first.');
             }
 
             const cloudName = store.state.cloudinaryCloudName;
@@ -20585,7 +20587,7 @@ Object.assign(handlers, {
                 picker.outerHTML = `<div id="ai-bank-grid" style="display:flex;flex-wrap:wrap;gap:8px;max-height:250px;overflow-y:auto;">${grid}</div>`;
             }
         } catch (err) {
-            toast.error('Failed to load Image Bank');
+            toast.error('Failed to load Image Vault');
         }
     },
 
@@ -20947,13 +20949,13 @@ Object.assign(handlers, {
     },
 
     // ==========================================
-    // Image Bank Handlers
+    // Image Vault Handlers
     // ==========================================
 
-    // Load Image Bank images and folders,
+    // Load Image Vault images and folders,
 
     openImageUpload: function () {
-        const input = document.getElementById('image-bank-upload');
+        const input = document.getElementById('image-vault-upload');
         if (input) {
             input.click();
         }
@@ -21068,7 +21070,7 @@ Object.assign(handlers, {
             );
 
             await api.ensureCSRFToken();
-            const result = await api.post('/image-bank/upload', {
+            const result = await api.post('/image-vault/upload', {
                 images,
                 folderId: store.state.selectedImageBankFolder || null,
             });
@@ -21080,8 +21082,8 @@ Object.assign(handlers, {
             event.target.value = '';
 
             // Re-render to show uploaded images
-            if (store.state.currentPage === 'image-bank') {
-                renderApp(window.pages.imageBank());
+            if (store.state.currentPage === 'image-vault') {
+                renderApp(window.pages.imageVault());
             }
         } catch (error) {
             console.error('Upload error:', error);
@@ -21104,11 +21106,11 @@ Object.assign(handlers, {
 
         try {
             await api.ensureCSRFToken();
-            const result = await api.post('/image-bank/folders', { name: name.trim() });
+            const result = await api.post('/image-vault/folders', { name: name.trim() });
             toast.success('Folder created: ' + (result.folder ? result.folder.name : name.trim()));
             await handlers.loadImageBank();
-            if (store.state.currentPage === 'image-bank') {
-                renderApp(window.pages.imageBank());
+            if (store.state.currentPage === 'image-vault') {
+                renderApp(window.pages.imageVault());
             }
         } catch (error) {
             toast.error('Failed to create folder: ' + error.message);
@@ -21126,14 +21128,14 @@ Object.assign(handlers, {
 
         try {
             await api.ensureCSRFToken();
-            await api.delete(`/image-bank/folders/${folderId}`);
+            await api.delete(`/image-vault/folders/${folderId}`);
             toast.success('Folder deleted');
             if (store.state.selectedFolder === folderId) {
                 store.setState({ selectedFolder: null });
             }
             await handlers.loadImageBank();
-            if (store.state.currentPage === 'image-bank') {
-                renderApp(window.pages.imageBank());
+            if (store.state.currentPage === 'image-vault') {
+                renderApp(window.pages.imageVault());
             }
         } catch (error) {
             toast.error('Failed to delete folder: ' + error.message);
@@ -21147,8 +21149,8 @@ Object.assign(handlers, {
             selectedFolder: folderId,
             selectedImages: [], // Clear selection when changing folders
         });
-        if (store.state.currentPage === 'image-bank') {
-            renderApp(window.pages.imageBank());
+        if (store.state.currentPage === 'image-vault') {
+            renderApp(window.pages.imageVault());
         }
     },
 
@@ -21165,8 +21167,8 @@ Object.assign(handlers, {
         }
 
         store.setState({ selectedImages: [...selected] });
-        if (store.state.currentPage === 'image-bank') {
-            renderApp(window.pages.imageBank());
+        if (store.state.currentPage === 'image-vault') {
+            renderApp(window.pages.imageVault());
         }
     },
 
@@ -21202,16 +21204,16 @@ Object.assign(handlers, {
         if (!imageId) return;
 
         try {
-            await api.post('/image-bank/bulk-move', {
+            await api.post('/image-vault/bulk-move', {
                 image_ids: [imageId],
                 folder_id: folderId,
             });
 
-            const images = store.state.imageBankImages || [];
+            const images = store.state.imageVaultImages || [];
             const updated = images.map((img) => (img.id === imageId ? { ...img, folder_id: folderId } : img));
-            store.setState({ imageBankImages: updated });
+            store.setState({ imageVaultImages: updated });
             toast.success('Image moved');
-            renderApp(window.pages.imageBank());
+            renderApp(window.pages.imageVault());
         } catch (error) {
             toast.error('Failed to move image: ' + error.message);
         }
@@ -21226,7 +21228,7 @@ Object.assign(handlers, {
             return;
         }
 
-        const folders = store.state.imageBankFolders || [];
+        const folders = store.state.imageVaultFolders || [];
         if (folders.length === 0) {
             toast.warning('No folders available. Create a folder first.');
             return;
@@ -21239,7 +21241,7 @@ Object.assign(handlers, {
         if (!folderId) return;
 
         try {
-            await api.post('/image-bank/bulk-move', {
+            await api.post('/image-vault/bulk-move', {
                 image_ids: selected,
                 folder_id: folderId,
             });
@@ -21274,7 +21276,7 @@ Object.assign(handlers, {
         if (tags.length === 0) return;
 
         try {
-            await api.post('/image-bank/bulk-tag', {
+            await api.post('/image-vault/bulk-tag', {
                 image_ids: selected,
                 tags: tags,
             });
@@ -21307,7 +21309,7 @@ Object.assign(handlers, {
         }
 
         try {
-            await api.post('/image-bank/bulk-delete', {
+            await api.post('/image-vault/bulk-delete', {
                 image_ids: selected,
             });
 
@@ -21323,7 +21325,7 @@ Object.assign(handlers, {
 
     viewImage: async function (imageId) {
         try {
-            const image = await api.get(`/image-bank/${imageId}`);
+            const image = await api.get(`/image-vault/${imageId}`);
             const cloudName = store.state.cloudinaryCloudName;
 
             // Show image detail modal
@@ -21381,7 +21383,7 @@ Object.assign(handlers, {
 
             // Fetch usage data asynchronously
             try {
-                const usageData = await api.get('/image-bank/usage/' + imageId);
+                const usageData = await api.get('/image-vault/usage/' + imageId);
                 const usageContainer = document.getElementById('image-usage-list');
                 if (usageContainer) {
                     const items = usageData.usage || [];
@@ -21432,7 +21434,7 @@ Object.assign(handlers, {
 
     downloadImage: async function (imageId) {
         try {
-            const images = store.state.imageBankImages || [];
+            const images = store.state.imageVaultImages || [];
             const image = images.find((img) => img.id === imageId);
 
             if (!image) {
@@ -21466,7 +21468,7 @@ Object.assign(handlers, {
         }
 
         try {
-            await api.delete(`/image-bank/${imageId}`);
+            await api.delete(`/image-vault/${imageId}`);
             toast.success('Image deleted');
 
             // Close modal if open
@@ -21475,8 +21477,8 @@ Object.assign(handlers, {
             await handlers.loadImageBank();
 
             // Re-render page to reflect deletion
-            if (store.state.currentPage === 'image-bank') {
-                renderApp(window.pages.imageBank());
+            if (store.state.currentPage === 'image-vault') {
+                renderApp(window.pages.imageVault());
             }
         } catch (error) {
             toast.error('Failed to delete image: ' + error.message);
@@ -21487,9 +21489,9 @@ Object.assign(handlers, {
 
     setViewMode: function (mode) {
         const scrollY = window.scrollY;
-        store.setState({ imageBankViewMode: mode });
-        if (store.state.currentPage === 'image-bank') {
-            renderApp(window.pages.imageBank());
+        store.setState({ imageVaultViewMode: mode });
+        if (store.state.currentPage === 'image-vault') {
+            renderApp(window.pages.imageVault());
             window.scrollTo(0, scrollY);
         }
     },
@@ -21504,23 +21506,23 @@ Object.assign(handlers, {
         }
 
         try {
-            const result = await api.get('/image-bank/search', { q: query.trim() });
-            store.setState({ imageBankImages: result.images || [] });
+            const result = await api.get('/image-vault/search', { q: query.trim() });
+            store.setState({ imageVaultImages: result.images || [] });
         } catch (error) {
             toast.error('Search failed: ' + error.message);
         }
     },
 
-    // Open Image Bank picker modal for adding images to items,
+    // Open Image Vault picker modal for adding images to items,
 
     openImageBankPickerForPlatform: async function (platform) {
         // Load images if not already loaded
-        if (!store.state.imageBankImages || store.state.imageBankImages.length === 0) {
+        if (!store.state.imageVaultImages || store.state.imageVaultImages.length === 0) {
             await handlers.loadImageBank();
         }
 
         const cloudName = store.state.cloudinaryCloudName;
-        const images = store.state.imageBankImages || [];
+        const images = store.state.imageVaultImages || [];
 
         modals.show(`
             <div class="modal-header">
@@ -21532,17 +21534,17 @@ Object.assign(handlers, {
                     images.length === 0
                         ? `
                     <div class="text-center py-8">
-                        <h3 class="text-xl font-bold mb-2">No images in Image Bank</h3>
-                        <p class="text-gray-500">Upload images to your Image Bank first</p>
+                        <h3 class="text-xl font-bold mb-2">No images in Image Vault</h3>
+                        <p class="text-gray-500">Upload images to your Image Vault first</p>
                     </div>
                 `
                         : `
                     <p class="text-sm text-gray-500 mb-4">Click images to select them for this listing</p>
-                    <div class="grid grid-cols-6 gap-2" id="platform-image-bank-grid">
+                    <div class="grid grid-cols-6 gap-2" id="platform-image-vault-grid">
                         ${images
                             .map(
                                 (img) => `
-                            <div class="image-bank-picker-item" data-image-id="${img.id}" data-image-url="${img.cloudinary_public_id && cloudName ? `https://res.cloudinary.com/${cloudName}/image/upload/${img.cloudinary_public_id}` : escapeHtml(img.file_path)}"
+                            <div class="image-vault-picker-item" data-image-id="${img.id}" data-image-url="${img.cloudinary_public_id && cloudName ? `https://res.cloudinary.com/${cloudName}/image/upload/${img.cloudinary_public_id}` : escapeHtml(img.file_path)}"
                                  role="button" tabindex="0" onclick="handlers.togglePlatformImageSelection(this, '${platform}')"
                                  style="cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; aspect-ratio: 1;">
                                 <img src="${img.cloudinary_public_id && cloudName ? `https://res.cloudinary.com/${cloudName}/image/upload/c_fill,w_400,h_400/${img.cloudinary_public_id}` : escapeHtml(img.thumbnail_path || img.file_path)}" alt="${escapeHtml(img.original_name || '')}"
@@ -21576,7 +21578,7 @@ Object.assign(handlers, {
     },
 
     confirmPlatformImageSelection: function (platform) {
-        const selectedItems = document.querySelectorAll('#platform-image-bank-grid .image-bank-picker-item.selected');
+        const selectedItems = document.querySelectorAll('#platform-image-vault-grid .image-vault-picker-item.selected');
         const container = document.getElementById(platform + '-selected-images');
 
         if (container) {
@@ -21610,18 +21612,18 @@ Object.assign(handlers, {
     openImageBankPicker: async function (mode) {
         try {
             // Load images if not already loaded
-            if (!store.state.imageBankImages || store.state.imageBankImages.length === 0) {
+            if (!store.state.imageVaultImages || store.state.imageVaultImages.length === 0) {
                 await handlers.loadImageBank();
             }
 
             const cloudName = store.state.cloudinaryCloudName;
-            const images = store.state.imageBankImages || [];
+            const images = store.state.imageVaultImages || [];
 
             // Create picker modal
             modals.show(
                 `
                 <div class="modal-header">
-                    <h2 class="modal-title">Select Images from Image Bank</h2>
+                    <h2 class="modal-title">Select Images from Image Vault</h2>
                     <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
                 </div>
                 <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
@@ -21630,15 +21632,15 @@ Object.assign(handlers, {
                             ? `
                         <div class="empty-state">
                             <div class="text-6xl mb-4">🖼️</div>
-                            <h3 class="text-xl font-bold mb-2">No images in Image Bank</h3>
-                            <p class="text-gray-600 mb-4">Upload images to your Image Bank first</p>
-                            <button class="btn btn-primary" onclick="modals.close(); router.navigate('image-bank')">
-                                Go to Image Bank
+                            <h3 class="text-xl font-bold mb-2">No images in Image Vault</h3>
+                            <p class="text-gray-600 mb-4">Upload images to your Image Vault first</p>
+                            <button class="btn btn-primary" onclick="modals.close(); router.navigate('image-vault')">
+                                Go to Image Vault
                             </button>
                         </div>
                     `
                             : `
-                        <div class="image-bank-grid" style="max-height: 60vh; overflow-y: auto;">
+                        <div class="image-vault-grid" style="max-height: 60vh; overflow-y: auto;">
                             ${images
                                 .map(
                                     (image) => `
@@ -21670,26 +21672,26 @@ Object.assign(handlers, {
             );
 
             // Initialize selection tracking
-            if (!handlers._imageBankSelection) {
-                handlers._imageBankSelection = {};
+            if (!handlers._imageVaultSelection) {
+                handlers._imageVaultSelection = {};
             }
-            handlers._imageBankSelection[mode] = [];
+            handlers._imageVaultSelection[mode] = [];
         } catch (error) {
-            toast.error('Failed to open Image Bank: ' + error.message);
+            toast.error('Failed to open Image Vault: ' + error.message);
         }
     },
 
     // Toggle image selection in picker,
 
     toggleImageBankSelection: function (imageId, mode) {
-        if (!handlers._imageBankSelection) {
-            handlers._imageBankSelection = {};
+        if (!handlers._imageVaultSelection) {
+            handlers._imageVaultSelection = {};
         }
-        if (!handlers._imageBankSelection[mode]) {
-            handlers._imageBankSelection[mode] = [];
+        if (!handlers._imageVaultSelection[mode]) {
+            handlers._imageVaultSelection[mode] = [];
         }
 
-        const selected = handlers._imageBankSelection[mode];
+        const selected = handlers._imageVaultSelection[mode];
         const index = selected.indexOf(imageId);
         const card = document.querySelector(`.selectable-image[data-image-id="${imageId}"]`);
 
@@ -21704,10 +21706,10 @@ Object.assign(handlers, {
         }
     },
 
-    // Add selected images from Image Bank to item form,
+    // Add selected images from Image Vault to item form,
 
     addSelectedImagesFromBank: async function (mode) {
-        const selected = (handlers._imageBankSelection && handlers._imageBankSelection[mode]) || [];
+        const selected = (handlers._imageVaultSelection && handlers._imageVaultSelection[mode]) || [];
 
         if (selected.length === 0) {
             toast.warning('Please select at least one image');
@@ -21715,10 +21717,10 @@ Object.assign(handlers, {
         }
 
         try {
-            const images = store.state.imageBankImages || [];
+            const images = store.state.imageVaultImages || [];
             const selectedImages = images.filter((img) => selected.includes(img.id));
 
-            // Convert Image Bank images to File objects by fetching them
+            // Convert Image Vault images to File objects by fetching them
             const files = [];
             for (const image of selectedImages) {
                 try {
@@ -21734,14 +21736,14 @@ Object.assign(handlers, {
             // Add files to the form using existing processFiles handler
             if (files.length > 0) {
                 handlers.processFiles(files, mode);
-                toast.success(`Added ${files.length} image(s) from Image Bank`);
+                toast.success(`Added ${files.length} image(s) from Image Vault`);
             }
 
             // Close modal
             modals.close();
 
             // Clear selection
-            handlers._imageBankSelection[mode] = [];
+            handlers._imageVaultSelection[mode] = [];
         } catch (error) {
             toast.error('Failed to add images: ' + error.message);
         }
@@ -21755,7 +21757,7 @@ Object.assign(handlers, {
 
     checkCloudinaryStatus: async function () {
         try {
-            const result = await api.get('/image-bank/cloudinary-status');
+            const result = await api.get('/image-vault/cloudinary-status');
             store.setState({
                 cloudinaryConfigured: result.configured,
                 cloudinaryCloudName: result.cloudName,
@@ -21775,7 +21777,7 @@ Object.assign(handlers, {
         }
 
         // Find the image
-        const images = store.state.imageBankImages || [];
+        const images = store.state.imageVaultImages || [];
         const image = images.find((img) => img.id === imageId);
 
         if (!image) {
@@ -21798,7 +21800,7 @@ Object.assign(handlers, {
             },
             photoEditorPreviewUrl: image.cloudinary_public_id && _cloudName
                 ? `https://res.cloudinary.com/${_cloudName}/image/upload/c_limit,w_800/${image.cloudinary_public_id}`
-                : `/api/image-bank/${image.id}/file`,
+                : `/api/image-vault/${image.id}/file`,
             photoEditorCloudinaryRequired: false,
             photoEditorLoading: false,
         });
@@ -21931,7 +21933,7 @@ Object.assign(handlers, {
 
         const localUrl = photoEditorImage.cloudinary_public_id && cloudinaryCloudName
             ? `https://res.cloudinary.com/${cloudinaryCloudName}/image/upload/c_limit,w_800/${photoEditorImage.cloudinary_public_id}`
-            : `/api/image-bank/${photoEditorImage.id}/file`;
+            : `/api/image-vault/${photoEditorImage.id}/file`;
         if (!cloudinaryConfigured) {
             // Cloudinary not set up — use local file, AI transformations unavailable
             store.setState({ photoEditorPreviewUrl: localUrl, photoEditorCloudinaryRequired: false });
@@ -22019,7 +22021,7 @@ Object.assign(handlers, {
                 warmth: t.warmth,
             };
 
-            const result = await api.post('/image-bank/cloudinary-edit', {
+            const result = await api.post('/image-vault/cloudinary-edit', {
                 imageId: photoEditorImageId,
                 operation: 'apply-all',
                 params,
@@ -22054,7 +22056,7 @@ Object.assign(handlers, {
 
         try {
             await api.ensureCSRFToken();
-            const result = await api.post('/image-bank/cloudinary-edit', {
+            const result = await api.post('/image-vault/cloudinary-edit', {
                 imageId: targetId,
                 operation: 'upload',
             });
@@ -22065,7 +22067,7 @@ Object.assign(handlers, {
 
                 // Update current image if in editor
                 if (store.state.photoEditorImageId === targetId) {
-                    const images = store.state.imageBankImages || [];
+                    const images = store.state.imageVaultImages || [];
                     const updatedImage = images.find((img) => img.id === targetId);
                     if (updatedImage) {
                         store.setState({ photoEditorImage: updatedImage });
@@ -23591,12 +23593,12 @@ Object.assign(handlers, {
     // Select all images for batch processing,
 
     selectAllBatchImages: function () {
-        const images = store.state.imageBankImages || [];
+        const images = store.state.imageVaultImages || [];
         const selectedFolder = store.state.selectedFolder;
         const imagesToSelect = selectedFolder ? images.filter((img) => img.folder_id === selectedFolder) : images;
         const imageIds = imagesToSelect.map((img) => img.id);
         store.setState({ selectedImages: imageIds });
-        renderApp(window.pages.imageBank());
+        renderApp(window.pages.imageVault());
     },
 
     // Clear batch image selection,
@@ -26237,7 +26239,7 @@ Object.assign(handlers, {
     },
 
     showImageBulkOptimize: function () {
-        const images = store.state.imageBankImages || [];
+        const images = store.state.imageVaultImages || [];
         const unoptimized = images.filter((img) => !img.optimized);
         modals.show(`
             <div class="modal-header">
@@ -26288,7 +26290,7 @@ Object.assign(handlers, {
     // Show cleanup suggestions,
 
     showCleanupSuggestions: function () {
-        const images = store.state.imageBankImages || [];
+        const images = store.state.imageVaultImages || [];
         const ninetyDaysAgo = Date.now() - 90 * 24 * 60 * 60 * 1000;
         const filenameCounts = {};
         images.forEach((img) => {
@@ -26306,7 +26308,7 @@ Object.assign(handlers, {
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
             </div>
             <div class="modal-body">
-                <p class="mb-4 text-gray-600">Suggestions to keep your Image Bank organized.</p>
+                <p class="mb-4 text-gray-600">Suggestions to keep your Image Vault organized.</p>
                 <div class="space-y-3">
                     <div class="p-3 bg-yellow-50 rounded-lg">
                         <strong>Potential Duplicates</strong>
@@ -26335,14 +26337,14 @@ Object.assign(handlers, {
         toast.info('Scanning inventory for image usage...');
         try {
             await api.ensureCSRFToken();
-            const result = await api.post('/image-bank/scan-usage', {});
+            const result = await api.post('/image-vault/scan-usage', {});
             toast.success(
                 `Scan complete: ${result.images_scanned} images checked across ${result.inventory_items_checked} items`,
             );
             // Reload image bank to show updated usage counts
             await handlers.loadImageBankImages();
             await handlers.loadImageStorageStats();
-            renderApp(window.pages.imageBank());
+            renderApp(window.pages.imageVault());
         } catch (error) {
             console.error('Error scanning image usage:', error);
             toast.error('Failed to scan image usage');
@@ -26425,7 +26427,7 @@ Object.assign(handlers, {
                 },
                 {
                     title: 'Add Photos',
-                    desc: 'Upload product photos or import them from your Image Bank.',
+                    desc: 'Upload product photos or import them from your Image Vault.',
                     target: 'Use the image upload section',
                 },
                 {
@@ -26522,7 +26524,7 @@ Object.assign(handlers, {
                     target: 'Use the toggle switch and History button',
                 },
             ],
-            'image-bank': [
+            'image-vault': [
                 {
                     title: 'Upload Images',
                     desc: 'Drag and drop photos or click the upload zone to add images.',
@@ -29265,8 +29267,8 @@ Object.assign(handlers, {
         input.onchange = (e) => {
             const file = e.target.files?.[0];
             if (file) {
-                toast.success('Photo captured — upload via Image Bank');
-                router.navigate('image-bank');
+                toast.success('Photo captured — upload via Image Vault');
+                router.navigate('image-vault');
             }
         };
         input.click();
@@ -29288,13 +29290,13 @@ Object.assign(handlers, {
                     filename: `quick-photo-${Date.now()}-${i}.jpg`,
                 };
             });
-            await api.post('/image-bank/upload', { images });
-            toast.success(`${photos.length} photo${photos.length > 1 ? 's' : ''} added to Image Bank`);
+            await api.post('/image-vault/upload', { images });
+            toast.success(`${photos.length} photo${photos.length > 1 ? 's' : ''} added to Image Vault`);
             store.setState({ _quickPhotos: [] });
             modals.close();
-            router.navigate('image-bank');
+            router.navigate('image-vault');
         } catch (error) {
-            toast.error('Failed to add photos to Image Bank');
+            toast.error('Failed to add photos to Image Vault');
         }
     },
 
@@ -29368,16 +29370,16 @@ Object.assign(handlers, {
         `);
     },
 
-    // Image Bank,
+    // Image Vault,
 
     async loadImageBankImages() {
         try {
-            const res = await fetch('/api/image-bank', { headers: { Authorization: `Bearer ${store.state.token}` } });
+            const res = await fetch('/api/image-vault', { headers: { Authorization: `Bearer ${store.state.token}` } });
             if (!res.ok) {
                 throw new Error(`HTTP ${res.status}`);
             }
             const data = await res.json();
-            store.setState({ imageBankImages: data.images || [] });
+            store.setState({ imageVaultImages: data.images || [] });
         } catch (e) {
             console.error('Failed to load images:', e);
             toast.error('Failed to load images');

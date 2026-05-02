@@ -15,7 +15,7 @@ import { aiRouter } from '../routes/ai.js';
 import { tasksRouter } from '../routes/tasks.js';
 import { templatesRouter } from '../routes/templates.js';
 import { oauthRouter } from '../routes/oauth.js';
-import { imageBankRouter } from '../routes/imageBank.js';
+import { imageVaultRouter } from '../routes/imageVault.js';
 import { chatbotRouter } from '../routes/chatbot.js';
 import { communityRouter } from '../routes/community.js';
 import { extensionRouter } from '../routes/extension.js';
@@ -100,7 +100,7 @@ export const routeRegistry = {
     '/api/tasks': tasksRouter,
     '/api/templates': templatesRouter,
     '/api/oauth': oauthRouter,
-    '/api/image-bank': imageBankRouter,
+    '/api/image-vault': imageVaultRouter,
     '/api/chatbot': chatbotRouter,
     '/api/community': communityRouter,
     '/api/extension': extensionRouter,

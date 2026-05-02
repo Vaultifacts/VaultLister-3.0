@@ -3992,15 +3992,15 @@ body.dark-mode .size-category-quick.active {
     color: var(--gray-700);
 }
 
-/* Image Bank Hero */
-.image-bank-hero {
+/* Image Vault Hero */
+.image-vault-hero {
     background: linear-gradient(135deg, var(--purple-50) 0%, var(--primary-50) 100%);
     border-radius: var(--radius-xl);
     padding: var(--space-6);
     border: 1px solid var(--purple-200);
 }
 
-.image-bank-hero-main {
+.image-vault-hero-main {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--space-6);
@@ -4181,7 +4181,7 @@ body.dark-mode .storage-overview {
     background: var(--gray-200);
 }
 
-.image-bank-quick-actions {
+.image-vault-quick-actions {
     display: flex;
     gap: var(--space-3);
     justify-content: center;
@@ -4344,7 +4344,7 @@ body.dark-mode .storage-overview {
     border-color: var(--gray-700);
 }
 
-.dark-mode .image-bank-hero {
+.dark-mode .image-vault-hero {
     background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.1) 100%);
     border-color: var(--gray-700);
 }
@@ -4456,7 +4456,7 @@ body.dark-mode .storage-overview {
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     }
 
-    .image-bank-hero-main {
+    .image-vault-hero-main {
         grid-template-columns: 1fr;
     }
 }
@@ -4466,7 +4466,7 @@ body.dark-mode .storage-overview {
     .checklist-hero,
     .calendar-hero,
     .size-charts-hero,
-    .image-bank-hero {
+    .image-vault-hero {
         padding: var(--space-4);
     }
 
@@ -4526,7 +4526,7 @@ body.dark-mode .storage-overview {
         justify-content: center;
     }
 
-    .image-bank-quick-actions {
+    .image-vault-quick-actions {
         flex-wrap: wrap;
     }
 

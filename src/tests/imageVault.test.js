@@ -1,4 +1,4 @@
-// Image Bank API Tests
+// Image Vault API Tests
 import { describe, expect, test, beforeAll } from 'bun:test';
 
 const BASE_URL = process.env.TEST_BASE_URL ? `${process.env.TEST_BASE_URL}/api` : `http://localhost:${process.env.PORT || 3000}/api`;
@@ -19,9 +19,9 @@ beforeAll(async () => {
     authToken = data.token;
 });
 
-describe('Image Bank - List Images', () => {
-    test('GET /image-bank - should return image list', async () => {
-        const response = await fetch(`${BASE_URL}/image-bank`, {
+describe('Image Vault - List Images', () => {
+    test('GET /image-vault - should return image list', async () => {
+        const response = await fetch(`${BASE_URL}/image-vault`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
 
@@ -35,8 +35,8 @@ describe('Image Bank - List Images', () => {
         }
     });
 
-    test('GET /image-bank?limit=10&offset=0 - should paginate', async () => {
-        const response = await fetch(`${BASE_URL}/image-bank?limit=10&offset=0`, {
+    test('GET /image-vault?limit=10&offset=0 - should paginate', async () => {
+        const response = await fetch(`${BASE_URL}/image-vault?limit=10&offset=0`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
 
@@ -50,8 +50,8 @@ describe('Image Bank - List Images', () => {
         }
     });
 
-    test('GET /image-bank?used=true - should filter used images', async () => {
-        const response = await fetch(`${BASE_URL}/image-bank?used=true`, {
+    test('GET /image-vault?used=true - should filter used images', async () => {
+        const response = await fetch(`${BASE_URL}/image-vault?used=true`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
 
@@ -63,8 +63,8 @@ describe('Image Bank - List Images', () => {
         }
     });
 
-    test('GET /image-bank?used=false - should filter unused images', async () => {
-        const response = await fetch(`${BASE_URL}/image-bank?used=false`, {
+    test('GET /image-vault?used=false - should filter unused images', async () => {
+        const response = await fetch(`${BASE_URL}/image-vault?used=false`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
 
@@ -76,8 +76,8 @@ describe('Image Bank - List Images', () => {
         }
     });
 
-    test('GET /image-bank?dateFrom=2024-01-01 - should filter by date range', async () => {
-        const response = await fetch(`${BASE_URL}/image-bank?dateFrom=2024-01-01&dateTo=2024-12-31`, {
+    test('GET /image-vault?dateFrom=2024-01-01 - should filter by date range', async () => {
+        const response = await fetch(`${BASE_URL}/image-vault?dateFrom=2024-01-01&dateTo=2024-12-31`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
 
@@ -90,9 +90,9 @@ describe('Image Bank - List Images', () => {
     });
 });
 
-describe('Image Bank - Upload', () => {
-    test('POST /image-bank/upload - should upload images', async () => {
-        const response = await fetch(`${BASE_URL}/image-bank/upload`, {
+describe('Image Vault - Upload', () => {
+    test('POST /image-vault/upload - should upload images', async () => {
+        const response = await fetch(`${BASE_URL}/image-vault/upload`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -121,8 +121,8 @@ describe('Image Bank - Upload', () => {
         }
     });
 
-    test('POST /image-bank/upload - should fail without images', async () => {
-        const response = await fetch(`${BASE_URL}/image-bank/upload`, {
+    test('POST /image-vault/upload - should fail without images', async () => {
+        const response = await fetch(`${BASE_URL}/image-vault/upload`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -139,8 +139,8 @@ describe('Image Bank - Upload', () => {
         }
     });
 
-    test('POST /image-bank/upload - should fail with empty images array', async () => {
-        const response = await fetch(`${BASE_URL}/image-bank/upload`, {
+    test('POST /image-vault/upload - should fail with empty images array', async () => {
+        const response = await fetch(`${BASE_URL}/image-vault/upload`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -158,11 +158,11 @@ describe('Image Bank - Upload', () => {
     });
 });
 
-describe('Image Bank - Get Single Image', () => {
-    test('GET /image-bank/:id - should return image details', async () => {
+describe('Image Vault - Get Single Image', () => {
+    test('GET /image-vault/:id - should return image details', async () => {
         if (!testImageId) return;
 
-        const response = await fetch(`${BASE_URL}/image-bank/${testImageId}`, {
+        const response = await fetch(`${BASE_URL}/image-vault/${testImageId}`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
 
@@ -174,8 +174,8 @@ describe('Image Bank - Get Single Image', () => {
         }
     });
 
-    test('GET /image-bank/:id - should return 404 for non-existent image', async () => {
-        const response = await fetch(`${BASE_URL}/image-bank/non-existent-id`, {
+    test('GET /image-vault/:id - should return 404 for non-existent image', async () => {
+        const response = await fetch(`${BASE_URL}/image-vault/non-existent-id`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
 
@@ -188,11 +188,11 @@ describe('Image Bank - Get Single Image', () => {
     });
 });
 
-describe('Image Bank - Update Image', () => {
-    test('PATCH /image-bank/:id - should update image metadata', async () => {
+describe('Image Vault - Update Image', () => {
+    test('PATCH /image-vault/:id - should update image metadata', async () => {
         if (!testImageId) return;
 
-        const response = await fetch(`${BASE_URL}/image-bank/${testImageId}`, {
+        const response = await fetch(`${BASE_URL}/image-vault/${testImageId}`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -213,10 +213,10 @@ describe('Image Bank - Update Image', () => {
         }
     });
 
-    test('PATCH /image-bank/:id - should fail without updates', async () => {
+    test('PATCH /image-vault/:id - should fail without updates', async () => {
         if (!testImageId) return;
 
-        const response = await fetch(`${BASE_URL}/image-bank/${testImageId}`, {
+        const response = await fetch(`${BASE_URL}/image-vault/${testImageId}`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -233,8 +233,8 @@ describe('Image Bank - Update Image', () => {
         }
     });
 
-    test('PATCH /image-bank/:id - should return 404 for non-existent image', async () => {
-        const response = await fetch(`${BASE_URL}/image-bank/non-existent-id`, {
+    test('PATCH /image-vault/:id - should return 404 for non-existent image', async () => {
+        const response = await fetch(`${BASE_URL}/image-vault/non-existent-id`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -248,9 +248,9 @@ describe('Image Bank - Update Image', () => {
     });
 });
 
-describe('Image Bank - Search', () => {
-    test('GET /image-bank/search?q=test - should search images', async () => {
-        const response = await fetch(`${BASE_URL}/image-bank/search?q=test`, {
+describe('Image Vault - Search', () => {
+    test('GET /image-vault/search?q=test - should search images', async () => {
+        const response = await fetch(`${BASE_URL}/image-vault/search?q=test`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
 
@@ -263,8 +263,8 @@ describe('Image Bank - Search', () => {
         }
     });
 
-    test('GET /image-bank/search - should fail without query', async () => {
-        const response = await fetch(`${BASE_URL}/image-bank/search`, {
+    test('GET /image-vault/search - should fail without query', async () => {
+        const response = await fetch(`${BASE_URL}/image-vault/search`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
 
@@ -276,8 +276,8 @@ describe('Image Bank - Search', () => {
         }
     });
 
-    test('GET /image-bank/search?q= - should fail with empty query', async () => {
-        const response = await fetch(`${BASE_URL}/image-bank/search?q=`, {
+    test('GET /image-vault/search?q= - should fail with empty query', async () => {
+        const response = await fetch(`${BASE_URL}/image-vault/search?q=`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
 
@@ -286,9 +286,9 @@ describe('Image Bank - Search', () => {
     });
 });
 
-describe('Image Bank - Folders', () => {
-    test('POST /image-bank/folders - should create folder', async () => {
-        const response = await fetch(`${BASE_URL}/image-bank/folders`, {
+describe('Image Vault - Folders', () => {
+    test('POST /image-vault/folders - should create folder', async () => {
+        const response = await fetch(`${BASE_URL}/image-vault/folders`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -311,8 +311,8 @@ describe('Image Bank - Folders', () => {
         }
     });
 
-    test('POST /image-bank/folders - should fail without name', async () => {
-        const response = await fetch(`${BASE_URL}/image-bank/folders`, {
+    test('POST /image-vault/folders - should fail without name', async () => {
+        const response = await fetch(`${BASE_URL}/image-vault/folders`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -329,8 +329,8 @@ describe('Image Bank - Folders', () => {
         }
     });
 
-    test('GET /image-bank/folders - should list folders', async () => {
-        const response = await fetch(`${BASE_URL}/image-bank/folders`, {
+    test('GET /image-vault/folders - should list folders', async () => {
+        const response = await fetch(`${BASE_URL}/image-vault/folders`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
 
@@ -343,10 +343,10 @@ describe('Image Bank - Folders', () => {
         }
     });
 
-    test('PATCH /image-bank/folders/:id - should update folder', async () => {
+    test('PATCH /image-vault/folders/:id - should update folder', async () => {
         if (!testFolderId) return;
 
-        const response = await fetch(`${BASE_URL}/image-bank/folders/${testFolderId}`, {
+        const response = await fetch(`${BASE_URL}/image-vault/folders/${testFolderId}`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -366,8 +366,8 @@ describe('Image Bank - Folders', () => {
         }
     });
 
-    test('PATCH /image-bank/folders/:id - should return 404 for non-existent folder', async () => {
-        const response = await fetch(`${BASE_URL}/image-bank/folders/non-existent-id`, {
+    test('PATCH /image-vault/folders/:id - should return 404 for non-existent folder', async () => {
+        const response = await fetch(`${BASE_URL}/image-vault/folders/non-existent-id`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -380,10 +380,10 @@ describe('Image Bank - Folders', () => {
         expect([404, 403, 500]).toContain(response.status);
     });
 
-    test('DELETE /image-bank/folders/:id - should delete folder', async () => {
+    test('DELETE /image-vault/folders/:id - should delete folder', async () => {
         if (!testFolderId) return;
 
-        const response = await fetch(`${BASE_URL}/image-bank/folders/${testFolderId}`, {
+        const response = await fetch(`${BASE_URL}/image-vault/folders/${testFolderId}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
@@ -397,9 +397,9 @@ describe('Image Bank - Folders', () => {
     });
 });
 
-describe('Image Bank - Bulk Operations', () => {
-    test('POST /image-bank/bulk-delete - should delete multiple images', async () => {
-        const response = await fetch(`${BASE_URL}/image-bank/bulk-delete`, {
+describe('Image Vault - Bulk Operations', () => {
+    test('POST /image-vault/bulk-delete - should delete multiple images', async () => {
+        const response = await fetch(`${BASE_URL}/image-vault/bulk-delete`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -419,8 +419,8 @@ describe('Image Bank - Bulk Operations', () => {
         }
     });
 
-    test('POST /image-bank/bulk-delete - should fail without imageIds', async () => {
-        const response = await fetch(`${BASE_URL}/image-bank/bulk-delete`, {
+    test('POST /image-vault/bulk-delete - should fail without imageIds', async () => {
+        const response = await fetch(`${BASE_URL}/image-vault/bulk-delete`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -437,8 +437,8 @@ describe('Image Bank - Bulk Operations', () => {
         }
     });
 
-    test('POST /image-bank/bulk-move - should move images to folder', async () => {
-        const response = await fetch(`${BASE_URL}/image-bank/bulk-move`, {
+    test('POST /image-vault/bulk-move - should move images to folder', async () => {
+        const response = await fetch(`${BASE_URL}/image-vault/bulk-move`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -458,8 +458,8 @@ describe('Image Bank - Bulk Operations', () => {
         }
     });
 
-    test('POST /image-bank/bulk-tag - should add tags to images', async () => {
-        const response = await fetch(`${BASE_URL}/image-bank/bulk-tag`, {
+    test('POST /image-vault/bulk-tag - should add tags to images', async () => {
+        const response = await fetch(`${BASE_URL}/image-vault/bulk-tag`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -479,8 +479,8 @@ describe('Image Bank - Bulk Operations', () => {
         }
     });
 
-    test('POST /image-bank/bulk-tag - should fail without tags', async () => {
-        const response = await fetch(`${BASE_URL}/image-bank/bulk-tag`, {
+    test('POST /image-vault/bulk-tag - should fail without tags', async () => {
+        const response = await fetch(`${BASE_URL}/image-vault/bulk-tag`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -498,11 +498,11 @@ describe('Image Bank - Bulk Operations', () => {
     });
 });
 
-describe('Image Bank - AI Analysis', () => {
-    test('POST /image-bank/analyze - should analyze image', async () => {
+describe('Image Vault - AI Analysis', () => {
+    test('POST /image-vault/analyze - should analyze image', async () => {
         if (!testImageId) return;
 
-        const response = await fetch(`${BASE_URL}/image-bank/analyze`, {
+        const response = await fetch(`${BASE_URL}/image-vault/analyze`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -519,8 +519,8 @@ describe('Image Bank - AI Analysis', () => {
         }
     });
 
-    test('POST /image-bank/analyze - should return 404 for non-existent image', async () => {
-        const response = await fetch(`${BASE_URL}/image-bank/analyze`, {
+    test('POST /image-vault/analyze - should return 404 for non-existent image', async () => {
+        const response = await fetch(`${BASE_URL}/image-vault/analyze`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -534,9 +534,9 @@ describe('Image Bank - AI Analysis', () => {
     });
 });
 
-describe('Image Bank - Cloudinary', () => {
-    test('GET /image-bank/cloudinary-status - should check Cloudinary config', async () => {
-        const response = await fetch(`${BASE_URL}/image-bank/cloudinary-status`, {
+describe('Image Vault - Cloudinary', () => {
+    test('GET /image-vault/cloudinary-status - should check Cloudinary config', async () => {
+        const response = await fetch(`${BASE_URL}/image-vault/cloudinary-status`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
 
@@ -548,8 +548,8 @@ describe('Image Bank - Cloudinary', () => {
         }
     });
 
-    test('POST /image-bank/cloudinary-edit - should require image ID', async () => {
-        const response = await fetch(`${BASE_URL}/image-bank/cloudinary-edit`, {
+    test('POST /image-vault/cloudinary-edit - should require image ID', async () => {
+        const response = await fetch(`${BASE_URL}/image-vault/cloudinary-edit`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -569,11 +569,11 @@ describe('Image Bank - Cloudinary', () => {
     });
 });
 
-describe('Image Bank - Edit Operations', () => {
-    test('POST /image-bank/edit - should save edit operation', async () => {
+describe('Image Vault - Edit Operations', () => {
+    test('POST /image-vault/edit - should save edit operation', async () => {
         if (!testImageId) return;
 
-        const response = await fetch(`${BASE_URL}/image-bank/edit`, {
+        const response = await fetch(`${BASE_URL}/image-vault/edit`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -594,10 +594,10 @@ describe('Image Bank - Edit Operations', () => {
         }
     });
 
-    test('GET /image-bank/edit-history/:id - should return edit history', async () => {
+    test('GET /image-vault/edit-history/:id - should return edit history', async () => {
         if (!testImageId) return;
 
-        const response = await fetch(`${BASE_URL}/image-bank/edit-history/${testImageId}`, {
+        const response = await fetch(`${BASE_URL}/image-vault/edit-history/${testImageId}`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
 
@@ -611,11 +611,11 @@ describe('Image Bank - Edit Operations', () => {
     });
 });
 
-describe('Image Bank - Usage Tracking', () => {
-    test('GET /image-bank/usage/:id - should return image usage', async () => {
+describe('Image Vault - Usage Tracking', () => {
+    test('GET /image-vault/usage/:id - should return image usage', async () => {
         if (!testImageId) return;
 
-        const response = await fetch(`${BASE_URL}/image-bank/usage/${testImageId}`, {
+        const response = await fetch(`${BASE_URL}/image-vault/usage/${testImageId}`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
 
@@ -628,8 +628,8 @@ describe('Image Bank - Usage Tracking', () => {
         }
     });
 
-    test('GET /image-bank/usage/:id - should return 404 for non-existent image', async () => {
-        const response = await fetch(`${BASE_URL}/image-bank/usage/non-existent-id`, {
+    test('GET /image-vault/usage/:id - should return 404 for non-existent image', async () => {
+        const response = await fetch(`${BASE_URL}/image-vault/usage/non-existent-id`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
 
@@ -638,9 +638,9 @@ describe('Image Bank - Usage Tracking', () => {
     });
 });
 
-describe('Image Bank - Import', () => {
-    test('POST /image-bank/import-from-inventory - should require inventory ID', async () => {
-        const response = await fetch(`${BASE_URL}/image-bank/import-from-inventory`, {
+describe('Image Vault - Import', () => {
+    test('POST /image-vault/import-from-inventory - should require inventory ID', async () => {
+        const response = await fetch(`${BASE_URL}/image-vault/import-from-inventory`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -658,11 +658,11 @@ describe('Image Bank - Import', () => {
     });
 });
 
-describe('Image Bank - Delete', () => {
-    test('DELETE /image-bank/:id - should delete image', async () => {
+describe('Image Vault - Delete', () => {
+    test('DELETE /image-vault/:id - should delete image', async () => {
         if (!testImageId) return;
 
-        const response = await fetch(`${BASE_URL}/image-bank/${testImageId}`, {
+        const response = await fetch(`${BASE_URL}/image-vault/${testImageId}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
@@ -675,8 +675,8 @@ describe('Image Bank - Delete', () => {
         }
     });
 
-    test('DELETE /image-bank/:id - should return 404 for non-existent image', async () => {
-        const response = await fetch(`${BASE_URL}/image-bank/non-existent-id`, {
+    test('DELETE /image-vault/:id - should return 404 for non-existent image', async () => {
+        const response = await fetch(`${BASE_URL}/image-vault/non-existent-id`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${authToken}` }
         });

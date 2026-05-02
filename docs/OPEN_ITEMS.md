@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-01T23:28:05.098Z
-Commit: a4df3e29
+Generated at: 2026-05-02T00:20:33.310Z
+Commit: 39be1fc3
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -20,7 +20,7 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 | Structural/refactor backlog items | 10 |
 | Competitor intelligence gaps | 862 |
 | Anti-detection/design gaps | 14 |
-| Open GitHub issues | 10 |
+| Open GitHub issues | 11 |
 | Explicit unchecked checklist items | 359 |
 | Repo-wide unchecked checkbox hits | 583 |
 | Repo-wide unchecked checkbox hits included | 359 |
@@ -205,7 +205,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | memory/COMPLETED.md | 2 | 61 | Excluded: session memory, promote only after current verification |
 | memory/LAUNCH_PRIORITY.md | 5 | 14 | Excluded: session memory, promote only after current verification |
 | memory/MEMORY.md | 9 | 7 | Excluded: session memory, promote only after current verification |
-| memory/STATUS.md | 16 | 7 | Excluded: session memory, promote only after current verification |
+| memory/STATUS.md | 17 | 7 | Excluded: session memory, promote only after current verification |
 | memory/TIER0_PLAYBOOK.md | 3 | 11 | Excluded: session memory, promote only after current verification |
 | data/qa-report-2026-04-04-chrome-walkthrough.md | 2 | 20 | Excluded: timestamped QA evidence, not current truth |
 | data/qa-report-2026-04-04-exhaustive.md | 4 | 39 | Excluded: timestamped QA evidence, not current truth |
@@ -229,7 +229,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | docs/walkthrough/environment.md | 12 | 38 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/financials.md | 5 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/help.md | 3 | 3 | Included via walkthrough parser when table status is active |
-| docs/walkthrough/image-bank.md | 1 | 3 | Included via walkthrough parser when table status is active |
+| docs/walkthrough/image-vault.md | 1 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/import.md | 1 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/INDEX.md | 9 | 4 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/inventory.md | 1 | 3 | Included via walkthrough parser when table status is active |
@@ -1234,6 +1234,7 @@ Command: `gh issue list --state open --limit 200 --json number,title,labels,upda
 
 | Issue | Title | Labels | Updated | URL |
 |---|---|---|---|---|
+| #491 | [Deploy Failure] 4012693 — Run #1079 | automated, deploy-failure | 2026-05-02T00:15:31Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/491 |
 | #490 | [CI Failure] release-please--branches--master--components--vaultlister - Run #1564 | ci-failure, automated | 2026-05-01T21:53:46Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/490 |
 | #489 | [CI Failure] master - Run #1554 | ci-failure, automated | 2026-05-01T18:50:13Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/489 |
 | #488 | [Lighthouse] Performance score below 50 — immediate attention required | automated, performance | 2026-05-01T18:35:25Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/488 |

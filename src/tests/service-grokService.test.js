@@ -80,7 +80,7 @@ describe('getGrokResponse (mock mode)', () => {
 
     test('returns image bank help', async () => {
         const result = await getGrokResponse([{ role: 'user', content: 'tell me about the image bank' }]);
-        expect(result.category).toBe('imageBank');
+        expect(result.category).toBe('imageVault');
     });
 
     test('returns template help', async () => {

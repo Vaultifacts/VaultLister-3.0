@@ -18,7 +18,7 @@ const testFiles = [
     'src/tests/security.test.js',
 
     // New feature tests (Phase 1-9)
-    'src/tests/imageBank.test.js',
+    'src/tests/imageVault.test.js',
     'src/tests/chatbot.test.js',
     'src/tests/community.test.js',
     'src/tests/extension.test.js',

@@ -324,7 +324,7 @@ const components = {
                             { id: 'calendar', label: 'Calendar' },
                         ],
                     },
-                    { id: 'image-bank', label: 'Image Bank', icon: 'image' },
+                    { id: 'image-vault', label: 'Image Vault', icon: 'image' },
                 ],
             },
             {
@@ -1023,7 +1023,7 @@ const components = {
             automations: { label: 'Automations', section: 'Manage' },
             checklist: { label: 'Checklist', section: 'Manage' },
             planner: { label: 'Daily Checklist', section: 'Manage' },
-            'image-bank': { label: 'Image Bank', section: 'Manage' },
+            'image-vault': { label: 'Image Vault', section: 'Manage' },
             calendar: { label: 'Calendar', section: 'Manage' },
             'size-charts': { label: 'Size Charts', section: 'Manage' },
             shops: { label: 'My Shops', section: 'Manage' },
@@ -2289,7 +2289,7 @@ const components = {
         const imgSrc = image
             ? image.cloudinary_public_id
                 ? `https://res.cloudinary.com/vaultlister/image/upload/c_limit,w_800/${image.cloudinary_public_id}`
-                : `/api/image-bank/${image.id}/file`
+                : `/api/image-vault/${image.id}/file`
             : '';
         const previewUrl = store.state.photoEditorPreviewUrl || imgSrc || '';
         const isLoading = store.state.photoEditorLoading;

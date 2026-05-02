@@ -54,7 +54,7 @@ export async function seedHelpContent() {
         },
         {
             id: 'vid_image_bank',
-            title: 'Using the Image Bank',
+            title: 'Using the Image Vault',
             description: 'Organize and edit your product images efficiently',
             video_url: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
             category: 'advanced',
@@ -117,8 +117,8 @@ export async function seedHelpContent() {
         },
         {
             id: 'faq_image_bank',
-            question: 'What is the Image Bank?',
-            answer: 'The Image Bank is a centralized storage for all your product images. Organize images into folders, add tags for easy searching, and reuse images across multiple listings. Includes a built-in photo editor for quick adjustments.',
+            question: 'What is the Image Vault?',
+            answer: 'The Image Vault is a centralized storage for all your product images. Organize images into folders, add tags for easy searching, and reuse images across multiple listings. Includes a built-in photo editor for quick adjustments.',
             category: 'inventory',
             position: 6
         },

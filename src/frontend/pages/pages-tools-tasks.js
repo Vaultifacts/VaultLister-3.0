@@ -213,7 +213,7 @@ Object.assign(pages, {
                         ${components.icon('check-square', 14)} Mark All as Complete
                     </button>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.bulkCompleteChecklist(false)" title="Uncomplete all tasks">
-                        ${components.icon('square', 14)} Mark All as Incomplete
+                        <span aria-hidden="true">☐</span> Mark All as Incomplete
                     </button>
                     `
                             : ''
@@ -1660,14 +1660,14 @@ Object.assign(pages, {
         `;
     },
 
-    // Image Bank page,
+    // Image Vault page,
 
-    imageBank() {
-        const images = store.state.imageBankImages || [];
-        const folders = store.state.imageBankFolders || [];
+    imageVault() {
+        const images = store.state.imageVaultImages || [];
+        const folders = store.state.imageVaultFolders || [];
         const selectedFolder = store.state.selectedFolder;
         const selectedImages = store.state.selectedImages || [];
-        const viewMode = store.state.imageBankViewMode || 'grid';
+        const viewMode = store.state.imageVaultViewMode || 'grid';
         const batchJobs = store.state.batchPhotoJobs || [];
         const recentBatchJobs = batchJobs.slice(-5).reverse(); // Show 5 most recent
 
@@ -1685,7 +1685,7 @@ Object.assign(pages, {
         const storageTotal = storageStats ? storageStats.quota_bytes : 5 * 1024 * 1024 * 1024;
 
         // Get current view mode for masonry
-        const displayMode = store.state.imageBankView || viewMode;
+        const displayMode = store.state.imageVaultView || viewMode;
 
         // Calculate storage percentage (2 decimal places for precision)
         const storagePercent = ((storageUsed / storageTotal) * 100).toFixed(2);
@@ -1703,7 +1703,7 @@ Object.assign(pages, {
         return `
             <div class="page-header flex justify-between items-start">
                 <div>
-                    <h1 class="page-title">${components.icon('folder', 20)} Image Bank</h1>
+                    <h1 class="page-title">${components.icon('folder', 20)} Image Vault</h1>
                     <p class="page-description">Centralized storage for all your product images</p>
                 </div>
                 <div class="flex gap-2">
@@ -1719,9 +1719,9 @@ Object.assign(pages, {
                 </div>
             </div>
 
-            <!-- Image Bank Hero Section -->
-            <div class="image-bank-hero mb-6">
-                <div class="image-bank-hero-main">
+            <!-- Image Vault Hero Section -->
+            <div class="image-vault-hero mb-6">
+                <div class="image-vault-hero-main">
                     <div role="button" tabindex="0" class="quick-upload-zone" onclick="handlers.openImageUpload()">
                         <div class="upload-zone-icon">
                             ${components.icon('upload-cloud', 48)}
@@ -1766,7 +1766,7 @@ Object.assign(pages, {
                                 .map(
                                     (img) => `
                                 <div role="button" tabindex="0" class="recent-upload-thumb" onclick="handlers.viewImage('${img.id}')" style="${img.dominant_color ? `background: ${escapeHtml(img.dominant_color)};` : ''}">
-                                    <img src="${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_fill,w_400,h_400/${img.cloudinary_public_id}` : `/api/image-bank/${escapeHtml(img.id)}/file`}" alt="${escapeHtml(img.title || img.original_filename)}" loading="lazy" onerror="this.style.display='none'">
+                                    <img src="${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_fill,w_400,h_400/${img.cloudinary_public_id}` : `/api/image-vault/${escapeHtml(img.id)}/file`}" alt="${escapeHtml(img.title || img.original_filename)}" loading="lazy" onerror="this.style.display='none'">
                                 </div>
                             `,
                                 )
@@ -1786,7 +1786,7 @@ Object.assign(pages, {
                         : ''
                 }
 
-                <div class="image-bank-quick-actions">
+                <div class="image-vault-quick-actions">
                     <button class="quick-action-btn" onclick="handlers.showAITagging()">
                         ${components.icon('zap', 16)}
                         <span>AI Auto-Tag</span>
@@ -1853,9 +1853,9 @@ Object.assign(pages, {
                     : ''
             }
 
-            <div class="image-bank-container">
+            <div class="image-vault-container">
                 <!-- Left Sidebar: Folder Tree -->
-                <div class="image-bank-sidebar">
+                <div class="image-vault-sidebar">
                     <div class="sidebar-header">
                         <h2>${components.icon('folder', 16)} Folders</h2>
                     </div>
@@ -1887,9 +1887,9 @@ Object.assign(pages, {
                 </div>
 
                 <!-- Main Content: Image Grid -->
-                <div class="image-bank-main">
+                <div class="image-vault-main">
                     <!-- Toolbar -->
-                    <div class="image-bank-toolbar">
+                    <div class="image-vault-toolbar">
                         <div class="flex gap-2 items-center flex-1" role="search">
                             <input type="text"
                                    class="form-input"
@@ -1962,7 +1962,7 @@ Object.assign(pages, {
                         </div>
                     `
                             : `
-                        <div class="image-bank-${viewMode}">
+                        <div class="image-vault-${viewMode}">
                             ${filteredImages
                                 .map(
                                     (image) => `
@@ -1975,7 +1975,7 @@ Object.assign(pages, {
                                                onchange="handlers.toggleImageSelection('${image.id}')">
                                     </div>
                                     <div role="button" tabindex="0" class="image-card-thumbnail" onclick="handlers.viewImage('${image.id}')" style="${image.dominant_color ? `background: ${escapeHtml(image.dominant_color)};` : ''}">
-                                        <img src="${image.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_fill,w_400,h_400/${image.cloudinary_public_id}` : `/api/image-bank/${escapeHtml(image.id)}/file`}"
+                                        <img src="${image.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_fill,w_400,h_400/${image.cloudinary_public_id}` : `/api/image-vault/${escapeHtml(image.id)}/file`}"
                                              alt="${escapeHtml(image.title || image.original_filename)}"
                                              loading="lazy"
                                              onerror="this.style.display='none'">
@@ -2117,11 +2117,11 @@ Object.assign(pages, {
 
             <!-- Hidden file input for uploads -->
             <input type="file"
-                   id="image-bank-upload"
+                   id="image-vault-upload"
                    accept="image/jpeg,image/jpg,image/png,image/webp"
                    multiple
                    style="display: none;"
-                   onchange="handlers.handleImageBankUpload(event)" aria-label="Image Bank Upload">
+                   onchange="handlers.handleImageBankUpload(event)" aria-label="Image Vault Upload">
         `;
     },
 
@@ -2131,7 +2131,7 @@ Object.assign(pages, {
         const selectedImages = store.state.batchPhotoSelectedImages || [];
         const presets = store.state.batchPhotoPresets || [];
         const transforms = store.state.batchPhotoTransformations || {};
-        const images = store.state.imageBankImages || [];
+        const images = store.state.imageVaultImages || [];
         const selectedImageData = selectedImages.map((id) => images.find((img) => img.id === id)).filter(Boolean);
 
         return `
@@ -2151,7 +2151,7 @@ Object.assign(pages, {
                         ${selectedImageData
                             .map(
                                 (img) => `
-                            <img src="${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_fill,w_400,h_400/${img.cloudinary_public_id}` : `/api/image-bank/${escapeHtml(img.id)}/file`}"
+                            <img src="${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_fill,w_400,h_400/${img.cloudinary_public_id}` : `/api/image-vault/${escapeHtml(img.id)}/file`}"
                                  alt="${escapeHtml(img.title || img.original_filename)}"
                                  style="width: 80px; height: 80px; object-fit: cover; border-radius: 6px; flex-shrink: 0; border: 2px solid transparent; cursor: pointer;"
                                  onmouseover="this.style.borderColor='var(--primary-600)'"

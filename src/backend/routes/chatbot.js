@@ -38,7 +38,7 @@ export async function chatbotRouter(ctx) {
 • Cross-listing to multiple platforms
 • Setting up automations
 • Understanding analytics & sales data
-• Using Image Bank & Templates
+• Using Image Vault & Templates
 • AI-powered listing generation
 
 What can I help you with today?`;

@@ -1096,9 +1096,9 @@ Object.assign(handlers, {
                     description: 'Change the date range to see different time periods.',
                 },
             ],
-            'image-bank': [
+            'image-vault': [
                 {
-                    selector: '.image-bank-grid, .image-grid',
+                    selector: '.image-vault-grid, .image-grid',
                     title: 'Image Library',
                     description: 'All your product photos organized in one place.',
                 },

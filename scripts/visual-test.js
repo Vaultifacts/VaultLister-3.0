@@ -36,7 +36,7 @@ const MAJOR_ROUTES = [
     // Core pages
     'dashboard', 'inventory', 'listings', 'automations', 'offers',
     'orders', 'analytics', 'financials', 'shops', 'settings',
-    'checklist', 'calendar', 'image-bank', 'suppliers', 'market-intel',
+    'checklist', 'calendar', 'image-vault', 'suppliers', 'market-intel',
     'help-support', 'roadmap', 'changelog', 'community', 'transactions',
     'report-builder', 'predictions', 'templates',
     // Feature pages

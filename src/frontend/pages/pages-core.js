@@ -679,8 +679,8 @@ const pages = {
                             <button class="btn btn-secondary" onclick="router.navigate('orders-sales')" style="justify-content: flex-start;">
                                 ${components.icon('cart', 16)} View Orders
                             </button>
-                            <button class="btn btn-secondary" onclick="router.navigate('image-bank')" style="justify-content: flex-start;">
-                                ${components.icon('image', 16)} Image Bank
+                            <button class="btn btn-secondary" onclick="router.navigate('image-vault')" style="justify-content: flex-start;">
+                                ${components.icon('image', 16)} Image Vault
                             </button>
                             <button class="btn btn-secondary" onclick="router.navigate('analytics')" style="justify-content: flex-start;">
                                 ${components.icon('analytics', 16)} Analytics

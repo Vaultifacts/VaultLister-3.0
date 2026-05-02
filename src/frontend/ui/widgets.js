@@ -95,7 +95,7 @@ const globalSearch = {
             { id: 'analytics', label: 'Analytics', section: 'Manage', icon: 'analytics' },
             { id: 'shops', label: 'My Shops', section: 'Manage', icon: 'store' },
             { id: 'planner', label: 'Daily Checklist', section: 'Manage', icon: 'calendar' },
-            { id: 'image-bank', label: 'Image Bank', section: 'Manage', icon: 'image' },
+            { id: 'image-vault', label: 'Image Vault', section: 'Manage', icon: 'image' },
             { id: 'settings', label: 'Settings', section: 'Settings', icon: 'settings' },
             { id: 'help-support', label: 'Help', section: 'Help', icon: 'help' },
             { id: 'changelog', label: 'Changelog', section: 'Changelog', icon: 'list' },
@@ -5828,7 +5828,7 @@ const toolSearch = {
     tools: [
         { name: 'Automations', path: 'automations', icon: 'zap', keywords: ['auto', 'schedule', 'share'] },
         { name: 'Checklist', path: 'checklist', icon: 'check-square', keywords: ['tasks', 'todo', 'list'] },
-        { name: 'Image Bank', path: 'image-bank', icon: 'image', keywords: ['photos', 'pictures', 'upload'] },
+        { name: 'Image Vault', path: 'image-vault', icon: 'image', keywords: ['photos', 'pictures', 'upload'] },
         { name: 'Calendar', path: 'calendar', icon: 'calendar', keywords: ['schedule', 'dates', 'events'] },
         { name: 'Size Charts', path: 'size-charts', icon: 'list', keywords: ['sizes', 'measurements', 'conversion'] },
     ],

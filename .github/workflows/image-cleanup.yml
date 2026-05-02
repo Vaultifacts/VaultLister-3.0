@@ -29,7 +29,7 @@ jobs:
           sudo apt-get install -y postgresql-client-${PG_MAJOR}
           echo "/usr/lib/postgresql/${PG_MAJOR}/bin" >> "$GITHUB_PATH"
 
-      - name: Check for unreferenced image_bank entries
+      - name: Check for unreferenced image_vault entries
         id: image_check
         env:
           DATABASE_PUBLIC_URL: ${{ secrets.DATABASE_PUBLIC_URL }}
@@ -45,7 +45,7 @@ jobs:
               SELECT 1 FROM image_bank_usage ibu WHERE ibu.image_id = ib.id
             );
           ")
-          echo "Unreferenced image_bank entries: ${UNREFERENCED}"
+          echo "Unreferenced image_vault entries: ${UNREFERENCED}"
           echo "UNREFERENCED=${UNREFERENCED}" >> "$GITHUB_OUTPUT"
 
           echo "=== Check complete ==="
@@ -56,7 +56,7 @@ jobs:
         with:
           script: |
             const count = '${{ steps.image_check.outputs.UNREFERENCED }}';
-            const title = `[Cleanup] ${count} unreferenced images in image_bank — Run #${context.runNumber}`;
+            const title = `[Cleanup] ${count} unreferenced images in image_vault — Run #${context.runNumber}`;
 
             const existing = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
@@ -78,7 +78,7 @@ jobs:
               body: [
                 '## Unreferenced Images Detected',
                 '',
-                `The weekly image check found **${count} image_bank entries** not referenced by any inventory item (threshold: 50).`,
+                `The weekly image check found **${count} image_vault entries** not referenced by any inventory item (threshold: 50).`,
                 '',
                 'These images have no entry in `image_bank_usage` and may be safe to remove.',
                 '',

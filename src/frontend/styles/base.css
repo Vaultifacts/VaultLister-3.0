@@ -1263,7 +1263,7 @@ html.desktop-lock .main-wrapper {
 html.desktop-lock .settings-container {
     grid-template-columns: 240px 1fr !important;
 }
-html.desktop-lock .image-bank-container {
+html.desktop-lock .image-vault-container {
     grid-template-columns: 240px 1fr !important;
 }
 html.desktop-lock .performance-metrics-grid {
@@ -1302,7 +1302,7 @@ html.desktop-lock .automations-hero,
 html.desktop-lock .checklist-hero,
 html.desktop-lock .calendar-hero,
 html.desktop-lock .size-charts-hero,
-html.desktop-lock .image-bank-hero,
+html.desktop-lock .image-vault-hero,
 html.desktop-lock .shops-hero,
 html.desktop-lock .transactions-hero,
 html.desktop-lock .financials-hero,

@@ -7470,5 +7470,5 @@ Object.assign(handlers, {
             .catch(() => toast.error('Failed to add order.'));
     },
 
-    // Image Bank,
+    // Image Vault,
 });

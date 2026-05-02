@@ -156,8 +156,8 @@ test.describe('Accessibility - WCAG 2.1 AA', () => {
         expect(violations, formatViolations(violations)).toHaveLength(0);
     });
 
-    test('Image Bank page has no new critical/serious violations', async ({ authedPage: page }) => {
-        await loginAndNavigate(page, routes.imageBank);
+    test('Image Vault page has no new critical/serious violations', async ({ authedPage: page }) => {
+        await loginAndNavigate(page, routes.imageVault);
 
         const violations = await getSeriesViolations(page, ['color-contrast', 'button-name']);
         expect(violations, formatViolations(violations)).toHaveLength(0);

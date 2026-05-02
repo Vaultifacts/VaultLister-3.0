@@ -90,7 +90,7 @@ tags:
     description: GDPR compliance and data management
   - name: Rate Limits
     description: Rate limit dashboard and management
-  - name: Image Bank
+  - name: Image Vault
     description: Image storage, folders, and editing
   - name: Barcode
     description: Barcode scanning and validation
@@ -3714,9 +3714,9 @@ paths:
                 type: object
         '400':
           $ref: '#/components/responses/BadRequest'
-  /image-bank:
+  /image-vault:
     get:
-      tags: [Image Bank]
+      tags: [Image Vault]
       summary: List images
       security:
         - bearerAuth: []
@@ -3734,9 +3734,9 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-  /image-bank/analyze:
+  /image-vault/analyze:
     post:
-      tags: [Image Bank]
+      tags: [Image Vault]
       summary: AI-analyze image
       security:
         - bearerAuth: []
@@ -3760,9 +3760,9 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-  /image-bank/bulk-delete:
+  /image-vault/bulk-delete:
     post:
-      tags: [Image Bank]
+      tags: [Image Vault]
       summary: Bulk delete images
       security:
         - bearerAuth: []
@@ -3788,9 +3788,9 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-  /image-bank/bulk-move:
+  /image-vault/bulk-move:
     post:
-      tags: [Image Bank]
+      tags: [Image Vault]
       summary: Bulk move images to folder
       security:
         - bearerAuth: []
@@ -3818,9 +3818,9 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-  /image-bank/bulk-tag:
+  /image-vault/bulk-tag:
     post:
-      tags: [Image Bank]
+      tags: [Image Vault]
       summary: Bulk tag images
       security:
         - bearerAuth: []
@@ -3850,9 +3850,9 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-  /image-bank/cloudinary-edit:
+  /image-vault/cloudinary-edit:
     post:
-      tags: [Image Bank]
+      tags: [Image Vault]
       summary: Edit via Cloudinary
       security:
         - bearerAuth: []
@@ -3873,9 +3873,9 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-  /image-bank/cloudinary-status:
+  /image-vault/cloudinary-status:
     get:
-      tags: [Image Bank]
+      tags: [Image Vault]
       summary: Get Cloudinary status
       security:
         - bearerAuth: []
@@ -3890,9 +3890,9 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-  /image-bank/edit:
+  /image-vault/edit:
     post:
-      tags: [Image Bank]
+      tags: [Image Vault]
       summary: Edit image
       security:
         - bearerAuth: []
@@ -3920,9 +3920,9 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-  /image-bank/edit-history/{id}:
+  /image-vault/edit-history/{id}:
     get:
-      tags: [Image Bank]
+      tags: [Image Vault]
       summary: Get image edit history
       security:
         - bearerAuth: []
@@ -3939,9 +3939,9 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-  /image-bank/folders:
+  /image-vault/folders:
     get:
-      tags: [Image Bank]
+      tags: [Image Vault]
       summary: List folders
       security:
         - bearerAuth: []
@@ -3957,7 +3957,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
     post:
-      tags: [Image Bank]
+      tags: [Image Vault]
       summary: Create folder
       security:
         - bearerAuth: []
@@ -3981,9 +3981,9 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-  /image-bank/folders/{id}:
+  /image-vault/folders/{id}:
     patch:
-      tags: [Image Bank]
+      tags: [Image Vault]
       summary: Update folder
       security:
         - bearerAuth: []
@@ -4007,7 +4007,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
     delete:
-      tags: [Image Bank]
+      tags: [Image Vault]
       summary: Delete folder
       security:
         - bearerAuth: []
@@ -4024,9 +4024,9 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-  /image-bank/import-from-inventory:
+  /image-vault/import-from-inventory:
     post:
-      tags: [Image Bank]
+      tags: [Image Vault]
       summary: Import images from inventory
       security:
         - bearerAuth: []
@@ -4047,9 +4047,9 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-  /image-bank/scan-usage:
+  /image-vault/scan-usage:
     post:
-      tags: [Image Bank]
+      tags: [Image Vault]
       summary: Scan storage usage
       security:
         - bearerAuth: []
@@ -4064,9 +4064,9 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-  /image-bank/search:
+  /image-vault/search:
     get:
-      tags: [Image Bank]
+      tags: [Image Vault]
       summary: Search images
       security:
         - bearerAuth: []
@@ -4086,9 +4086,9 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-  /image-bank/storage-stats:
+  /image-vault/storage-stats:
     get:
-      tags: [Image Bank]
+      tags: [Image Vault]
       summary: Get storage statistics
       security:
         - bearerAuth: []
@@ -4103,9 +4103,9 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-  /image-bank/upload:
+  /image-vault/upload:
     post:
-      tags: [Image Bank]
+      tags: [Image Vault]
       summary: Upload image
       security:
         - bearerAuth: []
@@ -4130,9 +4130,9 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-  /image-bank/usage/{id}:
+  /image-vault/usage/{id}:
     get:
-      tags: [Image Bank]
+      tags: [Image Vault]
       summary: Get image usage info
       security:
         - bearerAuth: []
@@ -4149,9 +4149,9 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-  /image-bank/{id}:
+  /image-vault/{id}:
     get:
-      tags: [Image Bank]
+      tags: [Image Vault]
       summary: Get image by ID
       security:
         - bearerAuth: []
@@ -4171,7 +4171,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
     patch:
-      tags: [Image Bank]
+      tags: [Image Vault]
       summary: Update image metadata
       security:
         - bearerAuth: []
@@ -4195,7 +4195,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
     delete:
-      tags: [Image Bank]
+      tags: [Image Vault]
       summary: Delete image
       security:
         - bearerAuth: []

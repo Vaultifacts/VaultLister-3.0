@@ -1,16 +1,16 @@
-# Image Bank -- Walkthrough Findings
+# Image Vault -- Walkthrough Findings
 
 ## Open (Needs Fix)
 
-None -- all Image Bank findings have been resolved.
+None -- all Image Vault findings have been resolved.
 
 ## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
-| M-13 | Image Bank | "5.00 GB free" -- unclear if actual R2 limit or hardcoded | Session 1 | VERIFIED -- storageLimit reads PLAN_STORAGE_GB[tier]: free=0.1GB, starter=1GB, pro=5GB, business=25GB. Live chunk-settings.js confirmed. |
+| M-13 | Image Vault | "5.00 GB free" -- unclear if actual R2 limit or hardcoded | Session 1 | VERIFIED -- storageLimit reads PLAN_STORAGE_GB[tier]: free=0.1GB, starter=1GB, pro=5GB, business=25GB. Live chunk-settings.js confirmed. |
 
-## Extended QA Session Findings (Image Bank Tab)
+## Extended QA Session Findings (Image Vault Tab)
 
 ### Completed & Verified
 
@@ -21,7 +21,7 @@ None -- all Image Bank findings have been resolved.
 | Cleanup modal shows impossible hardcoded data | VERIFIED -- 3d125af -- Cleanup modal shows real account stats from store |
 | Optimize All and Cleanup modals have the same HTML injection rendering bug seen in My Shops | VERIFIED -- 3d125af -- modals rebuilt with correct modal structure |
 | Scan Usage silently fails with a backend CSRF token error | VERIFIED -- 3d125af -- CSRF token fetched before API call; error toast shown on failure |
-| Page scroll state is not reset on navigation | VERIFIED -- 3d125af -- scroll resets to top on Image Bank navigation |
+| Page scroll state is not reset on navigation | VERIFIED -- 3d125af -- scroll resets to top on Image Vault navigation |
 | Create Folder accepts empty name without validation error | VERIFIED -- 66d02de -- empty name shows toast.error |
 | Storage card layout is broken -- text wraps incorrectly | VERIFIED -- 3d125af -- storage stat card replaced with gauge widget |
 | Used in Listings: 0 is incorrectly styled as a success/green value | VERIFIED -- 3d125af -- green color applied only when count > 0 |
@@ -29,4 +29,4 @@ None -- all Image Bank findings have been resolved.
 | Clicking view toggles (Grid/List) causes unexpected scroll jump | VERIFIED -- 3d125af -- view toggle saves/restores scroll position |
 | Select All with 0 images provides no feedback | VERIFIED -- 3d125af -- Select All re-renders with count badge |
 | Empty state first images text appears as an incorrectly styled hyperlink | VERIFIED -- 3d125af -- empty state rebuilt; plain paragraph, no link styling |
-| Image Bank page title icon is a generic folder icon | VERIFIED -- 3d125af -- page title icon changed to camera/image |
+| Image Vault page title icon is a generic folder icon | VERIFIED -- 3d125af -- page title icon changed to camera/image |

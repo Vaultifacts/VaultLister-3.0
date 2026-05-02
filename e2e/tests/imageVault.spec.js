@@ -1,33 +1,33 @@
-// Image Bank E2E Tests
+// Image Vault E2E Tests
 import { test, expect } from '../fixtures/auth.js';
 import { routes } from '../fixtures/test-data.js';
 
-test.describe('Image Bank', () => {
+test.describe('Image Vault', () => {
 
     test('should navigate to image bank page', async ({ authedPage: page }) => {
-        await page.goto(`http://localhost:${process.env.PORT || 3000}/#image-bank`);
-        await page.waitForURL(/#image-bank/, { timeout: 5000 });
+        await page.goto(`http://localhost:${process.env.PORT || 3000}/#image-vault`);
+        await page.waitForURL(/#image-vault/, { timeout: 5000 });
 
         // Verify we're on image bank page
-        await expect(page).toHaveURL(/#image-bank/);
+        await expect(page).toHaveURL(/#image-vault/);
 
         // Wait for content
         await page.waitForTimeout(1000);
 
         // Page should display
-        const pageTitle = page.locator('h1:has-text("Image Bank"), h1:has-text("Images")').first();
+        const pageTitle = page.locator('h1:has-text("Image Vault"), h1:has-text("Images")').first();
         if (await pageTitle.isVisible()) {
             await expect(pageTitle).toBeVisible();
         }
     });
 
     test('should switch between grid and list view', async ({ authedPage: page }) => {
-        await page.goto(routes.imageBank);
+        await page.goto(routes.imageVault);
         await page.waitForTimeout(2000);
 
         // Verify we're on image bank page first
         const currentUrl = page.url();
-        if (!currentUrl.includes('image-bank')) {
+        if (!currentUrl.includes('image-vault')) {
             // Auth/session issue with Playwright - skip gracefully
             console.log('Navigation issue: ended up on', currentUrl);
             return; // Pass test - not a feature bug
@@ -56,18 +56,18 @@ test.describe('Image Bank', () => {
     });
 
     test('should display folder tree in sidebar', async ({ authedPage: page }) => {
-        await page.goto(`http://localhost:${process.env.PORT || 3000}/#image-bank`);
+        await page.goto(`http://localhost:${process.env.PORT || 3000}/#image-vault`);
         await page.waitForTimeout(1500);
 
         // Look for folder tree
         const folderTree = page.locator('.folder-tree, .folders-sidebar').first();
 
         // Page should load successfully
-        await expect(page).toHaveURL(/#image-bank/);
+        await expect(page).toHaveURL(/#image-vault/);
     });
 
     test('should search images', async ({ authedPage: page }) => {
-        await page.goto(`http://localhost:${process.env.PORT || 3000}/#image-bank`);
+        await page.goto(`http://localhost:${process.env.PORT || 3000}/#image-vault`);
         await page.waitForTimeout(1500);
 
         // Find search input
@@ -78,12 +78,12 @@ test.describe('Image Bank', () => {
             await page.waitForTimeout(500);
 
             // Search should execute
-            await expect(page).toHaveURL(/#image-bank/);
+            await expect(page).toHaveURL(/#image-vault/);
         }
     });
 
     test('should open upload modal', async ({ authedPage: page }) => {
-        await page.goto(`http://localhost:${process.env.PORT || 3000}/#image-bank`);
+        await page.goto(`http://localhost:${process.env.PORT || 3000}/#image-vault`);
         await page.waitForTimeout(1500);
 
         // Find upload button
@@ -95,12 +95,12 @@ test.describe('Image Bank', () => {
 
             // Upload modal/interface should appear
             // (File input would be visible, but we won't test actual upload)
-            await expect(page).toHaveURL(/#image-bank/);
+            await expect(page).toHaveURL(/#image-vault/);
         }
     });
 
     test('should open create folder modal', async ({ authedPage: page }) => {
-        await page.goto(`http://localhost:${process.env.PORT || 3000}/#image-bank`);
+        await page.goto(`http://localhost:${process.env.PORT || 3000}/#image-vault`);
         await page.waitForTimeout(1500);
 
         // Find create folder button
@@ -125,7 +125,7 @@ test.describe('Image Bank', () => {
     });
 
     test('should filter images by folder', async ({ authedPage: page }) => {
-        await page.goto(`http://localhost:${process.env.PORT || 3000}/#image-bank`);
+        await page.goto(`http://localhost:${process.env.PORT || 3000}/#image-vault`);
         await page.waitForTimeout(2000);
 
         // Click on a folder if available
@@ -136,20 +136,20 @@ test.describe('Image Bank', () => {
             await page.waitForTimeout(500);
 
             // Images should filter by folder
-            await expect(page).toHaveURL(/#image-bank/);
+            await expect(page).toHaveURL(/#image-vault/);
         }
     });
 
     test('should display empty state when no images', async ({ authedPage: page }) => {
-        await page.goto(`http://localhost:${process.env.PORT || 3000}/#image-bank`);
+        await page.goto(`http://localhost:${process.env.PORT || 3000}/#image-vault`);
         await page.waitForTimeout(2000);
 
         // Page should load (empty state or images)
-        await expect(page).toHaveURL(/#image-bank/);
+        await expect(page).toHaveURL(/#image-vault/);
     });
 
     test('should enable multi-select mode', async ({ authedPage: page }) => {
-        await page.goto(`http://localhost:${process.env.PORT || 3000}/#image-bank`);
+        await page.goto(`http://localhost:${process.env.PORT || 3000}/#image-vault`);
         await page.waitForTimeout(1500);
 
         // Look for select/bulk action button
@@ -160,12 +160,12 @@ test.describe('Image Bank', () => {
             await page.waitForTimeout(300);
 
             // Multi-select should be enabled
-            await expect(page).toHaveURL(/#image-bank/);
+            await expect(page).toHaveURL(/#image-vault/);
         }
     });
 
     test('should show image details panel', async ({ authedPage: page }) => {
-        await page.goto(`http://localhost:${process.env.PORT || 3000}/#image-bank`);
+        await page.goto(`http://localhost:${process.env.PORT || 3000}/#image-vault`);
         await page.waitForTimeout(2000);
 
         // Click on an image if available
@@ -176,7 +176,7 @@ test.describe('Image Bank', () => {
             await page.waitForTimeout(500);
 
             // Details panel should appear
-            await expect(page).toHaveURL(/#image-bank/);
+            await expect(page).toHaveURL(/#image-vault/);
         }
     });
 });

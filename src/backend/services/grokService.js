@@ -20,7 +20,7 @@ You help users with:
 - Cross-listing to platforms (Poshmark, eBay, Etsy — more platforms coming soon)
 - Automating repetitive tasks (closet sharing, follow-back, offer rules)
 - Understanding analytics and sales performance
-- Using features: Image Bank, Templates, AI listing generation, barcode scanner
+- Using features: Image Vault, Templates, AI listing generation, barcode scanner
 
 Platform availability:
 - LIVE (fully supported): Poshmark, eBay, Etsy
@@ -64,15 +64,15 @@ const CANNED_RESPONSES = {
         ],
     },
 
-    // Image Bank
-    imageBank: {
+    // Image Vault
+    imageVault: {
         patterns: ['image bank', 'images', 'photos', 'picture storage', 'photo editor'],
         responses: [
-            'Image Bank centralizes all your product photos!\n\n📸 Upload images once\n🗂️ Organize in folders\n✏️ Edit with built-in editor\n🔄 Reuse across listings\n\nGo to Image Bank in the sidebar to get started!',
-            'The Image Bank stores all your photos in one place. You can organize them, edit them (crop, rotate, enhance), and use them in any listing without re-uploading!',
+            'Image Vault centralizes all your product photos!\n\n📸 Upload images once\n🗂️ Organize in folders\n✏️ Edit with built-in editor\n🔄 Reuse across listings\n\nGo to Image Vault in the sidebar to get started!',
+            'The Image Vault stores all your photos in one place. You can organize them, edit them (crop, rotate, enhance), and use them in any listing without re-uploading!',
         ],
         quickActions: [
-            { label: 'Open Image Bank', route: 'image-bank' },
+            { label: 'Open Image Vault', route: 'image-vault' },
             { label: 'Add Item', route: 'inventory' },
         ],
     },
@@ -163,7 +163,7 @@ const CANNED_RESPONSES = {
     help: {
         patterns: ['help', 'support', 'how do i', 'tutorial', 'guide', 'stuck', 'confused'],
         responses: [
-            "I'm here to help! 🙋\n\nTell me what you need assistance with:\n- Adding or managing items\n- Cross-listing\n- Automations\n- Analytics\n- Image Bank\n- Templates\n\nOr visit Tutorials for video guides!",
+            "I'm here to help! 🙋\n\nTell me what you need assistance with:\n- Adding or managing items\n- Cross-listing\n- Automations\n- Analytics\n- Image Vault\n- Templates\n\nOr visit Tutorials for video guides!",
             "Need help? I can guide you through any feature! Just ask about what you want to do, and I'll provide step-by-step instructions.",
         ],
         quickActions: [
@@ -176,8 +176,8 @@ const CANNED_RESPONSES = {
     default: {
         patterns: [],
         responses: [
-            "I'm not sure about that, but I'm here to help with VaultLister features!\n\nI can assist with:\n✅ Inventory management\n✅ Cross-listing\n✅ Automations\n✅ Analytics & sales tracking\n✅ Image Bank & editing\n✅ Templates\n\nWhat would you like to know?",
-            "Hmm, I don't have specific info on that. Could you rephrase, or ask about:\n\n- Adding items\n- Cross-listing to platforms\n- Setting up automations\n- Using Image Bank\n- Creating templates\n- Viewing analytics",
+            "I'm not sure about that, but I'm here to help with VaultLister features!\n\nI can assist with:\n✅ Inventory management\n✅ Cross-listing\n✅ Automations\n✅ Analytics & sales tracking\n✅ Image Vault & editing\n✅ Templates\n\nWhat would you like to know?",
+            "Hmm, I don't have specific info on that. Could you rephrase, or ask about:\n\n- Adding items\n- Cross-listing to platforms\n- Setting up automations\n- Using Image Vault\n- Creating templates\n- Viewing analytics",
         ],
         quickActions: [
             { label: 'View Inventory', route: 'inventory' },
@@ -446,7 +446,7 @@ function extractQuickActions(content) {
         { test: 'sales', label: 'View Sales', route: 'sales' },
         { test: 'automation', label: 'View Automations', route: 'automations' },
         { test: 'offer', label: 'View Offers', route: 'offers' },
-        { test: 'image bank', label: 'Open Image Bank', route: 'image-bank' },
+        { test: 'image bank', label: 'Open Image Vault', route: 'image-vault' },
         { test: 'my shop', label: 'My Shops', route: 'shops' },
         { test: 'platform', label: 'My Shops', route: 'shops' },
         { test: 'connect', label: 'My Shops', route: 'shops' },

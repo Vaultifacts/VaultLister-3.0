@@ -44,7 +44,7 @@ const pageChunkMap = {
     calendar: 'tools',
     planner: 'tools',
     'size-charts': 'tools',
-    'image-bank': 'tools',
+    'image-vault': 'tools',
     'receipt-parser': 'tools',
     'whatnot-live': 'tools',
 
@@ -65,7 +65,6 @@ const pageChunkMap = {
     connections: 'settings',
     'shipping-profiles': 'settings',
     'push-notifications': 'settings',
-    webhooks: 'settings',
     shops: 'settings',
 
     // community chunk
@@ -240,7 +239,7 @@ const router = {
 
     async navigate(path) {
         // Track tool usage
-        if (['automations', 'checklist', 'image-bank', 'calendar', 'size-charts', 'planner'].includes(path)) {
+        if (['automations', 'checklist', 'image-vault', 'calendar', 'size-charts', 'planner'].includes(path)) {
             toolUsageAnalytics.track(path);
         }
 
@@ -300,6 +299,7 @@ const router = {
         'market-intel': { target: 'analytics', tab: 'market-intel', storeKey: 'analyticsTab' },
         suppliers: { target: 'analytics', tab: 'sourcing', storeKey: 'analyticsTab' },
         'platform-health': { target: 'shops', tab: 'health' },
+        webhooks: { target: 'settings', tab: 'integrations', storeKey: 'settingsTab' },
         // checklist + calendar: standalone routes (aliases removed — pages.planner() doesn't exist)
         // roadmap: standalone route — pages.roadmap() handles it directly
         'feedback-suggestions': { target: 'help-support', tab: 'feedback' },
@@ -470,7 +470,7 @@ const router = {
             analytics: 'Analytics',
             sales: 'Sales',
             calendar: 'Calendar',
-            'image-bank': 'Image Bank',
+            'image-vault': 'Image Vault',
             settings: 'Settings',
             account: 'Account',
             automations: 'Automations',
@@ -556,7 +556,7 @@ const router = {
                     await Promise.all([handlers.loadPurchases(), handlers.loadSales()]);
                 } else if (path === 'templates') {
                     await handlers.loadTemplates();
-                } else if (path === 'image-bank') {
+                } else if (path === 'image-vault') {
                     await handlers.loadImageBank();
                     window.scrollTo(0, 0);
                 } else if (path === 'community') {
@@ -583,8 +583,6 @@ const router = {
                     await handlers.loadSuppliers();
                 } else if (path === 'market-intel') {
                     await handlers.loadMarketIntel();
-                } else if (path === 'webhooks') {
-                    await handlers.loadWebhooks();
                 } else if (path === 'push-notifications') {
                     await handlers.loadPushStatus();
                 }
@@ -692,8 +690,6 @@ const router = {
             await handlers.loadSuppliers();
         } else if (path === 'market-intel') {
             await handlers.loadMarketIntel();
-        } else if (path === 'webhooks') {
-            await handlers.loadWebhooks();
         } else if (path === 'push-notifications') {
             await handlers.loadPushStatus();
         }

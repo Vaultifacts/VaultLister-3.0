@@ -3,7 +3,7 @@
 // that Playwright's setInputFiles() can consume.
 //
 // Handles two formats that may appear in the images array:
-//   - Local absolute paths (already on disk from Image Bank)
+//   - Local absolute paths (already on disk from Image Vault)
 //   - HTTP(S) URLs (downloaded to a temp file)
 //
 // Usage:

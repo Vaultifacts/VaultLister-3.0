@@ -45,7 +45,7 @@ const PAGES_CHUNK_MAP = {
     checklist: 'tools-tasks',
     calendar: 'tools-tasks',
     sizeCharts: 'tools-tasks',
-    imageBank: 'tools-tasks',
+    imageVault: 'tools-tasks',
     batchPhotoEditModal: 'tools-tasks',
     receiptParser: 'tools-tasks',
     whatnotLive: 'tools-tasks',

@@ -273,7 +273,7 @@ export async function roadmapRouter(ctx) {
                 date: '2026-01-15',
                 summary: 'Help & Support System, Support Tickets, Search Functionality',
             },
-            { version: 'v1.2.0', date: '2026-01-08', summary: 'Chrome Extension, Image Bank, Community Features' },
+            { version: 'v1.2.0', date: '2026-01-08', summary: 'Chrome Extension, Image Vault, Community Features' },
             {
                 version: 'v1.1.0',
                 date: '2025-12-20',

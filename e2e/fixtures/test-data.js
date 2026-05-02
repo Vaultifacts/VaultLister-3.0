@@ -56,7 +56,7 @@ export const routes = {
     shops: `${BASE_URL}/#shops`,
     settings: `${BASE_URL}/#settings`,
     tutorials: `${BASE_URL}/#tutorials`,
-    imageBank: `${BASE_URL}/#image-bank`,
+    imageVault: `${BASE_URL}/#image-vault`,
     help: `${BASE_URL}/#help`
 };
 

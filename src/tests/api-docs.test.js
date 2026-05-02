@@ -46,7 +46,7 @@ describe('API Documentation', () => {
             '/community/',
             '/help/',
             '/legal/',
-            '/image-bank/',
+            '/image-vault/',
             '/shipping-labels/',
             '/whatnot/',
             '/relisting/',

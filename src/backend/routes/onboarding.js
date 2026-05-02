@@ -94,7 +94,7 @@ const TOUR_STEPS = {
             step_id: 'batch_photos',
             title: 'Batch Photo Processing',
             description: 'Apply watermarks, resize, and organize photos for hundreds of items.',
-            target_element: '#nav-image-bank',
+            target_element: '#nav-image-vault',
             position: 'right',
         },
         {

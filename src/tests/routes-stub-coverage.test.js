@@ -3,7 +3,7 @@
 // These are integration tests that hit the running test server on port 3000.
 //
 // Covered routes:
-//   ai, batchPhoto, feedback, financials, imageBank, inventory,
+//   ai, batchPhoto, feedback, financials, imageVault, inventory,
 //   offlineSync, recentlyDeleted, relisting, reports, shippingLabels, sizeCharts
 
 import { describe, expect, test, beforeAll } from 'bun:test';
@@ -183,39 +183,39 @@ describe('Routes Stub Coverage — Financials', () => {
 });
 
 // ============================================================
-// 5. Image Bank Routes (/api/image-bank)
+// 5. Image Vault Routes (/api/image-vault)
 // ============================================================
-describe('Routes Stub Coverage — Image Bank', () => {
-    testAuthGuard('image-bank', '/image-bank');
+describe('Routes Stub Coverage — Image Vault', () => {
+    testAuthGuard('image-vault', '/image-vault');
 
-    test('image-bank: GET /image-bank with auth returns 200', async () => {
-        const res = await authedClient.get('/image-bank');
+    test('image-vault: GET /image-vault with auth returns 200', async () => {
+        const res = await authedClient.get('/image-vault');
         // 200 on success, 403 if tier-gated on CI, 500 if table missing on CI
         expect([200, 403, 500]).toContain(res.status);
     });
 
-    test('image-bank: GET /image-bank/folders with auth returns 200', async () => {
-        const res = await authedClient.get('/image-bank/folders');
+    test('image-vault: GET /image-vault/folders with auth returns 200', async () => {
+        const res = await authedClient.get('/image-vault/folders');
         expect([200, 403, 500]).toContain(res.status); // 500 if table missing on CI
     });
 
-    test('image-bank: GET /image-bank/cloudinary-status with auth returns 200', async () => {
-        const res = await authedClient.get('/image-bank/cloudinary-status');
+    test('image-vault: GET /image-vault/cloudinary-status with auth returns 200', async () => {
+        const res = await authedClient.get('/image-vault/cloudinary-status');
         expect([200, 403, 500]).toContain(res.status); // 500 if table missing on CI
     });
 
-    test('image-bank: GET /image-bank/storage-stats with auth returns 200', async () => {
-        const res = await authedClient.get('/image-bank/storage-stats');
+    test('image-vault: GET /image-vault/storage-stats with auth returns 200', async () => {
+        const res = await authedClient.get('/image-vault/storage-stats');
         expect([200, 403, 500]).toContain(res.status); // 500 if table missing on CI
     });
 
-    test('image-bank: GET /image-bank/search without query returns 200 or 400', async () => {
-        const res = await authedClient.get('/image-bank/search');
+    test('image-vault: GET /image-vault/search without query returns 200 or 400', async () => {
+        const res = await authedClient.get('/image-vault/search');
         expect([200, 400, 403, 500]).toContain(res.status);
     });
 
-    test('image-bank: POST /image-bank/upload without images returns 400', async () => {
-        const res = await authedClient.post('/image-bank/upload', {});
+    test('image-vault: POST /image-vault/upload without images returns 400', async () => {
+        const res = await authedClient.post('/image-vault/upload', {});
         // 400 on validation, 403 if tier-gated on CI, 500 if table missing on CI
         expect([400, 403, 500]).toContain(res.status);
     });
@@ -470,7 +470,7 @@ describe('Routes Stub Coverage — Route Registration Verification', () => {
         { name: 'batch-photo', path: '/batch-photo/jobs', allowedStatuses: [200, 403, 500] },
         { name: 'feedback', path: '/feedback/trending', allowedStatuses: [200, 403, 500] },
         { name: 'financials', path: '/financials/purchases', allowedStatuses: [200, 403, 500] },
-        { name: 'image-bank', path: '/image-bank', allowedStatuses: [200, 403, 500] },
+        { name: 'image-vault', path: '/image-vault', allowedStatuses: [200, 403, 500] },
         { name: 'inventory', path: '/inventory', allowedStatuses: [200, 403, 500] },
         { name: 'offline-sync', path: '/offline-sync/queue', allowedStatuses: [200, 403, 500] },
         { name: 'recently-deleted', path: '/recently-deleted/', allowedStatuses: [200, 403, 500] },

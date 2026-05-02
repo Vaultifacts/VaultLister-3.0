@@ -8419,13 +8419,13 @@ const store = {
         analyticsPeriod: '30d', // Default analytics timeline
         sizeChartSwapped: true, // Default to swapped axis for better readability
 
-        // Image Bank state
-        imageBankImages: [],
-        imageBankFolders: [],
+        // Image Vault state
+        imageVaultImages: [],
+        imageVaultFolders: [],
         selectedFolder: null,
         selectedImages: [],
-        imageBankFilters: {},
-        imageBankViewMode: 'grid', // 'grid' or 'list'
+        imageVaultFilters: {},
+        imageVaultViewMode: 'grid', // 'grid' or 'list'
 
         // Community state
         communityTab: 'discussion', // 'discussion', 'success', 'tips', 'leaderboard'
@@ -9538,7 +9538,7 @@ const globalSearch = {
             { id: 'analytics', label: 'Analytics', section: 'Manage', icon: 'analytics' },
             { id: 'shops', label: 'My Shops', section: 'Manage', icon: 'store' },
             { id: 'planner', label: 'Daily Checklist', section: 'Manage', icon: 'calendar' },
-            { id: 'image-bank', label: 'Image Bank', section: 'Manage', icon: 'image' },
+            { id: 'image-vault', label: 'Image Vault', section: 'Manage', icon: 'image' },
             { id: 'settings', label: 'Settings', section: 'Settings', icon: 'settings' },
             { id: 'help-support', label: 'Help', section: 'Help', icon: 'help' },
             { id: 'changelog', label: 'Changelog', section: 'Changelog', icon: 'list' },
@@ -15271,7 +15271,7 @@ const toolSearch = {
     tools: [
         { name: 'Automations', path: 'automations', icon: 'zap', keywords: ['auto', 'schedule', 'share'] },
         { name: 'Checklist', path: 'checklist', icon: 'check-square', keywords: ['tasks', 'todo', 'list'] },
-        { name: 'Image Bank', path: 'image-bank', icon: 'image', keywords: ['photos', 'pictures', 'upload'] },
+        { name: 'Image Vault', path: 'image-vault', icon: 'image', keywords: ['photos', 'pictures', 'upload'] },
         { name: 'Calendar', path: 'calendar', icon: 'calendar', keywords: ['schedule', 'dates', 'events'] },
         { name: 'Size Charts', path: 'size-charts', icon: 'list', keywords: ['sizes', 'measurements', 'conversion'] },
     ],
@@ -16899,7 +16899,7 @@ const pageChunkMap = {
     calendar: 'tools',
     planner: 'tools',
     'size-charts': 'tools',
-    'image-bank': 'tools',
+    'image-vault': 'tools',
     'receipt-parser': 'tools',
     'whatnot-live': 'tools',
 
@@ -16920,7 +16920,6 @@ const pageChunkMap = {
     connections: 'settings',
     'shipping-profiles': 'settings',
     'push-notifications': 'settings',
-    webhooks: 'settings',
     shops: 'settings',
 
     // community chunk
@@ -17042,7 +17041,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '07e85ba1';
+    const v = '35926379';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function (resolve, reject) {
@@ -17095,7 +17094,7 @@ const router = {
 
     async navigate(path) {
         // Track tool usage
-        if (['automations', 'checklist', 'image-bank', 'calendar', 'size-charts', 'planner'].includes(path)) {
+        if (['automations', 'checklist', 'image-vault', 'calendar', 'size-charts', 'planner'].includes(path)) {
             toolUsageAnalytics.track(path);
         }
 
@@ -17155,6 +17154,7 @@ const router = {
         'market-intel': { target: 'analytics', tab: 'market-intel', storeKey: 'analyticsTab' },
         suppliers: { target: 'analytics', tab: 'sourcing', storeKey: 'analyticsTab' },
         'platform-health': { target: 'shops', tab: 'health' },
+        webhooks: { target: 'settings', tab: 'integrations', storeKey: 'settingsTab' },
         // checklist + calendar: standalone routes (aliases removed — pages.planner() doesn't exist)
         // roadmap: standalone route — pages.roadmap() handles it directly
         'feedback-suggestions': { target: 'help-support', tab: 'feedback' },
@@ -17325,7 +17325,7 @@ const router = {
             analytics: 'Analytics',
             sales: 'Sales',
             calendar: 'Calendar',
-            'image-bank': 'Image Bank',
+            'image-vault': 'Image Vault',
             settings: 'Settings',
             account: 'Account',
             automations: 'Automations',
@@ -17411,7 +17411,7 @@ const router = {
                     await Promise.all([handlers.loadPurchases(), handlers.loadSales()]);
                 } else if (path === 'templates') {
                     await handlers.loadTemplates();
-                } else if (path === 'image-bank') {
+                } else if (path === 'image-vault') {
                     await handlers.loadImageBank();
                     window.scrollTo(0, 0);
                 } else if (path === 'community') {
@@ -17438,8 +17438,6 @@ const router = {
                     await handlers.loadSuppliers();
                 } else if (path === 'market-intel') {
                     await handlers.loadMarketIntel();
-                } else if (path === 'webhooks') {
-                    await handlers.loadWebhooks();
                 } else if (path === 'push-notifications') {
                     await handlers.loadPushStatus();
                 }
@@ -17547,8 +17545,6 @@ const router = {
             await handlers.loadSuppliers();
         } else if (path === 'market-intel') {
             await handlers.loadMarketIntel();
-        } else if (path === 'webhooks') {
-            await handlers.loadWebhooks();
         } else if (path === 'push-notifications') {
             await handlers.loadPushStatus();
         }
@@ -17910,7 +17906,7 @@ const components = {
                             { id: 'calendar', label: 'Calendar' },
                         ],
                     },
-                    { id: 'image-bank', label: 'Image Bank', icon: 'image' },
+                    { id: 'image-vault', label: 'Image Vault', icon: 'image' },
                 ],
             },
             {
@@ -18609,7 +18605,7 @@ const components = {
             automations: { label: 'Automations', section: 'Manage' },
             checklist: { label: 'Checklist', section: 'Manage' },
             planner: { label: 'Daily Checklist', section: 'Manage' },
-            'image-bank': { label: 'Image Bank', section: 'Manage' },
+            'image-vault': { label: 'Image Vault', section: 'Manage' },
             calendar: { label: 'Calendar', section: 'Manage' },
             'size-charts': { label: 'Size Charts', section: 'Manage' },
             shops: { label: 'My Shops', section: 'Manage' },
@@ -19875,7 +19871,7 @@ const components = {
         const imgSrc = image
             ? image.cloudinary_public_id
                 ? `https://res.cloudinary.com/vaultlister/image/upload/c_limit,w_800/${image.cloudinary_public_id}`
-                : `/api/image-bank/${image.id}/file`
+                : `/api/image-vault/${image.id}/file`
             : '';
         const previewUrl = store.state.photoEditorPreviewUrl || imgSrc || '';
         const isLoading = store.state.photoEditorLoading;
@@ -20814,8 +20810,8 @@ const pages = {
                             <button class="btn btn-secondary" onclick="router.navigate('orders-sales')" style="justify-content: flex-start;">
                                 ${components.icon('cart', 16)} View Orders
                             </button>
-                            <button class="btn btn-secondary" onclick="router.navigate('image-bank')" style="justify-content: flex-start;">
-                                ${components.icon('image', 16)} Image Bank
+                            <button class="btn btn-secondary" onclick="router.navigate('image-vault')" style="justify-content: flex-start;">
+                                ${components.icon('image', 16)} Image Vault
                             </button>
                             <button class="btn btn-secondary" onclick="router.navigate('analytics')" style="justify-content: flex-start;">
                                 ${components.icon('analytics', 16)} Analytics
@@ -24939,7 +24935,7 @@ const modals = {
                                     ${components.icon('upload', 14)} Upload Files
                                 </button>
                                 <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="imagebank" onclick="handlers.switchImageUploadTab('imagebank')" style="padding: 10px 16px; background: none; border: none; border-bottom: 2px solid transparent; color: var(--gray-600); font-weight: 500; cursor: pointer; margin-bottom: -2px;">
-                                    ${components.icon('folder', 14)} Image Bank
+                                    ${components.icon('folder', 14)} Image Vault
                                 </button>
                                 <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="url" onclick="handlers.switchImageUploadTab('url')" style="padding: 10px 16px; background: none; border: none; border-bottom: 2px solid transparent; color: var(--gray-600); font-weight: 500; cursor: pointer; margin-bottom: -2px;">
                                     ${components.icon('link', 14)} URL
@@ -24983,13 +24979,13 @@ const modals = {
                                     <p style="font-size: 13px; color: var(--gray-600);">Copy an image to your clipboard, then paste it here</p>
                                 </div>
 
-                                <!-- Tab 4: Image Bank -->
+                                <!-- Tab 4: Image Vault -->
                                 <div class="tab-pane" data-tab="imagebank" style="display: none; padding: 16px; background: var(--gray-50); border-radius: 8px;">
                                     <div id="imagebank-picker-add" class="imagebank-picker-container">
                                         <div class="imagebank-picker-toolbar" style="display: flex; gap: 8px; margin-bottom: 12px;" role="search">
                                             <input aria-label="Search images" type="text" class="form-input" id="imagebank-search-add" placeholder="Search images..." style="flex: 1;" onkeyup="handlers.searchImageBankInline('add', this.value)">
-                                            <button type="button" class="btn btn-secondary btn-sm" onclick="router.navigate('image-bank')" title="Go to Image Bank">
-                                                ${components.icon('external-link', 14)} Open Image Bank
+                                            <button type="button" class="btn btn-secondary btn-sm" onclick="router.navigate('image-vault')" title="Go to Image Vault">
+                                                ${components.icon('external-link', 14)} Open Image Vault
                                             </button>
                                         </div>
                                         <div id="imagebank-grid-add" class="imagebank-picker-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-height: 200px; overflow-y: auto; padding: 4px;">
@@ -25571,7 +25567,7 @@ const modals = {
                         <div class="flex justify-between items-center mb-2">
                             <p class="form-label">Product Images & Video</p>
                             <button type="button" class="btn btn-secondary btn-sm" onclick="handlers.openImageBankPicker('edit')">
-                                ${components.icon('folder', 16)} Browse Image Bank
+                                ${components.icon('folder', 16)} Browse Image Vault
                             </button>
                         </div>
                         <div id="existing-images-container" class="media-preview-grid" style="margin-bottom: 12px;">
@@ -26493,7 +26489,7 @@ const modals = {
                         </div>
                         <div class="mt-2 text-center">
                             <button type="button" class="btn btn-sm btn-ghost" onclick="handlers.openImageBankForAI()">
-                                ${components.icon('image', 14)} Or pick from Image Bank
+                                ${components.icon('image', 14)} Or pick from Image Vault
                             </button>
                         </div>
                     </div>
@@ -27625,7 +27621,7 @@ const modals = {
     // Batch Photo Processing modal
     batchPhoto() {
         const selectedImages = store.state.selectedImages || [];
-        const images = store.state.imageBankImages || [];
+        const images = store.state.imageVaultImages || [];
         const presets = store.state.batchPhotoPresets || [];
         const transformations = store.state.batchPhotoTransformations;
         const progress = store.state.batchPhotoProgress;
@@ -30021,20 +30017,20 @@ const handlers = {
     loadImageBank: async function () {
         try {
             const [imagesRes, foldersRes, jobsRes, presetsRes] = await Promise.all([
-                api.get('/image-bank?limit=1000'),
-                api.get('/image-bank/folders'),
+                api.get('/image-vault?limit=1000'),
+                api.get('/image-vault/folders'),
                 api.get('/batch-photo/jobs').catch(() => ({ jobs: [] })),
                 api.get('/batch-photo/presets').catch(() => []),
             ]);
 
             store.setState({
-                imageBankImages: imagesRes.images || [],
-                imageBankFolders: foldersRes.folders || [],
+                imageVaultImages: imagesRes.images || [],
+                imageVaultFolders: foldersRes.folders || [],
                 batchPhotoJobs: jobsRes.jobs || [],
                 batchPhotoPresets: presetsRes || [],
             });
         } catch (error) {
-            toast.error('Failed to load Image Bank: ' + error.message);
+            toast.error('Failed to load Image Vault: ' + error.message);
         }
     },
 
@@ -30270,7 +30266,7 @@ const handlers = {
 
     loadImageStorageStats: async function () {
         try {
-            const response = await api.get('/image-bank/storage-stats');
+            const response = await api.get('/image-vault/storage-stats');
             store.setState({ imageStorageStats: response });
         } catch (error) {
             console.error('Error loading storage stats:', error);
@@ -30298,7 +30294,7 @@ const handlers = {
 
     _editChecklistAttachments: [],
 
-    _imageBankSelection: null,
+    _imageVaultSelection: null,
 
     // Prediction Model Configuration,
 
@@ -30340,7 +30336,7 @@ const handlers = {
 
     _editChecklistAttachments: [],
 
-    _imageBankSelection: [],
+    _imageVaultSelection: [],
 
     _barcodeStream: null,
 
@@ -31421,10 +31417,10 @@ async function initApp() {
             renderApp(window.pages.checklist());
         });
         router.register('size-charts', () => renderApp(window.pages.sizeCharts()));
-        router.register('image-bank', async () => {
-            renderApp(window.pages.imageBank());
+        router.register('image-vault', async () => {
+            renderApp(window.pages.imageVault());
             await handlers.loadImageStorageStats();
-            renderApp(window.pages.imageBank());
+            renderApp(window.pages.imageVault());
         });
 
         // Tools section pages
@@ -31468,11 +31464,6 @@ async function initApp() {
         router.register('tools', () => renderApp(window.pages.tools()));
 
         // Integrations section pages
-        router.register('webhooks', async () => {
-            renderApp(window.pages.webhooks());
-            await handlers.loadWebhooks();
-            renderApp(window.pages.webhooks());
-        });
         router.register('push-notifications', async () => {
             renderApp(window.pages.pushNotifications());
             await handlers.loadPushStatus();
@@ -32733,7 +32724,7 @@ handlers.addPhotosToBank = async function () {
                 const blob = await response.blob();
                 formData.append('image', blob, photo.name || 'photo.jpg');
             }
-            const uploadRes = await fetch('/api/image-bank/upload', {
+            const uploadRes = await fetch('/api/image-vault/upload', {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${store.state.token}`, 'X-CSRF-Token': api.csrfToken || '' },
                 body: formData,
@@ -32743,13 +32734,13 @@ handlers.addPhotosToBank = async function () {
                 throw new Error(errData.error || `Upload failed (${uploadRes.status})`);
             }
         }
-        toast.success(`${photos.length} photos added to Image Bank`);
+        toast.success(`${photos.length} photos added to Image Vault`);
         store.setState({ _quickPhotos: [] });
         modals.close();
-        router.navigate('image-bank');
+        router.navigate('image-vault');
     } catch (error) {
         console.error('Failed to add photos to bank:', error);
-        toast.error('Failed to add photos to Image Bank');
+        toast.error('Failed to add photos to Image Vault');
     }
 };
 

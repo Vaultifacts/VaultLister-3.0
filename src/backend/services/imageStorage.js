@@ -440,7 +440,7 @@ export async function importFromInventory(inventoryId, userId) {
             // Save to filesystem
             const savedImage = await saveImage(base64Image, userId, `inventory_${inventoryId}_${i + 1}.jpg`, mimeType);
 
-            // Save to image_bank table
+            // Save to image_vault table
             await query.run(
                 `
                 INSERT INTO image_bank (

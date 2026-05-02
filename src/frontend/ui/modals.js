@@ -358,7 +358,7 @@ const modals = {
                                     ${components.icon('upload', 14)} Upload Files
                                 </button>
                                 <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="imagebank" onclick="handlers.switchImageUploadTab('imagebank')" style="padding: 10px 16px; background: none; border: none; border-bottom: 2px solid transparent; color: var(--gray-600); font-weight: 500; cursor: pointer; margin-bottom: -2px;">
-                                    ${components.icon('folder', 14)} Image Bank
+                                    ${components.icon('folder', 14)} Image Vault
                                 </button>
                                 <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="url" onclick="handlers.switchImageUploadTab('url')" style="padding: 10px 16px; background: none; border: none; border-bottom: 2px solid transparent; color: var(--gray-600); font-weight: 500; cursor: pointer; margin-bottom: -2px;">
                                     ${components.icon('link', 14)} URL
@@ -402,13 +402,13 @@ const modals = {
                                     <p style="font-size: 13px; color: var(--gray-600);">Copy an image to your clipboard, then paste it here</p>
                                 </div>
 
-                                <!-- Tab 4: Image Bank -->
+                                <!-- Tab 4: Image Vault -->
                                 <div class="tab-pane" data-tab="imagebank" style="display: none; padding: 16px; background: var(--gray-50); border-radius: 8px;">
                                     <div id="imagebank-picker-add" class="imagebank-picker-container">
                                         <div class="imagebank-picker-toolbar" style="display: flex; gap: 8px; margin-bottom: 12px;" role="search">
                                             <input aria-label="Search images" type="text" class="form-input" id="imagebank-search-add" placeholder="Search images..." style="flex: 1;" onkeyup="handlers.searchImageBankInline('add', this.value)">
-                                            <button type="button" class="btn btn-secondary btn-sm" onclick="router.navigate('image-bank')" title="Go to Image Bank">
-                                                ${components.icon('external-link', 14)} Open Image Bank
+                                            <button type="button" class="btn btn-secondary btn-sm" onclick="router.navigate('image-vault')" title="Go to Image Vault">
+                                                ${components.icon('external-link', 14)} Open Image Vault
                                             </button>
                                         </div>
                                         <div id="imagebank-grid-add" class="imagebank-picker-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-height: 200px; overflow-y: auto; padding: 4px;">
@@ -990,7 +990,7 @@ const modals = {
                         <div class="flex justify-between items-center mb-2">
                             <p class="form-label">Product Images & Video</p>
                             <button type="button" class="btn btn-secondary btn-sm" onclick="handlers.openImageBankPicker('edit')">
-                                ${components.icon('folder', 16)} Browse Image Bank
+                                ${components.icon('folder', 16)} Browse Image Vault
                             </button>
                         </div>
                         <div id="existing-images-container" class="media-preview-grid" style="margin-bottom: 12px;">
@@ -1912,7 +1912,7 @@ const modals = {
                         </div>
                         <div class="mt-2 text-center">
                             <button type="button" class="btn btn-sm btn-ghost" onclick="handlers.openImageBankForAI()">
-                                ${components.icon('image', 14)} Or pick from Image Bank
+                                ${components.icon('image', 14)} Or pick from Image Vault
                             </button>
                         </div>
                     </div>
@@ -3044,7 +3044,7 @@ const modals = {
     // Batch Photo Processing modal
     batchPhoto() {
         const selectedImages = store.state.selectedImages || [];
-        const images = store.state.imageBankImages || [];
+        const images = store.state.imageVaultImages || [];
         const presets = store.state.batchPhotoPresets || [];
         const transformations = store.state.batchPhotoTransformations;
         const progress = store.state.batchPhotoProgress;

@@ -1,8 +1,8 @@
 /* ============================================
-   Image Bank Styles
+   Image Vault Styles
    ============================================ */
 
-.image-bank-container {
+.image-vault-container {
     display: grid;
     grid-template-columns: 250px 1fr;
     gap: 1.5rem;
@@ -10,7 +10,7 @@
     min-height: 500px;
 }
 
-.image-bank-sidebar {
+.image-vault-sidebar {
     background: white;
     border-radius: 8px;
     padding: 1rem;
@@ -119,7 +119,7 @@
     cursor: grabbing;
 }
 
-.image-bank-main {
+.image-vault-main {
     background: white;
     border-radius: 8px;
     padding: 1.5rem;
@@ -127,7 +127,7 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.image-bank-toolbar {
+.image-vault-toolbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -136,7 +136,7 @@
     border-bottom: 1px solid #e5e7eb;
 }
 
-.image-bank-toolbar .form-input {
+.image-vault-toolbar .form-input {
     flex: 0 0 auto;
 }
 
@@ -155,7 +155,7 @@
 }
 
 /* Image Grid View */
-.image-bank-grid {
+.image-vault-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 1rem;
@@ -265,13 +265,13 @@
 }
 
 /* Image List View */
-.image-bank-list {
+.image-vault-list {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
 }
 
-.image-bank-list .image-card {
+.image-vault-list .image-card {
     display: grid;
     grid-template-columns: auto 80px 1fr auto auto;
     align-items: center;
@@ -279,17 +279,17 @@
     padding: 0.75rem;
 }
 
-.image-bank-list .image-card-thumbnail {
+.image-vault-list .image-card-thumbnail {
     width: 80px;
     height: 80px;
     padding-top: 0;
 }
 
-.image-bank-list .image-card-info {
+.image-vault-list .image-card-info {
     padding: 0;
 }
 
-.image-bank-list .image-card-actions {
+.image-vault-list .image-card-actions {
     border: none;
     background: transparent;
     padding: 0;
@@ -501,13 +501,13 @@ body.dark-mode .editor-control input[type='range'] {
     border-radius: 4px;
 }
 
-/* Responsive Adjustments for Image Bank */
+/* Responsive Adjustments for Image Vault */
 @media (max-width: 1024px) {
-    .image-bank-container {
+    .image-vault-container {
         grid-template-columns: 200px 1fr;
     }
 
-    .image-bank-grid {
+    .image-vault-grid {
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     }
 
@@ -517,15 +517,15 @@ body.dark-mode .editor-control input[type='range'] {
 }
 
 @media (max-width: 768px) {
-    .image-bank-container {
+    .image-vault-container {
         grid-template-columns: 1fr;
     }
 
-    .image-bank-sidebar {
+    .image-vault-sidebar {
         max-height: 200px;
     }
 
-    .image-bank-grid {
+    .image-vault-grid {
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     }
 
@@ -2008,7 +2008,7 @@ body.dark-mode .vault-buddy-fab .buddy-avatar {
    Photo Editor (Cloudinary AI)
    ============================================ */
 
-/* AI Edit button in Image Bank cards */
+/* AI Edit button in Image Vault cards */
 .btn-ai-edit {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
@@ -6290,7 +6290,7 @@ body.dark-mode .financials-tabs .tab.active {
     border-bottom-color: var(--primary-400) !important;
 }
 
-/* Image Bank - Folder icons and grid icon visibility */
+/* Image Vault - Folder icons and grid icon visibility */
 body.dark-mode .folder-item svg {
     color: #9ca3af !important;
     stroke: #9ca3af !important;

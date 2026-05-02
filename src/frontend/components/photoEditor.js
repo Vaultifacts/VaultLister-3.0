@@ -21,7 +21,7 @@ const PhotoEditor = {
     async open(imageId) {
         try {
             // Fetch image data
-            this.image = await api.get(`/image-bank/${imageId}`);
+            this.image = await api.get(`/image-vault/${imageId}`);
 
             // Load the original image
             this.originalImage = await this.loadImage(this.image.file_path);
@@ -294,13 +294,13 @@ const PhotoEditor = {
             formData.append('edits', JSON.stringify(this.currentEdits));
 
             // Upload edited image
-            const result = await api.post('/image-bank/upload', formData, {
+            const result = await api.post('/image-vault/upload', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
 
             toast.success('Image saved!');
 
-            // Reload Image Bank
+            // Reload Image Vault
             await handlers.loadImageBank();
 
             // Close editor
@@ -336,7 +336,7 @@ const PhotoEditor = {
                     break;
             }
 
-            const result = await api.post('/image-bank/cloudinary-edit', params);
+            const result = await api.post('/image-vault/cloudinary-edit', params);
 
             if (result.success) {
                 toast.success('Advanced edit applied! Reloading image...');

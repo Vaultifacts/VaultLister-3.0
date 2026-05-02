@@ -51,13 +51,13 @@ const store = {
         analyticsPeriod: '30d', // Default analytics timeline
         sizeChartSwapped: true, // Default to swapped axis for better readability
 
-        // Image Bank state
-        imageBankImages: [],
-        imageBankFolders: [],
+        // Image Vault state
+        imageVaultImages: [],
+        imageVaultFolders: [],
         selectedFolder: null,
         selectedImages: [],
-        imageBankFilters: {},
-        imageBankViewMode: 'grid', // 'grid' or 'list'
+        imageVaultFilters: {},
+        imageVaultViewMode: 'grid', // 'grid' or 'list'
 
         // Community state
         communityTab: 'discussion', // 'discussion', 'success', 'tips', 'leaderboard'

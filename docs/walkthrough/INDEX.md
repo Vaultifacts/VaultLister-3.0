@@ -30,7 +30,7 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 | [dashboard.md](dashboard.md) | Dashboard | 0 | 36 |
 | [financials.md](financials.md) | Financials | 0 | 19 |
 | [help.md](help.md) | Help | 0 | 29 |
-| [image-bank.md](image-bank.md) | Image Bank | 0 | 15 |
+| [image-vault.md](image-vault.md) | Image Vault | 0 | 15 |
 | [import.md](import.md) | Import | 0 | 12 |
 | [inventory.md](inventory.md) | Inventory | 0 | 30 |
 | [listings.md](listings.md) | Listings | 0 | 44 |

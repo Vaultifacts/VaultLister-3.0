@@ -34,8 +34,8 @@ updates = {
         '| #173 | Reports | "Create Report" button -- no response when clicked (duplicate of #158) | Session 11 | VERIFIED -- 07338ae |',
         '| M-27 | Report Builder | "Custom Query -- Run SQL queries" -- security concern if raw SQL exposed to users | Session 3 | CONFIRMED N/A -- admin-only gated (403 for non-admin), SELECT-only enforcement, table allowlist, user_id injection (reports.js:63) |',
     ],
-    'image-bank.md': [
-        '| M-13 | Image Bank | "5.00 GB free" -- unclear if actual R2 limit or hardcoded | Session 1 | VERIFIED -- storageLimit reads PLAN_STORAGE_GB[tier]: free=0.1GB, starter=1GB, pro=5GB, business=25GB. Live chunk-settings.js confirmed. |',
+    'image-vault.md': [
+        '| M-13 | Image Vault | "5.00 GB free" -- unclear if actual R2 limit or hardcoded | Session 1 | VERIFIED -- storageLimit reads PLAN_STORAGE_GB[tier]: free=0.1GB, starter=1GB, pro=5GB, business=25GB. Live chunk-settings.js confirmed. |',
     ],
     'roadmap.md': [
         '| M-19 | Roadmap | "No features found" -- should have planned features pre-populated | Session 2 | VERIFIED -- 0544b88 -- 6 roadmap features visible on live Roadmap page |',

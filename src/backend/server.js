@@ -265,7 +265,7 @@ async function main() {
         '/api/tasks',
         '/api/templates',
         '/api/oauth',
-        '/api/image-bank',
+        '/api/image-vault',
         '/api/chatbot',
         '/api/community',
         '/api/extension',
@@ -340,7 +340,7 @@ async function main() {
     const MAX_BODY_SIZE_JSON = 1 * 1024 * 1024; //  1MB for standard JSON API routes
     const MAX_BODY_SIZE_UPLOAD = 50 * 1024 * 1024; // 50MB for file upload routes
 
-    const UPLOAD_ROUTE_PREFIXES = ['/api/image-bank', '/api/batch-photo'];
+    const UPLOAD_ROUTE_PREFIXES = ['/api/image-vault', '/api/batch-photo'];
 
     function getBodySizeLimit(pathname) {
         for (const prefix of UPLOAD_ROUTE_PREFIXES) {
@@ -947,7 +947,7 @@ async function main() {
                                         /^\/api\/social-auth\/[^/]+$/.test(effectivePath) && method === 'GET';
                                     const isPublicImageFile =
                                         method === 'GET' &&
-                                        /^\/api\/image-bank\/[a-zA-Z0-9_-]+\/file$/.test(effectivePath);
+                                        /^\/api\/image-vault\/[a-zA-Z0-9_-]+\/file$/.test(effectivePath);
                                     if (
                                         isProtected &&
                                         !isPublicWebhook &&

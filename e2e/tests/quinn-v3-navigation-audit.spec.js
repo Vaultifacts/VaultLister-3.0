@@ -41,7 +41,7 @@ const NAV_SECTIONS = [
     { id: 'analytics', label: 'Analytics' },
     { id: 'shops', label: 'My Shops' },
     { id: 'planner', label: 'Planner' },
-    { id: 'image-bank', label: 'Image Bank' },
+    { id: 'image-vault', label: 'Image Vault' },
   ]},
   { section: '', divider: true, items: [
     { id: 'settings', label: 'Settings' },
@@ -235,7 +235,7 @@ test.describe('Quinn v3 > Navigation > Phase 1: Nav Items', () => {
 
         // Verify aria-current moved to this item.
         // NOTE: Some page handlers throw JS errors (e.g. "allOrders is not defined"
-        // on Orders, "date is not defined" on Image Bank) that interrupt the SPA
+        // on Orders, "date is not defined" on Image Vault) that interrupt the SPA
         // re-render cycle, leaving the sidebar with stale active state. This is a
         // known app bug — we log it rather than failing the navigation test.
         const ariaCurrent = await navBtn.getAttribute('aria-current');

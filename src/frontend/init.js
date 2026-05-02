@@ -317,10 +317,10 @@ async function initApp() {
             renderApp(window.pages.checklist());
         });
         router.register('size-charts', () => renderApp(window.pages.sizeCharts()));
-        router.register('image-bank', async () => {
-            renderApp(window.pages.imageBank());
+        router.register('image-vault', async () => {
+            renderApp(window.pages.imageVault());
             await handlers.loadImageStorageStats();
-            renderApp(window.pages.imageBank());
+            renderApp(window.pages.imageVault());
         });
 
         // Tools section pages
@@ -364,11 +364,6 @@ async function initApp() {
         router.register('tools', () => renderApp(window.pages.tools()));
 
         // Integrations section pages
-        router.register('webhooks', async () => {
-            renderApp(window.pages.webhooks());
-            await handlers.loadWebhooks();
-            renderApp(window.pages.webhooks());
-        });
         router.register('push-notifications', async () => {
             renderApp(window.pages.pushNotifications());
             await handlers.loadPushStatus();
@@ -1629,7 +1624,7 @@ handlers.addPhotosToBank = async function () {
                 const blob = await response.blob();
                 formData.append('image', blob, photo.name || 'photo.jpg');
             }
-            const uploadRes = await fetch('/api/image-bank/upload', {
+            const uploadRes = await fetch('/api/image-vault/upload', {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${store.state.token}`, 'X-CSRF-Token': api.csrfToken || '' },
                 body: formData,
@@ -1639,13 +1634,13 @@ handlers.addPhotosToBank = async function () {
                 throw new Error(errData.error || `Upload failed (${uploadRes.status})`);
             }
         }
-        toast.success(`${photos.length} photos added to Image Bank`);
+        toast.success(`${photos.length} photos added to Image Vault`);
         store.setState({ _quickPhotos: [] });
         modals.close();
-        router.navigate('image-bank');
+        router.navigate('image-vault');
     } catch (error) {
         console.error('Failed to add photos to bank:', error);
-        toast.error('Failed to add photos to Image Bank');
+        toast.error('Failed to add photos to Image Vault');
     }
 };
 

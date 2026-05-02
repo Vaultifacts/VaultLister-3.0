@@ -18,7 +18,7 @@ const PAGES = [
     { hash: 'analytics',    name: 'Analytics' },
     { hash: 'sales',        name: 'Sales' },
     { hash: 'offers',       name: 'Offers' },
-    { hash: 'image-bank',   name: 'Image Bank' },
+    { hash: 'image-vault',   name: 'Image Vault' },
     { hash: 'settings',     name: 'Settings' },
 ];
 

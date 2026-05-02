@@ -1165,20 +1165,20 @@ const handlers = {
     loadImageBank: async function () {
         try {
             const [imagesRes, foldersRes, jobsRes, presetsRes] = await Promise.all([
-                api.get('/image-bank?limit=1000'),
-                api.get('/image-bank/folders'),
+                api.get('/image-vault?limit=1000'),
+                api.get('/image-vault/folders'),
                 api.get('/batch-photo/jobs').catch(() => ({ jobs: [] })),
                 api.get('/batch-photo/presets').catch(() => []),
             ]);
 
             store.setState({
-                imageBankImages: imagesRes.images || [],
-                imageBankFolders: foldersRes.folders || [],
+                imageVaultImages: imagesRes.images || [],
+                imageVaultFolders: foldersRes.folders || [],
                 batchPhotoJobs: jobsRes.jobs || [],
                 batchPhotoPresets: presetsRes || [],
             });
         } catch (error) {
-            toast.error('Failed to load Image Bank: ' + error.message);
+            toast.error('Failed to load Image Vault: ' + error.message);
         }
     },
 
@@ -1414,7 +1414,7 @@ const handlers = {
 
     loadImageStorageStats: async function () {
         try {
-            const response = await api.get('/image-bank/storage-stats');
+            const response = await api.get('/image-vault/storage-stats');
             store.setState({ imageStorageStats: response });
         } catch (error) {
             console.error('Error loading storage stats:', error);
@@ -1442,7 +1442,7 @@ const handlers = {
 
     _editChecklistAttachments: [],
 
-    _imageBankSelection: null,
+    _imageVaultSelection: null,
 
     // Prediction Model Configuration,
 
@@ -1484,7 +1484,7 @@ const handlers = {
 
     _editChecklistAttachments: [],
 
-    _imageBankSelection: [],
+    _imageVaultSelection: [],
 
     _barcodeStream: null,
 

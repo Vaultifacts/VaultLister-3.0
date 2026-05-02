@@ -1200,7 +1200,7 @@ Object.assign(handlers, {
                 },
                 {
                     title: 'Add Photos',
-                    desc: 'Upload product photos or import them from your Image Bank.',
+                    desc: 'Upload product photos or import them from your Image Vault.',
                     target: 'Use the image upload section',
                 },
                 {
@@ -1297,7 +1297,7 @@ Object.assign(handlers, {
                     target: 'Use the toggle switch and History button',
                 },
             ],
-            'image-bank': [
+            'image-vault': [
                 {
                     title: 'Upload Images',
                     desc: 'Drag and drop photos or click the upload zone to add images.',

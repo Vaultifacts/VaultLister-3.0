@@ -27,7 +27,7 @@
     { "name": "reports", "description": "Custom reports, P&L, scheduling" },
     { "name": "tasks", "description": "Background task queue" },
     { "name": "templates", "description": "Listing and message templates" },
-    { "name": "image-bank", "description": "Image storage, folders, AI analysis" },
+    { "name": "image-vault", "description": "Image storage, folders, AI analysis" },
     { "name": "ai", "description": "AI-powered listing generation, price suggestions, translation" },
     { "name": "billing", "description": "Subscription plans, usage, plan changes" },
     { "name": "teams", "description": "Team management, invitations, roles" },
@@ -1720,9 +1720,9 @@
         }
       }
     },
-    "/api/image-bank": {
+    "/api/image-vault": {
       "get": {
-        "tags": ["image-bank"],
+        "tags": ["image-vault"],
         "summary": "List images with filters",
         "security": [{ "bearerAuth": [] }],
         "responses": {
@@ -1730,9 +1730,9 @@
         }
       }
     },
-    "/api/image-bank/upload": {
+    "/api/image-vault/upload": {
       "post": {
-        "tags": ["image-bank"],
+        "tags": ["image-vault"],
         "summary": "Upload new images",
         "security": [{ "bearerAuth": [] }],
         "responses": {
@@ -1740,9 +1740,9 @@
         }
       }
     },
-    "/api/image-bank/search": {
+    "/api/image-vault/search": {
       "get": {
-        "tags": ["image-bank"],
+        "tags": ["image-vault"],
         "summary": "Full-text search images",
         "security": [{ "bearerAuth": [] }],
         "responses": {
@@ -1750,9 +1750,9 @@
         }
       }
     },
-    "/api/image-bank/analyze": {
+    "/api/image-vault/analyze": {
       "post": {
-        "tags": ["image-bank"],
+        "tags": ["image-vault"],
         "summary": "AI-analyze an image with Claude Vision",
         "security": [{ "bearerAuth": [] }],
         "responses": {
@@ -1760,9 +1760,9 @@
         }
       }
     },
-    "/api/image-bank/bulk-delete": {
+    "/api/image-vault/bulk-delete": {
       "post": {
-        "tags": ["image-bank"],
+        "tags": ["image-vault"],
         "summary": "Delete multiple images",
         "security": [{ "bearerAuth": [] }],
         "responses": {
@@ -1770,9 +1770,9 @@
         }
       }
     },
-    "/api/image-bank/bulk-move": {
+    "/api/image-vault/bulk-move": {
       "post": {
-        "tags": ["image-bank"],
+        "tags": ["image-vault"],
         "summary": "Move images to a folder",
         "security": [{ "bearerAuth": [] }],
         "responses": {
@@ -1780,9 +1780,9 @@
         }
       }
     },
-    "/api/image-bank/bulk-tag": {
+    "/api/image-vault/bulk-tag": {
       "post": {
-        "tags": ["image-bank"],
+        "tags": ["image-vault"],
         "summary": "Add tags to multiple images",
         "security": [{ "bearerAuth": [] }],
         "responses": {
@@ -1790,9 +1790,9 @@
         }
       }
     },
-    "/api/image-bank/folders": {
+    "/api/image-vault/folders": {
       "get": {
-        "tags": ["image-bank"],
+        "tags": ["image-vault"],
         "summary": "List image folders (tree structure)",
         "security": [{ "bearerAuth": [] }],
         "responses": {
@@ -1800,7 +1800,7 @@
         }
       },
       "post": {
-        "tags": ["image-bank"],
+        "tags": ["image-vault"],
         "summary": "Create an image folder",
         "security": [{ "bearerAuth": [] }],
         "responses": {
@@ -1808,9 +1808,9 @@
         }
       }
     },
-    "/api/image-bank/folders/{id}": {
+    "/api/image-vault/folders/{id}": {
       "patch": {
-        "tags": ["image-bank"],
+        "tags": ["image-vault"],
         "summary": "Update an image folder",
         "security": [{ "bearerAuth": [] }],
         "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
@@ -1819,7 +1819,7 @@
         }
       },
       "delete": {
-        "tags": ["image-bank"],
+        "tags": ["image-vault"],
         "summary": "Delete an image folder",
         "security": [{ "bearerAuth": [] }],
         "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
@@ -1828,9 +1828,9 @@
         }
       }
     },
-    "/api/image-bank/import-from-inventory": {
+    "/api/image-vault/import-from-inventory": {
       "post": {
-        "tags": ["image-bank"],
+        "tags": ["image-vault"],
         "summary": "Import existing inventory images into image bank",
         "security": [{ "bearerAuth": [] }],
         "responses": {
@@ -1838,9 +1838,9 @@
         }
       }
     },
-    "/api/image-bank/{id}": {
+    "/api/image-vault/{id}": {
       "get": {
-        "tags": ["image-bank"],
+        "tags": ["image-vault"],
         "summary": "Get single image details",
         "security": [{ "bearerAuth": [] }],
         "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
@@ -1849,7 +1849,7 @@
         }
       },
       "patch": {
-        "tags": ["image-bank"],
+        "tags": ["image-vault"],
         "summary": "Update image metadata",
         "security": [{ "bearerAuth": [] }],
         "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
@@ -1858,7 +1858,7 @@
         }
       },
       "delete": {
-        "tags": ["image-bank"],
+        "tags": ["image-vault"],
         "summary": "Delete an image",
         "security": [{ "bearerAuth": [] }],
         "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],

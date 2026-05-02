@@ -423,7 +423,7 @@ Object.assign(pages, {
             },
             {
                 icon: 'image',
-                title: 'Image Bank',
+                title: 'Image Vault',
                 description: 'Organize photos in folders, batch edit, and reuse across listings',
                 color: 'purple',
             },
@@ -1490,10 +1490,10 @@ Configure your minimum prices to protect your margins.`,
 Export reports to CSV for further analysis in spreadsheets.`,
                 },
                 {
-                    title: 'Image Bank & Photo Editor',
+                    title: 'Image Vault & Photo Editor',
                     content: `Professional photos sell more:
 
-- **Image Bank** - Store and organize all your product photos
+- **Image Vault** - Store and organize all your product photos
 - **AI Photo Editor** - Remove backgrounds, enhance lighting
 - **Batch Processing** - Edit multiple photos at once
 - **Smart Crop** - Auto-crop for platform requirements
@@ -3345,8 +3345,8 @@ Upload photos once, use them across all your listings.`,
                                 desc: 'Automate sharing, relisting, and pricing',
                             },
                             {
-                                page: 'image-bank',
-                                title: 'Image Bank',
+                                page: 'image-vault',
+                                title: 'Image Vault',
                                 icon: 'image',
                                 steps: 3,
                                 desc: 'Manage and organize product photos',
