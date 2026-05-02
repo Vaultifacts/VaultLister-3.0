@@ -299,7 +299,6 @@ const router = {
         'market-intel': { target: 'analytics', tab: 'market-intel', storeKey: 'analyticsTab' },
         suppliers: { target: 'analytics', tab: 'sourcing', storeKey: 'analyticsTab' },
         'platform-health': { target: 'shops', tab: 'health' },
-        webhooks: { target: 'settings', tab: 'integrations', storeKey: 'settingsTab' },
         // checklist + calendar: standalone routes (aliases removed — pages.planner() doesn't exist)
         // roadmap: standalone route — pages.roadmap() handles it directly
         'feedback-suggestions': { target: 'help-support', tab: 'feedback' },
