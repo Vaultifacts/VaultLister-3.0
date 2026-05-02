@@ -176,22 +176,20 @@ test.describe('Platforms Page', () => {
         await expect(page.locator('h1')).toContainText('Integrations');
     });
 
-    test('should show 11 platform cards when page loads', async ({ page }) => {
+    test('should show 11 platform items when page loads', async ({ page }) => {
         await page.goto(`${BASE}/platforms.html`);
-        const cards = page.locator('.platform-card');
+        const cards = page.locator('.vinyl-wrapper, .vinyl-wrapper-soon');
         await expect(cards).toHaveCount(11);
     });
 
-    test('should show Live badge on Depop card', async ({ page }) => {
+    test('should show Depop as a live marketplace', async ({ page }) => {
         await page.goto(`${BASE}/platforms.html`);
-        const depopCard = page.locator('.platform-card').filter({ has: page.locator('h2', { hasText: 'Depop' }) });
-        await expect(depopCard.locator('.badge-live')).toContainText('Live');
+        await expect(page.locator('[aria-label="Depop — live marketplace"]')).toBeVisible();
     });
 
-    test('should show Live badge on Facebook card', async ({ page }) => {
+    test('should show Facebook Marketplace as a live marketplace', async ({ page }) => {
         await page.goto(`${BASE}/platforms.html`);
-        const fbCard = page.locator('.platform-card').filter({ has: page.locator('h2', { hasText: 'Facebook' }) });
-        await expect(fbCard.locator('.badge-live')).toContainText('Live');
+        await expect(page.locator('[aria-label="Facebook Marketplace — live marketplace"]')).toBeVisible();
     });
 });
 
