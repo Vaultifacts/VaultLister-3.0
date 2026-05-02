@@ -1831,7 +1831,7 @@
     "/api/image-vault/import-from-inventory": {
       "post": {
         "tags": ["image-vault"],
-        "summary": "Import existing inventory images into image bank",
+        "summary": "Import existing inventory images into Image Vault",
         "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": { "description": "Imported" }

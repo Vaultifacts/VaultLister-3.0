@@ -21,7 +21,7 @@ VaultLister is built for:
 - Playwright-based automation bots for Poshmark closet sharing, follow-back, and offer rules — runs on a schedule without manual input
 - Offer management: accept, counter, or decline offers across all platforms from one dashboard
 - Sales analytics: revenue, sell-through rate, average sale price, and platform performance by date range
-- Image bank with AI tagging: upload photos once, reuse across all listings, auto-tag with item attributes
+- Image Vault with AI tagging: upload photos once, reuse across all listings, auto-tag with item attributes
 - Shipping label generation via EasyPost (Canada Post, FedEx, UPS, USPS, DHL)
 - Stripe-powered subscription billing: Starter (C$9/mo), Pro (C$19/mo), Business (C$49/mo)
 
