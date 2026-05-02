@@ -1052,16 +1052,17 @@ Object.assign(pages, {
                                         const expandedListings = store.state.expandedListings || [];
                                         const isExpanded = expandedListings.includes(listing.id);
 
-                                        // Get all platform prices for this inventory item
+                                        // Get all platform prices for this inventory item (deduplicated by id then by platform)
                                         const relatedListings = Array.from(
-                                            ((store.state.listings || []).filter(
-                                                (l) => l.inventory_id === listing.inventory_id,
-                                            ) || [])
+                                            Array.from(
+                                                new Map(
+                                                    (store.state.listings || [])
+                                                        .filter((l) => l.inventory_id === listing.inventory_id)
+                                                        .map((l) => [l.id, l]),
+                                                ).values(),
+                                            )
                                                 .reduce((byPlatform, relatedListing) => {
-                                                    if (
-                                                        relatedListing.id === listing.id ||
-                                                        !byPlatform.has(relatedListing.platform)
-                                                    ) {
+                                                    if (!byPlatform.has(relatedListing.platform)) {
                                                         byPlatform.set(relatedListing.platform, relatedListing);
                                                     }
                                                     return byPlatform;

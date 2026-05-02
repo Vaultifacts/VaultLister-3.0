@@ -26,6 +26,7 @@
 
 ### UI cleanup batch — landing/settings/checklist/listings/inventory (uncommitted local work)
 - **Landing / pricing counts**: landing Coming Soon section now shows exactly 4 cards (Kijiji, Etsy, Mercari, Vinted) and public/app pricing copy uses 7 platforms.
+- **Settings integrations marketplace grid**: Integrations now uses the landing/platform page order and compact vinyl-style marketplace cards; browser smoke verified live/coming-soon order and visible region suffixes.
 - **Webhooks**: removed the Settings integrations Webhooks card, aliased `#webhooks` back to Settings/Integrations, and rebuilt bundles so the standalone Webhook Management page is hidden.
 - **Checklist tabs**: `switchChecklistTab` now refreshes the active page content directly; browser smoke verified Completed tab click updates state and active tab styling.
 - **Checklist incomplete action**: registered the shared `square` icon and the "Mark All as Incomplete" button now renders an empty square SVG instead of the unicode placeholder.
@@ -88,8 +89,8 @@ Priority order: CRITICAL (F77/F108/F61) → HIGH state-only (F103/F104/F109/F58/
 
 **UI / LANDING PAGE FIXES**
 - [Image #1] DONE LOCAL 2026-05-01 — Landing page Coming Soon section shows "4 More on the Way" with Kijiji, Etsy, Mercari, Vinted only.
-- [Image #2] Integrations page platform grid does not match the landing page layout/style — should match the landing page exactly; country abbreviations should be visible on platform cards
-- [Image #3] Social media icons in the landing page footer are white — they should not be white (match the colour used on other pages)
+- [Image #2] DONE LOCAL 2026-05-01 — Settings Integrations marketplace grid now matches landing/platform order and uses compact vinyl-style cards; browser smoke verified country abbreviations are visible.
+- [Image #3] DONE CURRENT 2026-05-01 — Landing footer social icons are non-white in current browser verification (`rgb(17, 17, 17)` inherited by SVG fill/stroke on white background); no code edit needed.
 - [Image #4] PARTIAL DONE LOCAL 2026-05-01 — Webhooks button removed and `#webhooks` hidden/aliased. Listing Defaults and Photo Settings still need current browser verification before closing the full item.
 - [Image #5] DONE LOCAL 2026-05-01 — My Listings expanded Platform Prices dedupe by platform and preserve the expanded/current listing.
 - [Image #6] Sales tab — remove the "Buyer Profiles / Manage buyer relationships" section entirely

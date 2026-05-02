@@ -163,7 +163,7 @@ Object.assign(handlers, {
         );
     },
 
-    // Toggle selection of an image in the inline image bank picker,
+    // Toggle selection of an image in the inline Image Vault picker,
 
     toggleImageVaultInlineSelection: function (mode, imageId, imageUrl) {
         const item = document.querySelector(`.imagevault-inline-item[data-image-id="${imageId}"]`);
@@ -187,7 +187,7 @@ Object.assign(handlers, {
         }
     },
 
-    // Add image bank image to the media preview,
+    // Add Image Vault image to the media preview,
 
     addImageVaultImageToPreview: function (mode, imageId, imageUrl) {
         const previewContainer = document.getElementById(`media-preview-${mode}`);
@@ -209,7 +209,7 @@ Object.assign(handlers, {
         previewContainer.appendChild(previewItem);
     },
 
-    // Remove image bank image from preview,
+    // Remove Image Vault image from preview,
 
     removeImageVaultImageFromPreview: function (mode, imageId) {
         const previewContainer = document.getElementById(`media-preview-${mode}`);
@@ -228,7 +228,7 @@ Object.assign(handlers, {
         }
     },
 
-    // Search image bank inline,
+    // Search Image Vault inline,
 
     searchImageVaultInline: function (mode, query) {
         const cloudName = store.state.cloudinaryCloudName;
