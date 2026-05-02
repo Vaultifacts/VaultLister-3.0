@@ -1678,17 +1678,39 @@ Object.assign(pages, {
                         label: PLATFORM_DISPLAY_NAMES[platform.id] || platform.name,
                         isLaunch: launchPlatforms.has(platform.id),
                     }));
-                    const livePlatforms = marketplacePlatforms.filter(
-                        (platform) => platform.isLaunch || shopByPlatform.has(platform.id),
+                    const landingPlatformOrder = [
+                        'ebay',
+                        'shopify',
+                        'poshmark',
+                        'depop',
+                        'facebook',
+                        'whatnot',
+                        'grailed',
+                        'kijiji',
+                        'etsy',
+                        'mercari',
+                        'vinted',
+                    ];
+                    const platformOrder = new Map(landingPlatformOrder.map((id, index) => [id, index]));
+                    const sortByLandingOrder = (platforms) =>
+                        [...platforms].sort(
+                            (a, b) =>
+                                (platformOrder.get(a.id) ?? Number.MAX_SAFE_INTEGER) -
+                                (platformOrder.get(b.id) ?? Number.MAX_SAFE_INTEGER),
+                        );
+                    const livePlatforms = sortByLandingOrder(
+                        marketplacePlatforms.filter((platform) => platform.isLaunch || shopByPlatform.has(platform.id)),
                     );
-                    const comingSoonPlatforms = marketplacePlatforms.filter(
-                        (platform) => !platform.isLaunch && !shopByPlatform.has(platform.id),
+                    const comingSoonPlatforms = sortByLandingOrder(
+                        marketplacePlatforms.filter(
+                            (platform) => !platform.isLaunch && !shopByPlatform.has(platform.id),
+                        ),
                     );
                     const renderMarketplaceIntegration = (platform) => {
                         const shop = shopByPlatform.get(platform.id);
                         const isConnected = Boolean(shop);
                         const canConnect = platform.isLaunch || isConnected;
-                        const statusClass = isConnected ? 'connected' : '';
+                        const statusClass = isConnected ? 'connected' : canConnect ? 'ready' : 'coming-soon';
                         const statusText = isConnected
                             ? shop.platform_username
                                 ? `Connected as @${escapeHtml(shop.platform_username)}`
@@ -1703,36 +1725,40 @@ Object.assign(pages, {
                               : `<button class="btn btn-sm btn-secondary" disabled>Coming Soon</button>`;
 
                         return `
-                            <div class="integration-card ${isConnected ? 'connected' : ''}">
-                                <div class="integration-icon" style="position: relative; background: transparent; box-shadow: none; width: 52px; height: 52px;">
+                            <div class="settings-marketplace-card ${isConnected ? 'is-connected' : ''} ${canConnect ? 'is-live' : 'is-coming-soon'}">
+                                <div class="settings-marketplace-record" aria-hidden="true">
                                     ${components.platformLogoLarge(platform.id)}
-                                    ${isConnected ? '<span class="service-status-dot connected" aria-label="Connected" style="position: absolute; top: -4px; right: -4px; width: 12px; height: 12px; background: var(--success); border-radius: 50%; border: 2px solid white;"></span>' : ''}
+                                    ${isConnected ? '<span class="service-status-dot connected" aria-label="Connected"></span>' : ''}
                                 </div>
-                                <div class="integration-info">
+                                <div class="settings-marketplace-info">
+                                    <span class="settings-marketplace-badge">${canConnect ? 'Live' : 'Soon'}</span>
                                     <h3>${platform.label}</h3>
                                     <span class="integration-status ${statusClass}">${statusText}</span>
                                 </div>
-                                ${actionMarkup}
+                                <div class="settings-marketplace-action">${actionMarkup}</div>
                             </div>
                         `;
                     };
                     return `
                         <div class="settings-section">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                                <h3 class="settings-section-title">Connected Platforms</h3>
+                            <div class="settings-marketplace-header">
+                                <div>
+                                    <div class="settings-marketplace-eyebrow">Sell on every major platform</div>
+                                    <h3 class="settings-section-title">Live Marketplaces</h3>
+                                </div>
                                 <button class="btn btn-sm btn-secondary" onclick="handlers.checkIntegrationStatus()">
                                     ${components.icon('refresh-cw', 14)} Check Status
                                 </button>
                             </div>
-                            <div class="integrations-grid">
+                            <div class="settings-marketplace-grid" aria-label="Live marketplaces">
                                 ${livePlatforms.map(renderMarketplaceIntegration).join('')}
                             </div>
                             ${
                                 comingSoonPlatforms.length
                                     ? `
-                                <div style="margin-top: 20px;">
-                                    <div class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-3">Coming Soon</div>
-                                    <div class="integrations-grid">
+                                <div class="settings-marketplace-coming">
+                                    <div class="settings-marketplace-coming-label">${comingSoonPlatforms.length} More on the Way</div>
+                                    <div class="settings-marketplace-grid" aria-label="Coming soon marketplaces">
                                         ${comingSoonPlatforms.map(renderMarketplaceIntegration).join('')}
                                     </div>
                                 </div>
