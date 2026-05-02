@@ -15229,15 +15229,15 @@ const measurementTool = {
                 <div class="measurement-inputs">
                     <div class="measurement-input">
                         <label>Bust (in)</label>
-                        <input aria-label="36" type="number" id="meas-bust" placeholder="e.g., 36" oninput="measurementTool.calculate()">
+                        <input aria-label="Bust (in)" type="number" id="meas-bust" placeholder="e.g., 36" oninput="measurementTool.calculate()">
                     </div>
                     <div class="measurement-input">
                         <label>Waist (in)</label>
-                        <input aria-label="28" type="number" id="meas-waist" placeholder="e.g., 28" oninput="measurementTool.calculate()">
+                        <input aria-label="Waist (in)" type="number" id="meas-waist" placeholder="e.g., 28" oninput="measurementTool.calculate()">
                     </div>
                     <div class="measurement-input">
                         <label>Hips (in)</label>
-                        <input aria-label="38" type="number" id="meas-hips" placeholder="e.g., 38" oninput="measurementTool.calculate()">
+                        <input aria-label="Hips (in)" type="number" id="meas-hips" placeholder="e.g., 38" oninput="measurementTool.calculate()">
                     </div>
                 </div>
                 <div class="measurement-result" id="measurement-result" style="display: none;">
@@ -17041,7 +17041,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'af531298';
+    const v = '01e27405';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function (resolve, reject) {
@@ -25205,11 +25205,11 @@ const modals = {
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label text-xs">Ad Rate (%)</label>
-                                    <input aria-label="0" type="number" class="form-input" name="ebayPromotionRateAdv" min="0" max="100" step="0.01" placeholder="0">
+                                    <input type="number" class="form-input" name="ebayPromotionRateAdv" min="0" max="100" step="0.01" placeholder="0" aria-label="Ad Rate (%)">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label text-xs">Campaign Type</label>
-                                    <select aria-label="eBay promotion type" class="form-select" name="ebayPromotionType">
+                                    <select aria-label="Campaign Type" class="form-select" name="ebayPromotionType">
                                         <option value="">No Promotion</option>
                                         <option value="standard">Standard (Cost per Sale)</option>
                                         <option value="express">Express (Priority Placement)</option>
@@ -25219,7 +25219,7 @@ const modals = {
                             <div class="grid grid-cols-2 gap-4 mt-2">
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label text-xs">Daily Budget ($)</label>
-                                    <input aria-label="No limit" type="number" class="form-input" name="ebayDailyBudget" min="0" step="1" placeholder="No limit">
+                                    <input aria-label="Daily Budget ($)" type="number" class="form-input" name="ebayDailyBudget" min="0" step="1" placeholder="No limit">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label text-xs">End Date</label>
@@ -27985,7 +27985,7 @@ const modals = {
                 <div class="barcode-manual-entry">
                     <label>Or enter barcode manually:</label>
                     <div style="display: flex; gap: 8px; margin-top: 8px;">
-                        <input aria-label="Enter UPC/EAN code" type="text" id="barcode-manual-input" class="form-input" placeholder="Enter UPC/EAN code" pattern="[0-9]{8,14}">
+                        <input aria-label="Or enter barcode manually" type="text" id="barcode-manual-input" class="form-input" placeholder="Enter UPC/EAN code" pattern="[0-9]{8,14}">
                         <button class="btn btn-primary" onclick="handlers.lookupBarcode()">
                             ${components.icon('search', 16)} Lookup
                         </button>

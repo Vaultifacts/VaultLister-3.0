@@ -268,8 +268,7 @@ select:focus-visible {
     }
 }
 
-/* Skip to main content link */
-.skip-link,
+/* Skip nav link */
 .skip-nav {
     position: absolute;
     top: -40px;
@@ -284,7 +283,6 @@ select:focus-visible {
     border-radius: 0 0 4px 0;
 }
 
-.skip-link:focus,
 .skip-nav:focus {
     top: 0;
 }
