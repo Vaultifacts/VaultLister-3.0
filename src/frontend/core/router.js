@@ -556,7 +556,7 @@ const router = {
                 } else if (path === 'templates') {
                     await handlers.loadTemplates();
                 } else if (path === 'image-vault') {
-                    await handlers.loadImageBank();
+                    await handlers.loadImageVault();
                     window.scrollTo(0, 0);
                 } else if (path === 'community') {
                     await handlers.loadCommunity();

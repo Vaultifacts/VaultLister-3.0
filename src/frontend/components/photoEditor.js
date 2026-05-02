@@ -301,7 +301,7 @@ const PhotoEditor = {
             toast.success('Image saved!');
 
             // Reload Image Vault
-            await handlers.loadImageBank();
+            await handlers.loadImageVault();
 
             // Close editor
             modals.close();
