@@ -15,7 +15,7 @@ VaultLister is built for:
 
 ## Key Capabilities
 
-- Cross-list a single inventory item to up to 9 marketplaces in one action
+- Cross-list a single inventory item to up to 7 live marketplaces in one action (4 more coming soon)
 - Real-time inventory sync: when an item sells on one platform, it is automatically marked sold and delisted everywhere else
 - AI-powered listing generation: describe an item and Claude AI writes the title, description, and tags optimized for each platform
 - Playwright-based automation bots for Poshmark closet sharing, follow-back, and offer rules — runs on a schedule without manual input
