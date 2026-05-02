@@ -357,7 +357,7 @@ const modals = {
                                 <button type="button" class="tab-btn active" role="tab" aria-selected="true" data-tab="upload" onclick="handlers.switchImageUploadTab('upload')" style="padding: 10px 16px; background: none; border: none; border-bottom: 2px solid var(--primary-600); color: var(--primary-600); font-weight: 600; cursor: pointer; margin-bottom: -2px;">
                                     ${components.icon('upload', 14)} Upload Files
                                 </button>
-                                <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="imagebank" onclick="handlers.switchImageUploadTab('imagebank')" style="padding: 10px 16px; background: none; border: none; border-bottom: 2px solid transparent; color: var(--gray-600); font-weight: 500; cursor: pointer; margin-bottom: -2px;">
+                                <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="imagevault" onclick="handlers.switchImageUploadTab('imagevault')" style="padding: 10px 16px; background: none; border: none; border-bottom: 2px solid transparent; color: var(--gray-600); font-weight: 500; cursor: pointer; margin-bottom: -2px;">
                                     ${components.icon('folder', 14)} Image Vault
                                 </button>
                                 <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="url" onclick="handlers.switchImageUploadTab('url')" style="padding: 10px 16px; background: none; border: none; border-bottom: 2px solid transparent; color: var(--gray-600); font-weight: 500; cursor: pointer; margin-bottom: -2px;">
@@ -403,15 +403,15 @@ const modals = {
                                 </div>
 
                                 <!-- Tab 4: Image Vault -->
-                                <div class="tab-pane" data-tab="imagebank" style="display: none; padding: 16px; background: var(--gray-50); border-radius: 8px;">
-                                    <div id="imagebank-picker-add" class="imagebank-picker-container">
-                                        <div class="imagebank-picker-toolbar" style="display: flex; gap: 8px; margin-bottom: 12px;" role="search">
-                                            <input aria-label="Search images" type="text" class="form-input" id="imagebank-search-add" placeholder="Search images..." style="flex: 1;" onkeyup="handlers.searchImageBankInline('add', this.value)">
+                                <div class="tab-pane" data-tab="imagevault" style="display: none; padding: 16px; background: var(--gray-50); border-radius: 8px;">
+                                    <div id="imagevault-picker-add" class="imagevault-picker-container">
+                                        <div class="imagevault-picker-toolbar" style="display: flex; gap: 8px; margin-bottom: 12px;" role="search">
+                                            <input aria-label="Search images" type="text" class="form-input" id="imagevault-search-add" placeholder="Search images..." style="flex: 1;" onkeyup="handlers.searchImageVaultInline('add', this.value)">
                                             <button type="button" class="btn btn-secondary btn-sm" onclick="router.navigate('image-vault')" title="Go to Image Vault">
                                                 ${components.icon('external-link', 14)} Open Image Vault
                                             </button>
                                         </div>
-                                        <div id="imagebank-grid-add" class="imagebank-picker-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-height: 200px; overflow-y: auto; padding: 4px;">
+                                        <div id="imagevault-grid-add" class="imagevault-picker-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-height: 200px; overflow-y: auto; padding: 4px;">
                                             <div class="text-center text-gray-500 py-4" style="grid-column: 1 / -1;">Loading images...</div>
                                         </div>
                                         <p style="font-size: 12px; color: var(--gray-500); margin-top: 8px;">Click images to select them. Selected images will be added to your listing.</p>
@@ -989,7 +989,7 @@ const modals = {
                     <div class="form-group" style="margin-bottom: 24px;">
                         <div class="flex justify-between items-center mb-2">
                             <p class="form-label">Product Images & Video</p>
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="handlers.openImageBankPicker('edit')">
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="handlers.openImageVaultPicker('edit')">
                                 ${components.icon('folder', 16)} Browse Image Vault
                             </button>
                         </div>
@@ -1911,7 +1911,7 @@ const modals = {
                             <img id="ai-preview-img" src="" alt="Preview" style="max-width: 100%; max-height: 300px; border-radius: var(--radius-md); border: 2px solid var(--gray-200);">
                         </div>
                         <div class="mt-2 text-center">
-                            <button type="button" class="btn btn-sm btn-ghost" onclick="handlers.openImageBankForAI()">
+                            <button type="button" class="btn btn-sm btn-ghost" onclick="handlers.openImageVaultForAI()">
                                 ${components.icon('image', 14)} Or pick from Image Vault
                             </button>
                         </div>

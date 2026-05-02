@@ -17,10 +17,12 @@
 - **Landing / pricing counts**: landing Coming Soon section now shows exactly 4 cards (Kijiji, Etsy, Mercari, Vinted) and public/app pricing copy uses 7 platforms.
 - **Webhooks**: removed the Settings integrations Webhooks card, aliased `#webhooks` back to Settings/Integrations, and rebuilt bundles so the standalone Webhook Management page is hidden.
 - **Checklist tabs**: `switchChecklistTab` now refreshes the active page content directly; browser smoke verified Completed tab click updates state and active tab styling.
+- **Checklist incomplete action**: registered the shared `square` icon and the "Mark All as Incomplete" button now renders an empty square SVG instead of the unicode placeholder.
+- **Connections email cards**: Gmail and Outlook unconfigured states now use Coming Soon copy/styling instead of "OAuth not configured" / "Unavailable".
 - **Listings platform prices**: expanded Platform Prices list dedupes by platform while preserving the currently expanded listing for duplicate platforms.
 - **Inventory stock badges**: Out of Stock row badges now carry `inventory-stock-out` styling for the faint red highlight.
 - **Facebook connect dialog**: rebuilt `dist/chunk-settings.js`; browser smoke verified Facebook shows only manual connect, with no OAuth button/copy/divider.
-- **Verification**: `bun run build`, `bun run lint`, `bun run open-items:check`, and targeted Playwright smoke checks all pass on `http://localhost:3000`.
+- **Verification**: `bun run build`, `bun run lint`, `bun run open-items:check`, and targeted Playwright smoke checks pass on `http://localhost:3000`.
 
 ### Tracking system audit — 26 flaws fixed (commits f8eadc8e→86cd3081)
 - **Flaw 27**: `normalizeForCheck` now strips GitHub Open Issues section — `open-items:check` is deterministic in CI (no longer fails on live issue timestamp changes)
@@ -83,7 +85,7 @@ Priority order: CRITICAL (F77/F108/F61) → HIGH state-only (F103/F104/F109/F58/
 - [Image #7] Automations page — remove the Scheduler Health section, Schedule Settings section, and Notification Preferences section entirely
 - [Image #8] Automations page — remove the Calendar and Performance buttons from the page header (keep History)
 - [Image #9] DONE LOCAL 2026-05-01 — Daily Checklist tab switching rerenders page content; browser smoke verified Completed tab click.
-- [Image #10] Daily Checklist — add an empty checkbox/box icon to the left of the "Mark All as Incomplete" button text
+- [Image #10] DONE LOCAL 2026-05-01 — Daily Checklist "Mark All as Incomplete" renders an empty square SVG icon; browser smoke verified no unicode checkbox placeholder remains.
 - [Global] Rename: every instance of "Image Bank" throughout the entire codebase (UI labels, page titles, nav items, routes, comments, strings) must become "Image Vault"
 - [Image #11] DONE LOCAL 2026-05-01 — Facebook Marketplace connect dialog now shows manual connect only in rebuilt settings chunk.
 - [Image #12] Inventory page — remove the Lookup and Tools buttons from the header action bar (keep Bundle, Restock, Alerts, Add Item)
@@ -93,10 +95,10 @@ Priority order: CRITICAL (F77/F108/F61) → HIGH state-only (F103/F104/F109/F58/
 - [Inventory] Inventory Analytics sub-tab click does nothing — same broken tab pattern as Daily Checklist; fix tab switching
 - [Inventory] Production DB contains security test payload items: `<img src=x>`, `admin'--`, `>`, `CSRF Reuse Test 1`, etc. — test data leaked to live database; needs cleanup
 - [Webhooks] DONE LOCAL 2026-05-01 — `#webhooks` aliases back to Settings/Integrations; standalone Webhook Management UI is hidden in browser smoke.
-- [Connections] Outlook email integration shows "OAuth not configured" + "Unavailable" greyed button — inconsistent with the "Coming Soon" styling used for marketplace platforms; should be hidden or styled as Coming Soon
+- [Connections] DONE LOCAL 2026-05-01 — Gmail/Outlook unconfigured email cards now show "Coming soon" status and "Coming Soon" disabled action; browser smoke verified no "OAuth not configured" / "Unavailable" text remains.
 - [Analytics] "No prior data" label in the KPI header is styled as an orange pill button — it's a state indicator, not an action; should be a plain text badge/label
 - [Automations] "A/B Experiments" section appears at the bottom of the Automations page for all users — likely dev-only; consider hiding on production
-- [Daily Checklist] Tab switching bug clarification: tabs work when navigated to directly (e.g. `pages.planner()` loads To-Do Lists view correctly) but clicking between tabs within the same page render doesn't update content — it's a re-render issue, not a missing view
+- [Daily Checklist] DONE LOCAL 2026-05-01 — Tab switching rerender issue fixed; tabs work when clicked within the same page render.
 - [Reports] "Supplier Monitoring" tab exists on the Reports page — VaultLister has no supplier features; this tab is misleading and should be removed
 - [Suppliers] Full "Supplier Monitoring" standalone page (`window.pages.suppliers()`) exists with Supplier list, Purchase Orders, Lead Time Tracking sections — VaultLister has no supplier features; hide this page entirely on production (same treatment as dev-only analytics tabs)
 - [Plans & Billing] DONE LOCAL 2026-05-01 — Plan cards and public pricing copy now say 7 platforms.
