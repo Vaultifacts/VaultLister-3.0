@@ -11,6 +11,17 @@
 - **Active task backlog:** `docs/OPEN_ITEMS.md` (generated). `docs/superpowers/plans/2026-05-01-fake-data-audit.md` COMPLETE — all 73 tracked findings resolved (committed). `docs/REMAINING_WORK_EXECUTION_SHEET_2026-04-21.md` is historical — do not use as active plan.
 - **BROWSER NOTE:** Always use `mcp__claude-in-chrome__*` tools. NEVER use `mcp__plugin_chrome-devtools-mcp`.
 
+## Last Completed Work (2026-05-01 session 3)
+
+### Automations/Webhooks/Supplier UI cleanup batch (commits 18d0ab11 + prior session)
+- **[Image #8] Calendar + Performance buttons removed** from Automations page header (keep History only)
+- **[Image #7] Scheduler Health dead code removed** — scheduler status API loader + `renderSchedulerWidget` function deleted (element id was never rendered in the automations HTML; pure dead code)
+- **[Reports] Supplier Monitoring tab removed** from Reports page tab bar + supplier content branch deleted
+- **[Suppliers] Suppliers page hidden on production** — IS_PROD guard added to `suppliers()`: redirects to `#analytics` on non-localhost; matches DEV_ONLY_TABS treatment
+- **[Global] Image Vault rename COMPLETE** — parallel session committed 4dcfdd7d→fa49ec24; all Image Bank → Image Vault across backend, frontend, tests, docs, public HTML, comments, nav items, routes, bundle
+- **[Image #12] Lookup + Tools buttons removed** from Inventory page header (commit 63f0150d from prior session)
+- **Fake-data audit 100% COMPLETE** — 73/73 findings resolved (from prior session)
+
 ## Last Completed Work (2026-05-01 session 2)
 
 ### UI cleanup batch — landing/settings/checklist/listings/inventory (uncommitted local work)
@@ -82,13 +93,13 @@ Priority order: CRITICAL (F77/F108/F61) → HIGH state-only (F103/F104/F109/F58/
 - [Image #4] PARTIAL DONE LOCAL 2026-05-01 — Webhooks button removed and `#webhooks` hidden/aliased. Listing Defaults and Photo Settings still need current browser verification before closing the full item.
 - [Image #5] DONE LOCAL 2026-05-01 — My Listings expanded Platform Prices dedupe by platform and preserve the expanded/current listing.
 - [Image #6] Sales tab — remove the "Buyer Profiles / Manage buyer relationships" section entirely
-- [Image #7] Automations page — remove the Scheduler Health section, Schedule Settings section, and Notification Preferences section entirely
-- [Image #8] Automations page — remove the Calendar and Performance buttons from the page header (keep History)
+- [Image #7] DONE LOCAL 2026-05-01 session 3 — Scheduler Health dead code removed; Schedule Settings was a JS variable (no visible section); Notification Preferences is correctly in push-notifications page only
+- [Image #8] DONE LOCAL 2026-05-01 session 3 — Calendar and Performance buttons removed from Automations header
 - [Image #9] DONE LOCAL 2026-05-01 — Daily Checklist tab switching rerenders page content; browser smoke verified Completed tab click.
 - [Image #10] DONE LOCAL 2026-05-01 — Daily Checklist "Mark All as Incomplete" renders an empty square SVG icon; browser smoke verified no unicode checkbox placeholder remains.
-- [Global] Rename: every instance of "Image Bank" throughout the entire codebase (UI labels, page titles, nav items, routes, comments, strings) must become "Image Vault"
+- [Global] DONE LOCAL 2026-05-01 session 3 — Image Bank → Image Vault rename complete across all files (commits 4dcfdd7d→fa49ec24)
 - [Image #11] DONE LOCAL 2026-05-01 — Facebook Marketplace connect dialog now shows manual connect only in rebuilt settings chunk.
-- [Image #12] Inventory page — remove the Lookup and Tools buttons from the header action bar (keep Bundle, Restock, Alerts, Add Item)
+- [Image #12] DONE LOCAL 2026-05-01 — Lookup and Tools buttons removed from Inventory page header (commit 63f0150d)
 - [Image #13] DONE LOCAL 2026-05-01 — Inventory Out of Stock labels now use faint red `inventory-stock-out` badge styling.
 
 **WALKTHROUGH FINDINGS (2026-05-01 browser audit — new)**
@@ -99,8 +110,8 @@ Priority order: CRITICAL (F77/F108/F61) → HIGH state-only (F103/F104/F109/F58/
 - [Analytics] "No prior data" label in the KPI header is styled as an orange pill button — it's a state indicator, not an action; should be a plain text badge/label
 - [Automations] "A/B Experiments" section appears at the bottom of the Automations page for all users — likely dev-only; consider hiding on production
 - [Daily Checklist] DONE LOCAL 2026-05-01 — Tab switching rerender issue fixed; tabs work when clicked within the same page render.
-- [Reports] "Supplier Monitoring" tab exists on the Reports page — VaultLister has no supplier features; this tab is misleading and should be removed
-- [Suppliers] Full "Supplier Monitoring" standalone page (`window.pages.suppliers()`) exists with Supplier list, Purchase Orders, Lead Time Tracking sections — VaultLister has no supplier features; hide this page entirely on production (same treatment as dev-only analytics tabs)
+- [Reports] DONE LOCAL 2026-05-01 session 3 — Supplier Monitoring tab removed from Reports page
+- [Suppliers] DONE LOCAL 2026-05-01 session 3 — suppliers() page IS_PROD guard added; redirects to #analytics on production
 - [Plans & Billing] DONE LOCAL 2026-05-01 — Plan cards and public pricing copy now say 7 platforms.
 - [Account] "Current Password" field gets browser-autofilled on the Account/Security page — add `autocomplete="new-password"` to the new-password fields and `autocomplete="current-password"` only to the current password field to prevent unintended autofill on settings forms
 - [Image #11 — DIST REBUILD DONE LOCAL 2026-05-01] `dist/chunk-settings.js` rebuilt; Facebook manual-connect-only dialog verified locally. Still needs deploy/live verification before closing as production-fixed.
