@@ -2,6 +2,16 @@
 // UI components: sidebar, header, vaultBuddy, photoEditorModal
 // Extracted from app.js lines 15284-17255
 
+function _badgeTextColor(hex) {
+    if (!hex || !hex.startsWith('#')) return '#ffffff';
+    const r = parseInt(hex.slice(1, 3), 16) / 255;
+    const g = parseInt(hex.slice(3, 5), 16) / 255;
+    const b = parseInt(hex.slice(5, 7), 16) / 255;
+    const lin = (c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+    const L = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+    return L > 0.179 ? '#111827' : '#ffffff';
+}
+
 // ============================================
 // Components
 // ============================================
@@ -1858,8 +1868,9 @@ const components = {
         const platformDef = (window.SUPPORTED_PLATFORMS || []).find((p) => p.id === platform);
         const displayName =
             platformDef?.name || (platform ? platform.charAt(0).toUpperCase() + platform.slice(1) : 'Unknown');
+        const textColor = _badgeTextColor(color);
 
-        return `<span class="platform-badge" style="display:inline-flex;align-items:center;gap:6px;padding:4px 8px;background:${color};color:white;border-radius:4px;font-size:12px;font-weight:600;" title="${displayName}">
+        return `<span class="platform-badge" style="display:inline-flex;align-items:center;gap:6px;padding:4px 8px;background:${color};color:${textColor};border-radius:4px;font-size:12px;font-weight:600;" title="${displayName}">
             <span style="width:16px;height:16px;background:white;color:${color};border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${icon}</span>
             ${displayName}
         </span>`;

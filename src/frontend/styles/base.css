@@ -2892,7 +2892,7 @@ body.dark-mode .voice-indicator {
     color: var(--gray-900);
 }
 .text-primary {
-    color: var(--primary-600);
+    color: var(--primary-800);
 }
 .text-success {
     color: #047857 !important;

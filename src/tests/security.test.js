@@ -1,5 +1,5 @@
 // VaultLister Security Tests
-import { describe, expect, test, beforeAll } from 'bun:test';
+import { describe, expect, test, beforeAll, afterAll } from 'bun:test';
 import { getAuthToken, createTestUserWithToken, loginUser } from './helpers/auth.helper.js';
 import { TestApiClient } from './helpers/api.client.js';
 import { securityPayloads, demoUser } from './helpers/fixtures.js';
@@ -8,11 +8,68 @@ const BASE_URL = process.env.TEST_BASE_URL ? `${process.env.TEST_BASE_URL}/api` 
 const API_TEST_TIMEOUT_MS = 15000;
 let authToken = null;
 let client = null;
+const SECURITY_TEST_RUN_ID = `security-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+const createdInventoryIds = new Set();
+let securitySkuCounter = 0;
+
+function hostnameForUrl(url) {
+    try {
+        return new URL(url).hostname.toLowerCase();
+    } catch {
+        return '';
+    }
+}
+
+function isLocalHost(hostname) {
+    return ['localhost', '127.0.0.1', '::1', 'postgres'].includes(hostname);
+}
+
+const targetHost = hostnameForUrl(BASE_URL);
+const databaseHost = hostnameForUrl(process.env.DATABASE_URL || '');
+const canMutateInventory =
+    process.env.ALLOW_REMOTE_SECURITY_TEST_WRITES === '1' ||
+    (isLocalHost(targetHost) && (!databaseHost || isLocalHost(databaseHost)));
+
+function nextSecuritySku(label) {
+    securitySkuCounter += 1;
+    return `VLSEC-${SECURITY_TEST_RUN_ID}-${label}-${securitySkuCounter}`.slice(0, 80);
+}
+
+function trackCreatedInventoryItem(data) {
+    const itemId = data?.item?.id || data?.data?.item?.id || data?.id;
+    if (itemId) createdInventoryIds.add(itemId);
+}
+
+async function createTrackedInventoryItem(itemData, label = 'item') {
+    if (!canMutateInventory) {
+        return {
+            status: 403,
+            data: { code: 'REMOTE_DB_MUTATION_SKIPPED' },
+        };
+    }
+    const result = await client.createInventoryItem({
+        sku: nextSecuritySku(label),
+        ...itemData,
+    });
+    if (result.status === 201) trackCreatedInventoryItem(result.data);
+    return result;
+}
 
 beforeAll(async () => {
     const { data } = await loginUser(demoUser.email, demoUser.password);
     authToken = data.token;
     client = new TestApiClient(authToken);
+});
+
+afterAll(async () => {
+    if (!client || createdInventoryIds.size === 0) return;
+    for (const itemId of createdInventoryIds) {
+        try {
+            await client.deleteInventoryItem(itemId);
+        } catch {
+            // Best-effort cleanup only; assertions belong in the individual tests.
+        }
+    }
 });
 
 describe('SQL Injection Prevention', () => {
@@ -53,14 +110,14 @@ describe('SQL Injection Prevention', () => {
                 expect(data.items).toBeDefined();
             }
         }
-    });
+    }, API_TEST_TIMEOUT_MS);
 
     test('Inventory creation should handle SQL injection in title', async () => {
-        for (const payload of securityPayloads.sqlInjection.slice(0, 3)) {
-            const { status, data } = await client.createInventoryItem({
+        for (const [index, payload] of securityPayloads.sqlInjection.slice(0, 3).entries()) {
+            const { status } = await createTrackedInventoryItem({
                 title: payload,
                 listPrice: 25.00
-            });
+            }, `sql-${index}`);
             // Should either create safely or reject, not crash; 403 = tier limit on live server
             expect([201, 400, 403]).toContain(status);
         }
@@ -69,11 +126,11 @@ describe('SQL Injection Prevention', () => {
 
 describe('XSS Prevention', () => {
     test('Inventory title should store XSS payloads safely', async () => {
-        for (const payload of securityPayloads.xss.slice(0, 3)) {
-            const { status, data } = await client.createInventoryItem({
+        for (const [index, payload] of securityPayloads.xss.slice(0, 3).entries()) {
+            const { status, data } = await createTrackedInventoryItem({
                 title: payload,
                 listPrice: 10.00
-            });
+            }, `xss-${index}`);
 
             if (status === 201) {
                 // If stored, should be stored as text, not executable
@@ -223,42 +280,42 @@ describe('Authorization', () => {
 
 describe('Input Validation', () => {
     test('Should reject inventory with missing required fields', async () => {
-        const { status } = await client.createInventoryItem({});
+        const { status } = await createTrackedInventoryItem({}, 'missing-fields');
         // 400 validation, 403 = tier limit reached on live server (still correct — didn't crash)
         expect([400, 403]).toContain(status);
     });
 
     test('Should reject inventory with invalid price', async () => {
-        const { status } = await client.createInventoryItem({
+        const { status } = await createTrackedInventoryItem({
             title: 'Test Item',
             listPrice: -10
-        });
+        }, 'invalid-price');
         expect([400, 201, 403]).toContain(status); // May accept/normalize; 403 = tier limit
     });
 
     test('Should handle extremely long input', async () => {
         const longString = 'a'.repeat(10000);
-        const { status } = await client.createInventoryItem({
+        const { status } = await createTrackedInventoryItem({
             title: longString,
             listPrice: 25.00
-        });
+        }, 'long-input');
         // Should either truncate/accept or reject, not crash; 403 = tier limit on live server
         expect([201, 400, 403]).toContain(status);
     });
 
     test('Should handle unicode and special characters', async () => {
-        const { status, data } = await client.createInventoryItem({
+        const { status } = await createTrackedInventoryItem({
             title: 'Test \u0000 \uFFFF \u202E Item',
             listPrice: 25.00
-        });
+        }, 'unicode');
         expect([201, 400, 403]).toContain(status);
     });
 
     test('Should handle null bytes', async () => {
-        const { status } = await client.createInventoryItem({
+        const { status } = await createTrackedInventoryItem({
             title: 'Test\x00Item',
             listPrice: 25.00
-        });
+        }, 'null-byte');
         expect([201, 400, 403]).toContain(status);
     });
 });
@@ -335,6 +392,7 @@ describe('CSRF Protection', () => {
     });
 
     test('POST with valid CSRF token should succeed', async () => {
+        if (!canMutateInventory) return;
         // Get a fresh token since tokens are consumed after use
         const tokenRes = await fetch(`${BASE_URL}/csrf-token`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
@@ -348,9 +406,14 @@ describe('CSRF Protection', () => {
                 'Authorization': `Bearer ${authToken}`,
                 'X-CSRF-Token': freshToken
             },
-            body: JSON.stringify({ title: 'CSRF Valid Test', listPrice: 15 })
+            body: JSON.stringify({
+                title: 'CSRF Valid Test',
+                sku: nextSecuritySku('csrf-valid'),
+                listPrice: 15
+            })
         });
         const body = await response.json();
+        if (response.status === 201) trackCreatedInventoryItem(body);
         // 201 success, 400 validation, 403 tier-limit (all mean CSRF passed)
         expect([201, 400, 403]).toContain(response.status);
         // If 403, must NOT be a CSRF rejection — tier-limit 403 is acceptable
@@ -360,6 +423,7 @@ describe('CSRF Protection', () => {
     });
 
     test('POST with reused CSRF token should be rejected', async () => {
+        if (!canMutateInventory) return;
         // Get and use a token
         const tokenRes = await fetch(`${BASE_URL}/csrf-token`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
@@ -367,15 +431,24 @@ describe('CSRF Protection', () => {
         const { csrfToken: oneTimeToken } = await tokenRes.json();
 
         // First use — should work
-        await fetch(`${BASE_URL}/inventory`, {
+        const firstResponse = await fetch(`${BASE_URL}/inventory`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${authToken}`,
                 'X-CSRF-Token': oneTimeToken
             },
-            body: JSON.stringify({ title: 'CSRF Reuse Test 1', listPrice: 10 })
+            body: JSON.stringify({
+                title: 'CSRF Reuse Test 1',
+                sku: nextSecuritySku('csrf-reuse'),
+                listPrice: 10
+            })
         });
+        try {
+            if (firstResponse.status === 201) trackCreatedInventoryItem(await firstResponse.json());
+        } catch {
+            // Cleanup is best-effort; the assertion is on the reused-token response below.
+        }
 
         // Second use of same token
         const response = await fetch(`${BASE_URL}/inventory`, {

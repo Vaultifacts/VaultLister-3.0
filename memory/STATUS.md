@@ -105,7 +105,7 @@ Priority order: CRITICAL (F77/F108/F61) → HIGH state-only (F103/F104/F109/F58/
 
 **WALKTHROUGH FINDINGS (2026-05-01 browser audit — new)**
 - [Inventory] DONE CURRENT 2026-05-01 — Current Inventory catalog route has no legacy `.inv-tab-btn` sub-tabs; Analytics page Inventory tab click sets `analyticsTab='inventory-analytics'` and renders Stock Status Breakdown.
-- [Inventory] Production DB contains security test payload items: `<img src=x>`, `admin'--`, `>`, `CSRF Reuse Test 1`, etc. — test data leaked to live database; needs cleanup
+- [Inventory] VERIFIED ROOT CAUSE 2026-05-01 — live/demo inventory has 134 draft security payload rows (`CSRF Reuse Test 1`, `<img src=x>`, `admin'--`) across 461 scanned records. Root cause: `src/tests/security.test.js` inventory mutation tests wrote through the local app while `.env` pointed at Railway (`gondola.proxy.rlwy.net`). Local test patch now skips inventory mutations on remote DB/remote target and tracks/deletes created rows on safe local/CI DBs. Existing live cleanup remains pending explicit approval because it deletes production records.
 - [Webhooks] DONE LOCAL 2026-05-01 — `#webhooks` aliases back to Settings/Integrations; standalone Webhook Management UI is hidden in browser smoke.
 - [Connections] DONE LOCAL 2026-05-01 — Gmail/Outlook unconfigured email cards now show "Coming soon" status and "Coming Soon" disabled action; browser smoke verified no "OAuth not configured" / "Unavailable" text remains.
 - [Analytics] DONE CURRENT 2026-05-01 — Analytics route browser smoke verified the "No prior data" pill is not present.

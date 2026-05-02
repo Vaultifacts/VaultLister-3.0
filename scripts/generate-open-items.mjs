@@ -104,6 +104,7 @@ const DOCUMENT_SCAN_GLOBS = [
     '--glob', '!**/playwright-report/**',
     '--glob', '!**/test-results/**',
     '--glob', '!**/coverage/**',
+    '--glob', '!axe-*.json',
     '--glob', '!docs/OPEN_ITEMS.md'
 ];
 
@@ -125,6 +126,9 @@ const ROOT_DOCUMENT_SPECIAL_FILES = new Set([
     'Dockerfile.worker',
     'sonar-project.properties'
 ]);
+const ROOT_DOCUMENT_EXCLUDED_PATTERNS = [
+    /^axe-.+\.json$/i
+];
 
 function rel(filePath) {
     return path.relative(ROOT, filePath).replace(/\\/g, '/');
@@ -270,7 +274,8 @@ function existingScanTargets(targets = DOCUMENT_SCAN_TARGETS) {
     const rootFiles = readdirSync(ROOT, { withFileTypes: true })
         .filter(entry => entry.isFile())
         .map(entry => entry.name)
-        .filter(name => ROOT_DOCUMENT_SCAN_PATTERN.test(name) || ROOT_DOCUMENT_SPECIAL_FILES.has(name));
+        .filter(name => ROOT_DOCUMENT_SCAN_PATTERN.test(name) || ROOT_DOCUMENT_SPECIAL_FILES.has(name))
+        .filter(name => !ROOT_DOCUMENT_EXCLUDED_PATTERNS.some(pattern => pattern.test(name)));
     const targetSet = new Set([...targets, ...rootFiles]);
     return [...targetSet].filter(target => existsSync(path.join(ROOT, target)));
 }

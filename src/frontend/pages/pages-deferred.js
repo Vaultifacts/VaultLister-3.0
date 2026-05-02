@@ -15087,7 +15087,7 @@ Upload photos once, use them across all your listings.`,
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
                         <div style="padding: 16px; background: var(--gray-50); border-radius: 8px;">
                             <div style="font-size: 12px; color: var(--gray-600); margin-bottom: 8px;">Browser Support</div>
-                            <div style="font-weight: 600; color: ${supportsNotifications ? 'var(--success)' : 'var(--danger)'};">
+                            <div style="font-weight: 600; color: ${supportsNotifications ? '#047857' : 'var(--danger)'};">
                                 ${supportsNotifications ? 'Supported' : 'Not Supported'}
                             </div>
                         </div>

@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-02T01:17:18.125Z
-Commit: 9821124a
+Generated at: 2026-05-02T01:20:39.399Z
+Commit: 8f83bb72
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -25,7 +25,7 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 | Repo-wide unchecked checkbox hits | 583 |
 | Repo-wide unchecked checkbox hits included | 359 |
 | Repo-wide unchecked checkbox hits excluded or review-only | 224 |
-| Open-marker source files discovered | 215 |
+| Open-marker source files discovered | 214 |
 | Source TODO/FIXME hits | 14 |
 
 ## Source Coverage Audit
@@ -134,7 +134,6 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | .github/workflows/test-baseline-update.yml | 2 | 4 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/uptime-slack-alert.yml | 3 | 74 | Config/workflow text; parsed separately only if promoted |
 | .gitignore | 1 | 150 | Config/workflow text; parsed separately only if promoted |
-| axe-spa-report.json | 4 | 42 | Config/workflow text; parsed separately only if promoted |
 | package-lock.json | 8 | 2253 | Config/workflow text; parsed separately only if promoted |
 | package.json | 2 | 70 | Config/workflow text; parsed separately only if promoted |
 | public/api-docs/openapi.yaml | 9 | 3288 | Config/workflow text; parsed separately only if promoted |
