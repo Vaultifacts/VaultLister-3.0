@@ -10,12 +10,13 @@ VaultLister is a multi-channel reselling platform for online sellers who list an
 VaultLister is built for:
 - Resellers who sell on 2 or more marketplaces at the same time
 - Canadian sellers who need CAD pricing and Canada Post shipping label integration
-- Sellers on Poshmark, eBay, Mercari, Depop, Grailed, Etsy, Shopify, Facebook Marketplace, and Whatnot
+- Sellers on eBay, Poshmark, Depop, Grailed, Shopify, Facebook Marketplace, and Whatnot (Kijiji, Etsy, Mercari, Vinted coming soon)
 - Power sellers managing 50–5,000+ active listings across platforms
 
 ## Key Capabilities
 
-- Cross-list a single inventory item to up to 7 live marketplaces in one action (4 more coming soon)
+- Cross-list a single inventory item to 7 live marketplaces in one action: eBay, Poshmark, Depop, Grailed, Shopify, Facebook Marketplace, Whatnot
+- 4 coming soon: Kijiji, Etsy, Mercari, Vinted
 - Real-time inventory sync: when an item sells on one platform, it is automatically marked sold and delisted everywhere else
 - AI-powered listing generation: describe an item and Claude AI writes the title, description, and tags optimized for each platform
 - Playwright-based automation bots for Poshmark closet sharing, follow-back, and offer rules — runs on a schedule without manual input
