@@ -27,7 +27,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   check:
@@ -36,10 +36,22 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: '1.3.9'
 
-      - name: Check open items is current
-        run: bun run open-items:check
+      - name: Regenerate and commit if stale
+        run: |
+          bun scripts/generate-open-items.mjs
+          if ! git diff --quiet docs/OPEN_ITEMS.md; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add docs/OPEN_ITEMS.md
+            git commit -m "[AUTO] chore(ci): regenerate OPEN_ITEMS.md [skip ci]"
+            git push
+          else
+            echo "docs/OPEN_ITEMS.md is current."
+          fi
