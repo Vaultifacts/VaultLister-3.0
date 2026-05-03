@@ -1,15 +1,25 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-05-02 MST
+**Updated:** 2026-05-02 MST (session 4)
 
 ## Current State
 - **Live site:** https://vaultlister.com/?app=1
 - **7 live platforms** — Grailed promoted from Coming Soon. Shopify OAuth fully configured (CLIENT_ID/SECRET/REDIRECT_URI in Railway).
 - **Launch Readiness Walkthrough COMPLETE** — all 185 findings fixed + VERIFIED across 15 sessions. Remaining open items are external blockers only (CR-10, CR-4).
-- **Google OAuth FULLY FIXED + DEPLOYED** — 6 layered bugs fixed, VERIFIED LIVE: route registered, OTT endpoint responds, correct hash logic, raw fetch confirmed.
+- **Google OAuth FULLY FIXED + DEPLOYED** — 6 layered bugs fixed, VERIFIED LIVE.
 - **Post-walkthrough fix plan (6 batches) COMPLETE + VERIFIED** — all batches deployed to live site.
-- **19 open GitHub issues** — dependabot CI failures ×5, automation workflow failures ×4, infra/observability alerts ×4, other ×6. Needs triage.
-- **Active task backlog:** `docs/OPEN_ITEMS.md` (generated). `docs/superpowers/plans/2026-05-01-fake-data-audit.md` COMPLETE — all 73 tracked findings resolved (committed). `docs/REMAINING_WORK_EXECUTION_SHEET_2026-04-21.md` is historical — do not use as active plan.
+- **GitHub issues triaged (2026-05-02)** — all 19 classified. Closed: #488 (Lighthouse false alarm, 72/100), #490 (stale branch). Commented: #482 (rotate token — operator task), #491/#492 (Railway health — monitor). #489 was already auto-closed. 5 dependabot issues are dependency-only; CI passes.
+- **Active task backlog:** `docs/OPEN_ITEMS.md` — 0 unchecked items as of 2026-05-02. `docs/superpowers/plans/2026-05-01-fake-data-audit.md` COMPLETE — all 73 tracked findings resolved (committed). `docs/REMAINING_WORK_EXECUTION_SHEET_2026-04-21.md` is historical — do not use as active plan.
 - **BROWSER NOTE:** Always use `mcp__claude-in-chrome__*` tools. NEVER use `mcp__plugin_chrome-devtools-mcp`.
+
+## Last Completed Work (2026-05-02 session 4)
+
+### Anti-detection, CR-10, GitHub triage
+- **ANTI-09 multi-account isolation warning** — added to `src/frontend/pages/pages-settings-account.js` (correct chunk: `shops` → `settings` → `chunk-settings.js`). Warning renders when `connectedShops.length > 1`. Commit `85527bfe`.
+- **ANTI-10 DataDome/Camoufox maintenance cadence** — documented in `docs/PERFECT_ANTI_DETECTION_SYSTEM.md`: retest monthly against antoinevastel.com/bots/datadome and bot.sannysoft.com from Railway.
+- **ANTI-12 JA4 fingerprinting** — documented verification task: run `bun worker/bots/fingerprint-self-test.js` on Railway to capture TLS/JA4 output.
+- **CR-10 OAuth connect checklist** — written at `docs/reference/cr10-oauth-connect-checklist.md`. All 8 platforms: eBay (OAuth), Shopify (OAuth), Depop (PKCE), Poshmark/Mercari/Grailed/Whatnot/Facebook (Playwright). Endpoints verified from source: connect = `POST /api/shops/`, callback = `GET /api/oauth/callback/<platform>?code=...&state=...`.
+- **Mercari UI cleanup** — removed `mercari_relist` automation card from `pages-inventory-catalog.js`; removed Mercari from platform filter; updated community/about page partner list to reflect 7 live platforms.
+- **GitHub issues triaged** — all 19 classified. Closed #488 (Lighthouse transient 48→72), #490; commented on #482, #491, #492. #489 auto-closed.
 
 ## Last Completed Work (2026-05-02)
 
@@ -94,10 +104,6 @@
 2. **CR-10 OAuth** — eBay + Shopify init verified live 2026-04-22; Depop `/api/oauth/authorize/depop` returns 503; Poshmark/Mercari/Grailed/Whatnot manual Playwright credential flows unverified
 
 ## Next Tasks
-
-**IMMEDIATE — 109 Fake-Data Findings**
-See `docs/superpowers/plans/2026-05-01-fake-data-audit.md` — 74 open items tracked in `docs/OPEN_ITEMS.md`.
-Priority order: CRITICAL (F77/F108/F61) → HIGH state-only (F103/F104/F109/F58/F74...) → HIGH fake ops (F101/F102/F62...) → MEDIUM → LOW.
 
 **UI / LANDING PAGE FIXES**
 - [Image #1] DONE LOCAL 2026-05-01 — Landing page Coming Soon section shows "4 More on the Way" with Kijiji, Etsy, Mercari, Vinted only.
