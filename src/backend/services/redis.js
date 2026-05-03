@@ -13,7 +13,7 @@ let isConnected = false;
 let connectionAttempts = 0;
 let _shutdownRegistered = false;
 let _heartbeatTimer = null;
-const MAX_RECONNECT_ATTEMPTS = 3;
+let _reconnectTimer = null;
 
 // In-memory fallback for when Redis is unavailable
 const memoryStore = new Map();
@@ -46,10 +46,12 @@ export function initRedis() {
             lazyConnect: true,
             connectTimeout: 15000,
             retryStrategy: (times) => {
-                if (times > MAX_RECONNECT_ATTEMPTS) {
-                    return null; // Stop retrying — in-memory fallback is active
+                if (times <= 5) {
+                    return Math.min(times * 500, 3000);
                 }
-                return Math.min(times * 500, 3000);
+                // After 5 fast retries, back off to 30s intervals indefinitely.
+                // In-memory fallback keeps the app functional while we wait.
+                return 30000;
             },
         });
 
