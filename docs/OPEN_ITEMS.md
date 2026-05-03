@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-03T00:26:16.215Z
-Commit: e9444759
+Generated at: 2026-05-03T00:27:38.670Z
+Commit: de7bcee9
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -113,7 +113,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | .github/workflows/marketplace-health.yml | 2 | 157 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/npm-audit.yml | 3 | 74 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/observability-health.yml | 2 | 356 | Config/workflow text; parsed separately only if promoted |
-| .github/workflows/open-items-check.yml | 8 | 1 | Config/workflow text; parsed separately only if promoted |
+| .github/workflows/open-items-check.yml | 10 | 1 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/orphan-cleanup.yml | 1 | 84 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/production-smoke.yml | 4 | 74 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/project-status-update.yml | 11 | 30 | Config/workflow text; parsed separately only if promoted |
