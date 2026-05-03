@@ -680,7 +680,7 @@ body.dark-mode .notification-item [style*='color: var(--gray-600)'] {
 }
 
 body.dark-mode .notification-item [style*='color: var(--gray-400)'] {
-    color: #6b7280 !important;
+    color: var(--gray-500) !important;
 }
 
 body.dark-mode .notification-item .btn-ghost {
