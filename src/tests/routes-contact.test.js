@@ -88,7 +88,7 @@ describe('POST /api/contact — valid submission', () => {
     });
 
     test('should return 200 when name, email, and message are all provided', async () => {
-        const ctx = makeCtx({ name: 'Alice', email: 'alice@example.com', message: 'Hello there' });
+        const ctx = makeCtx({ name: 'Alice', email: 'alice@gmail.com', message: 'Hello there' });
         const result = await contactRouter(ctx);
         expect(result.status).toBe(200);
         expect(result.data.message).toBeDefined();
@@ -102,14 +102,14 @@ describe('POST /api/contact — validation errors', () => {
     });
 
     test('should return 400 when name is missing', async () => {
-        const ctx = makeCtx({ email: 'alice@example.com', message: 'Hello' });
+        const ctx = makeCtx({ email: 'alice@gmail.com', message: 'Hello' });
         const result = await contactRouter(ctx);
         expect(result.status).toBe(400);
         expect(result.data.error).toMatch(/name/i);
     });
 
     test('should return 400 when name is an empty string', async () => {
-        const ctx = makeCtx({ name: '   ', email: 'alice@example.com', message: 'Hello' });
+        const ctx = makeCtx({ name: '   ', email: 'alice@gmail.com', message: 'Hello' });
         const result = await contactRouter(ctx);
         expect(result.status).toBe(400);
         expect(result.data.error).toMatch(/name/i);
@@ -137,14 +137,14 @@ describe('POST /api/contact — validation errors', () => {
     });
 
     test('should return 400 when message is missing', async () => {
-        const ctx = makeCtx({ name: 'Alice', email: 'alice@example.com' });
+        const ctx = makeCtx({ name: 'Alice', email: 'alice@gmail.com' });
         const result = await contactRouter(ctx);
         expect(result.status).toBe(400);
         expect(result.data.error).toMatch(/message/i);
     });
 
     test('should return 400 when message is an empty string', async () => {
-        const ctx = makeCtx({ name: 'Alice', email: 'alice@example.com', message: '   ' });
+        const ctx = makeCtx({ name: 'Alice', email: 'alice@gmail.com', message: '   ' });
         const result = await contactRouter(ctx);
         expect(result.status).toBe(400);
         expect(result.data.error).toMatch(/message/i);
@@ -157,7 +157,7 @@ describe('POST /api/contact — rate limiting (3 per hour)', () => {
         applyRateLimitImpl = mock(() => Promise.resolve(null));
         mockQueryGet.mockImplementation(() => Promise.resolve({ cnt: '3' }));
 
-        const ctx = makeCtx({ name: 'Alice', email: 'alice@example.com', message: 'Hello' });
+        const ctx = makeCtx({ name: 'Alice', email: 'alice@gmail.com', message: 'Hello' });
         const result = await contactRouter(ctx);
         expect(result.status).toBe(429);
         expect(result.data.error).toBeDefined();
@@ -169,7 +169,7 @@ describe('POST /api/contact — rate limiting (3 per hour)', () => {
             data: { error: 'Too many requests, please try again later' },
         }));
 
-        const ctx = makeCtx({ name: 'Alice', email: 'alice@example.com', message: 'Hello' });
+        const ctx = makeCtx({ name: 'Alice', email: 'alice@gmail.com', message: 'Hello' });
         const result = await contactRouter(ctx);
         expect(result.status).toBe(429);
     });
