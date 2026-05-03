@@ -24,6 +24,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Post status update to Development Board
+        id: post-status
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           github-token: ${{ secrets.ADD_TO_PROJECT_TOKEN }}
@@ -105,17 +106,18 @@ jobs:
             core.notice(`Posted ${statusLabel} status update to Development Board`);
 
       - name: Create issue on failure
-        if: failure() && !cancelled()
+        if: steps.post-status.outcome == 'failure' && !cancelled()
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const title = '[Automation] Project status update workflow failed — boards may be stale';
+            const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
             const { data: existing } = await github.rest.issues.listForRepo({
               owner: context.repo.owner, repo: context.repo.repo,
-              state: 'open', labels: 'ci-failure', per_page: 50
+              state: 'all', labels: 'ci-failure', since, per_page: 100
             });
             if (existing.some(i => i.title === title)) {
-              core.notice('Open failure issue already exists — skipping duplicate creation');
+              core.notice('Recent failure issue already exists — skipping duplicate creation');
               return;
             }
             await github.rest.issues.create({
