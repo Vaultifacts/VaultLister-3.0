@@ -113,6 +113,11 @@ screenshots/
 # Test reports (generated)
 TEST_REPORT_*.md
 
+# Axe accessibility scan artifacts (one-off runs)
+axe-*.json
+scripts/axe-scan-*.cjs
+scripts/axe-spa-scan.cjs
+
 # Runtime artifacts
 generated/
 memory/*.lock
