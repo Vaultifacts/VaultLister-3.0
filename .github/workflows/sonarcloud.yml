@@ -108,62 +108,6 @@ jobs:
             --data-urlencode "value=previous_version" \
             https://sonarcloud.io/api/settings/set
 
-      - name: Configure quality gate
-        if: github.event_name != 'pull_request' && github.actor != 'dependabot[bot]'
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          ORG: vaultlister
-        run: |
-          API="https://sonarcloud.io/api"
-          AUTH="Authorization: Bearer ${SONAR_TOKEN}"
-          GATE_NAME="VaultLister"
-          PROJECT_KEY="Vaultifacts_VaultLister-3.0"
-
-          # Find or create quality gate
-          GATE_ID=$(curl -sS -H "$AUTH" \
-            "${API}/qualitygates/list?organization=${ORG}" | \
-            jq -r ".qualitygates[] | select(.name == \"${GATE_NAME}\") | .id")
-
-          if [ -z "$GATE_ID" ]; then
-            echo "Creating quality gate '${GATE_NAME}'..."
-            GATE_ID=$(curl -sS -H "$AUTH" \
-              -d "name=${GATE_NAME}&organization=${ORG}" \
-              "${API}/qualitygates/create" | jq -r '.id')
-          fi
-
-          if [ -z "$GATE_ID" ] || [ "$GATE_ID" = "null" ]; then
-            echo "WARNING: Could not create/find quality gate — skipping"
-            exit 0
-          fi
-          echo "Quality gate ID: ${GATE_ID}"
-
-          # Remove existing conditions to reset cleanly
-          EXISTING=$(curl -sS -H "$AUTH" \
-            "${API}/qualitygates/show?id=${GATE_ID}&organization=${ORG}" | \
-            jq -r '.conditions[]?.id // empty')
-          for CID in $EXISTING; do
-            curl -sS -H "$AUTH" \
-              -d "id=${CID}&organization=${ORG}" \
-              "${API}/qualitygates/delete_condition" > /dev/null 2>&1 || true
-          done
-
-          # Add realistic conditions for new code period
-          add_condition() {
-            echo "  Adding condition: $1 $2 $3"
-            RESP=$(curl -sS -H "$AUTH" \
-              -d "gateId=${GATE_ID}&metric=$1&op=$2&error=$3&organization=${ORG}" \
-              "${API}/qualitygates/create_condition" 2>&1)
-            echo "    -> $RESP"
-          }
-          add_condition "new_coverage"              "LT" "5"
-          add_condition "new_duplicated_lines_density" "GT" "10"
-          add_condition "new_security_rating"        "GT" "2"
-          add_condition "new_reliability_rating"     "GT" "3"
-          add_condition "new_maintainability_rating" "GT" "2"
-
-          # Gate selection is done via scanner property -Dsonar.qualitygate.name
-          echo "Quality gate '${GATE_NAME}' (ID: ${GATE_ID}) configured with 5 conditions"
-
       - name: Initialize database
         run: |
           bun run db:init
@@ -188,4 +132,3 @@ jobs:
           projectBaseDir: .
           args: >
             -Dsonar.projectVersion=${{ steps.package-version.outputs.version }}
-            -Dsonar.qualitygate.name=VaultLister
