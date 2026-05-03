@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-03T00:13:47.034Z
-Commit: 2d4006d9
+Generated at: 2026-05-03T00:16:12.003Z
+Commit: 029d0b90
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
