@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-03T01:41:53.949Z
-Commit: 153819a4
+Generated at: 2026-05-03T01:45:07.183Z
+Commit: 1079d892
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -22,10 +22,10 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 | Anti-detection/design gaps | 11 |
 | Open GitHub issues | 12 |
 | Explicit unchecked checklist items | 359 |
-| Repo-wide unchecked checkbox hits | 583 |
+| Repo-wide unchecked checkbox hits | 624 |
 | Repo-wide unchecked checkbox hits included | 359 |
-| Repo-wide unchecked checkbox hits excluded or review-only | 224 |
-| Open-marker source files discovered | 214 |
+| Repo-wide unchecked checkbox hits excluded or review-only | 265 |
+| Open-marker source files discovered | 215 |
 | Source TODO/FIXME hits | 14 |
 
 ## Source Coverage Audit
@@ -38,6 +38,7 @@ Command: `rg -n "^\s*[-*]\s+\[ \]" <document targets> --glob "*.md"`
 
 | Source | Matches | First Match | Treatment |
 |---|---:|---:|---|
+| docs/reference/cr10-oauth-connect-checklist.md | 41 | 10 | Excluded pending source-policy review |
 | .agents/skills/mobile-audit/SKILL.md | 6 | 75 | Excluded: agent skill runbook checklist, not persistent backlog |
 | docs/archive/evidence-2026-03/RUNBOOK_CHECKLIST.md | 4 | 25 | Excluded: historical evidence, verify before promotion |
 | docs/LAUNCH_AUDIT_FINDINGS_2026-04-05.md | 9 | 284 | Excluded: historical evidence, verify before promotion |
@@ -266,6 +267,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | qa/full_testing_taxonomy.md | 1 | 231 | QA coverage reference; individual gaps require current verification before promotion |
 | docs/reference/api-route-inventory.md | 2 | 112 | Reference/design source; verify before promotion |
 | docs/reference/api.md | 1 | 160 | Reference/design source; verify before promotion |
+| docs/reference/cr10-oauth-connect-checklist.md | 1 | 39 | Reference/design source; verify before promotion |
 | docs/reference/database.md | 1 | 112 | Reference/design source; verify before promotion |
 | docs/reference/docs-index.md | 6 | 39 | Reference/design source; verify before promotion |
 | docs/reference/frontend-fetch-inventory.md | 21 | 23 | Reference/design source; verify before promotion |
