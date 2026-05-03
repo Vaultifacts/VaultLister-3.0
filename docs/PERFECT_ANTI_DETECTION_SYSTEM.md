@@ -544,7 +544,7 @@ Ranked by detection risk, not implementation complexity:
 
 9. ~~**No payment method or identity isolation guidance**~~ — **RESOLVED** (2026-05-02). Dismissible warning banner added to My Shops page (pages-deferred.js, commit b72ce6b0) — renders when 2+ accounts are connected, reminding operators to use separate payment methods, emails, and identity documents per account.
 
-10. **DataDome has a named Camoufox detection profile** — DataDome publishes specific detection pages for anti-detect browsers including Camoufox, targeting Canvas/WebGL coherence, AudioContext signatures, and timezone consistency. Any platform behind DataDome has Camoufox-specific fingerprint checks. Periodic retesting against DataDome's bot test suite is required.
+10. **DataDome has a named Camoufox detection profile** — DataDome publishes specific detection pages for anti-detect browsers including Camoufox, targeting Canvas/WebGL coherence, AudioContext signatures, and timezone consistency. Any platform behind DataDome has Camoufox-specific fingerprint checks. **Maintenance cadence: retest monthly** against https://antoinevastel.com/bots/datadome and https://bot.sannysoft.com/ from Railway (Linux). If score degrades, evaluate CloverLabsAI/camoufox upgrade (FF146, see item 17) or Patchright as Chromium fallback. Platforms confirmed behind DataDome: Depop, Grailed.
 
 11. ~~**No per-account behavioral parameter profiles**~~ — **RESOLVED** (2026-04-15). `getProfileBehavior()` generates unique typing speed, pause, mouse overshoot, typo frequency per profile. `humanType()` uses gaussian speed + mid-typing pauses + occasional typos. Params persisted in `profiles.json`.
 
