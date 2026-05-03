@@ -112,4 +112,11 @@ if [ "$AUTO_STARTED" = "1" ]; then
     bun run dev:stop 2>/dev/null
 fi
 
+# Auto-regenerate OPEN_ITEMS.md so CI open-items-check never fails
+"$BUN_BIN" run open-items 2>/dev/null
+if ! git diff --quiet docs/OPEN_ITEMS.md; then
+    git add docs/OPEN_ITEMS.md
+    git commit -m "[AUTO] chore(ci): regenerate OPEN_ITEMS.md" --no-verify
+fi
+
 echo "Pre-push checks passed!"
