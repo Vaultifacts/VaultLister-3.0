@@ -1024,12 +1024,12 @@ Object.assign(handlers, {
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>Description</th>
-                                        <th>Amount</th>
-                                        <th>Category</th>
-                                        <th>Frequency</th>
-                                        <th>Last Executed</th>
-                                        <th>Actions</th>
+                                        <th scope="col">Description</th>
+                                        <th scope="col">Amount</th>
+                                        <th scope="col">Category</th>
+                                        <th scope="col">Frequency</th>
+                                        <th scope="col">Last Executed</th>
+                                        <th scope="col">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -1341,11 +1341,11 @@ Object.assign(handlers, {
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>Date</th>
-                                        <th>Action</th>
-                                        <th>Field</th>
-                                        <th>Old Value</th>
-                                        <th>New Value</th>
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Action</th>
+                                        <th scope="col">Field</th>
+                                        <th scope="col">Old Value</th>
+                                        <th scope="col">New Value</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -3172,9 +3172,9 @@ Object.assign(handlers, {
                 <table class="items-table">
                     <thead>
                         <tr>
-                            <th>Item</th>
-                            <th>Qty</th>
-                            <th style="text-align: right;">Price</th>
+                            <th scope="col">Item</th>
+                            <th scope="col">Qty</th>
+                            <th scope="col" style="text-align: right;">Price</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -4916,11 +4916,11 @@ Object.assign(handlers, {
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Description</th>
-                                <th>Linked Item</th>
-                                <th>Qty</th>
-                                <th>Unit Cost</th>
-                                <th>Total</th>
+                                <th scope="col">Description</th>
+                                <th scope="col">Linked Item</th>
+                                <th scope="col">Qty</th>
+                                <th scope="col">Unit Cost</th>
+                                <th scope="col">Total</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -5035,10 +5035,10 @@ Object.assign(handlers, {
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>Pattern</th>
-                                    <th>Account</th>
-                                    <th>Description</th>
-                                    <th></th>
+                                    <th scope="col">Pattern</th>
+                                    <th scope="col">Account</th>
+                                    <th scope="col">Description</th>
+                                    <th scope="col"></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -5238,10 +5238,10 @@ Object.assign(handlers, {
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>Date</th>
-                                    <th>Description</th>
-                                    <th>Type</th>
-                                    <th>Amount</th>
+                                    <th scope="col">Date</th>
+                                    <th scope="col">Description</th>
+                                    <th scope="col">Type</th>
+                                    <th scope="col">Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -5985,7 +5985,7 @@ Object.assign(handlers, {
                 headers
                     .map(
                         (h) =>
-                            `<th style="border: 1px solid var(--gray-200); padding: 4px 6px; font-weight: 600;">${escapeHtml(h)}</th>`,
+                            `<th scope="col" style="border: 1px solid var(--gray-200); padding: 4px 6px; font-weight: 600;">${escapeHtml(h)}</th>`,
                     )
                     .join('') +
                 '</tr></thead><tbody>';
@@ -6460,7 +6460,7 @@ Object.assign(handlers, {
             resultsEl.innerHTML = sanitizeHTML(`
                 <div class="table-container">
                     <table class="table table-sm">
-                        <thead><tr><th>Carrier</th><th>Service</th><th>Rate</th><th>Days</th></tr></thead>
+                        <thead><tr><th scope="col">Carrier</th><th scope="col">Service</th><th scope="col">Rate</th><th scope="col">Days</th></tr></thead>
                         <tbody>
                             ${(data.rates || [])
                                 .map(
@@ -7283,7 +7283,7 @@ Object.assign(handlers, {
                     `
                             : `
                         <table class="data-table">
-                            <thead><tr><th>Buyer</th><th>Platform</th><th>Total Purchases</th><th>Total Spent</th></tr></thead>
+                            <thead><tr><th scope="col">Buyer</th><th scope="col">Platform</th><th scope="col">Total Purchases</th><th scope="col">Total Spent</th></tr></thead>
                             <tbody>
                                 ${profiles
                                     .map(

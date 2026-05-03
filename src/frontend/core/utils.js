@@ -2177,7 +2177,7 @@ const dataGrid = {
                             ${columns
                                 .map(
                                     (col) => `
-                                <th class="${state.sortable && col.sortable !== false ? 'sortable' : ''} ${sortColumn === col.key ? 'sorted' : ''}"
+                                <th scope="col" class="${state.sortable && col.sortable !== false ? 'sortable' : ''} ${sortColumn === col.key ? 'sorted' : ''}"
                                     ${state.sortable && col.sortable !== false ? `onclick="dataGrid.sort('${id}', '${col.key}')"` : ''}>
                                     ${escapeHtml(col.label)}
                                     ${

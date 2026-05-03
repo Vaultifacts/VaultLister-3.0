@@ -2565,7 +2565,7 @@ Object.assign(handlers, {
                 data.headers
                     .map(
                         (h) =>
-                            `<th style="border: 1px solid var(--gray-200); padding: 4px 6px; background: var(--gray-50); white-space: nowrap;">${h}</th>`,
+                            `<th scope="col" style="border: 1px solid var(--gray-200); padding: 4px 6px; background: var(--gray-50); white-space: nowrap;">${h}</th>`,
                     )
                     .join('') +
                 '</tr></thead>';
@@ -2829,7 +2829,7 @@ Object.assign(handlers, {
                 <div class="modal-header"><h3>${escapeHtml(brand)} Size Guide</h3><button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button></div>
                 <div class="modal-body" style="overflow-x: auto;">
                     <table class="data-table">
-                        <thead><tr><th>Size</th><th>US</th><th>UK</th><th>EU</th><th>JP</th><th>CN</th><th>Chest</th><th>Waist</th></tr></thead>
+                        <thead><tr><th scope="col">Size</th><th scope="col">US</th><th scope="col">UK</th><th scope="col">EU</th><th scope="col">JP</th><th scope="col">CN</th><th scope="col">Chest</th><th scope="col">Waist</th></tr></thead>
                         <tbody>
                             ${guides.map((g) => `<tr><td>${escapeHtml(g.size_label)}</td><td>${g.us_size || '-'}</td><td>${g.uk_size || '-'}</td><td>${g.eu_size || '-'}</td><td>${g.jp_size || '-'}</td><td>${g.cn_size || '-'}</td><td>${g.chest_cm ? g.chest_cm + 'cm' : '-'}</td><td>${g.waist_cm ? g.waist_cm + 'cm' : '-'}</td></tr>`).join('')}
                         </tbody>
@@ -3899,12 +3899,12 @@ Object.assign(handlers, {
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>Description</th>
-                                        <th>Amount</th>
-                                        <th>Category</th>
-                                        <th>Frequency</th>
-                                        <th>Last Executed</th>
-                                        <th>Actions</th>
+                                        <th scope="col">Description</th>
+                                        <th scope="col">Amount</th>
+                                        <th scope="col">Category</th>
+                                        <th scope="col">Frequency</th>
+                                        <th scope="col">Last Executed</th>
+                                        <th scope="col">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -4216,11 +4216,11 @@ Object.assign(handlers, {
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>Date</th>
-                                        <th>Action</th>
-                                        <th>Field</th>
-                                        <th>Old Value</th>
-                                        <th>New Value</th>
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Action</th>
+                                        <th scope="col">Field</th>
+                                        <th scope="col">Old Value</th>
+                                        <th scope="col">New Value</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -4971,9 +4971,9 @@ Object.assign(handlers, {
                         <table class="table" style="font-size: 12px;">
                             <thead>
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Website</th>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Email</th>
+                                    <th scope="col">Website</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -5421,9 +5421,9 @@ Object.assign(handlers, {
                 <table style="width: 100%; font-size: 13px;">
                     <thead>
                         <tr style="border-bottom: 2px solid var(--gray-200);">
-                            <th style="padding: 12px; text-align: left;">Metric</th>
-                            <th style="padding: 12px; text-align: center;">You</th>
-                            <th style="padding: 12px; text-align: center;">${escapeHtml(competitor.name)}</th>
+                            <th scope="col" style="padding: 12px; text-align: left;">Metric</th>
+                            <th scope="col" style="padding: 12px; text-align: center;">You</th>
+                            <th scope="col" style="padding: 12px; text-align: center;">${escapeHtml(competitor.name)}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -8511,7 +8511,7 @@ Object.assign(handlers, {
 
             let tableHTML = '<table style="width: 100%; border-collapse: collapse; font-size: 13px;"><thead><tr>';
             headers.forEach((header) => {
-                tableHTML += `<th style="background: var(--gray-100); padding: 8px; text-align: left; border: 1px solid var(--gray-200); font-weight: 600;">${escapeHtml(header)}</th>`;
+                tableHTML += `<th scope="col" style="background: var(--gray-100); padding: 8px; text-align: left; border: 1px solid var(--gray-200); font-weight: 600;">${escapeHtml(header)}</th>`;
             });
             tableHTML += '</tr></thead><tbody>';
 
@@ -11077,9 +11077,9 @@ Object.assign(handlers, {
                 <table class="items-table">
                     <thead>
                         <tr>
-                            <th>Item</th>
-                            <th>Qty</th>
-                            <th style="text-align: right;">Price</th>
+                            <th scope="col">Item</th>
+                            <th scope="col">Qty</th>
+                            <th scope="col" style="text-align: right;">Price</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -15841,11 +15841,11 @@ Object.assign(handlers, {
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Description</th>
-                                <th>Linked Item</th>
-                                <th>Qty</th>
-                                <th>Unit Cost</th>
-                                <th>Total</th>
+                                <th scope="col">Description</th>
+                                <th scope="col">Linked Item</th>
+                                <th scope="col">Qty</th>
+                                <th scope="col">Unit Cost</th>
+                                <th scope="col">Total</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -15960,10 +15960,10 @@ Object.assign(handlers, {
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>Pattern</th>
-                                    <th>Account</th>
-                                    <th>Description</th>
-                                    <th></th>
+                                    <th scope="col">Pattern</th>
+                                    <th scope="col">Account</th>
+                                    <th scope="col">Description</th>
+                                    <th scope="col"></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -16163,10 +16163,10 @@ Object.assign(handlers, {
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>Date</th>
-                                    <th>Description</th>
-                                    <th>Type</th>
-                                    <th>Amount</th>
+                                    <th scope="col">Date</th>
+                                    <th scope="col">Description</th>
+                                    <th scope="col">Type</th>
+                                    <th scope="col">Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -17368,12 +17368,12 @@ Object.assign(handlers, {
                 <table style="width:100%; border-collapse:collapse; font-size:13px;">
                     <thead>
                         <tr style="border-bottom: 1px solid var(--gray-200); text-align:left;">
-                            <th style="padding:8px 12px;">Time</th>
-                            <th style="padding:8px 12px;">Status</th>
-                            <th style="padding:8px 12px;">Items</th>
-                            <th style="padding:8px 12px;">Duration</th>
-                            <th style="padding:8px 12px;">Message</th>
-                            <th style="padding:8px 12px;"></th>
+                            <th scope="col" style="padding:8px 12px;">Time</th>
+                            <th scope="col" style="padding:8px 12px;">Status</th>
+                            <th scope="col" style="padding:8px 12px;">Items</th>
+                            <th scope="col" style="padding:8px 12px;">Duration</th>
+                            <th scope="col" style="padding:8px 12px;">Message</th>
+                            <th scope="col" style="padding:8px 12px;"></th>
                         </tr>
                     </thead>
                     <tbody>${rows}</tbody>
@@ -17465,11 +17465,11 @@ Object.assign(handlers, {
                     <h3 class="text-sm font-semibold mb-2">Action Log (${logs.length} entries)</h3>
                     <table style="width:100%;border-collapse:collapse;font-size:13px;">
                         <thead><tr style="border-bottom:1px solid var(--gray-200);text-align:left;">
-                            <th style="padding:6px 8px;">Time</th>
-                            <th style="padding:6px 8px;">Status</th>
-                            <th style="padding:6px 8px;">Action</th>
-                            <th style="padding:6px 8px;">Duration</th>
-                            <th style="padding:6px 8px;">Details</th>
+                            <th scope="col" style="padding:6px 8px;">Time</th>
+                            <th scope="col" style="padding:6px 8px;">Status</th>
+                            <th scope="col" style="padding:6px 8px;">Action</th>
+                            <th scope="col" style="padding:6px 8px;">Duration</th>
+                            <th scope="col" style="padding:6px 8px;">Details</th>
                         </tr></thead>
                         <tbody>${logRows}</tbody>
                     </table>
@@ -23745,7 +23745,7 @@ Object.assign(handlers, {
                 headers
                     .map(
                         (h) =>
-                            `<th style="border: 1px solid var(--gray-200); padding: 4px 6px; font-weight: 600;">${escapeHtml(h)}</th>`,
+                            `<th scope="col" style="border: 1px solid var(--gray-200); padding: 4px 6px; font-weight: 600;">${escapeHtml(h)}</th>`,
                     )
                     .join('') +
                 '</tr></thead><tbody>';
@@ -24928,7 +24928,7 @@ Object.assign(handlers, {
             resultsEl.innerHTML = sanitizeHTML(`
                 <div class="table-container">
                     <table class="table table-sm">
-                        <thead><tr><th>Carrier</th><th>Service</th><th>Rate</th><th>Days</th></tr></thead>
+                        <thead><tr><th scope="col">Carrier</th><th scope="col">Service</th><th scope="col">Rate</th><th scope="col">Days</th></tr></thead>
                         <tbody>
                             ${(data.rates || [])
                                 .map(
@@ -28121,8 +28121,8 @@ Object.assign(handlers, {
                         <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
                             <thead>
                                 <tr style="border-bottom: 1px solid var(--gray-200);">
-                                    <th style="padding: 8px; text-align: left; font-weight: 600;">Category</th>
-                                    <th style="padding: 8px; text-align: right; font-weight: 600;">Records</th>
+                                    <th scope="col" style="padding: 8px; text-align: left; font-weight: 600;">Category</th>
+                                    <th scope="col" style="padding: 8px; text-align: right; font-weight: 600;">Records</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -28488,9 +28488,9 @@ Object.assign(handlers, {
                         <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
                             <thead>
                                 <tr style="border-bottom: 1px solid var(--gray-200);">
-                                    <th style="padding: 8px; text-align: left; font-weight: 600;">Referral</th>
-                                    <th style="padding: 8px; text-align: right; font-weight: 600;">Amount</th>
-                                    <th style="padding: 8px; text-align: center; font-weight: 600;">Status</th>
+                                    <th scope="col" style="padding: 8px; text-align: left; font-weight: 600;">Referral</th>
+                                    <th scope="col" style="padding: 8px; text-align: right; font-weight: 600;">Amount</th>
+                                    <th scope="col" style="padding: 8px; text-align: center; font-weight: 600;">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -29708,7 +29708,7 @@ Object.assign(handlers, {
             components.icon('trending-up', 18) +
             ' Sell-Through by Category</h3>' +
             (sellThrough.length > 0
-                ? '<table class="table table-sm"><thead><tr><th>Category</th><th>Total</th><th>Sold</th><th>Rate</th><th>Avg Days</th></tr></thead><tbody>' +
+                ? '<table class="table table-sm"><thead><tr><th scope="col">Category</th><th scope="col">Total</th><th scope="col">Sold</th><th scope="col">Rate</th><th scope="col">Avg Days</th></tr></thead><tbody>' +
                   sellThrough
                       .map(
                           (s) =>
@@ -29737,7 +29737,7 @@ Object.assign(handlers, {
             components.icon('dollar-sign', 18) +
             ' Margin by Category</h3>' +
             (margins.length > 0
-                ? '<table class="table table-sm"><thead><tr><th>Category</th><th>Sold</th><th>Avg Sale</th><th>Margin</th><th>Profit</th></tr></thead><tbody>' +
+                ? '<table class="table table-sm"><thead><tr><th scope="col">Category</th><th scope="col">Sold</th><th scope="col">Avg Sale</th><th scope="col">Margin</th><th scope="col">Profit</th></tr></thead><tbody>' +
                   margins
                       .map(
                           (m) =>
@@ -29854,7 +29854,7 @@ Object.assign(handlers, {
                   components.icon('alert-triangle', 18) +
                   ' Dead Stock (' +
                   deadStock.length +
-                  ' items)</h3><table class="table table-sm"><thead><tr><th>Title</th><th>SKU</th><th>Days</th><th>Price</th></tr></thead><tbody>' +
+                  ' items)</h3><table class="table table-sm"><thead><tr><th scope="col">Title</th><th scope="col">SKU</th><th scope="col">Days</th><th scope="col">Price</th></tr></thead><tbody>' +
                   deadStock
                       .slice(0, 10)
                       .map(
@@ -30105,7 +30105,7 @@ Object.assign(handlers, {
             '</div><div class="text-xs text-gray-500">Restock Alerts</div></div></div><div class="card"><div class="card-body text-center py-2"><div class="text-xl font-bold" style="color:var(--primary-500);">' +
             (overall.overstocked || 0) +
             '</div><div class="text-xs text-gray-500">Overstocked</div></div></div></div>' +
-            '<table class="table table-sm"><thead><tr><th>Category</th><th>Active</th><th>Value</th><th>Monthly Velocity</th><th>Days of Supply</th><th>Health</th><th>Projected Q</th></tr></thead><tbody>' +
+            '<table class="table table-sm"><thead><tr><th scope="col">Category</th><th scope="col">Active</th><th scope="col">Value</th><th scope="col">Monthly Velocity</th><th scope="col">Days of Supply</th><th scope="col">Health</th><th scope="col">Projected Q</th></tr></thead><tbody>' +
             forecasts
                 .map((f) => {
                     const hc = healthColors[f.health] || 'var(--gray-400)';
@@ -30200,7 +30200,7 @@ Object.assign(handlers, {
                     ${
                         versions.length === 0
                             ? '<p class="text-gray-500 text-sm text-center py-4">No version history yet. Changes are tracked automatically when you edit rules.</p>'
-                            : '<table class="table table-sm"><thead><tr><th>Ver</th><th>Name</th><th>Platform</th><th>Changes</th><th>Date</th><th></th></tr></thead><tbody>' +
+                            : '<table class="table table-sm"><thead><tr><th scope="col">Ver</th><th scope="col">Name</th><th scope="col">Platform</th><th scope="col">Changes</th><th scope="col">Date</th><th scope="col"></th></tr></thead><tbody>' +
                               versions
                                   .map(
                                       (v) =>
@@ -30524,8 +30524,8 @@ Object.assign(handlers, {
                 <table class="table table-sm" style="table-layout:fixed;">
                     <thead>
                         <tr>
-                            <th style="width:50px;">Time</th>
-                            ${days.map((d) => '<th style="text-align:center;width:100px;">' + d + '</th>').join('')}
+                            <th scope="col" style="width:50px;">Time</th>
+                            ${days.map((d) => '<th scope="col" style="text-align:center;width:100px;">' + d + '</th>').join('')}
                         </tr>
                     </thead>
                     <tbody>
@@ -30708,7 +30708,7 @@ Object.assign(handlers, {
                 </div>
                 <table class="table table-sm">
                     <thead>
-                        <tr><th>Rule</th><th>Platform</th><th>Status</th><th>Runs</th><th>Success</th><th>Fail</th><th>Rate</th><th>Avg Items</th><th>Avg Time</th></tr>
+                        <tr><th scope="col">Rule</th><th scope="col">Platform</th><th scope="col">Status</th><th scope="col">Runs</th><th scope="col">Success</th><th scope="col">Fail</th><th scope="col">Rate</th><th scope="col">Avg Items</th><th scope="col">Avg Time</th></tr>
                     </thead>
                     <tbody>
                         ${perfData
@@ -30889,7 +30889,7 @@ Object.assign(handlers, {
                     ${
                         suppliers.length === 0
                             ? '<p class="text-gray-500 text-sm text-center py-4">No suppliers yet</p>'
-                            : '<table class="table table-sm"><thead><tr><th>Name</th><th>Items</th><th>Avg Price</th><th>Actions</th></tr></thead><tbody>' +
+                            : '<table class="table table-sm"><thead><tr><th scope="col">Name</th><th scope="col">Items</th><th scope="col">Avg Price</th><th scope="col">Actions</th></tr></thead><tbody>' +
                               suppliers
                                   .map(
                                       (s) =>
@@ -30979,7 +30979,7 @@ Object.assign(handlers, {
             ' Apply All (' +
             suggestions.length +
             ')</button></div>' +
-            '<table class="table table-sm"><thead><tr><th>Item</th><th>Age</th><th>Current</th><th>Suggested</th><th>Change</th><th>Reason</th><th></th></tr></thead><tbody>' +
+            '<table class="table table-sm"><thead><tr><th scope="col">Item</th><th scope="col">Age</th><th scope="col">Current</th><th scope="col">Suggested</th><th scope="col">Change</th><th scope="col">Reason</th><th scope="col"></th></tr></thead><tbody>' +
             suggestions
                 .slice(0, 20)
                 .map((s) => {
@@ -31201,7 +31201,7 @@ Object.assign(handlers, {
                     ${trendChart}
                     ${
                         recent.length > 0
-                            ? '<h3 class="font-semibold text-sm mb-2">Recent Items</h3><table class="table table-sm"><thead><tr><th>Title</th><th>Cost</th><th>List</th><th>Status</th></tr></thead><tbody>' +
+                            ? '<h3 class="font-semibold text-sm mb-2">Recent Items</h3><table class="table table-sm"><thead><tr><th scope="col">Title</th><th scope="col">Cost</th><th scope="col">List</th><th scope="col">Status</th></tr></thead><tbody>' +
                               recent
                                   .map(
                                       (r) =>

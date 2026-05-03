@@ -562,9 +562,9 @@ Object.assign(handlers, {
                         <table class="table" style="font-size: 12px;">
                             <thead>
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Website</th>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Email</th>
+                                    <th scope="col">Website</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1012,9 +1012,9 @@ Object.assign(handlers, {
                 <table style="width: 100%; font-size: 13px;">
                     <thead>
                         <tr style="border-bottom: 2px solid var(--gray-200);">
-                            <th style="padding: 12px; text-align: left;">Metric</th>
-                            <th style="padding: 12px; text-align: center;">You</th>
-                            <th style="padding: 12px; text-align: center;">${escapeHtml(competitor.name)}</th>
+                            <th scope="col" style="padding: 12px; text-align: left;">Metric</th>
+                            <th scope="col" style="padding: 12px; text-align: center;">You</th>
+                            <th scope="col" style="padding: 12px; text-align: center;">${escapeHtml(competitor.name)}</th>
                         </tr>
                     </thead>
                     <tbody>

@@ -1360,8 +1360,8 @@ Object.assign(pages, {
                         <table class="size-chart-table">
                             <thead>
                                 <tr>
-                                    <th>${currentData.headers[0]}</th>
-                                    ${currentData.rows.map((row) => `<th>${row[0]}</th>`).join('')}
+                                    <th scope="col">${currentData.headers[0]}</th>
+                                    ${currentData.rows.map((row) => `<th scope="col">${row[0]}</th>`).join('')}
                                 </tr>
                             </thead>
                             <tbody>
@@ -1383,7 +1383,7 @@ Object.assign(pages, {
                         <table class="size-chart-table">
                             <thead>
                                 <tr>
-                                    ${currentData.headers.map((h) => `<th>${convertHeader(h)}</th>`).join('')}
+                                    ${currentData.headers.map((h) => `<th scope="col">${convertHeader(h)}</th>`).join('')}
                                 </tr>
                             </thead>
                             <tbody>
@@ -2672,12 +2672,12 @@ Object.assign(pages, {
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th>Event</th>
-                                            <th>Date</th>
-                                            <th>Duration</th>
-                                            <th>Items</th>
-                                            <th>Sales</th>
-                                            <th>Status</th>
+                                            <th scope="col">Event</th>
+                                            <th scope="col">Date</th>
+                                            <th scope="col">Duration</th>
+                                            <th scope="col">Items</th>
+                                            <th scope="col">Sales</th>
+                                            <th scope="col">Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>

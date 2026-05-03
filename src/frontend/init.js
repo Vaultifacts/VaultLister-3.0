@@ -1164,11 +1164,11 @@ handlers.showPlanComparison = async function () {
                     <table style="width: 100%; border-collapse: collapse;">
                         <thead>
                             <tr style="border-bottom: 2px solid var(--gray-200);">
-                                <th style="padding: 12px; text-align: left;">Feature</th>
+                                <th scope="col" style="padding: 12px; text-align: left;">Feature</th>
                                 ${plans
                                     .map(
                                         (plan) => `
-                                    <th style="padding: 12px; text-align: center; ${plan.name === currentPlan ? 'background: var(--primary-50); color: var(--primary-600); font-weight: 600;' : ''}">
+                                    <th scope="col" style="padding: 12px; text-align: center; ${plan.name === currentPlan ? 'background: var(--primary-50); color: var(--primary-600); font-weight: 600;' : ''}">
                                         ${escapeHtml(plan.display_name)}
                                     </th>
                                 `,
@@ -1280,12 +1280,12 @@ handlers.showBuyerProfiles = async function () {
                     <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
                         <thead>
                             <tr style="border-bottom: 2px solid var(--gray-200); background: var(--gray-50);">
-                                <th style="padding: 12px; text-align: left;">Buyer</th>
-                                <th style="padding: 12px; text-align: center;">Platform</th>
-                                <th style="padding: 12px; text-align: right;">Purchases</th>
-                                <th style="padding: 12px; text-align: right;">Returns</th>
-                                <th style="padding: 12px; text-align: center;">Rating</th>
-                                <th style="padding: 12px; text-align: center;">Action</th>
+                                <th scope="col" style="padding: 12px; text-align: left;">Buyer</th>
+                                <th scope="col" style="padding: 12px; text-align: center;">Platform</th>
+                                <th scope="col" style="padding: 12px; text-align: right;">Purchases</th>
+                                <th scope="col" style="padding: 12px; text-align: right;">Returns</th>
+                                <th scope="col" style="padding: 12px; text-align: center;">Rating</th>
+                                <th scope="col" style="padding: 12px; text-align: center;">Action</th>
                             </tr>
                         </thead>
                         <tbody>

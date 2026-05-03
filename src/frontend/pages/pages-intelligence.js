@@ -463,12 +463,12 @@ Object.assign(pages, {
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>Item</th>
-                                    <th>Current</th>
-                                    <th style="color: var(--error);">Pessimistic</th>
-                                    <th style="color: var(--primary);">Expected</th>
-                                    <th style="color: var(--success);">Optimistic</th>
-                                    <th>Range</th>
+                                    <th scope="col">Item</th>
+                                    <th scope="col">Current</th>
+                                    <th scope="col" style="color: var(--error);">Pessimistic</th>
+                                    <th scope="col" style="color: var(--primary);">Expected</th>
+                                    <th scope="col" style="color: var(--success);">Optimistic</th>
+                                    <th scope="col">Range</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1067,13 +1067,13 @@ Object.assign(pages, {
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>Supplier</th>
-                                        <th>Items</th>
-                                        <th>Avg Price</th>
-                                        <th>Stock Status</th>
-                                        <th>Rating</th>
-                                        <th>Reliability</th>
-                                        <th>30-Day Trend</th>
+                                        <th scope="col">Supplier</th>
+                                        <th scope="col">Items</th>
+                                        <th scope="col">Avg Price</th>
+                                        <th scope="col">Stock Status</th>
+                                        <th scope="col">Rating</th>
+                                        <th scope="col">Reliability</th>
+                                        <th scope="col">30-Day Trend</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -1152,13 +1152,13 @@ Object.assign(pages, {
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>PO #</th>
-                                        <th>Supplier</th>
-                                        <th>Items</th>
-                                        <th>Total</th>
-                                        <th>Status</th>
-                                        <th>Created</th>
-                                        <th>Actions</th>
+                                        <th scope="col">PO #</th>
+                                        <th scope="col">Supplier</th>
+                                        <th scope="col">Items</th>
+                                        <th scope="col">Total</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Created</th>
+                                        <th scope="col">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -1220,12 +1220,12 @@ Object.assign(pages, {
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>Supplier</th>
-                                    <th>Avg Processing</th>
-                                    <th>Avg Shipping</th>
-                                    <th>Avg Total</th>
-                                    <th>On-Time %</th>
-                                    <th>Trend</th>
+                                    <th scope="col">Supplier</th>
+                                    <th scope="col">Avg Processing</th>
+                                    <th scope="col">Avg Shipping</th>
+                                    <th scope="col">Avg Total</th>
+                                    <th scope="col">On-Time %</th>
+                                    <th scope="col">Trend</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1369,12 +1369,12 @@ Object.assign(pages, {
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>Supplier</th>
-                                    <th>Min Order Qty</th>
-                                    <th>Tier 1 (1-49)</th>
-                                    <th>Tier 2 (50-99)</th>
-                                    <th>Tier 3 (100+)</th>
-                                    <th>Best Value</th>
+                                    <th scope="col">Supplier</th>
+                                    <th scope="col">Min Order Qty</th>
+                                    <th scope="col">Tier 1 (1-49)</th>
+                                    <th scope="col">Tier 2 (50-99)</th>
+                                    <th scope="col">Tier 3 (100+)</th>
+                                    <th scope="col">Best Value</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1943,12 +1943,12 @@ Object.assign(pages, {
                                                         : '';
                                                     const nextDir =
                                                         isActive && competitorSortDir === 'asc' ? 'desc' : 'asc';
-                                                    return `<th style="padding: 12px; text-align: ${align}; cursor: pointer; user-select: none; white-space: nowrap; color: ${isActive ? 'var(--primary)' : 'inherit'};" onclick="store.setState({ competitorSortCol: '${col}', competitorSortDir: '${nextDir}' }); renderApp(pages.marketIntel());">${label}${arrow}</th>`;
+                                                    return `<th scope="col" style="padding: 12px; text-align: ${align}; cursor: pointer; user-select: none; white-space: nowrap; color: ${isActive ? 'var(--primary)' : 'inherit'};" onclick="store.setState({ competitorSortCol: '${col}', competitorSortDir: '${nextDir}' }); renderApp(pages.marketIntel());">${label}${arrow}</th>`;
                                                 })
                                                 .join('');
                                         })()}
-                                        <th style="padding: 12px; text-align: right;">Activity</th>
-                                        <th style="padding: 12px; text-align: center;">Actions</th>
+                                        <th scope="col" style="padding: 12px; text-align: right;">Activity</th>
+                                        <th scope="col" style="padding: 12px; text-align: center;">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -2180,7 +2180,7 @@ Object.assign(pages, {
                     </div>
                     <div style="overflow-x: auto; display: none;">
                         <table class="table">
-                            <thead><tr><th>Category</th><th>Avg Price</th><th>Sales Volume</th><th>Avg Days</th><th>Top Brand</th></tr></thead>
+                            <thead><tr><th scope="col">Category</th><th scope="col">Avg Price</th><th scope="col">Sales Volume</th><th scope="col">Avg Days</th><th scope="col">Top Brand</th></tr></thead>
                             <tbody>
                                 ${[]
                                     .map(
@@ -2365,9 +2365,9 @@ Object.assign(pages, {
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>Metric</th>
+                                    <th scope="col">Metric</th>
                                     ${comparisonPlatforms
-                                        .map((platform) => `<th style="text-align: center;">${escapeHtml(String(platform))}</th>`)
+                                        .map((platform) => `<th scope="col" style="text-align: center;">${escapeHtml(String(platform))}</th>`)
                                         .join('')}
                                 </tr>
                             </thead>

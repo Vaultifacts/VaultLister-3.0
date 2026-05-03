@@ -2179,7 +2179,7 @@ const dataGrid = {
                             ${columns
                                 .map(
                                     (col) => `
-                                <th class="${state.sortable && col.sortable !== false ? 'sortable' : ''} ${sortColumn === col.key ? 'sorted' : ''}"
+                                <th scope="col" class="${state.sortable && col.sortable !== false ? 'sortable' : ''} ${sortColumn === col.key ? 'sorted' : ''}"
                                     ${state.sortable && col.sortable !== false ? `onclick="dataGrid.sort('${id}', '${col.key}')"` : ''}>
                                     ${escapeHtml(col.label)}
                                     ${
@@ -17041,7 +17041,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'b1670ec0';
+    const v = '1ff4ff96';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function (resolve, reject) {
@@ -22733,12 +22733,12 @@ const pages = {
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>Product</th>
-                                        <th>Units Sold</th>
-                                        <th>Revenue</th>
-                                        <th>Avg Price</th>
-                                        <th>Platform</th>
-                                        <th>Rating</th>
+                                        <th scope="col">Product</th>
+                                        <th scope="col">Units Sold</th>
+                                        <th scope="col">Revenue</th>
+                                        <th scope="col">Avg Price</th>
+                                        <th scope="col">Platform</th>
+                                        <th scope="col">Rating</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -23817,12 +23817,12 @@ const pages = {
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th style="width: 50px">Rank</th>
-                                            <th>Item</th>
-                                            <th>Sales Count</th>
-                                            <th>Total Revenue</th>
-                                            <th>Total Profit</th>
-                                            <th>Avg Sale Price</th>
+                                            <th scope="col" style="width: 50px">Rank</th>
+                                            <th scope="col">Item</th>
+                                            <th scope="col">Sales Count</th>
+                                            <th scope="col">Total Revenue</th>
+                                            <th scope="col">Total Profit</th>
+                                            <th scope="col">Avg Sale Price</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -32282,11 +32282,11 @@ handlers.showPlanComparison = async function () {
                     <table style="width: 100%; border-collapse: collapse;">
                         <thead>
                             <tr style="border-bottom: 2px solid var(--gray-200);">
-                                <th style="padding: 12px; text-align: left;">Feature</th>
+                                <th scope="col" style="padding: 12px; text-align: left;">Feature</th>
                                 ${plans
                                     .map(
                                         (plan) => `
-                                    <th style="padding: 12px; text-align: center; ${plan.name === currentPlan ? 'background: var(--primary-50); color: var(--primary-600); font-weight: 600;' : ''}">
+                                    <th scope="col" style="padding: 12px; text-align: center; ${plan.name === currentPlan ? 'background: var(--primary-50); color: var(--primary-600); font-weight: 600;' : ''}">
                                         ${escapeHtml(plan.display_name)}
                                     </th>
                                 `,
@@ -32398,12 +32398,12 @@ handlers.showBuyerProfiles = async function () {
                     <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
                         <thead>
                             <tr style="border-bottom: 2px solid var(--gray-200); background: var(--gray-50);">
-                                <th style="padding: 12px; text-align: left;">Buyer</th>
-                                <th style="padding: 12px; text-align: center;">Platform</th>
-                                <th style="padding: 12px; text-align: right;">Purchases</th>
-                                <th style="padding: 12px; text-align: right;">Returns</th>
-                                <th style="padding: 12px; text-align: center;">Rating</th>
-                                <th style="padding: 12px; text-align: center;">Action</th>
+                                <th scope="col" style="padding: 12px; text-align: left;">Buyer</th>
+                                <th scope="col" style="padding: 12px; text-align: center;">Platform</th>
+                                <th scope="col" style="padding: 12px; text-align: right;">Purchases</th>
+                                <th scope="col" style="padding: 12px; text-align: right;">Returns</th>
+                                <th scope="col" style="padding: 12px; text-align: center;">Rating</th>
+                                <th scope="col" style="padding: 12px; text-align: center;">Action</th>
                             </tr>
                         </thead>
                         <tbody>

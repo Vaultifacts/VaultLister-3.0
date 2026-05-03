@@ -101,10 +101,10 @@ Object.assign(pages, {
                             <table class="table" aria-label="Feature flags">
                                 <thead>
                                     <tr>
-                                        <th>Flag</th>
-                                        <th>Category</th>
-                                        <th style="text-align:right;">Rollout</th>
-                                        <th style="text-align:center;">Enabled</th>
+                                        <th scope="col">Flag</th>
+                                        <th scope="col">Category</th>
+                                        <th scope="col" style="text-align:right;">Rollout</th>
+                                        <th scope="col" style="text-align:center;">Enabled</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -222,11 +222,11 @@ Object.assign(pages, {
                 <table style="width:100%; border-collapse:collapse; font-size:13px;" role="table">
                     <thead>
                         <tr style="border-bottom:1px solid var(--gray-200); background:var(--gray-50);">
-                            <th style="padding:10px 16px; text-align:left; color:var(--gray-600); font-weight:600; font-size:12px;">Metric</th>
-                            <th style="padding:10px 16px; text-align:center; color:var(--gray-600); font-weight:600; font-size:12px;">Current</th>
-                            <th style="padding:10px 16px; text-align:center; color:var(--gray-600); font-weight:600; font-size:12px;">Target</th>
-                            <th style="padding:10px 16px; text-align:center; color:var(--gray-600); font-weight:600; font-size:12px;">Status</th>
-                            <th style="padding:10px 16px; text-align:left; color:var(--gray-600); font-weight:600; font-size:12px;">Failure Checkpoint</th>
+                            <th scope="col" style="padding:10px 16px; text-align:left; color:var(--gray-600); font-weight:600; font-size:12px;">Metric</th>
+                            <th scope="col" style="padding:10px 16px; text-align:center; color:var(--gray-600); font-weight:600; font-size:12px;">Current</th>
+                            <th scope="col" style="padding:10px 16px; text-align:center; color:var(--gray-600); font-weight:600; font-size:12px;">Target</th>
+                            <th scope="col" style="padding:10px 16px; text-align:center; color:var(--gray-600); font-weight:600; font-size:12px;">Status</th>
+                            <th scope="col" style="padding:10px 16px; text-align:left; color:var(--gray-600); font-weight:600; font-size:12px;">Failure Checkpoint</th>
                         </tr>
                     </thead>
                     <tbody>${rows.join('')}</tbody>
@@ -671,11 +671,11 @@ Object.assign(pages, {
                             <table class="table" aria-label="Top endpoints by request count">
                                 <thead>
                                     <tr>
-                                        <th>Endpoint</th>
-                                        <th style="text-align: right;">Requests</th>
-                                        <th style="text-align: right;">Errors</th>
-                                        <th style="text-align: right;">Avg Response</th>
-                                        <th style="text-align: right;">Error Rate</th>
+                                        <th scope="col">Endpoint</th>
+                                        <th scope="col" style="text-align: right;">Requests</th>
+                                        <th scope="col" style="text-align: right;">Errors</th>
+                                        <th scope="col" style="text-align: right;">Avg Response</th>
+                                        <th scope="col" style="text-align: right;">Error Rate</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -825,10 +825,10 @@ Object.assign(pages, {
                                 <table class="table" aria-label="Recent security events">
                                     <thead>
                                         <tr>
-                                            <th>Event Type</th>
-                                            <th>IP / User</th>
-                                            <th>Details</th>
-                                            <th>Time</th>
+                                            <th scope="col">Event Type</th>
+                                            <th scope="col">IP / User</th>
+                                            <th scope="col">Details</th>
+                                            <th scope="col">Time</th>
                                         </tr>
                                     </thead>
                                     <tbody>

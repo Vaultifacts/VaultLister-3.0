@@ -2584,12 +2584,12 @@ const pages = {
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>Product</th>
-                                        <th>Units Sold</th>
-                                        <th>Revenue</th>
-                                        <th>Avg Price</th>
-                                        <th>Platform</th>
-                                        <th>Rating</th>
+                                        <th scope="col">Product</th>
+                                        <th scope="col">Units Sold</th>
+                                        <th scope="col">Revenue</th>
+                                        <th scope="col">Avg Price</th>
+                                        <th scope="col">Platform</th>
+                                        <th scope="col">Rating</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -3668,12 +3668,12 @@ const pages = {
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th style="width: 50px">Rank</th>
-                                            <th>Item</th>
-                                            <th>Sales Count</th>
-                                            <th>Total Revenue</th>
-                                            <th>Total Profit</th>
-                                            <th>Avg Sale Price</th>
+                                            <th scope="col" style="width: 50px">Rank</th>
+                                            <th scope="col">Item</th>
+                                            <th scope="col">Sales Count</th>
+                                            <th scope="col">Total Revenue</th>
+                                            <th scope="col">Total Profit</th>
+                                            <th scope="col">Avg Sale Price</th>
                                         </tr>
                                     </thead>
                                     <tbody>
