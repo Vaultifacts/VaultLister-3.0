@@ -1,6 +1,6 @@
 # VaultLister 3.0
 
-Zero-cost, offline-capable multi-channel reselling platform. List to 9 marketplaces, manage inventory, automate workflows with AI.
+Zero-cost, offline-capable multi-channel reselling platform. List to 7 live marketplaces (4 more coming soon), manage inventory, automate workflows with AI.
 
 ## Tech Stack
 - **Runtime:** Bun.js 1.3+ (server + package manager)

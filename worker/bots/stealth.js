@@ -324,19 +324,25 @@ export async function mouseWiggle(page) {
  * @param {string} [options.profileDir]  - Absolute path to persistent user_data_dir
  * @param {object} [options.proxy]       - { server, username, password } proxy config
  * @param {boolean} [options.headless=true]
+ * @param {string} [options.executablePath] - Override Camoufox binary (e.g. CloverLabsAI FF146)
  * @returns {Promise<{ browser, context, page }>}
  */
 export async function launchCamoufox(options = {}) {
     const { Camoufox } = await import('camoufox-js');
     const fs = await import('fs');
     const path = await import('path');
-    const { profileDir, proxy, headless = true } = options;
+    const { profileDir, proxy, headless = true, executablePath } = options;
 
     const camoufoxOpts = {
         headless,
         humanize: true,
         block_webrtc: true,
     };
+
+    const customBinary = executablePath || process.env.CAMOUFOX_EXECUTABLE_PATH;
+    if (customBinary) {
+        camoufoxOpts.executable_path = customBinary;
+    }
 
     if (proxy) {
         camoufoxOpts.proxy = proxy;

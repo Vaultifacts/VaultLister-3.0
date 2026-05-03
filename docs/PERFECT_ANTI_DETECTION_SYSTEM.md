@@ -552,13 +552,13 @@ Ranked by detection risk, not implementation complexity:
 
 13. ~~**No off-platform payment keyword blocklist**~~ — **RESOLVED** (2026-04-15). `contentSafetyScanner.js` blocks 20+ payment/contact keywords (Venmo, CashApp, PayPal F&F, Instagram, WhatsApp, etc). Depop-specific warning included.
 
-14. **No Mercari cancellation rate tracking** — multi-platform inventory sync lag can cause accepted offers to be cancelled on Mercari, accumulating against the account's health score independently of bot detection.
+14. ~~**No Mercari cancellation rate tracking**~~ — **DEFERRED** (2026-05-03). Mercari removed from live platforms (Coming Soon). No active bot automation runs against Mercari. Will revisit when Mercari is re-enabled.
 
 15. **CDP serialization leak** — TOOLING BUILT (`fingerprint-self-test.js` tests for `JSON.stringify` getter leak). Run on Railway/Linux to verify. Cannot run on Windows (Camoufox instability).
 
 16. **WebGPU adapter info** — TOOLING BUILT (`fingerprint-self-test.js` checks WebGPU adapter vendor/device). Run on Railway to verify whether Camoufox overrides the software renderer string.
 
-17. **Camoufox upgrade path identified** — EVALUATED (2026-04-15). CloverLabsAI/camoufox **is the official continuation** (daijro's README links to it). Firefox 146 base (vs our 135), per-context fingerprint isolation (8 C++ patches), hardware spoofing per context. Available via `cloverlabs-camoufox` pip package (v0.5.5). No npm package yet — `camoufox-js` is hardcoded to daijro's FF135 builds. **Migration path**: use `cloverlabs-camoufox` Python package on Railway, or manually point `camoufox-js` at the FF146 binary via `executablePath`. Issue #328 remains open in both forks.
+17. **Camoufox upgrade path identified** — EVALUATED (2026-04-15). CloverLabsAI/camoufox **is the official continuation** (daijro's README links to it). Firefox 146 base (vs our 135), per-context fingerprint isolation (8 C++ patches), hardware spoofing per context. Available via `cloverlabs-camoufox` pip package (v0.5.5). No npm package yet — `camoufox-js` is hardcoded to daijro's FF135 builds. **Migration path**: set `CAMOUFOX_EXECUTABLE_PATH` env var in Railway to the FF146 binary path, or pass `executablePath` to `launchCamoufox()`. Code support added 2026-05-03 (`stealth.js`). Issue #328 remains open in both forks. **Remaining**: install CloverLabsAI binary on Railway and verify fingerprint quality.
 
 18. ~~**Service Worker / favicon supercookie persistence**~~ — **RESOLVED** (2026-04-15). `cleanProfileServiceWorkers()` clears SW registrations and favicon cache from profile dirs. Called in `FacebookBot.init()` before every session.
 

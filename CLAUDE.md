@@ -261,7 +261,7 @@ The following functions form the auth persistence chain (`src/frontend/core/stor
 3. Add follow-up tasks to "Next Tasks"
 
 ## MVP Features (V1.0)
-Inventory management, cross-listing to 9 platforms (Poshmark, eBay, Mercari, Depop, Grailed, Etsy, Shopify, Facebook Marketplace, Whatnot), Playwright automations (closet sharing, follow-back, offer rules), offer management, sales tracking, analytics dashboard, AI listing generation via Claude, image bank with AI tagging, AR previews, blockchain verification, Chrome extension.
+Inventory management, cross-listing to 11 platforms (7 live: eBay, Poshmark, Depop, Grailed, Shopify, Facebook Marketplace, Whatnot; 4 coming soon: Kijiji, Etsy, Mercari, Vinted), Playwright automations (closet sharing, follow-back, offer rules), offer management, sales tracking, analytics dashboard, AI listing generation via Claude, image bank with AI tagging, AR previews, blockchain verification, Chrome extension.
 
 ---
 
