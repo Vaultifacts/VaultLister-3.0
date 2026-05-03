@@ -89,6 +89,7 @@ export default [
             'chrome-extension/**',
             'mobile/**',
             'e2e/**',
+            '.claude/**',
         ]
     }
 ];
