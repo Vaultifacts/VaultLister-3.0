@@ -4,6 +4,7 @@
 
 services:
   app:
+    restart: "no"
     volumes:
       - vaultlister-data:/app/data
       - vaultlister-logs:/app/logs
@@ -13,3 +14,9 @@ services:
       - ./scripts:/app/scripts
       - ./package.json:/app/package.json
     command: ["bun", "--watch", "src/backend/server.js"]
+  postgres:
+    restart: "no"
+  redis:
+    restart: "no"
+  worker:
+    restart: "no"

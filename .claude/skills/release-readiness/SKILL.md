@@ -94,7 +94,7 @@ From MEMORY.md — verify each before trusting:
 - LB-1 thru LB-9, LB-11, LB-12: RESOLVED
 - LB-10 Shipping (EasyPost): BLOCKED — anti-fraud review in progress, API key not yet available
 - CR-3 (Stripe price IDs): BLOCKED — user must set env vars in Railway
-- CR-10 (OAuth flows, 9 platforms): OPEN — last major launch blocker
+- CR-10 (OAuth flows, 8 platforms): OPEN — last major launch blocker
 - CR-4 (EasyPost): BLOCKED — same as LB-10
 
 Do NOT assume these statuses are current. Verify against actual git log and MEMORY.md "Active Work" section.
