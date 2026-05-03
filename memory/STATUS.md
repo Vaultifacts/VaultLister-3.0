@@ -1,5 +1,5 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-05-01 MST
+**Updated:** 2026-05-02 MST
 
 ## Current State
 - **Live site:** https://vaultlister.com/?app=1
@@ -10,6 +10,18 @@
 - **19 open GitHub issues** — dependabot CI failures ×5, automation workflow failures ×4, infra/observability alerts ×4, other ×6. Needs triage.
 - **Active task backlog:** `docs/OPEN_ITEMS.md` (generated). `docs/superpowers/plans/2026-05-01-fake-data-audit.md` COMPLETE — all 73 tracked findings resolved (committed). `docs/REMAINING_WORK_EXECUTION_SHEET_2026-04-21.md` is historical — do not use as active plan.
 - **BROWSER NOTE:** Always use `mcp__claude-in-chrome__*` tools. NEVER use `mcp__plugin_chrome-devtools-mcp`.
+
+## Last Completed Work (2026-05-02)
+
+### BrowserStack a11y plan COMPLETE (goofy-plotting-hartmanis.md — all phases verified)
+- **Phase 1**: ARIA role hierarchy fixed — listbox children have `role="group"` + `aria-label`; no duplicate role attributes on autocomplete items
+- **Phase 2**: Label-in-Name (WCAG 2.5.3) — 114 close/dismiss/remove × chars wrapped in `<span aria-hidden="true">` across 12 source files; Toggle option labels, community notification labels all fixed
+- **Phase 3**: Same-href link text — all 27 unique violations resolved (blog back-links, learning.html emoji, platforms/help/careers/roadmap/documentation links)
+- **Phase 4**: Nav dropdown `aria-hidden` initial state — all 48 HTML pages use `inert` attribute on `.nav-dropdown-menu` divs
+- **Phase 5**: Color contrast — `--gray-500` darkened to `#4b5563` (7.0:1 on white); all `color: #6b7280` hardcoded instances replaced with `var(--gray-500)`
+- **Phase 6**: Images alt text — already complete (all `<img>` tags have `alt=`)
+- **Phase 7**: Landmarks — SPA shell `<output>` elements for offline/voice indicators, `<aside aria-label="Chat assistant">` for chat container
+- **Target**: BrowserStack score 85 → 92-95 on next scan (all confirmed violations resolved)
 
 ## Last Completed Work (2026-05-01 session 3)
 
