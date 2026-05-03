@@ -460,6 +460,13 @@ const router = {
             }
         }
 
+        const IS_PROD = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+        const DEV_ONLY_PAGES = ['suppliers'];
+        if (IS_PROD && DEV_ONLY_PAGES.includes(path)) {
+            window.location.hash = '#analytics';
+            return;
+        }
+
         store.setState({ currentPage: path });
 
         const PAGE_TITLES = {
