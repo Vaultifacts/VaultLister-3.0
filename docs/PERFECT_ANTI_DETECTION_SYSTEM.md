@@ -528,9 +528,9 @@ Ranked by detection risk, not implementation complexity:
 
 1. ~~**No session warmup**~~ — **PARTIALLY RESOLVED** (2026-04-15). `warmup()` method added to `FacebookBot` (homepage feed scroll → marketplace sidebar → browse 2-3 listings). `facebookPublish.js` now browses homepage and marketplace before navigating to the create form. Not yet a full 3-5 minute warmup with post-listing verification, but eliminates the "direct navigation to listing creation" signal.
 
-2. **No per-account sticky proxy assignment** — all accounts share one proxy. Cross-account IP correlation is one of Facebook's strongest ban signals for coordinated automation.
+2. ~~**No per-account sticky proxy assignment**~~ — **PARTIALLY RESOLVED** (2026-05-02). `browser-profiles.js` exposes `setProfileProxy(id, proxyUrl)` to assign a distinct proxy per profile, and `validateProfiles()` warns when multiple profiles share the same proxy URL. The infrastructure is in place; full resolution requires the operator to configure distinct residential proxy endpoints per account in `profiles.json`.
 
-3. **Fingerprints are session-random, not account-persistent** — timezone, locale, and hardware properties change every session. From Facebook's models, the account's "device" changes with every login.
+3. ~~**Fingerprints are session-random, not account-persistent**~~ — **RESOLVED** (2026-05-02). `stealth.js:346-371` saves a `.fingerprint-config.json` into each profile's `user_data_dir` on first launch and reloads it on subsequent launches. Timezone, locale, and hardware properties are stable across sessions per profile.
 
 4. ~~**`page.route()` blocks Facebook analytics requests**~~ — **RESOLVED** (2026-04-15). `page.route()` calls removed from both `facebook-bot.js` and `facebookPublish.js`. Camoufox's built-in uBlock Origin handles analytics blocking without detection risk.
 
@@ -538,7 +538,7 @@ Ranked by detection risk, not implementation complexity:
 
 6. ~~**No rest days or velocity ramp**~~ — **RESOLVED** (2026-04-15). Rest day enforced when 6+ active days in last 7. Velocity ramp: 2/day (days 1-7), 4/day (8-14), 6/day (15-30), 10/day (31+).
 
-7. **No AI description humanization** — AI-generated listing descriptions from Claude are submitted directly with no humanization layer. Platforms are actively deploying NLP classifiers to detect AI-generated text. Descriptions should vary per platform and include natural imperfections.
+7. ~~**No AI description humanization**~~ — **RESOLVED** (2026-05-02). `src/shared/ai/humanize-text.js` implements 5 humanization passes (opener variation, punctuation variation, contractions, platform tone, trailing period drop). `listing-generator.js:686` calls `humanizeDescription(r.description, { platform })` for every generated description before returning.
 
 8. ~~**No relist ratio enforcement**~~ — **RESOLVED** (2026-04-15). Per-item relist frequency tracked in `.fb-relist-tracker.json` — max once per 14 days. Auto-prunes entries older than 30 days.
 
