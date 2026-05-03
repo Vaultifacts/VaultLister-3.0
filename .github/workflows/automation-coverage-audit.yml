@@ -65,7 +65,7 @@ jobs:
 
           # Scripts that are intentionally manual or dev-only tools — they do not
           # need a scheduled/CI workflow job to be considered "covered".
-          EXCLUDED_SCRIPTS="admin.js build-dev-bundle.js build-frontend.js help.js kill-port.js preflight-check.js server-manager.js session-start.js split-deferred-chunks.js tail-audit.js test-cleanup.js validate-env.js seed-demo.js deploy-local.sh pg-restore.js poshmark-login.js poshmark-delete-listing.mjs rollback.sh runMigration.js run-migrations.js run-api-tests.js run-e2e-chunks.js run-e2e-tests.js testSecurity.js qa-detect-traits.sh rotate-encryption-key.js refresh-blog-article.js"
+          EXCLUDED_SCRIPTS="admin.js build-dev-bundle.js build-frontend.js help.js kill-port.js preflight-check.js server-manager.js session-start.js split-deferred-chunks.js tail-audit.js test-cleanup.js validate-env.js seed-demo.js deploy-local.sh pg-restore.js poshmark-login.js poshmark-delete-listing.mjs rollback.sh runMigration.js run-migrations.js run-api-tests.js run-e2e-chunks.js run-e2e-tests.js testSecurity.js qa-detect-traits.sh rotate-encryption-key.js refresh-blog-article.js generate-product-references.js"
 
           UNCOVERED=0
           UNCOVERED_LIST=""

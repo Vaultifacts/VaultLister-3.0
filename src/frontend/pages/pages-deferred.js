@@ -1630,14 +1630,7 @@ Object.assign(pages, {
                 icon: 'trending-up',
                 category: 'listing',
             },
-            {
-                id: 'mercari_relist',
-                platform: 'mercari',
-                name: 'Relist Items',
-                description: 'Automatically relist sold-out or expired Mercari items',
-                icon: 'repeat',
-                category: 'listing',
-            },
+
             {
                 id: 'facebook_refresh',
                 platform: 'facebook',
@@ -2089,7 +2082,7 @@ Object.assign(pages, {
                         <select aria-label="Filter by platform" class="form-select" onchange="handlers.filterAutomationPlatform(this.value)" style="width: 140px; height: 36px;">
                             <option value="all" ${(store.state.automationPlatformFilter || 'all') === 'all' ? 'selected' : ''}>All Platforms</option>
                             <option value="poshmark" ${store.state.automationPlatformFilter === 'poshmark' ? 'selected' : ''}>${PLATFORM_DISPLAY_NAMES['poshmark']}</option>
-                            <option value="mercari" ${store.state.automationPlatformFilter === 'mercari' ? 'selected' : ''}>${PLATFORM_DISPLAY_NAMES['mercari']}</option>
+
                             <option value="depop" ${store.state.automationPlatformFilter === 'depop' ? 'selected' : ''}>${PLATFORM_DISPLAY_NAMES['depop']}</option>
                             <option value="grailed" ${store.state.automationPlatformFilter === 'grailed' ? 'selected' : ''}>${PLATFORM_DISPLAY_NAMES['grailed']}</option>
                             <option value="facebook" ${store.state.automationPlatformFilter === 'facebook' ? 'selected' : ''}>${PLATFORM_DISPLAY_NAMES['facebook']}</option>
@@ -9261,7 +9254,7 @@ Object.assign(pages, {
             {
                 icon: 'globe',
                 title: 'Multi-Platform Support',
-                description: 'Cross-list to Poshmark, eBay, Mercari, Depop, Grailed, and Facebook',
+                description: 'Cross-list to eBay, Poshmark, Depop, Grailed, Shopify, Facebook Marketplace, and Whatnot',
                 color: 'primary',
             },
             {
@@ -9645,12 +9638,13 @@ Object.assign(pages, {
                 <p class="about-section-subtitle">Works with the marketplaces you already use</p>
                 <div class="about-partners-grid">
                     ${[
-                        { name: 'Poshmark', icon: 'P', color: '#c12b5b' },
                         { name: 'eBay', icon: 'e', color: '#e53238' },
-                        { name: 'Mercari', icon: 'M', color: '#4dc3fc' },
+                        { name: 'Poshmark', icon: 'P', color: '#c12b5b' },
                         { name: 'Depop', icon: 'D', color: '#ff2300' },
                         { name: 'Grailed', icon: 'G', color: '#000000' },
+                        { name: 'Shopify', icon: 'S', color: '#96bf48' },
                         { name: 'Facebook', icon: 'f', color: '#1877f2' },
+                        { name: 'Whatnot', icon: 'W', color: '#7b2fbe' },
                     ]
                         .map(
                             (partner) => `
