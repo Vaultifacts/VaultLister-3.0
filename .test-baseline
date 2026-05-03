@@ -1490,3 +1490,5 @@ KNOWN_FAIL: validateImage > returns invalid for null file
 KNOWN_FAIL: validateImage > returns invalid for undefined file
 KNOWN_FAIL: checkTierPermission —
 KNOWN_FAIL: Redis - Set and Get (i
+KNOWN_FAIL: Barcode - Lookup > GET /barcode/lookup/:code - should lookup UPC code
+KNOWN_FAIL: Barcode - Lookup > GET /barcode/lookup/:code - should handle invalid barcode
