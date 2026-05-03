@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-03T01:19:23.399Z
-Commit: 95148b9a
+Generated at: 2026-05-03T01:21:53.182Z
+Commit: b72ce6b0
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -19,7 +19,7 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 | Deferred/post-launch items | 10 |
 | Structural/refactor backlog items | 10 |
 | Competitor intelligence gaps | 862 |
-| Anti-detection/design gaps | 12 |
+| Anti-detection/design gaps | 11 |
 | Open GitHub issues | 12 |
 | Explicit unchecked checklist items | 359 |
 | Repo-wide unchecked checkbox hits | 583 |
@@ -211,7 +211,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | data/qa-report-2026-04-04-exhaustive.md | 4 | 39 | Excluded: timestamped QA evidence, not current truth |
 | data/qa-report-2026-04-04-final.md | 6 | 32 | Excluded: timestamped QA evidence, not current truth |
 | data/qa-report-2026-04-04.md | 40 | 6 | Excluded: timestamped QA evidence, not current truth |
-| docs/PERFECT_ANTI_DETECTION_SYSTEM.md | 10 | 68 | Included as anti-detection design gap source |
+| docs/PERFECT_ANTI_DETECTION_SYSTEM.md | 11 | 68 | Included as anti-detection design gap source |
 | docs/COMPETITOR_GAP_INVENTORY_2026-04-19.md | 7 | 31 | Included as competitor intelligence gap source |
 | chrome-extension/README.md | 8 | 43 | Included as explicit checklist source |
 | docs/FACEBOOK_OAUTH_COMPLIANCE.md | 5 | 76 | Included as explicit checklist source |
@@ -1213,7 +1213,6 @@ These are design and operational gaps from `docs/PERFECT_ANTI_DETECTION_SYSTEM.m
 | ANTI-01 | PARTIALLY RESOLVED — remaining gap open | **No session warmup** — **PARTIALLY RESOLVED** (2026-04-15). warmup() method added to FacebookBot (homepage feed scroll → marketplace sidebar → browse 2-3 listings). facebookPublish.js now browses homepage and marketplace before navigating to the create form. Not yet a full 3-5 minute warmup with post-listing verification, but eliminates the "direct navigation to listing creation" signal. | docs/PERFECT_ANTI_DETECTION_SYSTEM.md:529 |
 | ANTI-02 | PARTIALLY RESOLVED — remaining gap open | **No per-account sticky proxy assignment** — **PARTIALLY RESOLVED** (2026-05-02). browser-profiles.js exposes setProfileProxy(id, proxyUrl) to assign a distinct proxy per profile, and validateProfiles() warns when multiple profiles share the same proxy URL. The infrastructure is in place; full resolution requires the operator to configure distinct residential proxy endpoints per account in profiles.json. | docs/PERFECT_ANTI_DETECTION_SYSTEM.md:531 |
 | ANTI-05 | PARTIALLY RESOLVED — remaining gap open | **No Content Safety Scanner** — **PARTIALLY RESOLVED** (2026-04-15). contentSafetyScanner.js added with payment keyword blocklist, URL/phone/email pattern detection, price sanity, ALL CAPS detection, title/description checks. Wired into all 9 platform publish paths. Still missing: PDQ image hash, NSFW classifier. | docs/PERFECT_ANTI_DETECTION_SYSTEM.md:537 |
-| ANTI-09 | OPEN | **No payment method or identity isolation guidance** — the system has no warnings or enforcement around shared bank accounts, PayPal emails, or government IDs across automated accounts. These are the strongest permanent linking signals available to platforms and operate entirely outside the browser layer. | docs/PERFECT_ANTI_DETECTION_SYSTEM.md:545 |
 | ANTI-10 | OPEN | **DataDome has a named Camoufox detection profile** — DataDome publishes specific detection pages for anti-detect browsers including Camoufox, targeting Canvas/WebGL coherence, AudioContext signatures, and timezone consistency. Any platform behind DataDome has Camoufox-specific fingerprint checks. Periodic retesting against DataDome's bot test suite is required. | docs/PERFECT_ANTI_DETECTION_SYSTEM.md:547 |
 | ANTI-12 | OPEN | **JA4 fingerprinting is now passive at CDN infrastructure level** — AWS WAF (March 2025) and Cloudflare offer JA4 hash matching as a built-in feature. Camoufox's JA4 fingerprint has not been verified against target platform CDNs. A block at the CDN edge prevents any JavaScript from running. | docs/PERFECT_ANTI_DETECTION_SYSTEM.md:551 |
 | ANTI-14 | OPEN | **No Mercari cancellation rate tracking** — multi-platform inventory sync lag can cause accepted offers to be cancelled on Mercari, accumulating against the account's health score independently of bot detection. | docs/PERFECT_ANTI_DETECTION_SYSTEM.md:555 |

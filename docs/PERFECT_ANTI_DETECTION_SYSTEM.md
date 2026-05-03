@@ -542,7 +542,7 @@ Ranked by detection risk, not implementation complexity:
 
 8. ~~**No relist ratio enforcement**~~ — **RESOLVED** (2026-04-15). Per-item relist frequency tracked in `.fb-relist-tracker.json` — max once per 14 days. Auto-prunes entries older than 30 days.
 
-9. **No payment method or identity isolation guidance** — the system has no warnings or enforcement around shared bank accounts, PayPal emails, or government IDs across automated accounts. These are the strongest permanent linking signals available to platforms and operate entirely outside the browser layer.
+9. ~~**No payment method or identity isolation guidance**~~ — **RESOLVED** (2026-05-02). Dismissible warning banner added to My Shops page (pages-deferred.js, commit b72ce6b0) — renders when 2+ accounts are connected, reminding operators to use separate payment methods, emails, and identity documents per account.
 
 10. **DataDome has a named Camoufox detection profile** — DataDome publishes specific detection pages for anti-detect browsers including Camoufox, targeting Canvas/WebGL coherence, AudioContext signatures, and timezone consistency. Any platform behind DataDome has Camoufox-specific fingerprint checks. Periodic retesting against DataDome's bot test suite is required.
 
