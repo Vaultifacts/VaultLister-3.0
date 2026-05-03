@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-03T00:05:59.280Z
-Commit: b5ca369d
+Generated at: 2026-05-03T00:06:18.967Z
+Commit: bb16ae79
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -1234,7 +1234,7 @@ Command: `gh issue list --state open --limit 200 --json number,title,labels,upda
 
 | Issue | Title | Labels | Updated | URL |
 |---|---|---|---|---|
-| #492 | [Production Smoke Failure] vaultlister.com | automated, production-smoke-failure | 2026-05-02T23:13:13Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/492 |
+| #492 | [Production Smoke Failure] vaultlister.com | automated, production-smoke-failure | 2026-05-03T00:04:58Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/492 |
 | #491 | [Deploy Failure] 4012693 — Run #1079 | automated, deploy-failure | 2026-05-02T00:15:31Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/491 |
 | #490 | [CI Failure] release-please--branches--master--components--vaultlister - Run #1564 | ci-failure, automated | 2026-05-01T21:53:46Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/490 |
 | #489 | [CI Failure] master - Run #1554 | ci-failure, automated | 2026-05-01T18:50:13Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/489 |
