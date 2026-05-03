@@ -20,6 +20,7 @@ jobs:
   update-development-board:
     name: Update Development Board Status
     runs-on: ubuntu-latest
+    continue-on-error: true
     timeout-minutes: 5
     steps:
       - name: Post status update to Development Board
@@ -128,6 +129,7 @@ jobs:
   update-launch-checklist:
     name: Update Launch Checklist Status
     runs-on: ubuntu-latest
+    continue-on-error: true
     timeout-minutes: 5
     steps:
       - name: Post status update to Launch Checklist Board
