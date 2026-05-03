@@ -523,7 +523,7 @@ Object.assign(pages, {
                         <strong>Multi-Account Safety Reminder</strong>
                         <p style="margin:4px 0 0;">Each connected account must use a <strong>separate payment method</strong>, <strong>email address</strong>, and <strong>identity documents</strong>. Shared bank accounts, PayPal emails, or government IDs across accounts are the strongest permanent ban signals on all platforms.</p>
                     </div>
-                    <button onclick="document.getElementById('anti09-isolation-warning').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--gray-500);flex-shrink:0;" aria-label="Dismiss">&times;</button>
+                    <button onclick="document.getElementById('anti09-isolation-warning').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--gray-500);flex-shrink:0;" aria-label="Dismiss"><span aria-hidden="true">&times;</span></button>
                 </div>
             `
                     : ''
