@@ -10142,7 +10142,7 @@ Object.assign(pages, {
                         <div class="text-center py-12">
                             <div class="text-6xl mb-4">🎫</div>
                             <h2 class="text-xl font-bold mb-2">No Tickets Yet</h2>
-                            <p class="text-gray-600 mb-4">Submit a ticket to get help from our support team.</p>
+                            <p class="text-gray-600 mb-4">Submit a ticket to get help.</p>
                             <button class="btn btn-primary" onclick="modals.createTicket()">
                                 Submit Your First Ticket
                             </button>
@@ -15502,7 +15502,7 @@ Upload photos once, use them across all your listings.`,
                                 ${components.icon('message-circle', 24)}
                             </div>
                             <h3>Live Chat</h3>
-                            <p>Chat with our support team in real-time</p>
+                            <p>Chat with us in real-time</p>
                             <span class="response-time" style="color: ${liveChatStatusColor};">${liveChatStatusLabel}</span>
                         </div>
                         <div class="contact-method-card">

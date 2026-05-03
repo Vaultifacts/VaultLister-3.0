@@ -179,12 +179,6 @@ export function getSupportedPlatforms() {
             oauthSupported: true,
         },
         {
-            platform: 'mercari',
-            syncSupported: true,
-            capabilities: ['listings', 'orders'],
-            oauthSupported: true,
-        },
-        {
             platform: 'depop',
             syncSupported: true,
             capabilities: ['listings', 'orders'],
@@ -192,12 +186,6 @@ export function getSupportedPlatforms() {
         },
         {
             platform: 'grailed',
-            syncSupported: true,
-            capabilities: ['listings', 'orders'],
-            oauthSupported: true,
-        },
-        {
-            platform: 'etsy',
             syncSupported: true,
             capabilities: ['listings', 'orders'],
             oauthSupported: true,

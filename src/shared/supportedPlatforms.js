@@ -51,6 +51,14 @@ export const SUPPORTED_PLATFORMS = [
         marketUrl: 'https://www.whatnot.com/',
         vlModule: '../services/platformSync/whatnotSync.js',
     },
+    {
+        id: 'grailed',
+        name: 'Grailed',
+        logo: '/assets/logos/grailed/logo.png',
+        logoHeight: 32,
+        marketUrl: 'https://www.grailed.com/',
+        vlModule: '../services/platformSync/grailedSync.js',
+    },
 ];
 
 export const SUPPORTED_PLATFORM_IDS = SUPPORTED_PLATFORMS.map((p) => p.id);
