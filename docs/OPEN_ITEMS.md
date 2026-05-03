@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-03T01:27:11.295Z
-Commit: debaab14
+Generated at: 2026-05-03T01:27:42.943Z
+Commit: 27d639fc
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -280,7 +280,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | docs/FRONTEND_SOURCE_OF_TRUTH.md | 4 | 12 | Reference/product documentation; not parsed as backlog unless promoted |
 | docs/PRD.md | 1 | 409 | Reference/product documentation; not parsed as backlog unless promoted |
 | docs/SETUP.md | 4 | 19 | Reference/product documentation; not parsed as backlog unless promoted |
-| public/llms.txt | 1 | 34 | Reference/product documentation; not parsed as backlog unless promoted |
+| public/llms.txt | 1 | 35 | Reference/product documentation; not parsed as backlog unless promoted |
 | RAILWAY_OPERATIONS.md | 5 | 68 | Reference/product documentation; not parsed as backlog unless promoted |
 | README.md | 1 | 69 | Reference/product documentation; not parsed as backlog unless promoted |
 | RELEASE.md | 2 | 88 | Reference/product documentation; not parsed as backlog unless promoted |
