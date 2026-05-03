@@ -4430,6 +4430,22 @@ Object.assign(pages, {
                     : ''
             }
 
+            <!-- ANTI-09: Multi-account identity isolation warning -->
+            ${
+                connectedShops.length > 1
+                    ? `
+                <div class="alert alert-warning mb-6" id="anti09-isolation-warning" style="display:flex;align-items:flex-start;gap:12px;">
+                    <span style="font-size:1.25rem;flex-shrink:0;">⚠️</span>
+                    <div style="flex:1;">
+                        <strong>Multi-Account Safety Reminder</strong>
+                        <p style="margin:4px 0 0;">Each connected account must use a <strong>separate payment method</strong>, <strong>email address</strong>, and <strong>identity documents</strong>. Shared bank accounts, PayPal emails, or government IDs across accounts are the strongest permanent ban signals on all platforms.</p>
+                    </div>
+                    <button onclick="document.getElementById('anti09-isolation-warning').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--gray-500);flex-shrink:0;" aria-label="Dismiss">&times;</button>
+                </div>
+            `
+                    : ''
+            }
+
             <!-- Shop Cards Grid -->
             <div class="grid grid-cols-3 gap-6">
                 ${(window.SUPPORTED_PLATFORMS || [])
