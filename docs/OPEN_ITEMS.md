@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-03T00:11:14.800Z
-Commit: 1f7aba55
+Generated at: 2026-05-03T00:13:47.034Z
+Commit: 2d4006d9
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -15,7 +15,7 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 |---|---:|
 | Launch blockers | 2 |
 | Open walkthrough/product items | 0 |
-| Fixed pending live/manual verification | 4 |
+| Fixed pending live/manual verification | 1 |
 | Deferred/post-launch items | 10 |
 | Structural/refactor backlog items | 10 |
 | Competitor intelligence gaps | 862 |
@@ -242,7 +242,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | docs/walkthrough/platform-readiness.md | 3 | 14 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/predictions.md | 4 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/privacy.md | 1 | 3 | Included via walkthrough parser when table status is active |
-| docs/walkthrough/public-site.md | 34 | 3 | Included via walkthrough parser when table status is active |
+| docs/walkthrough/public-site.md | 31 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/receipts.md | 2 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/refer-a-friend.md | 1 | 3 | Included via walkthrough parser when table status is active |
 | docs/walkthrough/reports.md | 2 | 3 | Included via walkthrough parser when table status is active |
@@ -302,9 +302,6 @@ _None._
 | ID | Status | Priority | Area | Item | Source | Next Action | Blocker |
 |---|---|---|---|---|---|---|---|
 | L-18 | CONFIRMED N/A -- connectGmail() has real OAuth popup flow. Functional pending credentials. |  | Connections | Gmail/Outlook/Cloudinary/Google Drive "Connect" buttons -- unclear if functional | docs/walkthrough/connections.md:14 |  |  |
-| P1-pub-1 | FIXED -- local sidebar source already matches; live/manual recheck pending |  | Sidebar | Migrate logo from top bar back to sidebar; sidebar extends to top of page (image-53) | docs/walkthrough/public-site.md:76 |  |  |
-| P3-pub-11 | FIXED -- 2026-04-24 local feature-request search patch; live/manual recheck pending |  | Feature Requests | Add a search bar under feature requests (image-78) | docs/walkthrough/public-site.md:80 |  |  |
-| P3-pub-12 | FIXED -- 2026-04-24 local learning search patch; live/manual recheck pending |  | Learning Page | Add a search bar to the Learning page (image-106) | docs/walkthrough/public-site.md:81 |  |  |
 
 ## Deferred / Post-Launch Items
 
