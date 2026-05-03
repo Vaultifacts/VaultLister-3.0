@@ -75,6 +75,9 @@ public/uploads/
 # Backups
 backups/
 
+# Axe accessibility report output
+axe-*.json
+
 # Runtime
 *.pid
 *.seed
@@ -114,7 +117,6 @@ screenshots/
 TEST_REPORT_*.md
 
 # Axe accessibility scan artifacts (one-off runs)
-axe-*.json
 scripts/axe-scan-*.cjs
 scripts/axe-spa-scan.cjs
 

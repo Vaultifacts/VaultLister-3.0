@@ -548,7 +548,7 @@ Ranked by detection risk, not implementation complexity:
 
 11. ~~**No per-account behavioral parameter profiles**~~ — **RESOLVED** (2026-04-15). `getProfileBehavior()` generates unique typing speed, pause, mouse overshoot, typo frequency per profile. `humanType()` uses gaussian speed + mid-typing pauses + occasional typos. Params persisted in `profiles.json`.
 
-12. **JA4 fingerprinting is now passive at CDN infrastructure level** — AWS WAF (March 2025) and Cloudflare offer JA4 hash matching as a built-in feature. Camoufox's JA4 fingerprint has not been verified against target platform CDNs. A block at the CDN edge prevents any JavaScript from running.
+12. **JA4 fingerprinting is now passive at CDN infrastructure level** — AWS WAF (March 2025) and Cloudflare offer JA4 hash matching as a built-in feature. Camoufox's JA4 fingerprint has not been verified against target platform CDNs. A block at the CDN edge prevents any JavaScript from running. **Verification task:** run `bun worker/bots/fingerprint-self-test.js` on Railway and capture the TLS/JA4 output; compare Firefox 135 JA4 hash against known Camoufox block lists. If blocked, the only fix is upgrading to CloverLabsAI/camoufox (FF146) or using a residential proxy that terminates TLS before the CDN sees the JA4 hash.
 
 13. ~~**No off-platform payment keyword blocklist**~~ — **RESOLVED** (2026-04-15). `contentSafetyScanner.js` blocks 20+ payment/contact keywords (Venmo, CashApp, PayPal F&F, Instagram, WhatsApp, etc). Depop-specific warning included.
 

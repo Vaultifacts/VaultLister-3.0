@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-03T01:54:42.607Z
-Commit: 4a716b45
+Generated at: 2026-05-03T03:07:46.334Z
+Commit: 5f67c509
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -20,7 +20,7 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 | Structural/refactor backlog items | 10 |
 | Competitor intelligence gaps | 862 |
 | Anti-detection/design gaps | 11 |
-| Open GitHub issues | 12 |
+| Open GitHub issues | 8 |
 | Explicit unchecked checklist items | 359 |
 | Repo-wide unchecked checkbox hits | 624 |
 | Repo-wide unchecked checkbox hits included | 359 |
@@ -134,7 +134,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | .github/workflows/ssl-cert-check.yml | 5 | 60 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/test-baseline-update.yml | 2 | 4 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/uptime-slack-alert.yml | 3 | 74 | Config/workflow text; parsed separately only if promoted |
-| .gitignore | 1 | 150 | Config/workflow text; parsed separately only if promoted |
+| .gitignore | 1 | 157 | Config/workflow text; parsed separately only if promoted |
 | package-lock.json | 8 | 2253 | Config/workflow text; parsed separately only if promoted |
 | package.json | 2 | 70 | Config/workflow text; parsed separately only if promoted |
 | public/api-docs/openapi.yaml | 9 | 3288 | Config/workflow text; parsed separately only if promoted |
@@ -212,7 +212,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | data/qa-report-2026-04-04-exhaustive.md | 4 | 39 | Excluded: timestamped QA evidence, not current truth |
 | data/qa-report-2026-04-04-final.md | 6 | 32 | Excluded: timestamped QA evidence, not current truth |
 | data/qa-report-2026-04-04.md | 40 | 6 | Excluded: timestamped QA evidence, not current truth |
-| docs/PERFECT_ANTI_DETECTION_SYSTEM.md | 11 | 68 | Included as anti-detection design gap source |
+| docs/PERFECT_ANTI_DETECTION_SYSTEM.md | 12 | 68 | Included as anti-detection design gap source |
 | docs/COMPETITOR_GAP_INVENTORY_2026-04-19.md | 7 | 31 | Included as competitor intelligence gap source |
 | chrome-extension/README.md | 8 | 43 | Included as explicit checklist source |
 | docs/FACEBOOK_OAUTH_COMPLIANCE.md | 5 | 76 | Included as explicit checklist source |
@@ -1215,8 +1215,8 @@ These are design and operational gaps from `docs/PERFECT_ANTI_DETECTION_SYSTEM.m
 | ANTI-01 | PARTIALLY RESOLVED — remaining gap open | **No session warmup** — **PARTIALLY RESOLVED** (2026-04-15). warmup() method added to FacebookBot (homepage feed scroll → marketplace sidebar → browse 2-3 listings). facebookPublish.js now browses homepage and marketplace before navigating to the create form. Not yet a full 3-5 minute warmup with post-listing verification, but eliminates the "direct navigation to listing creation" signal. | docs/PERFECT_ANTI_DETECTION_SYSTEM.md:529 |
 | ANTI-02 | PARTIALLY RESOLVED — remaining gap open | **No per-account sticky proxy assignment** — **PARTIALLY RESOLVED** (2026-05-02). browser-profiles.js exposes setProfileProxy(id, proxyUrl) to assign a distinct proxy per profile, and validateProfiles() warns when multiple profiles share the same proxy URL. The infrastructure is in place; full resolution requires the operator to configure distinct residential proxy endpoints per account in profiles.json. | docs/PERFECT_ANTI_DETECTION_SYSTEM.md:531 |
 | ANTI-05 | PARTIALLY RESOLVED — remaining gap open | **No Content Safety Scanner** — **PARTIALLY RESOLVED** (2026-04-15). contentSafetyScanner.js added with payment keyword blocklist, URL/phone/email pattern detection, price sanity, ALL CAPS detection, title/description checks. Wired into all 9 platform publish paths. Still missing: PDQ image hash, NSFW classifier. | docs/PERFECT_ANTI_DETECTION_SYSTEM.md:537 |
-| ANTI-10 | OPEN | **DataDome has a named Camoufox detection profile** — DataDome publishes specific detection pages for anti-detect browsers including Camoufox, targeting Canvas/WebGL coherence, AudioContext signatures, and timezone consistency. Any platform behind DataDome has Camoufox-specific fingerprint checks. Periodic retesting against DataDome's bot test suite is required. | docs/PERFECT_ANTI_DETECTION_SYSTEM.md:547 |
-| ANTI-12 | OPEN | **JA4 fingerprinting is now passive at CDN infrastructure level** — AWS WAF (March 2025) and Cloudflare offer JA4 hash matching as a built-in feature. Camoufox's JA4 fingerprint has not been verified against target platform CDNs. A block at the CDN edge prevents any JavaScript from running. | docs/PERFECT_ANTI_DETECTION_SYSTEM.md:551 |
+| ANTI-10 | OPEN | **DataDome has a named Camoufox detection profile** — DataDome publishes specific detection pages for anti-detect browsers including Camoufox, targeting Canvas/WebGL coherence, AudioContext signatures, and timezone consistency. Any platform behind DataDome has Camoufox-specific fingerprint checks. **Maintenance cadence: retest monthly** against https://antoinevastel.com/bots/datadome and https://bot.sannysoft.com/ from Railway (Linux). If score degrades, evaluate CloverLabsAI/camoufox upgrade (FF146, see item 17) or Patchright as Chromium fallback. Platforms confirmed behind DataDome: Depop, Grailed. | docs/PERFECT_ANTI_DETECTION_SYSTEM.md:547 |
+| ANTI-12 | OPEN | **JA4 fingerprinting is now passive at CDN infrastructure level** — AWS WAF (March 2025) and Cloudflare offer JA4 hash matching as a built-in feature. Camoufox's JA4 fingerprint has not been verified against target platform CDNs. A block at the CDN edge prevents any JavaScript from running. **Verification task:** run bun worker/bots/fingerprint-self-test.js on Railway and capture the TLS/JA4 output; compare Firefox 135 JA4 hash against known Camoufox block lists. If blocked, the only fix is upgrading to CloverLabsAI/camoufox (FF146) or using a residential proxy that terminates TLS before the CDN sees the JA4 hash. | docs/PERFECT_ANTI_DETECTION_SYSTEM.md:551 |
 | ANTI-14 | OPEN | **No Mercari cancellation rate tracking** — multi-platform inventory sync lag can cause accepted offers to be cancelled on Mercari, accumulating against the account's health score independently of bot detection. | docs/PERFECT_ANTI_DETECTION_SYSTEM.md:555 |
 | ANTI-15 | VERIFICATION REQUIRED | **CDP serialization leak** — TOOLING BUILT (fingerprint-self-test.js tests for JSON.stringify getter leak). Run on Railway/Linux to verify. Cannot run on Windows (Camoufox instability). | docs/PERFECT_ANTI_DETECTION_SYSTEM.md:557 |
 | ANTI-16 | VERIFICATION REQUIRED | **WebGPU adapter info** — TOOLING BUILT (fingerprint-self-test.js checks WebGPU adapter vendor/device). Run on Railway to verify whether Camoufox overrides the software renderer string. | docs/PERFECT_ANTI_DETECTION_SYSTEM.md:559 |
@@ -1230,15 +1230,11 @@ Command: `gh issue list --state open --limit 200 --json number,title,labels,upda
 
 | Issue | Title | Labels | Updated | URL |
 |---|---|---|---|---|
-| #492 | [Production Smoke Failure] vaultlister.com | automated, production-smoke-failure | 2026-05-03T00:04:58Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/492 |
-| #491 | [Deploy Failure] 4012693 — Run #1079 | automated, deploy-failure | 2026-05-02T00:15:31Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/491 |
-| #490 | [CI Failure] release-please--branches--master--components--vaultlister - Run #1564 | ci-failure, automated | 2026-05-01T21:53:46Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/490 |
-| #489 | [CI Failure] master - Run #1554 | ci-failure, automated | 2026-05-01T18:50:13Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/489 |
-| #488 | [Lighthouse] Performance score below 50 — immediate attention required | automated, performance | 2026-05-03T01:47:06Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/488 |
+| #495 | [Deploy Failure] 17b8619 — Run #1128 | automated, deploy-failure | 2026-05-03T03:01:17Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/495 |
 | #487 | [Billing] Monthly AI services spend review — 2026-05 | automated, billing, ai-spend | 2026-05-01T12:00:53Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/487 |
 | #486 | [Backup Retention] Monthly B2 backup verification — 2026-05 | automated, maintenance | 2026-05-01T10:24:32Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/486 |
 | #485 | [API Deprecation] Monthly platform changelog review — 2026-05 | automated, maintenance | 2026-05-01T08:52:39Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/485 |
-| #482 | [Automation] Project status update workflow failed — boards may be stale | ci-failure, automated | 2026-05-01T06:07:47Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/482 |
+| #482 | [Automation] Project status update workflow failed — boards may be stale | ci-failure, automated | 2026-05-03T02:51:08Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/482 |
 | #467 | [WAF] Monthly Cloudflare WAF rule review — 2026-05 | security, automated | 2026-05-01T00:01:51Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/467 |
 | #456 | [Automation Coverage] 27 gap(s) detected — 2026-04-27 | automated, automation-coverage | 2026-05-01T06:43:43Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/456 |
 | #446 | Maintenance: Push subscription cleanup reminder (2026-W17) | maintenance | 2026-04-26T08:47:19Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/446 |
