@@ -15,10 +15,10 @@ test('smoke integrations: integrations tab renders and connect controls do not c
     await page.locator('.settings-tab', { hasText: 'Integrations' }).click();
     await waitForUiSettle(page);
 
-    const grid = page.locator('.integrations-grid').first();
+    const grid = page.locator('.settings-marketplace-grid').first();
     await expect(grid).toBeVisible({ timeout: 10000 });
 
-    const actionButton = page.locator('.integration-card button').first();
+    const actionButton = page.locator('.settings-marketplace-card button').first();
     await expect(actionButton).toBeVisible({ timeout: 10000 });
     await actionButton.click().catch(() => {});
     await waitForUiSettle(page);
