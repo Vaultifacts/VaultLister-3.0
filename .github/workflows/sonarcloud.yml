@@ -149,22 +149,26 @@ jobs:
 
           # Add realistic conditions for new code period
           add_condition() {
-            curl -sS -H "$AUTH" \
-              -d "gateName=${GATE_NAME}&metric=$1&op=$2&error=$3&organization=${ORG}" \
-              "${API}/qualitygates/create_condition" > /dev/null 2>&1
+            echo "  Adding condition: $1 $2 $3"
+            RESP=$(curl -sS -H "$AUTH" \
+              -d "gateId=${GATE_ID}&metric=$1&op=$2&error=$3&organization=${ORG}" \
+              "${API}/qualitygates/create_condition" 2>&1)
+            echo "    -> $RESP"
           }
-          add_condition "new_coverage"              "LT" "5"    # Coverage >= 5% on new code
-          add_condition "new_duplicated_lines_density" "GT" "10"  # Duplications <= 10%
-          add_condition "new_security_rating"        "GT" "2"    # Security >= B
-          add_condition "new_reliability_rating"     "GT" "3"    # Reliability >= C
-          add_condition "new_maintainability_rating" "GT" "2"    # Maintainability >= B
+          add_condition "new_coverage"              "LT" "5"
+          add_condition "new_duplicated_lines_density" "GT" "10"
+          add_condition "new_security_rating"        "GT" "2"
+          add_condition "new_reliability_rating"     "GT" "3"
+          add_condition "new_maintainability_rating" "GT" "2"
 
           # Apply to project
-          curl -sS -H "$AUTH" \
-            -d "projectKey=${PROJECT_KEY}&gateName=${GATE_NAME}&organization=${ORG}" \
-            "${API}/qualitygates/select" > /dev/null 2>&1
+          echo "Selecting quality gate ${GATE_ID} for ${PROJECT_KEY}..."
+          SELECT_RESP=$(curl -sS -H "$AUTH" \
+            -d "gateId=${GATE_ID}&projectKey=${PROJECT_KEY}&organization=${ORG}" \
+            "${API}/qualitygates/select" 2>&1)
+          echo "Select response: ${SELECT_RESP:-empty (success)}"
 
-          echo "Quality gate '${GATE_NAME}' applied to project"
+          echo "Quality gate '${GATE_NAME}' (ID: ${GATE_ID}) applied to project"
 
       - name: Initialize database
         run: |
