@@ -13,7 +13,6 @@ let isConnected = false;
 let connectionAttempts = 0;
 let _shutdownRegistered = false;
 let _heartbeatTimer = null;
-let _reconnectTimer = null;
 
 // In-memory fallback for when Redis is unavailable
 const memoryStore = new Map();
@@ -84,9 +83,7 @@ export function initRedis() {
 
         redisClient.on('reconnecting', () => {
             connectionAttempts++;
-            if (connectionAttempts > MAX_RECONNECT_ATTEMPTS) {
-                logger.warn('[Redis] Max reconnection attempts reached, using in-memory fallback');
-            }
+            logger.info(`[Redis] Reconnection attempt #${connectionAttempts}`);
         });
 
         // Attempt connection
