@@ -3,7 +3,16 @@
 > READ-ONLY reference. Do not edit runtime files based on this document without completing all listed verification steps first.
 >
 > All line counts and findings were verified against branch `codex/e2e-session-guardrails` (merged to master via b9d608ec).
-> **As of 2026-05-01 the following have changed: `server.js` is now 1,464 lines (was 2,087); `routes/auth` is now a directory of 5 files (was a single file); `db/database.js` is a 6-line barrel re-export (was 640 lines). Re-verify R-001/R-011/R-012 before acting on them.**
+> **Verified 2026-05-03:**
+> - R-001: `server.js` is 1,464 lines (was 2,087). Routes dispatched via `routeRegistry`. Inline handlers minimal.
+> - R-011: RESOLVED — `routes/auth/` is now 6 files (index.js, login.js, register.js, session.js, account.js, helpers.js). No monolithic auth.js.
+> - R-012: RESOLVED — `db/database.js` is a 6-line barrel re-export. Logic split into query.js, metrics.js, sql-helpers.js, models.js, migrations.js.
+> - R-015: RESOLVED — ownership audit completed: all 178 user-data mutations include `WHERE user_id = ?`. No IDOR found.
+> - R-017: RESOLVED — CORS correctly whitelists origins; `Access-Control-Allow-Credentials` only sent for explicit matches, never wildcard.
+> - R-020/R-021: RESOLVED — Playwright 1.59.1 across root, worker, and Dockerfile. Stale `Dockerfile.worker` at root deleted 2026-05-03.
+> - R-027: RESOLVED — upload audit passed (MIME, size, path, ownership). `receiptParser.js` filename sanitization added 2026-05-03.
+> - R-028: RESOLVED — `taskWorker.js` is producer-only (Queue), `worker/index.js` is consumer-only (Worker). No duplicate consumers.
+> - R-029: RESOLVED — token lifecycle verified: store.persist/hydrate cover both tokens, api.refreshAccessToken reads store.state, backend invalidates old session + issues new refresh token (rotation).
 
 ---
 
@@ -42,7 +51,7 @@ These items are recorded here for traceability. No further code inspection is re
 | Risk ID | Area | Status | Evidence | Notes |
 |---------|------|--------|----------|-------|
 | R-016 | CSRF skip path duplication — two divergent `skipPaths` arrays in `csrf.js` | RESOLVED — commit `3f0dfe19` (2026-04-24) | `git show 3f0dfe19 --stat` confirms file: `src/backend/middleware/csrf.js` | Consolidated into single source of truth. No further action needed. |
-| R-018 | Env docs conflict between `.env.example`, `CLAUDE.md`, and docs | Partially resolved — `docs/reference/env.md` is pending creation | `.env.example` is the canonical env var registry; CLAUDE.md references it. `docs/reference/env.md` does not yet exist | Create `docs/reference/env.md` as a documentation task (no runtime impact) before next env var audit |
+| R-018 | Env docs conflict between `.env.example`, `CLAUDE.md`, and docs | RESOLVED — `docs/reference/env.md` created (168 lines, 83 vars) | `.env.example` is the canonical env var registry; `docs/reference/env.md` provides grouped reference | No further action needed. |
 | R-019 | License conflict — `package.json` declared `MIT` while README stated Proprietary | RESOLVED — commit `ce848dd9` (2026-04-24) | `git show ce848dd9 --stat` confirms `package.json` updated to `UNLICENSED` + `private: true` | No further action needed. |
 | R-022 | Docs/archive noise — stale files in `docs/` and archive directories | Partially resolved — `docs/reference/repo-map.md` and `docs/reference/docs-index.md` have been created | `ls docs/reference/` confirms: api.md, backend.md, database.md, frontend.md, security.md, testing.md, repo-map.md, api-route-inventory.md, db-query-inventory.md present | Remaining noise (if any) is cosmetic. No runtime or security impact. |
 

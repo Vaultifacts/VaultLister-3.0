@@ -196,7 +196,7 @@ export async function receiptParserRouter(ctx) {
                     'parsed',
                     parsedData.receiptType || 'purchase',
                     confidenceToScore(parsedData.confidence),
-                    filename || 'uploaded_receipt',
+                    (filename || 'uploaded_receipt').replace(/[^a-zA-Z0-9._\-() ]/g, '').slice(0, 255),
                     'image',
                     imageBase64, // Store for display
                     now,
