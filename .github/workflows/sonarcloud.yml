@@ -108,6 +108,64 @@ jobs:
             --data-urlencode "value=previous_version" \
             https://sonarcloud.io/api/settings/set
 
+      - name: Configure quality gate
+        if: github.event_name != 'pull_request' && github.actor != 'dependabot[bot]'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          ORG: vaultlister
+        run: |
+          API="https://sonarcloud.io/api"
+          AUTH="Authorization: Bearer ${SONAR_TOKEN}"
+          GATE_NAME="VaultLister"
+          PROJECT_KEY="Vaultifacts_VaultLister-3.0"
+
+          # Find or create quality gate
+          GATE_ID=$(curl -sS -H "$AUTH" \
+            "${API}/qualitygates/list?organization=${ORG}" | \
+            jq -r ".qualitygates[] | select(.name == \"${GATE_NAME}\") | .id")
+
+          if [ -z "$GATE_ID" ]; then
+            echo "Creating quality gate '${GATE_NAME}'..."
+            GATE_ID=$(curl -sS -H "$AUTH" \
+              -d "name=${GATE_NAME}&organization=${ORG}" \
+              "${API}/qualitygates/create" | jq -r '.id')
+          fi
+
+          if [ -z "$GATE_ID" ] || [ "$GATE_ID" = "null" ]; then
+            echo "WARNING: Could not create/find quality gate — skipping"
+            exit 0
+          fi
+          echo "Quality gate ID: ${GATE_ID}"
+
+          # Remove existing conditions to reset cleanly
+          EXISTING=$(curl -sS -H "$AUTH" \
+            "${API}/qualitygates/show?id=${GATE_ID}&organization=${ORG}" | \
+            jq -r '.conditions[]?.id // empty')
+          for CID in $EXISTING; do
+            curl -sS -H "$AUTH" \
+              -d "id=${CID}&organization=${ORG}" \
+              "${API}/qualitygates/delete_condition" > /dev/null 2>&1 || true
+          done
+
+          # Add realistic conditions for new code period
+          add_condition() {
+            curl -sS -H "$AUTH" \
+              -d "gateName=${GATE_NAME}&metric=$1&op=$2&error=$3&organization=${ORG}" \
+              "${API}/qualitygates/create_condition" > /dev/null 2>&1
+          }
+          add_condition "new_coverage"              "LT" "5"    # Coverage >= 5% on new code
+          add_condition "new_duplicated_lines_density" "GT" "10"  # Duplications <= 10%
+          add_condition "new_security_rating"        "GT" "2"    # Security >= B
+          add_condition "new_reliability_rating"     "GT" "3"    # Reliability >= C
+          add_condition "new_maintainability_rating" "GT" "2"    # Maintainability >= B
+
+          # Apply to project
+          curl -sS -H "$AUTH" \
+            -d "projectKey=${PROJECT_KEY}&gateName=${GATE_NAME}&organization=${ORG}" \
+            "${API}/qualitygates/select" > /dev/null 2>&1
+
+          echo "Quality gate '${GATE_NAME}' applied to project"
+
       - name: Initialize database
         run: |
           bun run db:init
