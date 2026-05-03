@@ -19,7 +19,7 @@ Run after setting credentials in Railway environment variables.
 
 - [ ] `GET /api/oauth/authorize/ebay` redirects to `https://auth.ebay.com/oauth2/authorize`
 - [ ] After eBay login, callback lands at `/oauth-callback?code=...&state=...`
-- [ ] `GET /api/oauth/callback?platform=ebay&code=...&state=...` returns 200 and stores encrypted tokens
+- [ ] `GET /api/oauth/callback/ebay?code=...&state=...` returns 200 and stores encrypted tokens
 - [ ] My Shops page shows eBay as Connected with username populated
 - [ ] `GET /api/oauth/status/ebay` returns `{ connected: true }`
 
