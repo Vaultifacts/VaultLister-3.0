@@ -30,12 +30,12 @@ test.describe('Landing Page', () => {
         await expect(featureCards).toHaveCount(12);
     });
 
-    test('should show 14 marketplace tiles (7 supported + 7 coming soon) when page loads', async ({ page }) => {
+    test('should show 11 marketplace tiles (7 supported + 4 coming soon) when page loads', async ({ page }) => {
         await page.goto(BASE);
         const allTiles = page.locator('.vinyl-wrapper, .vinyl-wrapper-soon');
-        await expect(allTiles).toHaveCount(14);
+        await expect(allTiles).toHaveCount(11);
         const comingSoonTiles = page.locator('.vinyl-wrapper-soon');
-        await expect(comingSoonTiles).toHaveCount(7);
+        await expect(comingSoonTiles).toHaveCount(4);
     });
 
     test('should have 4 footer columns when page loads', async ({ page }) => {
