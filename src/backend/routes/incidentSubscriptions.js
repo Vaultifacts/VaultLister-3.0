@@ -10,6 +10,7 @@ import { SUPPORTED_PLATFORM_IDS } from '../../shared/supportedPlatforms.js';
 
 // RFC 5321 local-part + domain, capped at 254 octets in practice
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const BLOCKED_EMAIL_DOMAINS = new Set(['browserstack.com', 'example.com', 'test.com', 'mailinator.com', 'guerrillamail.com']);
 const VALID_PLATFORM_IDS = new Set(SUPPORTED_PLATFORM_IDS);
 
 function makeToken() {
@@ -31,6 +32,10 @@ export async function incidentSubscriptionsRouter(ctx) {
         const platformId = body && body.platform_id ? String(body.platform_id) : null;
 
         if (!EMAIL_RE.test(email) || email.length > 320) {
+            return { status: 400, data: { error: 'Valid email required' } };
+        }
+        const emailDomain = email.split('@')[1];
+        if (emailDomain && BLOCKED_EMAIL_DOMAINS.has(emailDomain)) {
             return { status: 400, data: { error: 'Valid email required' } };
         }
         if (platformId && !VALID_PLATFORM_IDS.has(platformId)) {
