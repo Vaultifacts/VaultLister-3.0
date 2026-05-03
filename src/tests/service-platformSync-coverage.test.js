@@ -132,7 +132,7 @@ describe('getSupportedPlatforms — coverage', () => {
     expect(fb).toBeDefined();
     expect(fb.syncSupported).toBe(true);
     expect(fb.capabilities).toContain('listings');
-    expect(fb.oauthSupported).toBe(true);
+    expect(fb.oauthSupported).toBe(false); // Facebook uses Playwright, not OAuth
   });
 
   test('all sync-supported platforms have listings+orders capabilities', () => {
@@ -143,8 +143,8 @@ describe('getSupportedPlatforms — coverage', () => {
     }
   });
 
-  test('all sync-supported platforms have oauthSupported=true', () => {
-    const supported = getSupportedPlatforms().filter(p => p.syncSupported);
+  test('all sync-supported platforms except facebook have oauthSupported=true', () => {
+    const supported = getSupportedPlatforms().filter(p => p.syncSupported && p.platform !== 'facebook');
     for (const p of supported) {
       expect(p.oauthSupported).toBe(true);
     }
