@@ -5,7 +5,7 @@
 # AGENTS.md – VaultLister 3.0
 
 ## Core Mission
-Zero-cost, offline-capable multi-channel reselling platform for listing to 9+ marketplaces, managing inventory, and automating reseller workflows with AI-powered tools.
+Zero-cost, offline-capable multi-channel reselling platform for listing to 11 marketplaces (7 live, 4 coming soon), managing inventory, and automating reseller workflows with AI-powered tools.
 
 ## Design Reference
 All design artifacts live in `./design/`. Before any architectural decision, read the relevant design file. The design is the source of truth — code serves the design.

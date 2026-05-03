@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-03T07:14:20.716Z
-Commit: d1eb10e3
+Generated at: 2026-05-03T19:53:49.281Z
+Commit: 46737131
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -20,7 +20,7 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 | Structural/refactor backlog items | 10 |
 | Competitor intelligence gaps | 862 |
 | Anti-detection/design gaps | 11 |
-| Open GitHub issues | 1 |
+| Open GitHub issues | 0 |
 | Explicit unchecked checklist items | 359 |
 | Repo-wide unchecked checkbox hits | 624 |
 | Repo-wide unchecked checkbox hits included | 359 |
@@ -117,7 +117,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | .github/workflows/open-items-check.yml | 10 | 1 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/orphan-cleanup.yml | 1 | 84 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/production-smoke.yml | 4 | 74 | Config/workflow text; parsed separately only if promoted |
-| .github/workflows/project-status-update.yml | 11 | 31 | Config/workflow text; parsed separately only if promoted |
+| .github/workflows/project-status-update.yml | 9 | 32 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/push-cleanup.yml | 3 | 34 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/queue-health.yml | 1 | 89 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/redis-health.yml | 1 | 97 | Config/workflow text; parsed separately only if promoted |
@@ -206,7 +206,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | memory/COMPLETED.md | 2 | 61 | Excluded: session memory, promote only after current verification |
 | memory/LAUNCH_PRIORITY.md | 5 | 14 | Excluded: session memory, promote only after current verification |
 | memory/MEMORY.md | 9 | 7 | Excluded: session memory, promote only after current verification |
-| memory/STATUS.md | 15 | 7 | Excluded: session memory, promote only after current verification |
+| memory/STATUS.md | 19 | 7 | Excluded: session memory, promote only after current verification |
 | memory/TIER0_PLAYBOOK.md | 3 | 11 | Excluded: session memory, promote only after current verification |
 | data/qa-report-2026-04-04-chrome-walkthrough.md | 2 | 20 | Excluded: timestamped QA evidence, not current truth |
 | data/qa-report-2026-04-04-exhaustive.md | 4 | 39 | Excluded: timestamped QA evidence, not current truth |
@@ -1228,9 +1228,7 @@ These are design and operational gaps from `docs/PERFECT_ANTI_DETECTION_SYSTEM.m
 
 Command: `gh issue list --state open --limit 200 --json number,title,labels,updatedAt,url`
 
-| Issue | Title | Labels | Updated | URL |
-|---|---|---|---|---|
-| #482 | [Automation] Project status update workflow failed — boards may be stale | ci-failure, automated | 2026-05-03T02:51:08Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/482 |
+_No open GitHub issues returned by the live query._
 
 ## Explicit Checklist Backlogs
 

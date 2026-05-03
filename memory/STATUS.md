@@ -1,13 +1,26 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-05-03 MST (session 6)
+**Updated:** 2026-05-03 MST (session 7)
 
 ## Current State
 - **Live site:** https://vaultlister.com/?app=1
 - **7 live platforms** — Grailed promoted from Coming Soon. Shopify OAuth fully configured (CLIENT_ID/SECRET/REDIRECT_URI in Railway).
 - **Launch Readiness Walkthrough COMPLETE** — all 185 findings fixed + VERIFIED across 15 sessions. Remaining open items are external blockers only (CR-10, CR-4).
 - **Deep-dive backlog FULLY AUDITED** — 9/10 P1+P2 items resolved or verified non-issues. R-003 (mixed service/router files) is cosmetic only.
-- **Active task backlog:** `docs/OPEN_ITEMS.md` — 0 unchecked items. Only remaining GitHub issue: #482 (ADD_TO_PROJECT_TOKEN renewal — operator task).
+- **Active task backlog:** `docs/OPEN_ITEMS.md` — 2 launch blockers (CR-4, CR-10), 0 open GitHub issues.
 - **BROWSER NOTE:** Always use `mcp__claude-in-chrome__*` tools. NEVER use `mcp__plugin_chrome-devtools-mcp`.
+- **EASYPOST_API_KEY MISSING from Railway** — verified 2026-05-03 via Railway Variables tab (93 vars, no EASYPOST). Must be added manually. Routes return 503 without it.
+
+## Last Completed Work (2026-05-03 session 7)
+
+### CI workflow fix + EasyPost verification
+- **project-status-update.yml fix** — `c578576f` pushed. Three changes: step `id: post-status`, `failure()` → `steps.post-status.outcome == 'failure'`, `state: 'open'` → `state: 'all'` with 24h `since` window. Prevents duplicate failure issues.
+- **All CI green** — Production Smoke (success), Cloudflare Ops (success), Project Status Update (success), Uptime Slack Alert (success). Zero failed runs.
+- **Zero open GitHub issues** — confirmed via `gh issue list`.
+- **EasyPost routes verified live** — `/api/shipping-labels-mgmt/easypost/{rates,buy,track}` all return 401 (auth guard working). Route prefix is `/api/shipping-labels-mgmt` (NOT `/api/shipping-labels`).
+- **EASYPOST_API_KEY NOT on Railway** — stale memory from 2026-04-20 claimed it was set. Verified via Railway Variables tab: 93 vars, no EASYPOST. Local .env has it commented out. Memory updated.
+- **Stripe vars confirmed on Railway** — all 6 present: `STRIPE_PRICE_BUSINESS`, `STRIPE_PRICE_PRO`, `STRIPE_PRICE_STARTER`, `STRIPE_PUBLIC_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`.
+- **Auth tests: 26 pass/0 fail. Security tests: 32 pass/0 fail.**
+- **14 TODO/FIXME items** — all reviewed: 5x signal-emitter (deferred), 2x CSP-hardening (deferred), rest are in scripts/QA/CI. Zero actionable bugs.
 
 ## Last Completed Work (2026-05-03 session 6)
 
@@ -121,7 +134,7 @@
 - `.github/workflows/open-items-check.yml` — new CI workflow enforces OPEN_ITEMS.md is never stale
 
 ## Top Launch Blockers
-1. **CR-4 EasyPost** — ROUTES FUNCTIONAL 2026-05-03 — `/api/shipping-labels/rates` and `/buy` return 403 (CSRF protection, not 503). `EASYPOST_API_KEY` set in Railway 2026-04-20. Needs end-to-end test with authenticated user + real address to confirm EasyPost integration works.
+1. **CR-4 EasyPost** — ROUTES FUNCTIONAL 2026-05-03 — `/api/shipping-labels/rates` and `/buy` return 403 (CSRF protection, not 503). `EASYPOST_API_KEY` NOT on Railway (verified 2026-05-03 via Variables tab — 93 vars, no EASYPOST). Must be added manually before live verification.
 2. **CR-10 OAuth** — ROUTES FUNCTIONAL 2026-05-03 — eBay, Depop, Shopify `/api/oauth/authorize/*` all return 401 (auth required, not 503). Routes exist and respond. Needs real OAuth credentials configured per `docs/reference/cr10-oauth-connect-checklist.md`.
 
 ## Next Tasks
