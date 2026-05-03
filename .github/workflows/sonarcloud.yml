@@ -161,14 +161,8 @@ jobs:
           add_condition "new_reliability_rating"     "GT" "3"
           add_condition "new_maintainability_rating" "GT" "2"
 
-          # Apply to project
-          echo "Selecting quality gate ${GATE_ID} for ${PROJECT_KEY}..."
-          SELECT_RESP=$(curl -sS -H "$AUTH" \
-            -d "gateId=${GATE_ID}&projectKey=${PROJECT_KEY}&organization=${ORG}" \
-            "${API}/qualitygates/select" 2>&1)
-          echo "Select response: ${SELECT_RESP:-empty (success)}"
-
-          echo "Quality gate '${GATE_NAME}' (ID: ${GATE_ID}) applied to project"
+          # Gate selection is done via scanner property -Dsonar.qualitygate.name
+          echo "Quality gate '${GATE_NAME}' (ID: ${GATE_ID}) configured with ${#CONDITIONS[@]:-5} conditions"
 
       - name: Initialize database
         run: |
@@ -194,3 +188,4 @@ jobs:
           projectBaseDir: .
           args: >
             -Dsonar.projectVersion=${{ steps.package-version.outputs.version }}
+            -Dsonar.qualitygate.name=VaultLister
