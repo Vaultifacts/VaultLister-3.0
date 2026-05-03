@@ -1,14 +1,19 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-05-03 MST (session 7)
+**Updated:** 2026-05-03 MST (session 8)
 
 ## Current State
 - **Live site:** https://vaultlister.com/?app=1
 - **7 live platforms** — Grailed promoted from Coming Soon. Shopify OAuth fully configured (CLIENT_ID/SECRET/REDIRECT_URI in Railway).
 - **Launch Readiness Walkthrough COMPLETE** — all 185 findings fixed + VERIFIED across 15 sessions. Remaining open items are external blockers only (CR-10, CR-4).
 - **Deep-dive backlog FULLY AUDITED** — 9/10 P1+P2 items resolved or verified non-issues. R-003 (mixed service/router files) is cosmetic only.
-- **Active task backlog:** `docs/OPEN_ITEMS.md` — 2 launch blockers (CR-4, CR-10), 0 open GitHub issues.
+- **Active task backlog:** `docs/OPEN_ITEMS.md` — 2 launch blockers (CR-4, CR-10), 1 open GitHub issue (#514 CI Failure — lint HTML regression).
 - **BROWSER NOTE:** Always use `mcp__claude-in-chrome__*` tools. NEVER use `mcp__plugin_chrome-devtools-mcp`.
 - **EASYPOST_API_KEY MISSING from Railway** — verified 2026-05-03 via Railway Variables tab (93 vars, no EASYPOST). Must be added manually. Routes return 503 without it.
+
+## Last Completed Work (2026-05-03 session 8)
+
+### CI #514 lint regression triage
+- **Root cause verified** — commit `22efee17` changed `package.json` `lint:html` from the known-good seven public pages to all `public/**/*.html`, exposing 779 existing html-validate baseline errors. Restored the seven-page target; `npx html-validate public/landing.html public/pricing.html public/contact.html public/changelog.html public/platforms.html public/terms.html public/privacy.html` passes locally. `docs/OPEN_ITEMS.md` regenerated to include open GitHub issue #514.
 
 ## Last Completed Work (2026-05-03 session 7)
 
