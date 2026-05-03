@@ -297,21 +297,21 @@ Object.assign(pages, {
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th style="width: 40px;">
+                                    <th scope="col" style="width: 40px;">
                                         <input aria-label="Select all offers" type="checkbox"
                                                ${selectedOffers.length === pendingOffers.length && pendingOffers.length > 0 ? 'checked' : ''}
                                                onchange="handlers.selectAllOffers(this.checked)"
                                                title="Select all offers">
                                     </th>
-                                    <th>Item</th>
-                                    <th>Buyer</th>
-                                    <th>Platform</th>
-                                    <th>Listed Price</th>
-                                    <th>Offer</th>
-                                    <th>% of Listed Price</th>
-                                    <th>Counter Amount</th>
-                                    <th>Expires</th>
-                                    <th>Actions</th>
+                                    <th scope="col">Item</th>
+                                    <th scope="col">Buyer</th>
+                                    <th scope="col">Platform</th>
+                                    <th scope="col">Listed Price</th>
+                                    <th scope="col">Offer</th>
+                                    <th scope="col">% of Listed Price</th>
+                                    <th scope="col">Counter Amount</th>
+                                    <th scope="col">Expires</th>
+                                    <th scope="col">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -482,11 +482,11 @@ Object.assign(pages, {
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>Item</th>
-                                        <th>Buyer</th>
-                                        <th>Offer</th>
-                                        <th>Status</th>
-                                        <th>Date</th>
+                                        <th scope="col">Item</th>
+                                        <th scope="col">Buyer</th>
+                                        <th scope="col">Offer</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Date</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -745,14 +745,14 @@ Object.assign(pages, {
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>Item Sold</th>
-                                    <th>Quantity</th>
-                                    <th>Platform</th>
-                                    <th>Platform Fee</th>
-                                    <th>Status</th>
-                                    <th>Revenue</th>
-                                    <th>Gross Profit</th>
-                                    <th>Date</th>
+                                    <th scope="col">Item Sold</th>
+                                    <th scope="col">Quantity</th>
+                                    <th scope="col">Platform</th>
+                                    <th scope="col">Platform Fee</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Revenue</th>
+                                    <th scope="col">Gross Profit</th>
+                                    <th scope="col">Date</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -882,12 +882,12 @@ Object.assign(pages, {
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>Date</th>
-                                    <th>Vendor</th>
-                                    <th>Amount</th>
-                                    <th>Status</th>
-                                    <th>Source</th>
-                                    <th>Actions</th>
+                                    <th scope="col">Date</th>
+                                    <th scope="col">Vendor</th>
+                                    <th scope="col">Amount</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Source</th>
+                                    <th scope="col">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1000,13 +1000,13 @@ Object.assign(pages, {
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Purchase #</th>
-                                        <th>Vendor</th>
-                                        <th>Date</th>
-                                        <th>Items</th>
-                                        <th>Total</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
+                                        <th scope="col">Purchase #</th>
+                                        <th scope="col">Vendor</th>
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Items</th>
+                                        <th scope="col">Total</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -1061,14 +1061,14 @@ Object.assign(pages, {
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Date</th>
-                                        <th>Item</th>
-                                        <th>Sale Price</th>
-                                        <th>Item Cost</th>
-                                        <th>Customer Ship</th>
-                                        <th>Seller Ship</th>
-                                        <th>Platform Fee</th>
-                                        <th>Net Profit</th>
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Item</th>
+                                        <th scope="col">Sale Price</th>
+                                        <th scope="col">Item Cost</th>
+                                        <th scope="col">Customer Ship</th>
+                                        <th scope="col">Seller Ship</th>
+                                        <th scope="col">Platform Fee</th>
+                                        <th scope="col">Net Profit</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -1983,7 +1983,7 @@ Object.assign(pages, {
                             cumulative[cumulative.length - 1].toLocaleString() +
                             '</div><div style="font-size: 11px; color: var(--gray-500);">End Balance</div></div>' +
                             '</div>' +
-                            '<div style="overflow-x: auto;"><table class="table"><thead><tr><th>Month</th><th>Income</th><th>Expenses</th><th>Net</th><th>Cumulative</th><th>Bar</th></tr></thead><tbody>' +
+                            '<div style="overflow-x: auto;"><table class="table"><thead><tr><th scope="col">Month</th><th scope="col">Income</th><th scope="col">Expenses</th><th scope="col">Net</th><th scope="col">Cumulative</th><th scope="col">Bar</th></tr></thead><tbody>' +
                             projMonths
                                 .map(
                                     (m, i) =>
@@ -2463,18 +2463,18 @@ Object.assign(pages, {
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th style="width: 40px;"><input type="checkbox" onchange="handlers.toggleAllOrderSelection(this.checked)" aria-label="Select all orders"></th>
-                                    ${visibleColumns.includes('date') ? '<th>Date</th>' : ''}
-                                    ${visibleColumns.includes('buyer') ? '<th>Buyer</th>' : ''}
-                                    ${visibleColumns.includes('status') ? '<th>Status</th>' : ''}
-                                    ${visibleColumns.includes('item') ? '<th>Item</th>' : ''}
-                                    ${visibleColumns.includes('sale_price') ? '<th>Sale Price</th>' : ''}
-                                    ${visibleColumns.includes('profit') ? '<th>Profit</th>' : ''}
-                                    ${visibleColumns.includes('shipping_method') ? '<th>Shipping Method</th>' : ''}
-                                    ${visibleColumns.includes('tracking') ? '<th>Tracking ID</th>' : ''}
-                                    ${visibleColumns.includes('carrier') ? '<th>Provider</th>' : ''}
-                                    ${visibleColumns.includes('arrival') ? '<th>Expected Arrival</th>' : ''}
-                                    <th>Actions</th>
+                                    <th scope="col" style="width: 40px;"><input type="checkbox" onchange="handlers.toggleAllOrderSelection(this.checked)" aria-label="Select all orders"></th>
+                                    ${visibleColumns.includes('date') ? '<th scope="col">Date</th>' : ''}
+                                    ${visibleColumns.includes('buyer') ? '<th scope="col">Buyer</th>' : ''}
+                                    ${visibleColumns.includes('status') ? '<th scope="col">Status</th>' : ''}
+                                    ${visibleColumns.includes('item') ? '<th scope="col">Item</th>' : ''}
+                                    ${visibleColumns.includes('sale_price') ? '<th scope="col">Sale Price</th>' : ''}
+                                    ${visibleColumns.includes('profit') ? '<th scope="col">Profit</th>' : ''}
+                                    ${visibleColumns.includes('shipping_method') ? '<th scope="col">Shipping Method</th>' : ''}
+                                    ${visibleColumns.includes('tracking') ? '<th scope="col">Tracking ID</th>' : ''}
+                                    ${visibleColumns.includes('carrier') ? '<th scope="col">Provider</th>' : ''}
+                                    ${visibleColumns.includes('arrival') ? '<th scope="col">Expected Arrival</th>' : ''}
+                                    <th scope="col">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -2670,14 +2670,14 @@ Object.assign(pages, {
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th><input aria-label="Toggle Recipient" type="checkbox" onchange="handlers.toggleAllLabels(this.checked)"></th>
-                                            <th>Recipient</th>
-                                            <th>Carrier</th>
-                                            <th>Service</th>
-                                            <th>Tracking</th>
-                                            <th>Cost</th>
-                                            <th>Status</th>
-                                            <th>Actions</th>
+                                            <th scope="col"><input aria-label="Toggle Recipient" type="checkbox" onchange="handlers.toggleAllLabels(this.checked)"></th>
+                                            <th scope="col">Recipient</th>
+                                            <th scope="col">Carrier</th>
+                                            <th scope="col">Service</th>
+                                            <th scope="col">Tracking</th>
+                                            <th scope="col">Cost</th>
+                                            <th scope="col">Status</th>
+                                            <th scope="col">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -2803,13 +2803,13 @@ Object.assign(pages, {
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th>Batch</th>
-                                            <th>Labels</th>
-                                            <th>Completed</th>
-                                            <th>Failed</th>
-                                            <th>Total Postage</th>
-                                            <th>Status</th>
-                                            <th>Actions</th>
+                                            <th scope="col">Batch</th>
+                                            <th scope="col">Labels</th>
+                                            <th scope="col">Completed</th>
+                                            <th scope="col">Failed</th>
+                                            <th scope="col">Total Postage</th>
+                                            <th scope="col">Status</th>
+                                            <th scope="col">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -3081,15 +3081,15 @@ Object.assign(pages, {
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th>Date</th>
-                                            <th>Item</th>
-                                            <th>Platform</th>
-                                            <th>Price</th>
-                                            <th>Fees</th>
-                                            <th>Profit</th>
-                                            <th>Tags</th>
-                                            <th>Running Balance</th>
-                                            <th>Actions</th>
+                                            <th scope="col">Date</th>
+                                            <th scope="col">Item</th>
+                                            <th scope="col">Platform</th>
+                                            <th scope="col">Price</th>
+                                            <th scope="col">Fees</th>
+                                            <th scope="col">Profit</th>
+                                            <th scope="col">Tags</th>
+                                            <th scope="col">Running Balance</th>
+                                            <th scope="col">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -3556,15 +3556,15 @@ Object.assign(pages, {
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th style="width: 32px;"><input aria-label="Toggle Date" type="checkbox" onchange="handlers.toggleAllPurchases(this.checked)" ${purchaseSelectionChecked}></th>
-                                            <th>Date</th>
-                                            <th>Vendor</th>
-                                            <th>Description</th>
-                                            <th>Category</th>
-                                            <th>Amount</th>
-                                            <th>Running Balance</th>
-                                            <th>Status</th>
-                                            <th>Actions</th>
+                                            <th scope="col" style="width: 32px;"><input aria-label="Toggle Date" type="checkbox" onchange="handlers.toggleAllPurchases(this.checked)" ${purchaseSelectionChecked}></th>
+                                            <th scope="col">Date</th>
+                                            <th scope="col">Vendor</th>
+                                            <th scope="col">Description</th>
+                                            <th scope="col">Category</th>
+                                            <th scope="col">Amount</th>
+                                            <th scope="col">Running Balance</th>
+                                            <th scope="col">Status</th>
+                                            <th scope="col">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -3782,9 +3782,9 @@ Object.assign(pages, {
                                             ${
                                                 reportResults.columns && reportResults.columns.length > 0
                                                     ? reportResults.columns
-                                                          .map((col) => `<th>${escapeHtml(col)}</th>`)
+                                                          .map((col) => `<th scope="col">${escapeHtml(col)}</th>`)
                                                           .join('')
-                                                    : '<th>Data</th>'
+                                                    : '<th scope="col">Data</th>'
                                             }
                                         </tr>
                                     </thead>

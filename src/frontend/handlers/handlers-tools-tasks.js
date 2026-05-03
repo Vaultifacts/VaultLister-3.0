@@ -691,7 +691,7 @@ Object.assign(handlers, {
                 data.headers
                     .map(
                         (h) =>
-                            `<th style="border: 1px solid var(--gray-200); padding: 4px 6px; background: var(--gray-50); white-space: nowrap;">${h}</th>`,
+                            `<th scope="col" style="border: 1px solid var(--gray-200); padding: 4px 6px; background: var(--gray-50); white-space: nowrap;">${h}</th>`,
                     )
                     .join('') +
                 '</tr></thead>';
@@ -956,7 +956,7 @@ Object.assign(handlers, {
                 <div class="modal-header"><h3>${escapeHtml(brand)} Size Guide</h3><button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button></div>
                 <div class="modal-body" style="overflow-x: auto;">
                     <table class="data-table">
-                        <thead><tr><th>Size</th><th>US</th><th>UK</th><th>EU</th><th>JP</th><th>CN</th><th>Chest</th><th>Waist</th></tr></thead>
+                        <thead><tr><th scope="col">Size</th><th scope="col">US</th><th scope="col">UK</th><th scope="col">EU</th><th scope="col">JP</th><th scope="col">CN</th><th scope="col">Chest</th><th scope="col">Waist</th></tr></thead>
                         <tbody>
                             ${guides.map((g) => `<tr><td>${escapeHtml(g.size_label)}</td><td>${g.us_size || '-'}</td><td>${g.uk_size || '-'}</td><td>${g.eu_size || '-'}</td><td>${g.jp_size || '-'}</td><td>${g.cn_size || '-'}</td><td>${g.chest_cm ? g.chest_cm + 'cm' : '-'}</td><td>${g.waist_cm ? g.waist_cm + 'cm' : '-'}</td></tr>`).join('')}
                         </tbody>

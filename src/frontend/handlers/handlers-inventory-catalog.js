@@ -2463,7 +2463,7 @@ Object.assign(handlers, {
 
             let tableHTML = '<table style="width: 100%; border-collapse: collapse; font-size: 13px;"><thead><tr>';
             headers.forEach((header) => {
-                tableHTML += `<th style="background: var(--gray-100); padding: 8px; text-align: left; border: 1px solid var(--gray-200); font-weight: 600;">${escapeHtml(header)}</th>`;
+                tableHTML += `<th scope="col" style="background: var(--gray-100); padding: 8px; text-align: left; border: 1px solid var(--gray-200); font-weight: 600;">${escapeHtml(header)}</th>`;
             });
             tableHTML += '</tr></thead><tbody>';
 
@@ -6726,9 +6726,9 @@ Object.assign(handlers, {
                     <div class="font-semibold mb-2 text-sm">Similar Items in Database</div>
                     <table class="w-full text-sm">
                         <thead><tr class="border-b">
-                            <th class="text-left pb-1">Item</th>
-                            <th class="text-right pb-1">Price</th>
-                            <th class="text-right pb-1">Match</th>
+                            <th scope="col" class="text-left pb-1">Item</th>
+                            <th scope="col" class="text-right pb-1">Price</th>
+                            <th scope="col" class="text-right pb-1">Match</th>
                         </tr></thead>
                         <tbody>${rows}</tbody>
                     </table>

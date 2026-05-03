@@ -709,12 +709,12 @@ Object.assign(pages, {
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>Image</th>
-                                        <th>Item</th>
-                                        <th>Platform</th>
-                                        <th>Price</th>
-                                        <th>Archived Date</th>
-                                        <th>Actions</th>
+                                        <th scope="col">Image</th>
+                                        <th scope="col">Item</th>
+                                        <th scope="col">Platform</th>
+                                        <th scope="col">Price</th>
+                                        <th scope="col">Archived Date</th>
+                                        <th scope="col">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -2354,13 +2354,13 @@ Object.assign(pages, {
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Purchase #</th>
-                                        <th>Vendor</th>
-                                        <th>Date</th>
-                                        <th>Items</th>
-                                        <th>Total</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
+                                        <th scope="col">Purchase #</th>
+                                        <th scope="col">Vendor</th>
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Items</th>
+                                        <th scope="col">Total</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -2415,14 +2415,14 @@ Object.assign(pages, {
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Date</th>
-                                        <th>Item</th>
-                                        <th>Sale Price</th>
-                                        <th>Item Cost</th>
-                                        <th>Customer Ship</th>
-                                        <th>Seller Ship</th>
-                                        <th>Platform Fee</th>
-                                        <th>Net Profit</th>
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Item</th>
+                                        <th scope="col">Sale Price</th>
+                                        <th scope="col">Item Cost</th>
+                                        <th scope="col">Customer Ship</th>
+                                        <th scope="col">Seller Ship</th>
+                                        <th scope="col">Platform Fee</th>
+                                        <th scope="col">Net Profit</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -3684,7 +3684,7 @@ Object.assign(pages, {
                             cumulative[cumulative.length - 1].toLocaleString() +
                             '</div><div style="font-size: 11px; color: var(--gray-500);">End Balance</div></div>' +
                             '</div>' +
-                            '<div style="overflow-x: auto;"><table class="table"><thead><tr><th>Month</th><th>Income</th><th>Expenses</th><th>Net</th><th>Cumulative</th><th>Bar</th></tr></thead><tbody>' +
+                            '<div style="overflow-x: auto;"><table class="table"><thead><tr><th scope="col">Month</th><th scope="col">Income</th><th scope="col">Expenses</th><th scope="col">Net</th><th scope="col">Cumulative</th><th scope="col">Bar</th></tr></thead><tbody>' +
                             projMonths
                                 .map(
                                     (m, i) =>
@@ -4764,15 +4764,15 @@ Object.assign(pages, {
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>Platform</th>
-                                        <th>Sales</th>
-                                        <th>Revenue</th>
-                                        <th>Avg Sale</th>
-                                        <th>Conversion</th>
-                                        <th>Sales/Day</th>
-                                        <th>Avg Days to Sell</th>
-                                        <th>Return Rate</th>
-                                        <th>Net Revenue</th>
+                                        <th scope="col">Platform</th>
+                                        <th scope="col">Sales</th>
+                                        <th scope="col">Revenue</th>
+                                        <th scope="col">Avg Sale</th>
+                                        <th scope="col">Conversion</th>
+                                        <th scope="col">Sales/Day</th>
+                                        <th scope="col">Avg Days to Sell</th>
+                                        <th scope="col">Return Rate</th>
+                                        <th scope="col">Net Revenue</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -6961,8 +6961,8 @@ Object.assign(pages, {
                         <table class="size-chart-table">
                             <thead>
                                 <tr>
-                                    <th>${currentData.headers[0]}</th>
-                                    ${currentData.rows.map((row) => `<th>${row[0]}</th>`).join('')}
+                                    <th scope="col">${currentData.headers[0]}</th>
+                                    ${currentData.rows.map((row) => `<th scope="col">${row[0]}</th>`).join('')}
                                 </tr>
                             </thead>
                             <tbody>
@@ -6984,7 +6984,7 @@ Object.assign(pages, {
                         <table class="size-chart-table">
                             <thead>
                                 <tr>
-                                    ${currentData.headers.map((h) => `<th>${convertHeader(h)}</th>`).join('')}
+                                    ${currentData.headers.map((h) => `<th scope="col">${convertHeader(h)}</th>`).join('')}
                                 </tr>
                             </thead>
                             <tbody>
@@ -7974,12 +7974,12 @@ Object.assign(pages, {
                             <table class="table table-sm" style="font-size: 13px;">
                                 <thead>
                                     <tr>
-                                        <th>Permission</th>
-                                        <th style="text-align: center;">Viewer</th>
-                                        <th style="text-align: center;">Member</th>
-                                        <th style="text-align: center;">Manager</th>
-                                        <th style="text-align: center;">Admin</th>
-                                        <th style="text-align: center;">Owner</th>
+                                        <th scope="col">Permission</th>
+                                        <th scope="col" style="text-align: center;">Viewer</th>
+                                        <th scope="col" style="text-align: center;">Member</th>
+                                        <th scope="col" style="text-align: center;">Manager</th>
+                                        <th scope="col" style="text-align: center;">Admin</th>
+                                        <th scope="col" style="text-align: center;">Owner</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -8461,10 +8461,10 @@ Object.assign(pages, {
                     <table style="width:100%;border-collapse:collapse;font-size:14px;">
                         <thead>
                             <tr style="border-bottom:2px solid var(--gray-200);">
-                                <th style="text-align:left;padding:8px 12px;font-weight:600;">Feature</th>
-                                <th style="text-align:center;padding:8px 12px;font-weight:600;">Free</th>
-                                <th style="text-align:center;padding:8px 12px;font-weight:600;color:var(--primary);">Pro</th>
-                                <th style="text-align:center;padding:8px 12px;font-weight:600;">Business</th>
+                                <th scope="col" style="text-align:left;padding:8px 12px;font-weight:600;">Feature</th>
+                                <th scope="col" style="text-align:center;padding:8px 12px;font-weight:600;">Free</th>
+                                <th scope="col" style="text-align:center;padding:8px 12px;font-weight:600;color:var(--primary);">Pro</th>
+                                <th scope="col" style="text-align:center;padding:8px 12px;font-weight:600;">Business</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -12936,12 +12936,12 @@ Upload photos once, use them across all your listings.`,
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>Item</th>
-                                    <th>Current</th>
-                                    <th style="color: var(--error);">Pessimistic</th>
-                                    <th style="color: var(--primary);">Expected</th>
-                                    <th style="color: var(--success);">Optimistic</th>
-                                    <th>Range</th>
+                                    <th scope="col">Item</th>
+                                    <th scope="col">Current</th>
+                                    <th scope="col" style="color: var(--error);">Pessimistic</th>
+                                    <th scope="col" style="color: var(--primary);">Expected</th>
+                                    <th scope="col" style="color: var(--success);">Optimistic</th>
+                                    <th scope="col">Range</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -13564,13 +13564,13 @@ Upload photos once, use them across all your listings.`,
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>Supplier</th>
-                                        <th>Items</th>
-                                        <th>Avg Price</th>
-                                        <th>Stock Status</th>
-                                        <th>Rating</th>
-                                        <th>Reliability</th>
-                                        <th>30-Day Trend</th>
+                                        <th scope="col">Supplier</th>
+                                        <th scope="col">Items</th>
+                                        <th scope="col">Avg Price</th>
+                                        <th scope="col">Stock Status</th>
+                                        <th scope="col">Rating</th>
+                                        <th scope="col">Reliability</th>
+                                        <th scope="col">30-Day Trend</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -13649,13 +13649,13 @@ Upload photos once, use them across all your listings.`,
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>PO #</th>
-                                        <th>Supplier</th>
-                                        <th>Items</th>
-                                        <th>Total</th>
-                                        <th>Status</th>
-                                        <th>Created</th>
-                                        <th>Actions</th>
+                                        <th scope="col">PO #</th>
+                                        <th scope="col">Supplier</th>
+                                        <th scope="col">Items</th>
+                                        <th scope="col">Total</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Created</th>
+                                        <th scope="col">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -13717,12 +13717,12 @@ Upload photos once, use them across all your listings.`,
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>Supplier</th>
-                                    <th>Avg Processing</th>
-                                    <th>Avg Shipping</th>
-                                    <th>Avg Total</th>
-                                    <th>On-Time %</th>
-                                    <th>Trend</th>
+                                    <th scope="col">Supplier</th>
+                                    <th scope="col">Avg Processing</th>
+                                    <th scope="col">Avg Shipping</th>
+                                    <th scope="col">Avg Total</th>
+                                    <th scope="col">On-Time %</th>
+                                    <th scope="col">Trend</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -13866,12 +13866,12 @@ Upload photos once, use them across all your listings.`,
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>Supplier</th>
-                                    <th>Min Order Qty</th>
-                                    <th>Tier 1 (1-49)</th>
-                                    <th>Tier 2 (50-99)</th>
-                                    <th>Tier 3 (100+)</th>
-                                    <th>Best Value</th>
+                                    <th scope="col">Supplier</th>
+                                    <th scope="col">Min Order Qty</th>
+                                    <th scope="col">Tier 1 (1-49)</th>
+                                    <th scope="col">Tier 2 (50-99)</th>
+                                    <th scope="col">Tier 3 (100+)</th>
+                                    <th scope="col">Best Value</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -14440,12 +14440,12 @@ Upload photos once, use them across all your listings.`,
                                                         : '';
                                                     const nextDir =
                                                         isActive && competitorSortDir === 'asc' ? 'desc' : 'asc';
-                                                    return `<th style="padding: 12px; text-align: ${align}; cursor: pointer; user-select: none; white-space: nowrap; color: ${isActive ? 'var(--primary)' : 'inherit'};" onclick="store.setState({ competitorSortCol: '${col}', competitorSortDir: '${nextDir}' }); renderApp(pages.marketIntel());">${label}${arrow}</th>`;
+                                                    return `<th scope="col" style="padding: 12px; text-align: ${align}; cursor: pointer; user-select: none; white-space: nowrap; color: ${isActive ? 'var(--primary)' : 'inherit'};" onclick="store.setState({ competitorSortCol: '${col}', competitorSortDir: '${nextDir}' }); renderApp(pages.marketIntel());">${label}${arrow}</th>`;
                                                 })
                                                 .join('');
                                         })()}
-                                        <th style="padding: 12px; text-align: right;">Activity</th>
-                                        <th style="padding: 12px; text-align: center;">Actions</th>
+                                        <th scope="col" style="padding: 12px; text-align: right;">Activity</th>
+                                        <th scope="col" style="padding: 12px; text-align: center;">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -14677,7 +14677,7 @@ Upload photos once, use them across all your listings.`,
                     </div>
                     <div style="overflow-x: auto; display: none;">
                         <table class="table">
-                            <thead><tr><th>Category</th><th>Avg Price</th><th>Sales Volume</th><th>Avg Days</th><th>Top Brand</th></tr></thead>
+                            <thead><tr><th scope="col">Category</th><th scope="col">Avg Price</th><th scope="col">Sales Volume</th><th scope="col">Avg Days</th><th scope="col">Top Brand</th></tr></thead>
                             <tbody>
                                 ${[]
                                     .map(
@@ -14862,9 +14862,9 @@ Upload photos once, use them across all your listings.`,
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>Metric</th>
+                                    <th scope="col">Metric</th>
                                     ${comparisonPlatforms
-                                        .map((platform) => `<th style="text-align: center;">${escapeHtml(String(platform))}</th>`)
+                                        .map((platform) => `<th scope="col" style="text-align: center;">${escapeHtml(String(platform))}</th>`)
                                         .join('')}
                                 </tr>
                             </thead>
@@ -15016,12 +15016,12 @@ Upload photos once, use them across all your listings.`,
                             <table class="table" style="width: 100%; font-size: 13px;">
                                 <thead>
                                     <tr style="background: var(--gray-50);">
-                                        <th style="padding: 12px;">Time</th>
-                                        <th style="padding: 12px;">Type</th>
-                                        <th style="padding: 12px;">Source</th>
-                                        <th style="padding: 12px;">Status</th>
-                                        <th style="padding: 12px;">Payload</th>
-                                        <th style="padding: 12px;">Action</th>
+                                        <th scope="col" style="padding: 12px;">Time</th>
+                                        <th scope="col" style="padding: 12px;">Type</th>
+                                        <th scope="col" style="padding: 12px;">Source</th>
+                                        <th scope="col" style="padding: 12px;">Status</th>
+                                        <th scope="col" style="padding: 12px;">Payload</th>
+                                        <th scope="col" style="padding: 12px;">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -15953,11 +15953,11 @@ Upload photos once, use them across all your listings.`,
                         <table style="width: 100%; border-collapse: collapse;">
                             <thead>
                                 <tr style="border-bottom: 1px solid var(--gray-200);">
-                                    <th style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: var(--gray-500);">Rank</th>
-                                    <th style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: var(--gray-500);">Title</th>
-                                    <th style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: var(--gray-500);">Type</th>
-                                    <th style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: var(--gray-500);">Status</th>
-                                    <th style="padding: 12px 16px; text-align: right; font-size: 12px; text-transform: uppercase; color: var(--gray-500);">Net Votes</th>
+                                    <th scope="col" style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: var(--gray-500);">Rank</th>
+                                    <th scope="col" style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: var(--gray-500);">Title</th>
+                                    <th scope="col" style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: var(--gray-500);">Type</th>
+                                    <th scope="col" style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: var(--gray-500);">Status</th>
+                                    <th scope="col" style="padding: 12px 16px; text-align: right; font-size: 12px; text-transform: uppercase; color: var(--gray-500);">Net Votes</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -16143,13 +16143,13 @@ Upload photos once, use them across all your listings.`,
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th><input type="checkbox" aria-label="Select all stale listings" onchange="handlers.toggleAllStale(this.checked)"></th>
-                                            <th>Item</th>
-                                            <th>Platform</th>
-                                            <th>Price</th>
-                                            <th>Days Stale</th>
-                                            <th>Views</th>
-                                            <th>Actions</th>
+                                            <th scope="col"><input type="checkbox" aria-label="Select all stale listings" onchange="handlers.toggleAllStale(this.checked)"></th>
+                                            <th scope="col">Item</th>
+                                            <th scope="col">Platform</th>
+                                            <th scope="col">Price</th>
+                                            <th scope="col">Days Stale</th>
+                                            <th scope="col">Views</th>
+                                            <th scope="col">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -16215,12 +16215,12 @@ Upload photos once, use them across all your listings.`,
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th>Item</th>
-                                            <th>Original Price</th>
-                                            <th>New Price</th>
-                                            <th>Change</th>
-                                            <th>Status</th>
-                                            <th>Actions</th>
+                                            <th scope="col">Item</th>
+                                            <th scope="col">Original Price</th>
+                                            <th scope="col">New Price</th>
+                                            <th scope="col">Change</th>
+                                            <th scope="col">Status</th>
+                                            <th scope="col">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -16359,14 +16359,14 @@ Upload photos once, use them across all your listings.`,
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th><input aria-label="Toggle Recipient" type="checkbox" onchange="handlers.toggleAllLabels(this.checked)"></th>
-                                            <th>Recipient</th>
-                                            <th>Carrier</th>
-                                            <th>Service</th>
-                                            <th>Tracking</th>
-                                            <th>Cost</th>
-                                            <th>Status</th>
-                                            <th>Actions</th>
+                                            <th scope="col"><input aria-label="Toggle Recipient" type="checkbox" onchange="handlers.toggleAllLabels(this.checked)"></th>
+                                            <th scope="col">Recipient</th>
+                                            <th scope="col">Carrier</th>
+                                            <th scope="col">Service</th>
+                                            <th scope="col">Tracking</th>
+                                            <th scope="col">Cost</th>
+                                            <th scope="col">Status</th>
+                                            <th scope="col">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -16492,13 +16492,13 @@ Upload photos once, use them across all your listings.`,
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th>Batch</th>
-                                            <th>Labels</th>
-                                            <th>Completed</th>
-                                            <th>Failed</th>
-                                            <th>Total Postage</th>
-                                            <th>Status</th>
-                                            <th>Actions</th>
+                                            <th scope="col">Batch</th>
+                                            <th scope="col">Labels</th>
+                                            <th scope="col">Completed</th>
+                                            <th scope="col">Failed</th>
+                                            <th scope="col">Total Postage</th>
+                                            <th scope="col">Status</th>
+                                            <th scope="col">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -16683,10 +16683,10 @@ Upload photos once, use them across all your listings.`,
                                 html += '<thead style="position:sticky; top:0; z-index:2;">';
                                 html += '<tr>';
                                 html +=
-                                    '<th style="background:var(--gray-200); border:1px solid var(--gray-300); text-align:center; font-size:11px; font-weight:600; color:var(--gray-500); padding:2px 4px;"></th>';
+                                    '<th scope="col" style="background:var(--gray-200); border:1px solid var(--gray-300); text-align:center; font-size:11px; font-weight:600; color:var(--gray-500); padding:2px 4px;"></th>';
                                 for (let c = 0; c < colCount; c++) {
                                     html +=
-                                        '<th style="position:relative; background:var(--gray-200); border:1px solid var(--gray-300); text-align:center; font-size:11px; font-weight:600; color:var(--gray-500); padding:2px 4px;">' +
+                                        '<th scope="col" style="position:relative; background:var(--gray-200); border:1px solid var(--gray-300); text-align:center; font-size:11px; font-weight:600; color:var(--gray-500); padding:2px 4px;">' +
                                         colLetter(c);
                                     html +=
                                         '<div onmousedown="handlers.startColResize(event,' +
@@ -16700,10 +16700,10 @@ Upload photos once, use them across all your listings.`,
                                 // Row 2: dropdown selects
                                 html += '<tr>';
                                 html +=
-                                    '<th style="background:var(--gray-100); border:1px solid var(--gray-300); text-align:center; font-size:10px; color:var(--gray-400); padding:4px;">Row</th>';
+                                    '<th scope="col" style="background:var(--gray-100); border:1px solid var(--gray-300); text-align:center; font-size:10px; color:var(--gray-400); padding:4px;">Row</th>';
                                 for (let c = 0; c < colCount; c++) {
                                     html +=
-                                        '<th style="vertical-align:top; padding:6px 4px; background:var(--gray-100); border:1px solid var(--gray-300); text-align:center;">';
+                                        '<th scope="col" style="vertical-align:top; padding:6px 4px; background:var(--gray-100); border:1px solid var(--gray-300); text-align:center;">';
                                     html +=
                                         '<select aria-label="Map column" class="form-input import-field-select" data-col-index="' +
                                         c +
@@ -16843,14 +16843,14 @@ Upload photos once, use them across all your listings.`,
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th>Name</th>
-                                            <th>Source</th>
-                                            <th>Total Rows</th>
-                                            <th>Imported</th>
-                                            <th>Failed</th>
-                                            <th>Status</th>
-                                            <th>Date</th>
-                                            <th>Actions</th>
+                                            <th scope="col">Name</th>
+                                            <th scope="col">Source</th>
+                                            <th scope="col">Total Rows</th>
+                                            <th scope="col">Imported</th>
+                                            <th scope="col">Failed</th>
+                                            <th scope="col">Status</th>
+                                            <th scope="col">Date</th>
+                                            <th scope="col">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -17511,15 +17511,15 @@ Upload photos once, use them across all your listings.`,
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th style="width: 32px;"><input aria-label="Toggle Date" type="checkbox" onchange="handlers.toggleAllPurchases(this.checked)" ${(store.state.selectedPurchases || []).length === purchasesWithBalance.length && purchasesWithBalance.length > 0 ? 'checked' : ''}></th>
-                                            <th>Date</th>
-                                            <th>Vendor</th>
-                                            <th>Description</th>
-                                            <th>Category</th>
-                                            <th>Amount</th>
-                                            <th>Running Balance</th>
-                                            <th>Status</th>
-                                            <th>Actions</th>
+                                            <th scope="col" style="width: 32px;"><input aria-label="Toggle Date" type="checkbox" onchange="handlers.toggleAllPurchases(this.checked)" ${(store.state.selectedPurchases || []).length === purchasesWithBalance.length && purchasesWithBalance.length > 0 ? 'checked' : ''}></th>
+                                            <th scope="col">Date</th>
+                                            <th scope="col">Vendor</th>
+                                            <th scope="col">Description</th>
+                                            <th scope="col">Category</th>
+                                            <th scope="col">Amount</th>
+                                            <th scope="col">Running Balance</th>
+                                            <th scope="col">Status</th>
+                                            <th scope="col">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -17639,15 +17639,15 @@ Upload photos once, use them across all your listings.`,
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th>Date</th>
-                                            <th>Item</th>
-                                            <th>Platform</th>
-                                            <th>Price</th>
-                                            <th>Fees</th>
-                                            <th>Profit</th>
-                                            <th>Tags</th>
-                                            <th>Running Balance</th>
-                                            <th>Actions</th>
+                                            <th scope="col">Date</th>
+                                            <th scope="col">Item</th>
+                                            <th scope="col">Platform</th>
+                                            <th scope="col">Price</th>
+                                            <th scope="col">Fees</th>
+                                            <th scope="col">Profit</th>
+                                            <th scope="col">Tags</th>
+                                            <th scope="col">Running Balance</th>
+                                            <th scope="col">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -17822,12 +17822,12 @@ Upload photos once, use them across all your listings.`,
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th>Event</th>
-                                            <th>Date</th>
-                                            <th>Duration</th>
-                                            <th>Items</th>
-                                            <th>Sales</th>
-                                            <th>Status</th>
+                                            <th scope="col">Event</th>
+                                            <th scope="col">Date</th>
+                                            <th scope="col">Duration</th>
+                                            <th scope="col">Items</th>
+                                            <th scope="col">Sales</th>
+                                            <th scope="col">Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -17942,7 +17942,7 @@ Upload photos once, use them across all your listings.`,
                                 : `
                             <div class="table-container">
                                 <table class="table">
-                                    <thead><tr><th>Date</th><th>Platform</th><th>Item</th><th>Error Type</th><th>Status</th></tr></thead>
+                                    <thead><tr><th scope="col">Date</th><th scope="col">Platform</th><th scope="col">Item</th><th scope="col">Error Type</th><th scope="col">Status</th></tr></thead>
                                     <tbody>
                                         ${errorSales
                                             .map(
@@ -17984,7 +17984,7 @@ Upload photos once, use them across all your listings.`,
                             <h3 class="font-semibold mb-3">Slowest Moving Items</h3>
                             <div class="table-container">
                                 <table class="table">
-                                    <thead><tr><th>Item</th><th>Days Listed</th><th>Status</th></tr></thead>
+                                    <thead><tr><th scope="col">Item</th><th scope="col">Days Listed</th><th scope="col">Status</th></tr></thead>
                                     <tbody>
                                         ${slowestMoving
                                             .map(
@@ -18252,16 +18252,16 @@ Upload photos once, use them across all your listings.`,
                                 <table class="data-table">
                                     <thead>
                                         <tr>
-                                            <th style="width: 40px;">
+                                            <th scope="col" style="width: 40px;">
                                                 <input aria-label="Toggle Item Name" type="checkbox"
                                                        checked="${selectedDeletedIds.length === itemsWithData.length && itemsWithData.length > 0}"
                                                        onchange="handlers.toggleSelectAllDeleted(this.checked)">
                                             </th>
-                                            <th>Item Name</th>
-                                            <th>Type</th>
-                                            <th>Reason</th>
-                                            <th>Deleted Date</th>
-                                            <th>Actions</th>
+                                            <th scope="col">Item Name</th>
+                                            <th scope="col">Type</th>
+                                            <th scope="col">Reason</th>
+                                            <th scope="col">Deleted Date</th>
+                                            <th scope="col">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -18458,9 +18458,9 @@ Upload photos once, use them across all your listings.`,
                                             ${
                                                 reportResults.columns && reportResults.columns.length > 0
                                                     ? reportResults.columns
-                                                          .map((col) => `<th>${escapeHtml(col)}</th>`)
+                                                          .map((col) => `<th scope="col">${escapeHtml(col)}</th>`)
                                                           .join('')
-                                                    : '<th>Data</th>'
+                                                    : '<th scope="col">Data</th>'
                                             }
                                         </tr>
                                     </thead>

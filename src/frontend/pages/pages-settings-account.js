@@ -865,15 +865,15 @@ Object.assign(pages, {
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>Platform</th>
-                                        <th>Sales</th>
-                                        <th>Revenue</th>
-                                        <th>Avg Sale</th>
-                                        <th>Conversion</th>
-                                        <th>Sales/Day</th>
-                                        <th>Avg Days to Sell</th>
-                                        <th>Return Rate</th>
-                                        <th>Net Revenue</th>
+                                        <th scope="col">Platform</th>
+                                        <th scope="col">Sales</th>
+                                        <th scope="col">Revenue</th>
+                                        <th scope="col">Avg Sale</th>
+                                        <th scope="col">Conversion</th>
+                                        <th scope="col">Sales/Day</th>
+                                        <th scope="col">Avg Days to Sell</th>
+                                        <th scope="col">Return Rate</th>
+                                        <th scope="col">Net Revenue</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -2626,12 +2626,12 @@ Object.assign(pages, {
                             <table class="table table-sm" style="font-size: 13px;">
                                 <thead>
                                     <tr>
-                                        <th>Permission</th>
-                                        <th style="text-align: center;">Viewer</th>
-                                        <th style="text-align: center;">Member</th>
-                                        <th style="text-align: center;">Manager</th>
-                                        <th style="text-align: center;">Admin</th>
-                                        <th style="text-align: center;">Owner</th>
+                                        <th scope="col">Permission</th>
+                                        <th scope="col" style="text-align: center;">Viewer</th>
+                                        <th scope="col" style="text-align: center;">Member</th>
+                                        <th scope="col" style="text-align: center;">Manager</th>
+                                        <th scope="col" style="text-align: center;">Admin</th>
+                                        <th scope="col" style="text-align: center;">Owner</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -3231,11 +3231,11 @@ Object.assign(pages, {
                     <table style="width:100%; border-collapse:collapse; font-size:14px;">
                         <thead>
                             <tr style="border-bottom:2px solid var(--gray-200);">
-                                <th style="text-align:left; padding:12px 16px; color:var(--gray-600); font-weight:600;">Feature</th>
-                                <th style="text-align:center; padding:12px 16px; font-weight:700;">Free</th>
-                                <th style="text-align:center; padding:12px 16px; font-weight:700;">Starter</th>
-                                <th style="text-align:center; padding:12px 16px; font-weight:700; color:var(--primary);">Pro</th>
-                                <th style="text-align:center; padding:12px 16px; font-weight:700;">Business</th>
+                                <th scope="col" style="text-align:left; padding:12px 16px; color:var(--gray-600); font-weight:600;">Feature</th>
+                                <th scope="col" style="text-align:center; padding:12px 16px; font-weight:700;">Free</th>
+                                <th scope="col" style="text-align:center; padding:12px 16px; font-weight:700;">Starter</th>
+                                <th scope="col" style="text-align:center; padding:12px 16px; font-weight:700; color:var(--primary);">Pro</th>
+                                <th scope="col" style="text-align:center; padding:12px 16px; font-weight:700;">Business</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -3956,12 +3956,12 @@ Object.assign(pages, {
                             <table class="table" style="width: 100%; font-size: 13px;">
                                 <thead>
                                     <tr style="background: var(--gray-50);">
-                                        <th style="padding: 12px;">Time</th>
-                                        <th style="padding: 12px;">Type</th>
-                                        <th style="padding: 12px;">Source</th>
-                                        <th style="padding: 12px;">Status</th>
-                                        <th style="padding: 12px;">Payload</th>
-                                        <th style="padding: 12px;">Action</th>
+                                        <th scope="col" style="padding: 12px;">Time</th>
+                                        <th scope="col" style="padding: 12px;">Type</th>
+                                        <th scope="col" style="padding: 12px;">Source</th>
+                                        <th scope="col" style="padding: 12px;">Status</th>
+                                        <th scope="col" style="padding: 12px;">Payload</th>
+                                        <th scope="col" style="padding: 12px;">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>

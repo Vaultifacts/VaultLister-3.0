@@ -17041,7 +17041,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '1ff4ff96';
+    const v = '00897a24';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function (resolve, reject) {
@@ -25430,11 +25430,11 @@ const modals = {
                                 <table class="table table-sm">
                                     <thead>
                                         <tr>
-                                            <th>Date</th>
-                                            <th>Vendor</th>
-                                            <th>Qty</th>
-                                            <th>Unit Cost</th>
-                                            <th>Total</th>
+                                            <th scope="col">Date</th>
+                                            <th scope="col">Vendor</th>
+                                            <th scope="col">Qty</th>
+                                            <th scope="col">Unit Cost</th>
+                                            <th scope="col">Total</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -25471,11 +25471,11 @@ const modals = {
                                 <table class="table table-sm">
                                     <thead>
                                         <tr>
-                                            <th>Date</th>
-                                            <th>Platform</th>
-                                            <th>Buyer</th>
-                                            <th>Sale Price</th>
-                                            <th>Profit</th>
+                                            <th scope="col">Date</th>
+                                            <th scope="col">Platform</th>
+                                            <th scope="col">Buyer</th>
+                                            <th scope="col">Sale Price</th>
+                                            <th scope="col">Profit</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -25512,10 +25512,10 @@ const modals = {
                             <table class="table table-sm">
                                 <thead>
                                     <tr>
-                                        <th>Date</th>
-                                        <th>Old Price</th>
-                                        <th>New Price</th>
-                                        <th>Change</th>
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Old Price</th>
+                                        <th scope="col">New Price</th>
+                                        <th scope="col">Change</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -28098,12 +28098,12 @@ const modals = {
                         <table class="team-permissions-table">
                             <thead>
                                 <tr>
-                                    <th>Permission</th>
-                                    <th>Owner</th>
-                                    <th>Admin</th>
-                                    <th>Manager</th>
-                                    <th>Member</th>
-                                    <th>Viewer</th>
+                                    <th scope="col">Permission</th>
+                                    <th scope="col">Owner</th>
+                                    <th scope="col">Admin</th>
+                                    <th scope="col">Manager</th>
+                                    <th scope="col">Member</th>
+                                    <th scope="col">Viewer</th>
                                 </tr>
                             </thead>
                             <tbody>

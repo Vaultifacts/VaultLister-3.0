@@ -283,11 +283,11 @@ Object.assign(pages, {
                             </colgroup>
                             <thead>
                                 <tr>
-                                    <th>
+                                    <th scope="col">
                                         <input type="checkbox" id="select-all-checkbox" data-testid="select-all-checkbox" onchange="handlers.selectAll(this.checked)" aria-label="Select All Checkbox">
                                         <label for="select-all-checkbox" style="margin-left: 4px; font-size: 12px; cursor: pointer;" title="Select all">All</label>
                                     </th>
-                                    <th>Image</th>
+                                    <th scope="col">Image</th>
                                     <th scope="col" class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-title" onclick="handlers.toggleSort('title')">
                                         Item <span id="sort-title">${handlers.currentSort?.field === 'title' ? (handlers.currentSort?.direction === 'asc' ? '↑' : '↓') : '⇅'}</span>
                                     </th>
@@ -321,7 +321,7 @@ Object.assign(pages, {
                                     <th scope="col" class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-age" onclick="handlers.toggleSort('age')">
                                         Age <span id="sort-age">${handlers.currentSort?.field === 'age' ? (handlers.currentSort?.direction === 'asc' ? '↑' : '↓') : '⇅'}</span>
                                     </th>
-                                    <th>Actions</th>
+                                    <th scope="col">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -670,12 +670,12 @@ Object.assign(pages, {
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>Image</th>
-                                        <th>Item</th>
-                                        <th>Platform</th>
-                                        <th>Price</th>
-                                        <th>Archived Date</th>
-                                        <th>Actions</th>
+                                        <th scope="col">Image</th>
+                                        <th scope="col">Item</th>
+                                        <th scope="col">Platform</th>
+                                        <th scope="col">Price</th>
+                                        <th scope="col">Archived Date</th>
+                                        <th scope="col">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -2557,13 +2557,13 @@ Object.assign(pages, {
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th><input type="checkbox" aria-label="Select all stale listings" onchange="handlers.toggleAllStale(this.checked)"></th>
-                                            <th>Item</th>
-                                            <th>Platform</th>
-                                            <th>Price</th>
-                                            <th>Days Stale</th>
-                                            <th>Views</th>
-                                            <th>Actions</th>
+                                            <th scope="col"><input type="checkbox" aria-label="Select all stale listings" onchange="handlers.toggleAllStale(this.checked)"></th>
+                                            <th scope="col">Item</th>
+                                            <th scope="col">Platform</th>
+                                            <th scope="col">Price</th>
+                                            <th scope="col">Days Stale</th>
+                                            <th scope="col">Views</th>
+                                            <th scope="col">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -2629,12 +2629,12 @@ Object.assign(pages, {
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th>Item</th>
-                                            <th>Original Price</th>
-                                            <th>New Price</th>
-                                            <th>Change</th>
-                                            <th>Status</th>
-                                            <th>Actions</th>
+                                            <th scope="col">Item</th>
+                                            <th scope="col">Original Price</th>
+                                            <th scope="col">New Price</th>
+                                            <th scope="col">Change</th>
+                                            <th scope="col">Status</th>
+                                            <th scope="col">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -2855,10 +2855,10 @@ Object.assign(pages, {
                                 html += '<thead style="position:sticky; top:0; z-index:2;">';
                                 html += '<tr>';
                                 html +=
-                                    '<th style="background:var(--gray-200); border:1px solid var(--gray-300); text-align:center; font-size:11px; font-weight:600; color:var(--gray-500); padding:2px 4px;"></th>';
+                                    '<th scope="col" style="background:var(--gray-200); border:1px solid var(--gray-300); text-align:center; font-size:11px; font-weight:600; color:var(--gray-500); padding:2px 4px;"></th>';
                                 for (let c = 0; c < colCount; c++) {
                                     html +=
-                                        '<th style="position:relative; background:var(--gray-200); border:1px solid var(--gray-300); text-align:center; font-size:11px; font-weight:600; color:var(--gray-500); padding:2px 4px;">' +
+                                        '<th scope="col" style="position:relative; background:var(--gray-200); border:1px solid var(--gray-300); text-align:center; font-size:11px; font-weight:600; color:var(--gray-500); padding:2px 4px;">' +
                                         colLetter(c);
                                     html +=
                                         '<div onmousedown="handlers.startColResize(event,' +
@@ -2872,10 +2872,10 @@ Object.assign(pages, {
                                 // Row 2: dropdown selects
                                 html += '<tr>';
                                 html +=
-                                    '<th style="background:var(--gray-100); border:1px solid var(--gray-300); text-align:center; font-size:10px; color:var(--gray-400); padding:4px;">Row</th>';
+                                    '<th scope="col" style="background:var(--gray-100); border:1px solid var(--gray-300); text-align:center; font-size:10px; color:var(--gray-400); padding:4px;">Row</th>';
                                 for (let c = 0; c < colCount; c++) {
                                     html +=
-                                        '<th style="vertical-align:top; padding:6px 4px; background:var(--gray-100); border:1px solid var(--gray-300); text-align:center;">';
+                                        '<th scope="col" style="vertical-align:top; padding:6px 4px; background:var(--gray-100); border:1px solid var(--gray-300); text-align:center;">';
                                     html +=
                                         '<select class="form-input import-field-select" aria-label="Map column" data-col-index="' +
                                         c +
@@ -3008,14 +3008,14 @@ Object.assign(pages, {
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th>Name</th>
-                                            <th>Source</th>
-                                            <th>Total Rows</th>
-                                            <th>Imported</th>
-                                            <th>Failed</th>
-                                            <th>Status</th>
-                                            <th>Date</th>
-                                            <th>Actions</th>
+                                            <th scope="col">Name</th>
+                                            <th scope="col">Source</th>
+                                            <th scope="col">Total Rows</th>
+                                            <th scope="col">Imported</th>
+                                            <th scope="col">Failed</th>
+                                            <th scope="col">Status</th>
+                                            <th scope="col">Date</th>
+                                            <th scope="col">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -3288,16 +3288,16 @@ Object.assign(pages, {
                                 <table class="data-table">
                                     <thead>
                                         <tr>
-                                            <th style="width: 40px;">
+                                            <th scope="col" style="width: 40px;">
                                                 <input aria-label="Toggle Item Name" type="checkbox"
                                                        checked="${selectedDeletedIds.length === itemsWithData.length && itemsWithData.length > 0}"
                                                        onchange="handlers.toggleSelectAllDeleted(this.checked)">
                                             </th>
-                                            <th>Item Name</th>
-                                            <th>Type</th>
-                                            <th>Reason</th>
-                                            <th>Deleted Date</th>
-                                            <th>Actions</th>
+                                            <th scope="col">Item Name</th>
+                                            <th scope="col">Type</th>
+                                            <th scope="col">Reason</th>
+                                            <th scope="col">Deleted Date</th>
+                                            <th scope="col">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
