@@ -1500,14 +1500,7 @@ Object.assign(pages, {
                 icon: 'trending-up',
                 category: 'listing',
             },
-            {
-                id: 'mercari_relist',
-                platform: 'mercari',
-                name: 'Relist Items',
-                description: 'Automatically relist sold-out or expired Mercari items',
-                icon: 'repeat',
-                category: 'listing',
-            },
+
             {
                 id: 'facebook_refresh',
                 platform: 'facebook',
@@ -2056,7 +2049,7 @@ Object.assign(pages, {
                         <select class="form-select" onchange="handlers.filterAutomationPlatform(this.value)" style="width: 140px; height: 36px;" aria-label="Filter by platform">
                             <option value="all" ${(store.state.automationPlatformFilter || 'all') === 'all' ? 'selected' : ''}>All Platforms</option>
                             <option value="poshmark" ${store.state.automationPlatformFilter === 'poshmark' ? 'selected' : ''}>Poshmark</option>
-                            <option value="mercari" ${store.state.automationPlatformFilter === 'mercari' ? 'selected' : ''}>Mercari</option>
+
                             <option value="depop" ${store.state.automationPlatformFilter === 'depop' ? 'selected' : ''}>Depop</option>
                             <option value="grailed" ${store.state.automationPlatformFilter === 'grailed' ? 'selected' : ''}>Grailed</option>
                             <option value="facebook" ${store.state.automationPlatformFilter === 'facebook' ? 'selected' : ''}>Facebook</option>
