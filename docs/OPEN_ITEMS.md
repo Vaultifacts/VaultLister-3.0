@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-03T01:46:57.031Z
-Commit: f7e5ec52
+Generated at: 2026-05-03T01:47:34.223Z
+Commit: 49a2d94f
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -1234,7 +1234,7 @@ Command: `gh issue list --state open --limit 200 --json number,title,labels,upda
 | #491 | [Deploy Failure] 4012693 — Run #1079 | automated, deploy-failure | 2026-05-02T00:15:31Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/491 |
 | #490 | [CI Failure] release-please--branches--master--components--vaultlister - Run #1564 | ci-failure, automated | 2026-05-01T21:53:46Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/490 |
 | #489 | [CI Failure] master - Run #1554 | ci-failure, automated | 2026-05-01T18:50:13Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/489 |
-| #488 | [Lighthouse] Performance score below 50 — immediate attention required | automated, performance | 2026-05-01T18:35:25Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/488 |
+| #488 | [Lighthouse] Performance score below 50 — immediate attention required | automated, performance | 2026-05-03T01:47:06Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/488 |
 | #487 | [Billing] Monthly AI services spend review — 2026-05 | automated, billing, ai-spend | 2026-05-01T12:00:53Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/487 |
 | #486 | [Backup Retention] Monthly B2 backup verification — 2026-05 | automated, maintenance | 2026-05-01T10:24:32Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/486 |
 | #485 | [API Deprecation] Monthly platform changelog review — 2026-05 | automated, maintenance | 2026-05-01T08:52:39Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/485 |
