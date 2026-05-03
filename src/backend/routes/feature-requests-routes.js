@@ -8,6 +8,7 @@ import { applyRateLimit } from '../middleware/rateLimiter.js';
 import { escapeHtml } from '../shared/utils.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const BLOCKED_EMAIL_DOMAINS = new Set(['browserstack.com', 'example.com', 'test.com', 'mailinator.com', 'guerrillamail.com']);
 
 function safeJsonParse(str, fallback) {
     try {
@@ -105,6 +106,10 @@ export async function featureRequestsRouter(ctx) {
             return { status: 400, data: { error: 'Email is required.' } };
         }
         if (!EMAIL_RE.test(String(email).trim())) {
+            return { status: 400, data: { error: 'Please enter a valid email address.' } };
+        }
+        const emailDomain = String(email).trim().split('@')[1]?.toLowerCase();
+        if (emailDomain && BLOCKED_EMAIL_DOMAINS.has(emailDomain)) {
             return { status: 400, data: { error: 'Please enter a valid email address.' } };
         }
         if (!title || !String(title).trim()) {

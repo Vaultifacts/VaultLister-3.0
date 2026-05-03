@@ -54,7 +54,7 @@ Run after setting credentials in Railway environment variables.
 **Env vars required:** `POSHMARK_USERNAME`, `POSHMARK_PASSWORD`  
 **Note:** `POSHMARK_CLIENT_ID` / `POSHMARK_CLIENT_SECRET` are reserved for future official API; current flow is Playwright-based.
 
-- [ ] `POST /api/shops/connect` with `{ platform: "poshmark" }` starts credential auth
+- [ ] `POST /api/shops/` with `{ platform: "poshmark" }` starts credential auth
 - [ ] Browser session established via Playwright bot; session cookie stored encrypted
 - [ ] `GET /api/oauth/status/poshmark` returns `{ connected: true, connection_type: "manual" }`
 - [ ] My Shops shows Poshmark Connected
@@ -66,7 +66,7 @@ Run after setting credentials in Railway environment variables.
 
 **Env vars required:** `MERCARI_USERNAME`, `MERCARI_PASSWORD`
 
-- [ ] `POST /api/shops/connect` with `{ platform: "mercari" }` starts credential auth
+- [ ] `POST /api/shops/` with `{ platform: "mercari" }` starts credential auth
 - [ ] `GET /api/oauth/status/mercari` returns `{ connected: true, connection_type: "manual" }`
 - [ ] My Shops shows Mercari Connected
 - [ ] Spot-check: listings sync returns items (not empty array or 401)
@@ -78,7 +78,7 @@ Run after setting credentials in Railway environment variables.
 **Env vars required:** `GRAILED_USERNAME`, `GRAILED_PASSWORD`  
 **Note:** Grailed promoted from Coming Soon in commit 09d9811c (2026-04-20). Playwright bot only.
 
-- [ ] `POST /api/shops/connect` with `{ platform: "grailed" }` starts credential auth
+- [ ] `POST /api/shops/` with `{ platform: "grailed" }` starts credential auth
 - [ ] `GET /api/oauth/status/grailed` returns `{ connected: true, connection_type: "manual" }`
 - [ ] My Shops shows Grailed Connected
 
@@ -88,7 +88,7 @@ Run after setting credentials in Railway environment variables.
 
 **Env vars required:** `WHATNOT_USERNAME`, `WHATNOT_PASSWORD`
 
-- [ ] `POST /api/shops/connect` with `{ platform: "whatnot" }` starts credential auth
+- [ ] `POST /api/shops/` with `{ platform: "whatnot" }` starts credential auth
 - [ ] `GET /api/oauth/status/whatnot` returns `{ connected: true, connection_type: "manual" }`
 - [ ] My Shops shows Whatnot Connected
 
@@ -99,7 +99,7 @@ Run after setting credentials in Railway environment variables.
 **Env vars required:** `FACEBOOK_EMAIL`, `FACEBOOK_PASSWORD`  
 **Note:** Anti-detection system active (commit a3688485). `FACEBOOK_APP_ID` / `FACEBOOK_APP_SECRET` are not used.
 
-- [ ] `POST /api/shops/connect` with `{ platform: "facebook" }` starts credential auth
+- [ ] `POST /api/shops/` with `{ platform: "facebook" }` starts credential auth
 - [ ] `GET /api/oauth/status/facebook` returns `{ connected: true, connection_type: "manual" }`
 - [ ] `GET /api/monitoring/anti-detection` returns 200 (not 404) — confirms anti-detection routes live
 - [ ] My Shops shows Facebook Marketplace Connected
