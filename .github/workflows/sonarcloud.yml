@@ -162,7 +162,7 @@ jobs:
           add_condition "new_maintainability_rating" "GT" "2"
 
           # Gate selection is done via scanner property -Dsonar.qualitygate.name
-          echo "Quality gate '${GATE_NAME}' (ID: ${GATE_ID}) configured with ${#CONDITIONS[@]:-5} conditions"
+          echo "Quality gate '${GATE_NAME}' (ID: ${GATE_ID}) configured with 5 conditions"
 
       - name: Initialize database
         run: |
