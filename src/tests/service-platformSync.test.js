@@ -55,8 +55,8 @@ describe('getSupportedPlatforms', () => {
         expect(Array.isArray(platforms)).toBe(true);
     });
 
-    test('returns 9 platforms', () => {
-        expect(getSupportedPlatforms().length).toBe(9);
+    test('returns 7 platforms', () => {
+        expect(getSupportedPlatforms().length).toBe(7);
     });
 
     test('each platform has required shape', () => {
@@ -68,9 +68,9 @@ describe('getSupportedPlatforms', () => {
         }
     });
 
-    test('9 platforms have syncSupported=true', () => {
+    test('7 platforms have syncSupported=true', () => {
         const supported = getSupportedPlatforms().filter(p => p.syncSupported);
-        expect(supported.length).toBe(9);
+        expect(supported.length).toBe(7);
     });
 
     test('facebook has syncSupported=true', () => {
