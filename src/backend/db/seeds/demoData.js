@@ -1006,7 +1006,7 @@ async function seedRoadmapFeatures() {
     if (existing?.count > 0) return;
 
     const features = [
-        { id: uuidv4(), title: 'Bulk Cross-Listing', description: 'Select multiple inventory items and push to all 9 platforms in one click with smart field mapping.', status: 'in_progress', category: 'Cross-Listing', eta: 'Q2 2026', votes: 142 },
+        { id: uuidv4(), title: 'Bulk Cross-Listing', description: 'Select multiple inventory items and push to all 7 live platforms in one click with smart field mapping.', status: 'in_progress', category: 'Cross-Listing', eta: 'Q2 2026', votes: 142 },
         { id: uuidv4(), title: 'AI Price Predictor V2', description: 'Real-time price recommendations using sold comps, demand trends, and seasonal data from all connected platforms.', status: 'in_progress', category: 'AI Features', eta: 'Q2 2026', votes: 118 },
         { id: uuidv4(), title: 'Mobile App (iOS & Android)', description: 'Native app for listing on the go — scan barcodes, snap photos, and publish directly from your phone.', status: 'planned', category: 'Platform', eta: 'Q3 2026', votes: 203 },
         { id: uuidv4(), title: 'Automatic Relisting', description: 'Detect stale listings (no views in N days) and automatically delist, refresh, and relist with updated pricing.', status: 'planned', category: 'Automations', eta: 'Q3 2026', votes: 97 },

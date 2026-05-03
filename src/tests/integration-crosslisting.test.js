@@ -198,16 +198,16 @@ describe('Cross-listing integration flow', () => {
         ids.listings = ids.listings.filter(id => !listings.some(l => l.id === id));
     });
 
-    it('crosslisting to 9 platforms works', async () => {
+    it('crosslisting to 7 platforms works', async () => {
         const invId = await createInventoryItem();
-        const allPlatforms = ['poshmark', 'ebay', 'mercari', 'depop', 'grailed', 'etsy', 'shopify', 'facebook', 'whatnot'];
+        const allPlatforms = ['poshmark', 'ebay', 'depop', 'grailed', 'shopify', 'facebook', 'whatnot'];
         const result = await crosslistItem(invId, allPlatforms);
 
-        expect(result.created).toHaveLength(9);
+        expect(result.created).toHaveLength(7);
         expect(result.errors).toHaveLength(0);
 
         const listings = await query.all('SELECT platform FROM listings WHERE inventory_id = ?', [invId]);
-        expect(listings).toHaveLength(9);
+        expect(listings).toHaveLength(7);
     });
 
     it('listings are user-scoped — other users cannot see them', async () => {

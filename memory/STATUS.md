@@ -103,7 +103,7 @@ Priority order: CRITICAL (F77/F108/F61) → HIGH state-only (F103/F104/F109/F58/
 - [Image #1] DONE LOCAL 2026-05-01 — Landing page Coming Soon section shows "4 More on the Way" with Kijiji, Etsy, Mercari, Vinted only.
 - [Image #2] DONE LOCAL 2026-05-01 — Settings Integrations marketplace grid now matches landing/platform order and uses compact vinyl-style cards; browser smoke verified country abbreviations are visible.
 - [Image #3] DONE CURRENT 2026-05-01 — Landing footer social icons are non-white in current browser verification (`rgb(17, 17, 17)` inherited by SVG fill/stroke on white background); no code edit needed.
-- [Image #4] PARTIAL DONE LOCAL 2026-05-01 — Webhooks button removed and `#webhooks` hidden/aliased. Listing Defaults and Photo Settings still need current browser verification before closing the full item.
+- [Image #4] DONE LOCAL 2026-05-01 — Webhooks button removed and `#webhooks` hidden/aliased. Browser smoke verified: Listing Defaults (4 fields), Photo Settings (2 fields), Webhooks section (no buttons/links) all render correctly in Tools tab.
 - [Image #5] DONE LOCAL 2026-05-01 — My Listings expanded Platform Prices dedupe by platform and preserve the expanded/current listing.
 - [Image #6] DONE CURRENT 2026-05-01 — Sales & Purchases route browser smoke verified no "Buyer Profiles" / "Manage buyer relationships" section remains.
 - [Image #7] DONE CURRENT 2026-05-01 — Automations route browser smoke verified no Scheduler Health, Schedule Settings, or Notification Preferences sections remain.

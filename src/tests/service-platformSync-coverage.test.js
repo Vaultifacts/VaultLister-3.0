@@ -78,8 +78,8 @@ function makeConnectedShop(platform, overrides = {}) {
 // ============================================================
 
 describe('isSyncSupported — coverage', () => {
-  test('returns true for all 6 supported platforms', () => {
-    const supported = ['ebay', 'poshmark', 'mercari', 'depop', 'grailed', 'etsy'];
+  test('returns true for all 4 supported platforms', () => {
+    const supported = ['ebay', 'poshmark', 'depop', 'grailed'];
     for (const p of supported) {
       expect(isSyncSupported(p)).toBe(true);
     }
@@ -106,10 +106,10 @@ describe('isSyncSupported — coverage', () => {
 // ============================================================
 
 describe('getSupportedPlatforms — coverage', () => {
-  test('returns array of 9 platforms', () => {
+  test('returns array of 7 platforms', () => {
     const platforms = getSupportedPlatforms();
     expect(Array.isArray(platforms)).toBe(true);
-    expect(platforms.length).toBe(9);
+    expect(platforms.length).toBe(7);
   });
 
   test('all entries have required shape', () => {
@@ -121,10 +121,10 @@ describe('getSupportedPlatforms — coverage', () => {
     }
   });
 
-  test('all 9 platforms have syncSupported=true', () => {
+  test('all 7 platforms have syncSupported=true', () => {
     const platforms = getSupportedPlatforms();
     const supported = platforms.filter(p => p.syncSupported);
-    expect(supported.length).toBe(9);
+    expect(supported.length).toBe(7);
   });
 
   test('facebook entry has listings+orders capabilities', () => {
@@ -154,10 +154,8 @@ describe('getSupportedPlatforms — coverage', () => {
     const names = getSupportedPlatforms().map(p => p.platform);
     expect(names).toContain('ebay');
     expect(names).toContain('poshmark');
-    expect(names).toContain('mercari');
     expect(names).toContain('depop');
     expect(names).toContain('grailed');
-    expect(names).toContain('etsy');
     expect(names).toContain('facebook');
   });
 });
@@ -510,7 +508,7 @@ describe('getSyncStatus — coverage', () => {
   });
 
   test('returns all supported platform types correctly', async () => {
-    const platforms = ['ebay', 'poshmark', 'mercari', 'depop', 'grailed', 'etsy'];
+    const platforms = ['ebay', 'poshmark', 'depop', 'grailed'];
     for (const p of platforms) {
       resetMocks();
       let callCount = 0;
