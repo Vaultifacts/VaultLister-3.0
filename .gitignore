@@ -158,3 +158,6 @@ Items to Add to list of Open Items.md
 
 # Walkthrough/session screenshots in docs
 docs/image-*.png
+
+# Claude Code runtime artifacts
+.claude/scheduled_tasks.lock

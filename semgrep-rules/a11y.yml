@@ -1,0 +1,12 @@
+rules:
+  - id: img-createElement-reminder
+    pattern: document.createElement('img')
+    message: "When creating <img> elements, always set .alt, .width, and .height for accessibility and CLS prevention."
+    languages: [javascript]
+    severity: WARNING
+
+  - id: onclick-prefer-button
+    pattern: $EL.onclick = $FN
+    message: "Prefer <button> elements for click handlers. Setting .onclick on arbitrary elements breaks keyboard accessibility."
+    languages: [javascript]
+    severity: WARNING
