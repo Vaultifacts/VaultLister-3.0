@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-03T23:34:43.383Z
-Commit: 1ef6cc6c
+Generated at: 2026-05-04T01:25:55.183Z
+Commit: 3dcdcb58
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -20,13 +20,13 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 | Structural/refactor backlog items | 10 |
 | Competitor intelligence gaps | 862 |
 | Anti-detection/design gaps | 11 |
-| Open GitHub issues | 0 |
+| Open GitHub issues | 1 |
 | Explicit unchecked checklist items | 359 |
-| Repo-wide unchecked checkbox hits | 624 |
+| Repo-wide unchecked checkbox hits | 648 |
 | Repo-wide unchecked checkbox hits included | 359 |
-| Repo-wide unchecked checkbox hits excluded or review-only | 265 |
+| Repo-wide unchecked checkbox hits excluded or review-only | 289 |
 | Open-marker source files discovered | 215 |
-| Source TODO/FIXME hits | 14 |
+| Source TODO/FIXME hits | 13 |
 
 ## Source Coverage Audit
 
@@ -39,6 +39,7 @@ Command: `rg -n "^\s*[-*]\s+\[ \]" <document targets> --glob "*.md"`
 | Source | Matches | First Match | Treatment |
 |---|---:|---:|---|
 | docs/reference/cr10-oauth-connect-checklist.md | 41 | 10 | Excluded pending source-policy review |
+| memory/STATUS.md | 24 | 182 | Excluded pending source-policy review |
 | .agents/skills/mobile-audit/SKILL.md | 6 | 75 | Excluded: agent skill runbook checklist, not persistent backlog |
 | docs/archive/evidence-2026-03/RUNBOOK_CHECKLIST.md | 4 | 25 | Excluded: historical evidence, verify before promotion |
 | docs/LAUNCH_AUDIT_FINDINGS_2026-04-05.md | 9 | 284 | Excluded: historical evidence, verify before promotion |
@@ -206,7 +207,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | memory/COMPLETED.md | 2 | 61 | Excluded: session memory, promote only after current verification |
 | memory/LAUNCH_PRIORITY.md | 5 | 14 | Excluded: session memory, promote only after current verification |
 | memory/MEMORY.md | 9 | 7 | Excluded: session memory, promote only after current verification |
-| memory/STATUS.md | 23 | 7 | Excluded: session memory, promote only after current verification |
+| memory/STATUS.md | 26 | 7 | Excluded: session memory, promote only after current verification |
 | memory/TIER0_PLAYBOOK.md | 3 | 11 | Excluded: session memory, promote only after current verification |
 | data/qa-report-2026-04-04-chrome-walkthrough.md | 2 | 20 | Excluded: timestamped QA evidence, not current truth |
 | data/qa-report-2026-04-04-exhaustive.md | 4 | 39 | Excluded: timestamped QA evidence, not current truth |
@@ -1228,7 +1229,9 @@ These are design and operational gaps from `docs/PERFECT_ANTI_DETECTION_SYSTEM.m
 
 Command: `gh issue list --state open --limit 200 --json number,title,labels,updatedAt,url`
 
-_No open GitHub issues returned by the live query._
+| Issue | Title | Labels | Updated | URL |
+|---|---|---|---|---|
+| #515 | [CI Failure] master - Run #1653 | ci-failure, automated | 2026-05-04T01:22:15Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/515 |
 
 ## Explicit Checklist Backlogs
 
@@ -1682,7 +1685,6 @@ Command: `rg -n "TODO|FIXME" src public scripts worker design e2e qa data .githu
 | Source | Text |
 |---|---|
 | .github/workflows/ci.yml:591 | if grep -rn "password\s*=\s*['\"][^'\"]*['\"]" src/ --include="*.js" \| grep -v "password.*=.*body" \| grep -v "password.*=.*formData" \| grep -v "password.*=.*process.env" \| grep -v "test" \| grep -v "demo" \| grep -v "placeholder" \| grep -v "TODO"; then |
-| public/status.html:288 | /* TODO: wire to real uptime data (v2) */ |
 | qa/reports/audits/architecture_reliability_audit.md:178 | - **In-memory monitoring metrics lost on restart** — metrics accumulate in RAM only; code has `// TODO: use Redis` comment (Low) |
 | qa/reports/browserstack/2026-04-23/performance-notes.md:63 | **TODO (future regression risk):** `renderPastIncidents()` replaces the static "No resolved incidents in the last 90 days." text with a dynamically-built `<ul>` of different height when incidents exist. Currently no incidents → no shift. When the first real incident is posted, this will cause CLS. Fix: give `#past-incidents-list` a `min-height` matching the empty state, or pre-render as a `<ul>` with an empty-state `<li>`. |
 | scripts/generate-blog-article.js:126 | - No placeholders or TODOs in the output. |
