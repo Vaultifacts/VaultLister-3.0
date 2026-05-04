@@ -12,6 +12,9 @@
 
 ## Last Completed Work (2026-05-03 session 8)
 
+### Goals/budget API auth-prefix repair
+- **Root cause verified and fixed** — commit `ef53b29c` adds `/api/goals` and `/api/budget` to `src/backend/server.js` `protectedPrefixes`. The routers were mounted in `routeRegistry.js`, and frontend code calls `POST /api/goals` plus `PUT /api/budget`, but the missing server prefixes meant authenticated requests never populated `ctx.user`; the routers then returned 401 as if unauthenticated. Added `src/tests/server-protected-prefixes.test.js` to prevent regression. Verification: focused Bun test reported 1 pass / 0 fail, independent `bun -e` protected-prefix assertion passed, `node --check` passed for server/test, `bun run lint:syntax` passed, and `git diff --check` passed.
+
 ### CI #514 lint regression triage
 - **Root cause verified and fixed** — commit `22efee17` changed `package.json` `lint:html` from the known-good seven public pages to all `public/**/*.html`, exposing 779 existing html-validate baseline errors. Restored the seven-page target in `1ef6cc6c`; local `bun run lint`, `bun run open-items:check`, and `git diff --check` passed. GitHub CI run `25293859178` passed, including the Lint job and HTML validate step. Issue #514 closed.
 
