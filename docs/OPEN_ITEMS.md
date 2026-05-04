@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-04T02:26:26.326Z
-Commit: d62e3778
+Generated at: 2026-05-04T02:33:30.596Z
+Commit: b25aaf0b
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -39,7 +39,7 @@ Command: `rg -n "^\s*[-*]\s+\[ \]" <document targets> --glob "*.md"`
 | Source | Matches | First Match | Treatment |
 |---|---:|---:|---|
 | docs/reference/cr10-oauth-connect-checklist.md | 41 | 10 | Excluded pending source-policy review |
-| memory/STATUS.md | 39 | 188 | Excluded pending source-policy review |
+| memory/STATUS.md | 39 | 189 | Excluded pending source-policy review |
 | .agents/skills/mobile-audit/SKILL.md | 6 | 75 | Excluded: agent skill runbook checklist, not persistent backlog |
 | docs/archive/evidence-2026-03/RUNBOOK_CHECKLIST.md | 4 | 25 | Excluded: historical evidence, verify before promotion |
 | docs/LAUNCH_AUDIT_FINDINGS_2026-04-05.md | 9 | 284 | Excluded: historical evidence, verify before promotion |
@@ -1231,7 +1231,7 @@ Command: `gh issue list --state open --limit 200 --json number,title,labels,upda
 
 | Issue | Title | Labels | Updated | URL |
 |---|---|---|---|---|
-| #516 | [Lighthouse] Score regression — immediate attention required | automated, performance | 2026-05-04T02:23:16Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/516 |
+| #516 | [Lighthouse] Score regression — immediate attention required | automated, performance | 2026-05-04T02:30:07Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/516 |
 
 ## Explicit Checklist Backlogs
 

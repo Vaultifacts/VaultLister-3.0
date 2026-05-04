@@ -20,6 +20,7 @@
 
 ### CI guardrail follow-up
 - **HTML lint guardrail stabilized** — commit `49deb484` widened `package.json` `lint:html` to all `public/**/*.html`, but local verification still fails with 819 html-validate problems across the broader public baseline. Restored the known-good seven-page target and verified `bun run lint:html` + `bun run lint` pass.
+- **Follow-up guardrail correction** — local commit `b25aaf0b` re-expanded `lint:html` to all `public/**/*.html`; verification still failed with 819 html-validate problems. Restored the seven-page target again with a forward fix instead of rewriting history.
 - **Accessibility audit unblocked** — the standalone `scripts/accessibility-audit.js` job became blocking in `49deb484` and failed on 4 false-positive "missing alt" errors. Root cause: the audit regex stopped each `<img>` tag at the `>` in a dynamic `src` arrow function before reaching the existing `alt`. Moved `alt` before those dynamic `src` expressions in source templates, rebuilt generated bundles, and verified the audit exits 0 with `Errors: 0`.
 - **Runtime state cleanup** — ignored local `data/.poshmark-relist.json` to match existing local automation tracker ignore patterns; the file is `{}` runtime state and is not repo content.
 - **Still open** — GitHub issue #516 was created by the Lighthouse workflow after production `/landing.html` scored Performance 60/100 against the new 80 threshold. This is a performance/baseline policy item, not fixed by the lint guardrail change.
