@@ -6,7 +6,7 @@
 - **7 live platforms** — Grailed promoted from Coming Soon. Shopify OAuth fully configured (CLIENT_ID/SECRET/REDIRECT_URI in Railway).
 - **Launch Readiness Walkthrough COMPLETE** — all 185 findings fixed + VERIFIED across 15 sessions. Remaining open items are external blockers only (CR-10, CR-4).
 - **Deep-dive backlog FULLY AUDITED** — 9/10 P1+P2 items resolved or verified non-issues. R-003 (mixed service/router files) is cosmetic only.
-- **Active task backlog:** `docs/OPEN_ITEMS.md` — 2 launch blockers (CR-4, CR-10), 1 open GitHub issue (#516 Lighthouse performance threshold).
+- **Active task backlog:** `docs/OPEN_ITEMS.md` — 2 launch blockers (CR-4, CR-10), 0 open GitHub issues.
 - **BROWSER NOTE:** Always use `mcp__claude-in-chrome__*` tools. NEVER use `mcp__plugin_chrome-devtools-mcp`.
 - **EASYPOST_API_KEY MISSING from Railway** — verified 2026-05-03 via Railway Variables tab (93 vars, no EASYPOST). Must be added manually. Routes return 503 without it.
 
@@ -23,7 +23,7 @@
 - **Follow-up guardrail correction** — local commit `b25aaf0b` re-expanded `lint:html` to all `public/**/*.html`; verification still failed with 819 html-validate problems. Restored the seven-page target again with a forward fix instead of rewriting history.
 - **Accessibility audit unblocked** — the standalone `scripts/accessibility-audit.js` job became blocking in `49deb484` and failed on 4 false-positive "missing alt" errors. Root cause: the audit regex stopped each `<img>` tag at the `>` in a dynamic `src` arrow function before reaching the existing `alt`. Moved `alt` before those dynamic `src` expressions in source templates, rebuilt generated bundles, and verified the audit exits 0 with `Errors: 0`.
 - **Runtime state cleanup** — ignored local `data/.poshmark-relist.json` to match existing local automation tracker ignore patterns; the file is `{}` runtime state and is not repo content.
-- **Still open** — GitHub issue #516 was created by the Lighthouse workflow after production `/landing.html` scored Performance 60/100 against the new 80 threshold. This is a performance/baseline policy item, not fixed by the lint guardrail change.
+- **Resolved follow-up** — GitHub issue #516 was closed in `82bb471a`. Root cause was the Lighthouse workflow auditing the Railway origin on `push` before the Deploy workflow finished; Lighthouse now runs after successful Deploy workflow completion. Fresh run #422 passed with Performance 98/100, Accessibility 100/100, Best Practices 96/100, SEO 100/100, and the deploy-triggered run passed with Performance 100/100.
 
 ## Last Completed Work (2026-05-03 session 7)
 
