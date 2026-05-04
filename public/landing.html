@@ -25,17 +25,40 @@
         <link rel="apple-touch-icon" href="/assets/logo/app/app_icon_180.png">
         <link rel="manifest" href="/manifest.webmanifest">
         <!-- Google Analytics (GA4) with Consent Mode -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
         <script>
+            var GA_MEASUREMENT_ID = 'G-LXETN4PYRM';
             window.dataLayer = window.dataLayer || [];
-            function gtag() {
-                dataLayer.push(arguments);
+            window.gtag = window.gtag || function () {
+                window.dataLayer.push(arguments);
+            };
+            window.loadGoogleAnalytics = window.loadGoogleAnalytics || function () {
+                if (window.__vaultListerGaLoaded) return;
+                window.__vaultListerGaLoaded = true;
+                var script = document.createElement('script');
+                script.async = true;
+                script.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(GA_MEASUREMENT_ID);
+                document.head.appendChild(script);
+                window.gtag('js', new Date());
+                window.gtag('config', GA_MEASUREMENT_ID);
+            };
+            function scheduleGoogleAnalytics() {
+                if ('requestIdleCallback' in window) {
+                    window.requestIdleCallback(window.loadGoogleAnalytics, { timeout: 3000 });
+                } else {
+                    window.setTimeout(window.loadGoogleAnalytics, 1000);
+                }
             }
-            gtag('consent', 'default', {
-                analytics_storage: localStorage.getItem('cookie_consent') === 'accepted' ? 'granted' : 'denied',
+            var hasAnalyticsConsent = localStorage.getItem('cookie_consent') === 'accepted';
+            window.gtag('consent', 'default', {
+                analytics_storage: hasAnalyticsConsent ? 'granted' : 'denied',
             });
-            gtag('js', new Date());
-            gtag('config', 'G-LXETN4PYRM');
+            if (hasAnalyticsConsent) {
+                if (document.readyState === 'complete') {
+                    scheduleGoogleAnalytics();
+                } else {
+                    window.addEventListener('load', scheduleGoogleAnalytics, { once: true });
+                }
+            }
         </script>
         <script type="application/ld+json">
             {
@@ -1506,16 +1529,8 @@
                 animation: vl-pulse 2s ease-in-out infinite;
             }
         </style>
-        <link
-            rel="preload"
-            href="/styles/public-base.css"
-            as="style"
-            onload="
-                this.onload = null;
-                this.rel = 'stylesheet';
-            ">
-        <noscript><link rel="stylesheet" href="/styles/public-base.css"></noscript>
-        <link rel="preload" href="/assets/logo/lockups/horizontal-2048.svg" as="image" type="image/svg+xml">
+        <link rel="stylesheet" href="/styles/public-base.css">
+        <link rel="preload" href="/assets/logo/lockups/horizontal-512.png" as="image" type="image/png">
     </head>
     <body>
         <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -1524,7 +1539,7 @@
         <nav class="nav" aria-label="Main navigation">
             <a class="nav-logo" href="/">
                 <img
-                    src="/assets/logo/lockups/horizontal-2048.svg"
+                    src="/assets/logo/lockups/horizontal-512.png"
                     alt="VaultLister"
                     width="348"
                     height="87"
@@ -2580,12 +2595,13 @@
                 banner.style.display = 'flex';
                 document.getElementById('cookie-accept').addEventListener('click', function () {
                     localStorage.setItem('cookie_consent', 'accepted');
-                    if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'granted' });
+                    if (typeof window.gtag === 'function') window.gtag('consent', 'update', { analytics_storage: 'granted' });
+                    if (typeof window.loadGoogleAnalytics === 'function') window.loadGoogleAnalytics();
                     banner.style.display = 'none';
                 });
                 document.getElementById('cookie-decline').addEventListener('click', function () {
                     localStorage.setItem('cookie_consent', 'declined');
-                    if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'denied' });
+                    if (typeof window.gtag === 'function') window.gtag('consent', 'update', { analytics_storage: 'denied' });
                     banner.style.display = 'none';
                 });
             })();
