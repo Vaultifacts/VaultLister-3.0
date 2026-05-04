@@ -78,6 +78,7 @@ backups/
 
 # Axe accessibility report output
 axe-*.json
+accessibility-report.json
 
 # Runtime
 *.pid

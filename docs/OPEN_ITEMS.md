@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-04T02:19:43.197Z
-Commit: cff20bf3
+Generated at: 2026-05-04T02:26:26.326Z
+Commit: d62e3778
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -39,7 +39,7 @@ Command: `rg -n "^\s*[-*]\s+\[ \]" <document targets> --glob "*.md"`
 | Source | Matches | First Match | Treatment |
 |---|---:|---:|---|
 | docs/reference/cr10-oauth-connect-checklist.md | 41 | 10 | Excluded pending source-policy review |
-| memory/STATUS.md | 39 | 187 | Excluded pending source-policy review |
+| memory/STATUS.md | 39 | 188 | Excluded pending source-policy review |
 | .agents/skills/mobile-audit/SKILL.md | 6 | 75 | Excluded: agent skill runbook checklist, not persistent backlog |
 | docs/archive/evidence-2026-03/RUNBOOK_CHECKLIST.md | 4 | 25 | Excluded: historical evidence, verify before promotion |
 | docs/LAUNCH_AUDIT_FINDINGS_2026-04-05.md | 9 | 284 | Excluded: historical evidence, verify before promotion |
@@ -135,7 +135,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | .github/workflows/ssl-cert-check.yml | 5 | 60 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/test-baseline-update.yml | 2 | 4 | Config/workflow text; parsed separately only if promoted |
 | .github/workflows/uptime-slack-alert.yml | 3 | 74 | Config/workflow text; parsed separately only if promoted |
-| .gitignore | 1 | 158 | Config/workflow text; parsed separately only if promoted |
+| .gitignore | 1 | 159 | Config/workflow text; parsed separately only if promoted |
 | package-lock.json | 8 | 2253 | Config/workflow text; parsed separately only if promoted |
 | package.json | 2 | 70 | Config/workflow text; parsed separately only if promoted |
 | public/api-docs/openapi.yaml | 9 | 3288 | Config/workflow text; parsed separately only if promoted |
@@ -1231,7 +1231,7 @@ Command: `gh issue list --state open --limit 200 --json number,title,labels,upda
 
 | Issue | Title | Labels | Updated | URL |
 |---|---|---|---|---|
-| #516 | [Lighthouse] Score regression — immediate attention required | automated, performance | 2026-05-04T02:17:46Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/516 |
+| #516 | [Lighthouse] Score regression — immediate attention required | automated, performance | 2026-05-04T02:23:16Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/516 |
 
 ## Explicit Checklist Backlogs
 

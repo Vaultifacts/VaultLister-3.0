@@ -49,8 +49,8 @@
     </script>
 
     <!-- Preload critical CSS and JS so they start fetching ASAP -->
-    <link rel="preload" href="/styles/main.css?v=00897a24" as="style">
-    <link rel="preload" href="/core-bundle.js?v=00897a24" as="script">
+    <link rel="preload" href="/styles/main.css?v=e509921f" as="style">
+    <link rel="preload" href="/core-bundle.js?v=e509921f" as="script">
     <!-- Fonts: preload+onload makes inter.css non-render-blocking (FOUT acceptable) -->
     <link rel="preload" href="/fonts/inter.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="/fonts/inter.css"></noscript>
@@ -64,14 +64,14 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/logo/Favicon/apple-touch-icon.png">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="/styles/main.css?v=00897a24">
+    <link rel="stylesheet" href="/styles/main.css?v=e509921f">
 
     <!-- Component Scripts -->
-    <script src="/components/photoEditor.js?v=00897a24" defer></script>
-    <script src="/components/chatWidget.js?v=00897a24" defer></script>
+    <script src="/components/photoEditor.js?v=e509921f" defer></script>
+    <script src="/components/chatWidget.js?v=e509921f" defer></script>
 
     <!-- WebSocket Client (must load before app.js for window.VaultListerSocket) -->
-    <script type="module" src="/services/websocketClient.js?v=00897a24" defer></script>
+    <script type="module" src="/services/websocketClient.js?v=e509921f" defer></script>
 
     <!-- DOMPurify — must load before core bundle for sanitizeHTML() -->
     <!-- defer is safe: defer scripts execute in document order, so DOMPurify runs before core-bundle.js -->
@@ -82,7 +82,7 @@
     <meta name="sentry-dsn" content="">
 
     <!-- Phase 1: Core bundle (all critical-path scripts concatenated) -->
-    <script src="/core-bundle.js?v=00897a24" defer></script>
+    <script src="/core-bundle.js?v=e509921f" defer></script>
     <!-- Phase 2: Route-group chunks loaded on demand by router.js -->
 </head>
 <body>

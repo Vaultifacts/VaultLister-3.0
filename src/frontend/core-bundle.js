@@ -17041,7 +17041,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '00897a24';
+    const v = 'e509921f';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function (resolve, reject) {
@@ -17351,6 +17351,10 @@ const router = {
             roadmap: 'Roadmap',
             changelog: 'Changelog',
             'receipt-parser': 'Receipts',
+            'login': 'Sign In',
+            'register': 'Create Account',
+            'forgot-password': 'Forgot Password',
+            'reset-password': 'Reset Password',
         };
         document.title = (PAGE_TITLES[path] ? PAGE_TITLES[path] + ' | ' : '') + 'VaultLister';
 
@@ -28479,13 +28483,13 @@ const modals = {
                             <div class="w-12 h-12 bg-gray-100 rounded flex items-center justify-center">
                                 ${
                                     item.images
-                                        ? `<img src="${(() => {
+                                        ? `<img alt="${escapeHtml(item.title || 'Product image')}" src="${(() => {
                                               try {
                                                   return JSON.parse(item.images)[0] || '';
                                               } catch {
                                                   return '';
                                               }
-                                          })()}" class="w-full h-full object-cover rounded" alt="${escapeHtml(item.title || 'Product image')}">`
+                                          })()}" class="w-full h-full object-cover rounded">`
                                         : components.icon('image', 20)
                                 }
                             </div>

@@ -26704,7 +26704,9 @@ Object.assign(handlers, {
                         <div class="w-12 h-12 bg-gray-100 rounded flex items-center justify-center">
                             ${
                                 item.images
-                                    ? '<img src="' +
+                                    ? '<img alt="' +
+                                      escapeHtml(item.title || 'Item image') +
+                                      '" src="' +
                                       (() => {
                                           try {
                                               return JSON.parse(item.images)[0] || '';
@@ -26712,9 +26714,7 @@ Object.assign(handlers, {
                                               return '';
                                           }
                                       })() +
-                                      '" class="w-full h-full object-cover rounded" alt="' +
-                                      escapeHtml(item.title || 'Item image') +
-                                      '">'
+                                      '" class="w-full h-full object-cover rounded">'
                                     : components.icon('image', 20)
                             }
                         </div>
