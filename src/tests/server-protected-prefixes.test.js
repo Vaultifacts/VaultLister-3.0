@@ -1,9 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 
-const ROOT = process.cwd();
-const serverSource = readFileSync(join(ROOT, 'src/backend/server.js'), 'utf8');
+const serverSource = await Bun.file(new URL('../backend/server.js', import.meta.url)).text();
 
 function protectedPrefixesBlock() {
     const match = serverSource.match(/const protectedPrefixes = \[([\s\S]*?)\];/);
