@@ -12,6 +12,9 @@
 
 ## Last Completed Work (2026-05-03 session 8)
 
+### Protected-prefix CI test isolation
+- **Root cause verified and fixed** — commit `8d2cbae3` repairs the regression test added for the goals/budget auth-prefix fix. GitHub CI run `25301658598` failed the Unit Tests job only because `src/tests/server-protected-prefixes.test.js` imported `node:fs`/`node:path` inside the full `bun test src/tests/` process, where existing suites globally mock `fs` to return `"[]"`. The production route fix remains unchanged. The test now uses `Bun.file(new URL('../backend/server.js', import.meta.url)).text()` so it is isolated from those fs mocks. Verification: focused protected-prefix test reported 1 pass / 0 fail, the test passed when paired with both `browser-profiles.test.js` and `bot-abort-cancellation.test.js`, `node --check` passed, `bun run lint:syntax` passed, and `git diff --check` passed.
+
 ### Goals/budget API auth-prefix repair
 - **Root cause verified and fixed** — commit `ef53b29c` adds `/api/goals` and `/api/budget` to `src/backend/server.js` `protectedPrefixes`. The routers were mounted in `routeRegistry.js`, and frontend code calls `POST /api/goals` plus `PUT /api/budget`, but the missing server prefixes meant authenticated requests never populated `ctx.user`; the routers then returned 401 as if unauthenticated. Added `src/tests/server-protected-prefixes.test.js` to prevent regression. Verification: focused Bun test reported 1 pass / 0 fail, independent `bun -e` protected-prefix assertion passed, `node --check` passed for server/test, `bun run lint:syntax` passed, and `git diff --check` passed.
 
