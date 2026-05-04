@@ -8,7 +8,7 @@
         "shorthand-property-no-redundant-values": null,
         "alpha-value-notation": null,
         "color-function-notation": null,
-        "value-keyword-case": ["lower", { "ignoreKeywords": ["currentColor"] }],
+        "value-keyword-case": null,
         "property-no-vendor-prefix": null,
         "selector-no-vendor-prefix": null,
         "value-no-vendor-prefix": null,

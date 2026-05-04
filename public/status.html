@@ -1106,7 +1106,7 @@
                         Receive an email when a new incident is posted or resolved. Double opt-in — you'll need to
                         confirm via a link in the first email.
                     </p>
-                    <form id="subscribe-form" class="subscribe-form">
+                    <form id="subscribe-form" class="subscribe-form" action="/api/subscribe" method="POST" aria-label="Subscribe to status updates">
                         <label for="subscribe-email">Email address</label>
                         <input
                             type="email"

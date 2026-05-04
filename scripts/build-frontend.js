@@ -100,6 +100,7 @@ const allSourceFiles = [
 
 // ── Compute content hash ──────────────────────────────────────────────────────
 const cssFileList = [  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+    'src/frontend/styles/a11y-colors.css',
     'src/frontend/styles/variables.css',
     'src/frontend/styles/base.css',
     'src/frontend/styles/features.css',
@@ -236,7 +237,12 @@ if (cssFileList.some(f => existsSync(join(ROOT, f)))) {
         return existsSync(full) ? readFileSync(full, 'utf-8') : '';
     }).join('\n');
     const originalSize = combinedCSS.length;
-    writeFileSync(cssOutputPath, combinedCSS);
+
+    const postcss = (await import('postcss')).default;
+    const autoprefixer = (await import('autoprefixer')).default;
+    const prefixed = await postcss([autoprefixer]).process(combinedCSS, { from: undefined });
+    writeFileSync(cssOutputPath, prefixed.css);
+    console.log('Autoprefixer applied');
     try {
         const { PurgeCSS } = await import('purgecss');
         const purged = await new PurgeCSS().purge({

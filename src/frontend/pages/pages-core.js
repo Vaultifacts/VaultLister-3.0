@@ -3768,7 +3768,7 @@ const pages = {
                             <p class="text-gray-600">Sign in to your account</p>
                         </div>
                         <div id="login-alert" class="login-alert"></div>
-                        <form id="login-form" onsubmit="auth.login(event)">
+                        <form id="login-form" action="/api/auth/login" method="POST" role="form" aria-label="Sign in" onsubmit="auth.login(event)">
                             <div class="form-group">
                                 <label for="login-email" class="form-label">Email</label>
                                 <input id="login-email" type="email" class="form-input" name="email" required

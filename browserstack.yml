@@ -9,15 +9,40 @@ projectName: "VaultLister"
 parallelsPerPlatform: 1
 
 platforms:
-  - os: ios
-    osVersion: 16
-    browserName: safari
-    deviceName: iPhone 14 Pro
-
   - os: Windows
     osVersion: 11
     browserName: chrome
     browserVersion: latest
+
+  - os: Windows
+    osVersion: 11
+    browserName: firefox
+    browserVersion: latest
+
+  - os: Windows
+    osVersion: 11
+    browserName: edge
+    browserVersion: latest
+
+  - os: OS X
+    osVersion: Sonoma
+    browserName: safari
+    browserVersion: 17.4
+
+  - os: ios
+    osVersion: 17
+    browserName: safari
+    deviceName: iPhone 15
+
+  - os: android
+    osVersion: 14.0
+    browserName: chrome
+    deviceName: Samsung Galaxy S24
+
+  - os: android
+    osVersion: 13.0
+    browserName: chrome
+    deviceName: Google Pixel 7
 
 # Testing against live Railway deployment — no local tunnel needed
 browserstackLocal: false

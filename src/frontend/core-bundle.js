@@ -17041,7 +17041,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'e509921f';
+    const v = '13bfc64e';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function (resolve, reject) {
@@ -23921,7 +23921,7 @@ const pages = {
                             <p class="text-gray-600">Sign in to your account</p>
                         </div>
                         <div id="login-alert" class="login-alert"></div>
-                        <form id="login-form" onsubmit="auth.login(event)">
+                        <form id="login-form" action="/api/auth/login" method="POST" role="form" aria-label="Sign in" onsubmit="auth.login(event)">
                             <div class="form-group">
                                 <label for="login-email" class="form-label">Email</label>
                                 <input id="login-email" type="email" class="form-input" name="email" required
