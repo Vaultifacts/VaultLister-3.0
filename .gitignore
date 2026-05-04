@@ -34,6 +34,7 @@ data/.fb-daily-stats.json
 data/.fb-weekly-stats.json
 data/.fb-cooldown.json
 data/.fb-relist-tracker.json
+data/.poshmark-relist.json
 data/.fb-session.lock
 data/.fb-session.lock.last
 data/.image-hash-db.json
