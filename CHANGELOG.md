@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.0.0 (2026-05-04)
+
+
+### Features
+
+* **security:** add force-logout-all endpoint and force_logout_at check (SEC-H41) ([eab7ce7](https://github.com/Vaultifacts/VaultLister-3.0/commit/eab7ce755b48497addde985467c5a56e22565cf6))
+
+
+### Bug Fixes
+
+* **public:** correct platform list in documentation.html — remove stale Mercari/Etsy/Poshmark from live list ([ffc09df](https://github.com/Vaultifacts/VaultLister-3.0/commit/ffc09df7d11ae53ba78fff826d7dc4fc4158fc70))
+* **sales:** hide Financial Goals card in deferred page on production ([683977a](https://github.com/Vaultifacts/VaultLister-3.0/commit/683977a96250b502b88f15c89fcfc010f88d1b55))
+* **sales:** hide Financial Goals card on production ([920344f](https://github.com/Vaultifacts/VaultLister-3.0/commit/920344f951bea840f51dc81cff0a1d3bffd81836))
+* **security:** add missing auth guard to notificationsRouter ([380862e](https://github.com/Vaultifacts/VaultLister-3.0/commit/380862ef24021b0727021c52a108b9db3c6fc9f6))
+* **security:** remove open-redirect in billing routes — ignore user-supplied redirect URLs ([8244270](https://github.com/Vaultifacts/VaultLister-3.0/commit/8244270a0b92c93fe7ba40967015152cecf5a9f1))
+* **security:** remove open-redirect in billing routes — ignore user-supplied redirect URLs ([359bad8](https://github.com/Vaultifacts/VaultLister-3.0/commit/359bad8d114879b73301be886996c1e627dd0125))
+
 ## [1.0.1](https://github.com/Vaultifacts/VaultLister-3.0/compare/v1.0.0...v1.0.1) (2026-04-30)
 
 
