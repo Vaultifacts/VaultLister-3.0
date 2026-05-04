@@ -12,6 +12,9 @@
 
 ## Last Completed Work (2026-05-03 session 8)
 
+### Infra source assertion CI isolation
+- **Root cause verified and fixed** — commit `a749e78f` repairs the unbaselined Unit Tests failures from GitHub CI run `25303074489`. The new Railway verifier assertions in `src/tests/infra-backup-restore.test.js` were correct in focused runs, but they used `node:fs`/`node:path`; in the full `bun test src/tests/` process existing suites globally mock `fs`, so `.github/workflows/deploy.yml` and `scripts/verify-railway-deploy.mjs` read as empty strings. The test now uses `Bun.file(new URL(..., import.meta.url))` for repo source reads, matching the earlier protected-prefix isolation fix. Verification: focused infra test reported 16 pass / 0 fail, infra test paired with `browser-profiles.test.js` reported 45 pass / 0 fail, infra test paired with `bot-abort-cancellation.test.js` reported 28 pass / 0 fail, `node --check` passed, `bun run lint:syntax` passed, and `git diff --check` passed.
+
 ### Railway wait-for-CI deploy verifier classification
 - **Root cause verified and fixed** — commit `392e6df5` repairs the hidden Deploy verifier failure found in GitHub Deploy run `25301965006`. Railway's Wait for CI behavior moves deployments to `WAITING` while workflows run, and the app deployment had the expected commit `f3e7f6c3` while waiting; `continue-on-error: true` let the job go green but the later Cloudflare warning incorrectly claimed commit verification passed. The workflow now records Railway verifier status as `passed`, `pending`, `skipped`, or `failed`, treats only the expected `WAITING` + expected-commit state as pending to break the CI/deploy activation cycle, and reports that real status in the Cloudflare challenge warning. Verification: focused infra test reported 16 pass / 0 fail, PyYAML parsed `.github/workflows/deploy.yml`, extracted Bash steps passed `bash -n`, `node --check` passed, `bun run lint:syntax` passed, and `git diff --check` passed.
 
