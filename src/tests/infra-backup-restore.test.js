@@ -91,7 +91,9 @@ describe('Post-deploy check script', () => {
 
 describe('Railway deploy verification script', () => {
     const verifierPath = join(ROOT, 'scripts/verify-railway-deploy.mjs');
+    const deployWorkflowPath = join(ROOT, '.github/workflows/deploy.yml');
     const verifierSrc = existsSync(verifierPath) ? readFileSync(verifierPath, 'utf-8') : '';
+    const deployWorkflowSrc = existsSync(deployWorkflowPath) ? readFileSync(deployWorkflowPath, 'utf-8') : '';
 
     test('scripts/verify-railway-deploy.mjs exists', () => {
         expect(existsSync(verifierPath)).toBe(true);
@@ -115,5 +117,19 @@ describe('Railway deploy verification script', () => {
     test('verifier accepts short commit SHAs', () => {
         expect(verifierSrc).toContain('compareCommit');
         expect(verifierSrc).toContain('actual.startsWith(expected)');
+    });
+
+    test('deploy workflow classifies Railway wait-for-CI without hiding verifier failures', () => {
+        expect(deployWorkflowSrc).toContain('id: railway-commit');
+        expect(deployWorkflowSrc).not.toMatch(/name: Verify Railway deploy commit \(Item 8\)[\s\S]{0,120}continue-on-error: true/);
+        expect(deployWorkflowSrc).toContain('Railway app deployment is queued with the expected commit');
+        expect(deployWorkflowSrc).toContain('write_commit_status pending');
+        expect(deployWorkflowSrc).toContain('write_commit_status failed');
+    });
+
+    test('Cloudflare challenge warning reports the Railway verifier status output', () => {
+        expect(deployWorkflowSrc).toContain('RAILWAY_COMMIT_STATUS: ${{ steps.railway-commit.outputs.railway_commit_status');
+        expect(deployWorkflowSrc).toContain('Railway commit verification is pending because Railway is waiting on GitHub checks');
+        expect(deployWorkflowSrc).not.toContain('commit verification, orphan chunk check, and cache purge already passed');
     });
 });

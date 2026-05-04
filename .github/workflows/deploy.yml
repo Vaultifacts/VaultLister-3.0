@@ -278,28 +278,24 @@ jobs:
           node scripts/websocket-upgrade-check.mjs "${RAILWAY_PRODUCTION_URL}" --json
 
       - name: Verify Railway deploy commit (Item 8)
-        continue-on-error: true
+        id: railway-commit
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
           EXPECTED_SHA: ${{ github.sha }}
         run: |
           # Item 8 — verify the running Railway container has our expected commit.
-          # If Railway skipped the app deployment (no relevant source changes), verify
-          # service config only without requiring the exact commit SHA.
+          # Railway's "Wait for CI" setting can leave the app deployment WAITING
+          # on this check. Treat that exact queued state as pending so GitHub can
+          # unblock Railway activation without hiding unrelated mismatches.
           if [ ! -f scripts/verify-railway-deploy.mjs ]; then
             echo "::error::scripts/verify-railway-deploy.mjs not found"
             exit 1
           fi
-          LATEST_STATUS=$(railway deployment list \
-              --service vaultlister-app \
-              --environment production 2>/dev/null \
-            | grep -m1 -E '^\s+[0-9a-f-]+ \|' \
-            | awk -F'|' '{gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2}')
-          if [ "$LATEST_STATUS" = "SKIPPED" ]; then
-            echo "::notice::Railway deployment SKIPPED for vaultlister-app — no app source changes; verifying service config only."
-            bun scripts/verify-railway-deploy.mjs --environment production --skip-commit --json
-            exit $?
-          fi
+
+          write_commit_status() {
+            echo "railway_commit_status=$1" >> "$GITHUB_OUTPUT"
+          }
+
           for i in $(seq 1 36); do
             CURRENT_STATUS=$(railway deployment list \
                 --service vaultlister-app \
@@ -308,14 +304,39 @@ jobs:
               | awk -F'|' '{gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2}')
             if [ "$CURRENT_STATUS" = "SKIPPED" ]; then
               echo "::notice::Railway deployment SKIPPED for vaultlister-app — no app source changes."
+              write_commit_status skipped
               exit 0
             fi
-            if bun scripts/verify-railway-deploy.mjs --environment production --commit "${EXPECTED_SHA}" --json; then
+
+            set +e
+            VERIFY_JSON=$(bun scripts/verify-railway-deploy.mjs --environment production --commit "${EXPECTED_SHA}" --json 2>&1)
+            VERIFY_EXIT=$?
+            set -e
+            echo "$VERIFY_JSON"
+
+            APP_STATUS=$(printf '%s' "$VERIFY_JSON" | jq -r '.services[]? | select(.service == "vaultlister-app") | .status // empty' 2>/dev/null || true)
+            APP_COMMIT=$(printf '%s' "$VERIFY_JSON" | jq -r '.services[]? | select(.service == "vaultlister-app") | .commit // empty' 2>/dev/null || true)
+            WORKER_STATUS=$(printf '%s' "$VERIFY_JSON" | jq -r '.services[]? | select(.service == "vaultlister-worker") | .status // empty' 2>/dev/null || true)
+            WORKER_COMMIT=$(printf '%s' "$VERIFY_JSON" | jq -r '.services[]? | select(.service == "vaultlister-worker") | .commit // empty' 2>/dev/null || true)
+
+            if [ "$VERIFY_EXIT" -eq 0 ]; then
+              write_commit_status passed
               exit 0
             fi
+
+            if [ "$APP_STATUS" = "WAITING" ] && \
+               [ "$APP_COMMIT" = "$EXPECTED_SHA" ] && \
+               { [ "$WORKER_STATUS" = "SUCCESS" ] || [ "$WORKER_STATUS" = "WAITING" ]; } && \
+               [ "$WORKER_COMMIT" = "$EXPECTED_SHA" ]; then
+              echo "::notice::Railway app deployment is queued with the expected commit and waiting on GitHub checks; marking commit verification pending to avoid a CI/deploy activation cycle."
+              write_commit_status pending
+              exit 0
+            fi
+
             echo "Railway deploy commit not ready yet (attempt $i/36); waiting 10s..."
             sleep 10
           done
+          write_commit_status failed
           echo "::error::Railway deploy commit verification did not pass after 360s"
           exit 1
 
@@ -357,6 +378,7 @@ jobs:
       - name: Verify browser WebSocket connection at custom domain
         env:
           CUSTOM_DOMAIN_URL: https://vaultlister.com
+          RAILWAY_COMMIT_STATUS: ${{ steps.railway-commit.outputs.railway_commit_status || 'unknown' }}
         run: |
           if [ ! -f scripts/browser-websocket-check.mjs ]; then
             echo "::error::scripts/browser-websocket-check.mjs not found"
@@ -370,7 +392,21 @@ jobs:
 
           CLASSIFICATION=$(jq -r '.classification // "unknown"' /tmp/browser-websocket-check.json)
           if [ "$CLASSIFICATION" = "cloudflare_challenge" ]; then
-            echo "::warning::Custom-domain browser WebSocket check hit a Cloudflare challenge. Railway origin health, Railway-origin WebSocket, commit verification, orphan chunk check, and cache purge already passed; treating this as edge/security-layer monitoring noise, not a deploy failure."
+            case "${RAILWAY_COMMIT_STATUS:-unknown}" in
+              passed)
+                RAILWAY_COMMIT_TEXT="Railway commit verification passed"
+                ;;
+              pending)
+                RAILWAY_COMMIT_TEXT="Railway commit verification is pending because Railway is waiting on GitHub checks"
+                ;;
+              skipped)
+                RAILWAY_COMMIT_TEXT="Railway reported the app deployment skipped because there were no app source changes"
+                ;;
+              *)
+                RAILWAY_COMMIT_TEXT="Railway commit verification status is ${RAILWAY_COMMIT_STATUS:-unknown}"
+                ;;
+            esac
+            echo "::warning::Custom-domain browser WebSocket check hit a Cloudflare challenge. Railway origin health, Railway-origin WebSocket, ${RAILWAY_COMMIT_TEXT}, orphan chunk check, and cache purge completed; treating this as edge/security-layer monitoring noise, not a deploy failure."
             exit 0
           fi
 
