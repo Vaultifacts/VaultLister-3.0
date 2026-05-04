@@ -1,5 +1,5 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-05-03 MST (session 8)
+**Updated:** 2026-05-04 MST (session 9)
 
 ## Current State
 - **Live site:** https://vaultlister.com/?app=1
@@ -9,6 +9,11 @@
 - **Active task backlog:** `docs/OPEN_ITEMS.md` — 2 launch blockers (CR-4, CR-10), 0 open GitHub issues.
 - **BROWSER NOTE:** Always use `mcp__claude-in-chrome__*` tools. NEVER use `mcp__plugin_chrome-devtools-mcp`.
 - **EASYPOST_API_KEY MISSING from Railway** — verified 2026-05-03 via Railway Variables tab (93 vars, no EASYPOST). Must be added manually. Routes return 503 without it.
+
+## Last Completed Work (2026-05-04 session 9)
+
+### Outgoing webhook migration fixture CI isolation
+- **Root cause verified and fixed** — commit `cf4657e2` repairs the remaining fs-mock contamination exposed by Dependabot PR #524 / issue #527. `src/tests/service-outgoingWebhooks-unit.test.js` imported `node:fs` and read `pg-schema.sql` at module load; when paired after `browser-profiles.test.js`, Bun's global `mock.module('fs')` caused the migration fixture to contain browser-profile JSON, failing 8 migration SQL assertions. The test now reads the schema via `Bun.file(new URL('../backend/db/pg-schema.sql', import.meta.url)).text()`, which is isolated from the mocked fs module. Verification: the polluted pair reported 116 pass / 0 fail, the outgoing webhook unit file reported 87 pass / 0 fail, `node --check` passed, `bun run lint:syntax` passed, `bun run lint` passed, and `git diff --check` passed.
 
 ## Last Completed Work (2026-05-03 session 8)
 
