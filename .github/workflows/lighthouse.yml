@@ -1,7 +1,9 @@
 name: Lighthouse Score Regression
 
 on:
-  push:
+  workflow_run:
+    workflows: [Deploy]
+    types: [completed]
     branches: [master]
   schedule:
     - cron: '0 9 * * 0'  # Weekly Sunday 9 AM UTC
@@ -13,9 +15,10 @@ permissions:
 
 jobs:
   lighthouse:
-    name: Lighthouse audit — vaultlister.com landing
+    name: Lighthouse audit — Railway landing
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
