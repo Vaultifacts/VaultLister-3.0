@@ -16,7 +16,7 @@
 - **Root cause verified and fixed** — commit `22efee17` changed `package.json` `lint:html` from the known-good seven public pages to all `public/**/*.html`, exposing 779 existing html-validate baseline errors. Restored the seven-page target in `1ef6cc6c`; local `bun run lint`, `bun run open-items:check`, and `git diff --check` passed. GitHub CI run `25293859178` passed, including the Lint job and HTML validate step. Issue #514 closed.
 
 ### CI #515 HTML void-tag regression triage
-- **Root cause verified locally** — commit `af0ffe20` added XHTML-style self-closing canonical `<link ... />` tags to the seven scoped public HTML pages, plus one self-closing favicon link in `public/changelog.html`. CI run `25296310845` failed at `Lint → HTML validate` with 8 `void-style` errors. Local fix removes the trailing `/` from those 8 tags; `bun run lint:html` and `bun run lint` now pass. Issue #515 remains open until the pushed fix is verified green in GitHub Actions.
+- **Root cause verified and fixed** — commit `af0ffe20` added XHTML-style self-closing canonical `<link ... />` tags to the seven scoped public HTML pages, plus one self-closing favicon link in `public/changelog.html`. CI run `25296310845` failed at `Lint → HTML validate` with 8 `void-style` errors. Fixed in `cf858a6e` by removing the trailing `/` from those 8 tags. Local `bun run lint:html`, `bun run lint`, `bun run open-items:check`, and `git diff --check` passed. GitHub CI run `25296650411` passed, including the Lint job and HTML validate step. Issue #515 closed.
 
 ## Last Completed Work (2026-05-03 session 7)
 

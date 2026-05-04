@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-05-04T01:25:55.183Z
-Commit: 3dcdcb58
+Generated at: 2026-05-04T01:36:31.579Z
+Commit: cf858a6e
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -20,7 +20,7 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 | Structural/refactor backlog items | 10 |
 | Competitor intelligence gaps | 862 |
 | Anti-detection/design gaps | 11 |
-| Open GitHub issues | 1 |
+| Open GitHub issues | 0 |
 | Explicit unchecked checklist items | 359 |
 | Repo-wide unchecked checkbox hits | 648 |
 | Repo-wide unchecked checkbox hits included | 359 |
@@ -1229,9 +1229,7 @@ These are design and operational gaps from `docs/PERFECT_ANTI_DETECTION_SYSTEM.m
 
 Command: `gh issue list --state open --limit 200 --json number,title,labels,updatedAt,url`
 
-| Issue | Title | Labels | Updated | URL |
-|---|---|---|---|---|
-| #515 | [CI Failure] master - Run #1653 | ci-failure, automated | 2026-05-04T01:22:15Z | https://github.com/Vaultifacts/VaultLister-3.0/issues/515 |
+_No open GitHub issues returned by the live query._
 
 ## Explicit Checklist Backlogs
 
