@@ -509,7 +509,7 @@ jobs:
         run: bun run test:e2e:public
 
       - name: Accessibility audit
-        run: npx playwright test e2e/tests/accessibility.spec.js --reporter=list
+        run: npx playwright test e2e/tests/accessibility.spec.js --project=chromium --reporter=list
 
       - name: Upload Playwright report
         if: always()
