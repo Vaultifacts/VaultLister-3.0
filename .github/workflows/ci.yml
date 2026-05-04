@@ -122,7 +122,13 @@ jobs:
         run: bun run lint:css
 
       - name: Spell check
-        run: npx cspell "src/**/*.js" "public/*.html" --no-progress || echo "::warning::Spelling issues found"
+        run: npx cspell "src/**/*.js" "public/**/*.html" --no-progress || echo "::warning::Spelling issues found"
+
+      - name: Broken link check (internal links)
+        run: bun scripts/check-links.js
+
+      - name: Semgrep custom a11y rules
+        run: semgrep scan --config ./semgrep-rules/ src/frontend/ --quiet || echo "::warning::Semgrep a11y issues found"
 
       - name: Check .env.example completeness
         run: |
@@ -503,7 +509,7 @@ jobs:
         run: bun run test:e2e:public
 
       - name: Accessibility audit
-        run: npx playwright test e2e/tests/accessibility.spec.js --reporter=list || echo "::warning::Accessibility issues found"
+        run: npx playwright test e2e/tests/accessibility.spec.js --reporter=list
 
       - name: Upload Playwright report
         if: always()
@@ -662,7 +668,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Run accessibility audit
-        run: bun run scripts/accessibility-audit.js || echo "::warning::Accessibility audit found issues (see above)"
+        run: bun run scripts/accessibility-audit.js
 
       - name: Upload accessibility report
         if: always()

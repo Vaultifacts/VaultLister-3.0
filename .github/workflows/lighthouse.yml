@@ -67,7 +67,9 @@ jobs:
         id: evaluate
         run: |
           PERF="${{ steps.lh.outputs.PERF }}"
-          THRESHOLD=50
+          A11Y="${{ steps.lh.outputs.A11Y }}"
+          PERF_THRESHOLD=80
+          A11Y_THRESHOLD=85
 
           if [ "$PERF" = "null" ] || [ -z "$PERF" ]; then
             echo "::warning::Could not parse Lighthouse performance score — check report artifact"
@@ -75,13 +77,24 @@ jobs:
             exit 0
           fi
 
-          echo "Performance score: ${PERF} (threshold: ${THRESHOLD})"
+          BELOW=false
+          echo "Performance score: ${PERF} (threshold: ${PERF_THRESHOLD})"
+          echo "Accessibility score: ${A11Y} (threshold: ${A11Y_THRESHOLD})"
 
-          if [ "$PERF" -lt "$THRESHOLD" ]; then
-            echo "::error::Performance score ${PERF} is below minimum threshold ${THRESHOLD}"
+          if [ "$PERF" -lt "$PERF_THRESHOLD" ]; then
+            echo "::error::Performance score ${PERF} is below minimum threshold ${PERF_THRESHOLD}"
+            BELOW=true
+          fi
+
+          if [ "$A11Y" != "null" ] && [ -n "$A11Y" ] && [ "$A11Y" -lt "$A11Y_THRESHOLD" ]; then
+            echo "::error::Accessibility score ${A11Y} is below minimum threshold ${A11Y_THRESHOLD}"
+            BELOW=true
+          fi
+
+          if [ "$BELOW" = "true" ]; then
             echo "BELOW_THRESHOLD=true" >> "$GITHUB_OUTPUT"
           else
-            echo "Performance score ${PERF} meets threshold ${THRESHOLD}"
+            echo "All scores meet thresholds"
             echo "BELOW_THRESHOLD=false" >> "$GITHUB_OUTPUT"
           fi
 
@@ -104,7 +117,7 @@ jobs:
             const bp   = '${{ steps.lh.outputs.BP }}';
             const seo  = '${{ steps.lh.outputs.SEO }}';
 
-            const title = '[Lighthouse] Performance score below 50 — immediate attention required';
+            const title = '[Lighthouse] Score regression — immediate attention required';
 
             const existing = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
@@ -139,12 +152,12 @@ jobs:
             const body = [
               '## Lighthouse Performance Regression',
               '',
-              'The weekly Lighthouse audit found a performance score below the minimum threshold of **50**.',
+              'The weekly Lighthouse audit found scores below minimum thresholds (Performance: **80**, Accessibility: **85**).',
               '',
               '| Category | Score | Threshold |',
               '|---|---|---|',
-              `| Performance | **${perf}/100** | 50 |`,
-              `| Accessibility | ${a11y}/100 | — |`,
+              `| Performance | **${perf}/100** | 80 |`,
+              `| Accessibility | **${a11y}/100** | 85 |`,
               `| Best Practices | ${bp}/100 | — |`,
               `| SEO | ${seo}/100 | — |`,
               '',

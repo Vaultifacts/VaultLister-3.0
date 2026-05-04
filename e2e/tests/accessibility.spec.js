@@ -60,10 +60,46 @@ const KNOWN_RULES = {
     automations: ['color-contrast', 'select-name', 'button-name', 'scrollable-region-focusable'],
 };
 
+const PUBLIC_PAGES = [
+    'landing.html', 'pricing.html', 'contact.html', 'about.html',
+    'affiliate.html', 'ai-info.html', 'api-changelog.html', 'api-docs.html',
+    'changelog.html', 'cookies.html', 'documentation.html', 'er-diagram.html',
+    'faq.html', 'glossary.html', 'help.html', 'learning.html',
+    'platforms.html', 'privacy.html', 'quickstart.html', 'rate-limits.html',
+    'request-feature.html', 'roadmap-public.html', 'schema.html',
+    'status.html', 'terms.html',
+    'blog/index.html', 'blog/depop-y2k-vintage-what-sells.html',
+    'blog/ebay-sneaker-reselling-guide.html', 'blog/how-to-cross-list-50-items.html',
+    'blog/mercari-trading-cards-sell-fast.html', 'blog/poshmark-closet-sharing-2026.html',
+    'blog/using-ai-for-poshmark-listings.html', 'blog/whatnot-live-selling-beginners.html',
+    'compare/closo.html', 'compare/crosslist-magic.html', 'compare/crosslist.html',
+    'compare/flyp.html', 'compare/list-perfectly.html', 'compare/nifty.html',
+    'compare/oneshop.html', 'compare/primelister.html', 'compare/selleraider.html',
+    'compare/vendoo.html',
+    'help/automations.html', 'help/cross-listing.html', 'help/getting-started.html',
+    'help/inventory-management.html', 'help/troubleshooting.html',
+];
+
+const KNOWN_PUBLIC_RULES = ['color-contrast'];
+
 test.describe('Accessibility - WCAG 2.1 AA', () => {
     test.setTimeout(90_000);
     // ============================================================
-    // Public Pages (no auth needed)
+    // Static Public Pages (no auth needed)
+    // ============================================================
+
+    for (const page_path of PUBLIC_PAGES) {
+        test(`Public: ${page_path} has no new critical/serious violations`, async ({ page }) => {
+            await page.goto(`/${page_path}`);
+            await page.waitForLoadState('domcontentloaded');
+
+            const violations = await getSeriesViolations(page, KNOWN_PUBLIC_RULES);
+            expect(violations, formatViolations(violations)).toHaveLength(0);
+        });
+    }
+
+    // ============================================================
+    // SPA Auth Pages
     // ============================================================
 
     test('Login page has no new critical/serious violations', async ({ authedPage: page }) => {
