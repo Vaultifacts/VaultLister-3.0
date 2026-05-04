@@ -496,6 +496,10 @@ const router = {
             roadmap: 'Roadmap',
             changelog: 'Changelog',
             'receipt-parser': 'Receipts',
+            'login': 'Sign In',
+            'register': 'Create Account',
+            'forgot-password': 'Forgot Password',
+            'reset-password': 'Reset Password',
         };
         document.title = (PAGE_TITLES[path] ? PAGE_TITLES[path] + ' | ' : '') + 'VaultLister';
 

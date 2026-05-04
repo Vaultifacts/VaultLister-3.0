@@ -507,11 +507,24 @@ async function main() {
                     ? 'public, max-age=31536000, immutable'
                     : 'no-cache, must-revalidate';
 
+            const isHTML = ext === '.html' || ext === '.htm';
+            const staticSecurityHeaders = {
+                'X-Content-Type-Options': 'nosniff',
+                'Referrer-Policy': 'strict-origin-when-cross-origin',
+            };
+            if (isHTML) {
+                staticSecurityHeaders['X-Frame-Options'] = 'DENY';
+                staticSecurityHeaders['Content-Security-Policy'] = securityHeadersConfig['Content-Security-Policy'];
+                staticSecurityHeaders['Permissions-Policy'] = securityHeadersConfig['Permissions-Policy'];
+                if (IS_PROD) staticSecurityHeaders['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload';
+            }
+
             const responseHeaders = {
                 'Content-Type': contentType,
                 'Cache-Control': cacheControl,
                 Vary: 'Accept-Encoding',
                 ...dynamicHeaders,
+                ...staticSecurityHeaders,
             };
 
             if (supportsGzip) {
@@ -1228,6 +1241,12 @@ async function main() {
             if (pathname !== '/' && pathname.includes('.') && !pathname.startsWith('/api/')) {
                 const staticResponse = serveStatic(pathname, request);
                 if (staticResponse) return staticResponse;
+                if (pathname.endsWith('.html') || pathname.endsWith('.htm')) {
+                    return new Response('<!DOCTYPE html><html><head><title>404 Not Found</title></head><body><h1>404 — Page Not Found</h1><p><a href="/">Back to VaultLister</a></p></body></html>', {
+                        status: 404,
+                        headers: { 'Content-Type': 'text/html', 'X-Content-Type-Options': 'nosniff' },
+                    });
+                }
             }
 
             // Landing page — serve public/landing.html for unauthenticated root visits.

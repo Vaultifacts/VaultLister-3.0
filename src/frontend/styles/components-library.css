@@ -17363,7 +17363,7 @@ body.dark-mode .inline-edit-input {
     top: 0;
     left: 0;
     right: 0;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     gap: var(--space-4);
@@ -17376,6 +17376,7 @@ body.dark-mode .inline-edit-input {
 }
 
 .announcement-banner.visible {
+    display: flex;
     transform: translateY(0);
 }
 
