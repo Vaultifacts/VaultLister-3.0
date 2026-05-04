@@ -1,1123 +1,748 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta
-            name="description"
-            content="Developer setup guide for VaultLister 3.0 — environment setup, dependencies, and local development configuration."
-        />
-        <title>VaultLister Developer Quickstart and Full Setup Guide</title>
-        <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="VaultLister" />
-        <meta property="og:title" content="VaultLister Developer Quickstart and Full Setup Guide" />
-        <meta
-            property="og:description"
-            content="Developer setup guide for VaultLister 3.0 — environment setup, dependencies, and local development configuration."
-        />
-        <meta property="og:url" content="https://vaultlister.com/quickstart.html" />
-        <meta property="og:image" content="https://vaultlister.com/assets/logo/lockups/horizontal-2048.png" />
-        <link rel="canonical" href="https://vaultlister.com/quickstart.html" />
-        <!-- Google Analytics (GA4) with Consent Mode -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
-        <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag() {
-                dataLayer.push(arguments);
-            }
-            gtag('consent', 'default', {
-                analytics_storage: localStorage.getItem('cookie_consent') === 'accepted' ? 'granted' : 'denied',
-            });
-            gtag('js', new Date());
-            gtag('config', 'G-LXETN4PYRM');
-        </script>
-        <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png" />
-        <style>
-            :root {
-                --brand: #f59e0b;
-                --brand-light: #fffbeb;
-                --text-primary: #111827;
-                --text-secondary: #595959;
-                --text-muted: #767676;
-                --border: #e5e7eb;
-                --bg: #ffffff;
-                --code-bg: #f3f4f6;
-                --code-text: #374151;
-            }
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Developer setup guide for VaultLister 3.0 — environment setup, dependencies, and local development configuration.">
+    <title>VaultLister Developer Quickstart and Full Setup Guide</title>
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="VaultLister">
+    <meta property="og:title" content="VaultLister Developer Quickstart and Full Setup Guide">
+    <meta property="og:description" content="Developer setup guide for VaultLister 3.0 — environment setup, dependencies, and local development configuration.">
+    <meta property="og:url" content="https://vaultlister.com/quickstart.html">
+    <meta property="og:image" content="https://vaultlister.com/assets/logo/lockups/horizontal-2048.png">
+    <link rel="canonical" href="https://vaultlister.com/quickstart.html" />
+    <!-- Google Analytics (GA4) with Consent Mode -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('consent', 'default', {
+        analytics_storage: localStorage.getItem('cookie_consent') === 'accepted' ? 'granted' : 'denied'
+      });
+      gtag('js', new Date());
+      gtag('config', 'G-LXETN4PYRM');
+    </script>
+    <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png">
+    <style>
+        :root {
+            --brand: #f59e0b;
+            --brand-light: #fffbeb;
+            --text-primary: #111827;
+            --text-secondary: #595959;
+            --text-muted: #767676;
+            --border: #e5e7eb;
+            --bg: #ffffff;
+            --code-bg: #f3f4f6;
+            --code-text: #374151;
+        }
 
-            body {
-                font-family:
-                    'Inter',
-                    system-ui,
-                    -apple-system,
-                    sans-serif;
-                background: var(--bg);
-                color: var(--text-primary);
-                line-height: 1.6;
-                min-height: 100vh;
-            }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
 
-            .layout {
-                display: grid;
-                grid-template-columns: 220px 1fr;
-                gap: 0;
-                max-width: 1060px;
-                margin: 0 auto;
-                padding: 2.5rem 1.5rem;
-                align-items: start;
-            }
+        .layout {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 0;
+            max-width: 1060px;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem;
+            align-items: start;
+        }
 
-            @media (max-width: 700px) {
-                .layout {
-                    grid-template-columns: 1fr;
-                }
-                .sidebar {
-                    display: none;
-                }
-            }
+        @media (max-width: 700px) {
+            .layout { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+        }
 
-            .sidebar {
-                position: sticky;
-                top: 100px;
-            }
+        .sidebar {
+            position: sticky;
+            top: 100px;
+        }
 
-            .sidebar-label {
-                font-size: 0.7rem;
-                font-weight: 600;
-                letter-spacing: 0.08em;
-                text-transform: uppercase;
-                color: var(--text-muted);
-                margin-bottom: 0.6rem;
-            }
+        .sidebar-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 0.6rem;
+        }
 
-            .sidebar nav a {
-                display: block;
-                padding: 0.3rem 0.6rem;
-                border-radius: 5px;
-                font-size: 0.875rem;
-                color: var(--text-secondary);
-                text-decoration: none;
-                transition:
-                    background 0.15s,
-                    color 0.15s;
-            }
+        .sidebar nav a {
+            display: block;
+            padding: 0.3rem 0.6rem;
+            border-radius: 5px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: background 0.15s, color 0.15s;
+        }
 
-            .sidebar nav a:hover {
-                background: var(--brand-light);
-                color: var(--brand);
-            }
+        .sidebar nav a:hover {
+            background: var(--brand-light);
+            color: var(--brand);
+        }
 
-            .content {
-                min-width: 0;
-                padding-left: 3rem;
-            }
+        .content {
+            min-width: 0;
+            padding-left: 3rem;
+        }
 
-            @media (max-width: 700px) {
-                .content {
-                    padding-left: 0;
-                }
-            }
+        @media (max-width: 700px) {
+            .content { padding-left: 0; }
+        }
 
-            .page-hero {
-                margin-bottom: 2.5rem;
-            }
+        .page-hero {
+            margin-bottom: 2.5rem;
+        }
 
-            .page-hero h1 {
-                font-size: 1.75rem;
-                font-weight: 700;
-                letter-spacing: -0.02em;
-                margin-bottom: 0.5rem;
-            }
+        .page-hero h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
 
-            .page-hero p {
-                color: var(--text-secondary);
-                font-size: 1rem;
-                max-width: 560px;
-            }
-        </style>
-        <link
-            rel="preload"
-            href="/styles/public-base.css"
-            as="style"
-            onload="
-                this.onload = null;
-                this.rel = 'stylesheet';
-            "
-        />
-        <noscript><link rel="stylesheet" href="/styles/public-base.css" /></noscript>
-    </head>
-    <body>
-        <a href="#main-content" class="skip-link">Skip to main content</a>
+        .page-hero p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            max-width: 560px;
+        }
+    </style>
+    <link rel="preload" href="/styles/public-base.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="/styles/public-base.css"></noscript>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
 
-        <!-- Navigation -->
-        <nav class="nav" aria-label="Main navigation">
-            <a class="nav-logo" href="/">
-                <img
-                    src="/assets/logo/lockups/horizontal-2048.svg"
-                    alt="VaultLister"
-                    width="348"
-                    height="87"
-                    style="display: block"
-                />
-            </a>
-            <div class="nav-links">
-                <div class="nav-dropdown">
-                    <button
-                        type="button"
-                        class="nav-link nav-dropdown-btn"
-                        data-dropdown="features-menu"
-                        aria-haspopup="menu"
-                        aria-expanded="false"
-                    >
-                        Features &#9662;
-                    </button>
-                    <div id="features-menu" class="nav-dropdown-menu" role="menu" inert>
-                        <a href="#cross-listing" role="menuitem">Cross-Listing</a>
-                        <a href="#inventory-management" role="menuitem">Inventory Management</a>
-                        <a href="#sale-purchase-sync" role="menuitem">Sale &amp; Purchase Sync</a>
-                        <a href="#analytics" role="menuitem">Analytics</a>
-                        <a href="#offer-management" role="menuitem">Offer Management</a>
-                        <a href="#marketplace-sharing" role="menuitem">Marketplace Sharing</a>
-                        <a href="#bulk-actions" role="menuitem">Bulk Actions</a>
-                        <a href="#photo-tools" role="menuitem">Photo Tools</a>
-                        <a href="#ai-listing-generation" role="menuitem">AI Listing Generation</a>
-                        <a href="#financial-management" role="menuitem">Financial Management</a>
-                        <a href="#productivity-tools" role="menuitem">Productivity Tools</a>
-                    </div>
-                </div>
-                <a class="nav-link" href="/platforms.html">Marketplaces</a>
-                <a class="nav-link" href="/pricing.html">Pricing</a>
-                <div class="nav-dropdown">
-                    <button
-                        type="button"
-                        class="nav-link nav-dropdown-btn"
-                        data-dropdown="resources-menu"
-                        aria-haspopup="menu"
-                        aria-expanded="false"
-                    >
-                        Resources &#9662;
-                    </button>
-                    <div id="resources-menu" class="nav-dropdown-menu" role="menu" inert>
-                        <a href="/learning.html" role="menuitem">Learning</a>
-                        <a href="/documentation.html" role="menuitem">Documentation</a>
-                        <a href="/blog/index.html" role="menuitem">Blog</a>
-                        <a href="/affiliate.html" role="menuitem">Affiliate Program</a>
-                    </div>
-                </div>
-                <div class="nav-dropdown">
-                    <button
-                        type="button"
-                        class="nav-link nav-dropdown-btn"
-                        data-dropdown="feedback-menu"
-                        aria-haspopup="menu"
-                        aria-expanded="false"
-                    >
-                        Feedback &amp; Support &#9662;
-                    </button>
-                    <div id="feedback-menu" class="nav-dropdown-menu" role="menu" inert>
-                        <a href="/help.html" role="menuitem">Help Center</a>
-                        <a href="/faq.html" role="menuitem">FAQs</a>
-                        <a href="/request-feature.html" role="menuitem">Request a Feature</a>
-                        <a href="/contact.html#contact-form" role="menuitem">Report a Bug</a>
-                        <a href="/contact.html" role="menuitem">Contact Us</a>
-                    </div>
-                </div>
-                <div class="nav-dropdown">
-                    <button
-                        type="button"
-                        class="nav-link nav-dropdown-btn"
-                        data-dropdown="product-updates-menu"
-                        aria-haspopup="menu"
-                        aria-expanded="false"
-                    >
-                        Status &amp; Updates &#9662;
-                    </button>
-                    <div id="product-updates-menu" class="nav-dropdown-menu" role="menu" inert>
-                        <a href="/changelog.html" role="menuitem">Changelog</a>
-                        <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
-                        <a href="/status.html" role="menuitem">Status Page</a>
-                    </div>
-                </div>
+
+<!-- Navigation -->
+<nav class="nav" aria-label="Main navigation">
+    <a class="nav-logo" href="/">
+        <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" width="348" height="87" style="display:block;">
+    </a>
+    <div class="nav-links">
+        <div class="nav-dropdown">
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="features-menu" aria-haspopup="menu" aria-expanded="false">Features &#9662;</button>
+            <div id="features-menu" class="nav-dropdown-menu" role="menu" inert>
+                <a href="#cross-listing" role="menuitem">Cross-Listing</a>
+                <a href="#inventory-management" role="menuitem">Inventory Management</a>
+                <a href="#sale-purchase-sync" role="menuitem">Sale &amp; Purchase Sync</a>
+                <a href="#analytics" role="menuitem">Analytics</a>
+                <a href="#offer-management" role="menuitem">Offer Management</a>
+                <a href="#marketplace-sharing" role="menuitem">Marketplace Sharing</a>
+                <a href="#bulk-actions" role="menuitem">Bulk Actions</a>
+                <a href="#photo-tools" role="menuitem">Photo Tools</a>
+                <a href="#ai-listing-generation" role="menuitem">AI Listing Generation</a>
+                <a href="#financial-management" role="menuitem">Financial Management</a>
+                <a href="#productivity-tools" role="menuitem">Productivity Tools</a>
             </div>
-            <button
-                type="button"
-                class="nav-hamburger"
-                aria-label="Open menu"
-                aria-expanded="false"
-                aria-controls="mobile-nav-drawer"
-            >
-                <span></span>
-                <span></span>
-                <span></span>
+        </div>
+        <a class="nav-link" href="/platforms.html">Marketplaces</a>
+        <a class="nav-link" href="/pricing.html">Pricing</a>
+        <div class="nav-dropdown">
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="resources-menu" aria-haspopup="menu" aria-expanded="false">Resources &#9662;</button>
+            <div id="resources-menu" class="nav-dropdown-menu" role="menu" inert>
+                <a href="/learning.html" role="menuitem">Learning</a>
+                <a href="/documentation.html" role="menuitem">Documentation</a>
+                <a href="/blog/index.html" role="menuitem">Blog</a>
+                <a href="/affiliate.html" role="menuitem">Affiliate Program</a>
+            </div>
+        </div>
+        <div class="nav-dropdown">
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="feedback-menu" aria-haspopup="menu" aria-expanded="false">Feedback &amp; Support &#9662;</button>
+            <div id="feedback-menu" class="nav-dropdown-menu" role="menu" inert>
+                <a href="/help.html" role="menuitem">Help Center</a>
+                <a href="/faq.html" role="menuitem">FAQs</a>
+                <a href="/request-feature.html" role="menuitem">Request a Feature</a>
+                <a href="/contact.html#contact-form" role="menuitem">Report a Bug</a>
+                <a href="/contact.html" role="menuitem">Contact Us</a>
+            </div>
+        </div>
+        <div class="nav-dropdown">
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="product-updates-menu" aria-haspopup="menu" aria-expanded="false">Status &amp; Updates &#9662;</button>
+            <div id="product-updates-menu" class="nav-dropdown-menu" role="menu" inert>
+                <a href="/changelog.html" role="menuitem">Changelog</a>
+                <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
+                <a href="/status.html" role="menuitem">Status Page</a>
+            </div>
+        </div>
+    </div>
+    <button type="button" class="nav-hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav-drawer">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+    <div class="nav-actions">
+        <div class="currency-selector">
+            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false" aria-haspopup="listbox"><span id="current-currency-code">CAD</span>
+                <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             </button>
-            <div class="nav-actions">
-                <div class="currency-selector">
-                    <button
-                        type="button"
-                        class="currency-btn"
-                        title="Change currency"
-                        aria-expanded="false"
-                        aria-haspopup="listbox"
-                    >
-                        <span id="current-currency-code">CAD</span>
-                        <svg
-                            aria-hidden="true"
-                            width="12"
-                            height="12"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
-                            <path d="M6 9l6 6 6-6" />
-                        </svg>
-                    </button>
-                    <div class="currency-dropdown" id="currency-dropdown" role="listbox" aria-label="Select currency">
-                        <button type="button" class="currency-option" data-currency="CAD" data-symbol="$" role="option">
-                            $ CAD
-                        </button>
-                        <button type="button" class="currency-option" data-currency="USD" data-symbol="$" role="option">
-                            $ USD
-                        </button>
-                        <button type="button" class="currency-option" data-currency="GBP" data-symbol="£" role="option">
-                            £ GBP
-                        </button>
-                        <button type="button" class="currency-option" data-currency="EUR" data-symbol="€" role="option">
-                            € EUR
-                        </button>
-                        <button type="button" class="currency-option" data-currency="AUD" data-symbol="$" role="option">
-                            $ AUD
-                        </button>
-                    </div>
-                </div>
-                <div class="lang-selector">
-                    <button
-                        type="button"
-                        class="lang-btn"
-                        title="Change language"
-                        aria-expanded="false"
-                        aria-haspopup="listbox"
-                    >
-                        <span class="lang-code" id="current-lang-code">EN</span>
-                        <svg
-                            aria-hidden="true"
-                            width="12"
-                            height="12"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
-                            <path d="M6 9l6 6 6-6" />
-                        </svg>
-                    </button>
-                    <div class="lang-dropdown" id="lang-dropdown" role="listbox" aria-label="Select language">
-                        <button type="button" class="lang-option" data-lang="en" role="option">English</button>
-                        <button type="button" class="lang-option" data-lang="es" role="option">Spanish</button>
-                        <button type="button" class="lang-option" data-lang="fr" role="option">French</button>
-                        <button type="button" class="lang-option" data-lang="de" role="option">German</button>
-                        <button type="button" class="lang-option" data-lang="it" role="option">Italian</button>
-                        <button type="button" class="lang-option" data-lang="pt" role="option">Portuguese</button>
-                        <button type="button" class="lang-option" data-lang="ja" role="option">Japanese</button>
-                        <button type="button" class="lang-option" data-lang="zh" role="option">Chinese</button>
-                        <button type="button" class="lang-option" data-lang="ko" role="option">Korean</button>
-                        <button type="button" class="lang-option" data-lang="ar" role="option">Arabic</button>
-                    </div>
-                </div>
-
-                <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
-                <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
+            <div class="currency-dropdown" id="currency-dropdown" role="listbox" aria-label="Select currency">
+                <button type="button" class="currency-option" data-currency="CAD" data-symbol="$" role="option">$ CAD</button>
+                <button type="button" class="currency-option" data-currency="USD" data-symbol="$" role="option">$ USD</button>
+                <button type="button" class="currency-option" data-currency="GBP" data-symbol="£" role="option">£ GBP</button>
+                <button type="button" class="currency-option" data-currency="EUR" data-symbol="€" role="option">€ EUR</button>
+                <button type="button" class="currency-option" data-currency="AUD" data-symbol="$" role="option">$ AUD</button>
             </div>
+        </div>
+        <div class="lang-selector">
+        <button type="button" class="lang-btn" title="Change language" aria-expanded="false" aria-haspopup="listbox">
+            <span class="lang-code" id="current-lang-code">EN</span>
+            <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="lang-dropdown" id="lang-dropdown" role="listbox" aria-label="Select language">
+            <button type="button" class="lang-option" data-lang="en" role="option">English</button>
+            <button type="button" class="lang-option" data-lang="es" role="option">Spanish</button>
+            <button type="button" class="lang-option" data-lang="fr" role="option">French</button>
+            <button type="button" class="lang-option" data-lang="de" role="option">German</button>
+            <button type="button" class="lang-option" data-lang="it" role="option">Italian</button>
+            <button type="button" class="lang-option" data-lang="pt" role="option">Portuguese</button>
+            <button type="button" class="lang-option" data-lang="ja" role="option">Japanese</button>
+            <button type="button" class="lang-option" data-lang="zh" role="option">Chinese</button>
+            <button type="button" class="lang-option" data-lang="ko" role="option">Korean</button>
+            <button type="button" class="lang-option" data-lang="ar" role="option">Arabic</button>
+        </div>
+    </div>
+
+        <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
+    </div>
+</nav>
+
+<!-- Mobile nav drawer -->
+<nav class="mobile-nav-drawer" aria-hidden="true" id="mobile-nav-drawer" aria-label="Mobile navigation">
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-features-sub" aria-controls="mobile-features-sub" aria-expanded="false">Features</button>
+    <div class="mobile-nav-sub" id="mobile-features-sub">
+        <a href="#cross-listing">Cross-Listing</a>
+        <a href="#inventory-management">Inventory Management</a>
+        <a href="#sale-purchase-sync">Sale &amp; Purchase Sync</a>
+        <a href="#analytics">Analytics</a>
+        <a href="#offer-management">Offer Management</a>
+        <a href="#marketplace-sharing">Marketplace Sharing</a>
+        <a href="#bulk-actions">Bulk Actions</a>
+        <a href="#photo-tools">Photo Tools</a>
+        <a href="#ai-listing-generation">AI Listing Generation</a>
+        <a href="#financial-management">Financial Management</a>
+        <a href="#productivity-tools">Productivity Tools</a>
+    </div>
+    <a class="mobile-nav-item" href="/platforms.html">Marketplaces</a>
+    <a class="mobile-nav-item" href="/pricing.html">Pricing</a>
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-resources-sub" aria-controls="mobile-resources-sub" aria-expanded="false">Resources</button>
+    <div class="mobile-nav-sub" id="mobile-resources-sub">
+        <a href="/learning.html">Learning</a>
+        <a href="/documentation.html">Documentation</a>
+        <a href="/blog/index.html">Blog</a>
+        <a href="/affiliate.html">Affiliate Program</a>
+    </div>
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-feedback-sub" aria-controls="mobile-feedback-sub" aria-expanded="false">Feedback &amp; Support</button>
+    <div class="mobile-nav-sub" id="mobile-feedback-sub">
+        <a href="/help.html">Help Center</a>
+        <a href="/faq.html">FAQs</a>
+        <a href="/request-feature.html">Request a Feature</a>
+        <a href="/contact.html#contact-form">Report a Bug</a>
+        <a href="/contact.html">Contact Us</a>
+    </div>
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-product-updates-sub" aria-controls="mobile-product-updates-sub" aria-expanded="false">Status &amp; Updates</button>
+    <div class="mobile-nav-sub" id="mobile-product-updates-sub">
+        <a href="/changelog.html">Changelog</a>
+        <a href="/roadmap-public.html">Roadmap</a>
+        <a href="/status.html">Status Page</a>
+    </div>
+    <div class="mobile-nav-actions">
+        <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
+    </div>
+</nav>
+
+<div class="layout">
+    <aside class="sidebar" aria-label="Page navigation">
+        <p class="sidebar-label">On this page</p>
+        <nav aria-label="On this page">
+            <a href="#prerequisites">Prerequisites</a>
+            <a href="#setup">Setup</a>
+            <a href="#running">Running locally</a>
+            <a href="#key-commands">Key commands</a>
+            <a href="#structure">Project structure</a>
+            <a href="#next-steps">Next steps</a>
         </nav>
+    </aside>
 
-        <!-- Mobile nav drawer -->
-        <nav class="mobile-nav-drawer" aria-hidden="true" id="mobile-nav-drawer" aria-label="Mobile navigation">
-            <button
-                type="button"
-                class="mobile-nav-section-btn"
-                data-mobile-section="mobile-features-sub"
-                aria-controls="mobile-features-sub"
-                aria-expanded="false"
-            >
-                Features
-            </button>
-            <div class="mobile-nav-sub" id="mobile-features-sub">
-                <a href="#cross-listing">Cross-Listing</a>
-                <a href="#inventory-management">Inventory Management</a>
-                <a href="#sale-purchase-sync">Sale &amp; Purchase Sync</a>
-                <a href="#analytics">Analytics</a>
-                <a href="#offer-management">Offer Management</a>
-                <a href="#marketplace-sharing">Marketplace Sharing</a>
-                <a href="#bulk-actions">Bulk Actions</a>
-                <a href="#photo-tools">Photo Tools</a>
-                <a href="#ai-listing-generation">AI Listing Generation</a>
-                <a href="#financial-management">Financial Management</a>
-                <a href="#productivity-tools">Productivity Tools</a>
+    <main class="content" id="main-content">
+        <div class="page-hero">
+            <h1>Developer Setup Guide</h1>
+            <p>Get a local VaultLister 3.0 instance running in under five minutes. No accounts or cloud services required for the core experience.</p>
+        </div>
+
+        <!-- Prerequisites -->
+        <section class="section" id="prerequisites" aria-label="Prerequisites">
+            <h2>Prerequisites</h2>
+            <ul class="prereq-list">
+                <li class="prereq-item">
+                    <span class="prereq-badge badge-required">Required</span>
+                    <div class="prereq-info">
+                        <strong>Bun 1.3+</strong>
+                        <span>Runtime and package manager. Install via <code>curl -fsSL https://bun.sh/install | bash</code> or see <a href="https://bun.sh" target="_blank" rel="noopener">bun.sh</a>.</span>
+                    </div>
+                </li>
+                <li class="prereq-item">
+                    <span class="prereq-badge badge-required">Required</span>
+                    <div class="prereq-info">
+                        <strong>Git 2.x</strong>
+                        <span>For cloning and version control.</span>
+                    </div>
+                </li>
+                <li class="prereq-item">
+                    <span class="prereq-badge badge-optional">Optional</span>
+                    <div class="prereq-info">
+                        <strong>Docker 24+</strong>
+                        <span>Only needed for production deployment or running the full containerized stack.</span>
+                    </div>
+                </li>
+                <li class="prereq-item">
+                    <span class="prereq-badge badge-optional">Optional</span>
+                    <div class="prereq-info">
+                        <strong>Playwright browsers</strong>
+                        <span>Required only if you want to test marketplace automation bots. Install after <code>bun install</code> by running <code>bunx playwright install</code>.</span>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Setup -->
+        <section class="section" id="setup" aria-label="Setup">
+            <h2>Setup</h2>
+            <ol class="steps">
+                <li class="step">
+                    <h3>Clone the repository</h3>
+                    <pre><code>git clone https://github.com/Vaultifacts/VaultLister-3.0.git
+cd VaultLister-3.0</code></pre>
+                </li>
+                <li class="step">
+                    <h3>Create your <code>.env</code> file</h3>
+                    <p>Copy the example file and set a strong value for <code>JWT_SECRET</code>. All other values are optional for local development.</p>
+                    <pre><code>cp .env.example .env</code></pre>
+                    <div class="notice" role="note">
+                        Open <code>.env</code> in your editor and set <code>JWT_SECRET</code> to any random 32+ character string before starting the server.
+                    </div>
+                </li>
+                <li class="step">
+                    <h3>Install dependencies</h3>
+                    <pre><code>bun install</code></pre>
+                </li>
+                <li class="step">
+                    <h3>Initialize the database</h3>
+                    <pre><code>bun run db:init</code></pre>
+                    <p>Initializes the PostgreSQL database with all tables, migrations, and seed data including the demo account.</p>
+                </li>
+            </ol>
+        </section>
+
+        <!-- Running -->
+        <section class="section" id="running" aria-label="Running locally">
+            <h2>Running locally</h2>
+            <ol class="steps">
+                <li class="step">
+                    <h3>Start the development server</h3>
+                    <pre><code>bun run dev</code></pre>
+                    <p>The server starts on <strong>port 3000</strong> by default. File changes to backend routes and frontend pages hot-reload automatically.</p>
+                </li>
+                <li class="step">
+                    <h3>Open the app</h3>
+                    <p>Navigate to:</p>
+                    <pre><code>http://localhost:3000</code></pre>
+                </li>
+            </ol>
+        </section>
+
+        <!-- Key commands -->
+
+        <!-- Key commands -->
+        <section class="section" id="key-commands" aria-label="Key commands">
+            <h2>Key commands</h2>
+            <table class="cmd-table" aria-label="Available npm and bun scripts">
+                <thead>
+                    <tr>
+                        <th scope="col">Command</th>
+                        <th scope="col">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>bun run dev</code></td>
+                        <td>Start dev server with hot reload on port 3000</td>
+                    </tr>
+                    <tr>
+                        <td><code>bun run dev:bg</code></td>
+                        <td>Start dev server in the background</td>
+                    </tr>
+                    <tr>
+                        <td><code>bun run test:unit</code></td>
+                        <td>Run unit tests (Bun:test)</td>
+                    </tr>
+                    <tr>
+                        <td><code>bun run test:e2e</code></td>
+                        <td>Run end-to-end tests (Playwright)</td>
+                    </tr>
+                    <tr>
+                        <td><code>bun run test:all</code></td>
+                        <td>Run all tests in sequence</td>
+                    </tr>
+                    <tr>
+                        <td><code>bun run build</code></td>
+                        <td>Production build — bundle and minify assets</td>
+                    </tr>
+                    <tr>
+                        <td><code>bun run lint</code></td>
+                        <td>Syntax check all source files</td>
+                    </tr>
+                    <tr>
+                        <td><code>bun run db:reset</code></td>
+                        <td>Wipe and re-seed the local database</td>
+                    </tr>
+                    <tr>
+                        <td><code>bun scripts/help.js</code></td>
+                        <td>List all available scripts with descriptions</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Project structure -->
+        <section class="section" id="structure" aria-label="Project structure">
+            <h2>Project structure</h2>
+            <div class="tree" role="region" aria-label="Project directory structure">
+<span class="dir">vaultlister-3/</span>
+├── <span class="dir">src/</span>
+│   ├── <span class="dir">backend/</span>
+│   │   ├── <span class="dir">routes/</span>          <span class="comment"># API route handlers — one file per domain</span>
+│   │   └── <span class="dir">middleware/</span>       <span class="comment"># Auth, CSRF, rate limiting, security headers</span>
+│   ├── <span class="dir">frontend/</span>
+│   │   ├── app.js             <span class="comment"># SPA entry point, store, router</span>
+│   │   ├── <span class="dir">pages/</span>           <span class="comment"># Lazy-loaded route pages</span>
+│   │   ├── <span class="dir">handlers/</span>        <span class="comment"># Event handlers grouped by domain</span>
+│   │   └── <span class="dir">components/</span>      <span class="comment"># Reusable UI components</span>
+│   └── <span class="dir">shared/</span>
+│       ├── <span class="dir">ai/</span>              <span class="comment"># Anthropic SDK wrappers — never call SDK directly</span>
+│       └── <span class="dir">automations/</span>     <span class="comment"># Playwright bots for marketplace automations</span>
+├── <span class="dir">public/</span>                   <span class="comment"># Static files served at root</span>
+├── <span class="dir">scripts/</span>                  <span class="comment"># Dev utilities — session-start, session-end, etc.</span>
+├── <span class="dir">data/</span>                     <span class="comment"># Database backups and audit logs (git-ignored)</span>
+├── <span class="dir">chrome-extension/</span>        <span class="comment"># Chromium extension source</span>
+├── .env.example               <span class="comment"># Copy to .env and fill in values</span>
+└── CLAUDE.md                  <span class="comment"># Project instructions for AI agents</span>
             </div>
-            <a class="mobile-nav-item" href="/platforms.html">Marketplaces</a>
-            <a class="mobile-nav-item" href="/pricing.html">Pricing</a>
-            <button
-                type="button"
-                class="mobile-nav-section-btn"
-                data-mobile-section="mobile-resources-sub"
-                aria-controls="mobile-resources-sub"
-                aria-expanded="false"
-            >
-                Resources
-            </button>
-            <div class="mobile-nav-sub" id="mobile-resources-sub">
-                <a href="/learning.html">Learning</a>
-                <a href="/documentation.html">Documentation</a>
+        </section>
+
+        <!-- Next steps -->
+        <section class="section" id="next-steps" aria-label="Next steps">
+            <h2>Next steps</h2>
+            <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.6rem;">
+                <li style="font-size: 0.875rem; display: flex; align-items: center; gap: 0.6rem;">
+                    <span style="color: var(--brand); font-size: 1rem;" aria-hidden="true">&#8594;</span>
+                    Read <a href="/platforms.html" aria-label="Marketplaces" style="color: #92400e; text-decoration: underline; font-weight: 500;">Platform Integration Status</a> — see which marketplaces are ready to connect
+                </li>
+                <li style="font-size: 0.875rem; display: flex; align-items: center; gap: 0.6rem;">
+                    <span style="color: var(--brand); font-size: 1rem;" aria-hidden="true">&#8594;</span>
+                    Read <a href="/er-diagram.html" style="color: #92400e; text-decoration: underline; font-weight: 500;">Database ER Diagram</a> — understand the data model before writing queries
+                </li>
+                <li style="font-size: 0.875rem; display: flex; align-items: center; gap: 0.6rem;">
+                    <span style="color: var(--brand); font-size: 1rem;" aria-hidden="true">&#8594;</span>
+                    Read <a href="/api-docs.html" style="color: #92400e; text-decoration: underline; font-weight: 500;">API Documentation</a> — full reference for all endpoints
+                </li>
+                <li style="font-size: 0.875rem; display: flex; align-items: center; gap: 0.6rem;">
+                    <span style="color: var(--brand); font-size: 1rem;" aria-hidden="true">&#8594;</span>
+                    Read <a href="../CONTRIBUTING.md" style="color: #92400e; text-decoration: underline; font-weight: 500;">CONTRIBUTING.md</a> — contribution guidelines, branch naming, and code conventions
+                </li>
+            </ul>
+        </section>
+    </main>
+</div>
+
+<footer class="footer" aria-label="Footer">
+    <div class="footer-social-bar">
+        <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" width="144" height="36" style="display:block;"></a>
+        <div class="footer-social-links">
+            <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg></a>
+            <a href="https://www.facebook.com/profile.php?id=61570865723233" aria-label="Facebook"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+            <a href="https://x.com/VaultListerCo" aria-label="X"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+            <a href="https://www.tiktok.com/@vaultlister.co" aria-label="TikTok"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.92a8.24 8.24 0 0 0 4.83 1.56v-3.5a4.84 4.84 0 0 1-1.07-.29z"/></svg></a>
+            <a href="https://www.reddit.com/user/VaultLister/" aria-label="Reddit"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg></a>
+            <a href="https://www.youtube.com/@VaultLister" aria-label="YouTube"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+        </div>
+    </div>
+    <div class="footer-inner">
+                <nav aria-label="Footer navigation"><div class="footer-cols">
+            <div class="footer-col">
+                <h3 class="footer-col-label">Resources</h3>
                 <a href="/blog/index.html">Blog</a>
+                <a href="/changelog.html">Changelog</a>
+                <a href="/documentation.html">Documentation</a>
+                <a href="/faq.html">FAQs</a>
+                <a href="/help.html">Help Center</a>
+            </div>
+            <div class="footer-col">
+                <h3 class="footer-col-label">Company</h3>
+                <a href="/about.html">About Us</a>
+                <a href="/documentation.html#media-kit">Media Kit</a>
                 <a href="/affiliate.html">Affiliate Program</a>
             </div>
-            <button
-                type="button"
-                class="mobile-nav-section-btn"
-                data-mobile-section="mobile-feedback-sub"
-                aria-controls="mobile-feedback-sub"
-                aria-expanded="false"
-            >
-                Feedback &amp; Support
-            </button>
-            <div class="mobile-nav-sub" id="mobile-feedback-sub">
-                <a href="/help.html">Help Center</a>
-                <a href="/faq.html">FAQs</a>
-                <a href="/request-feature.html">Request a Feature</a>
-                <a href="/contact.html#contact-form">Report a Bug</a>
-                <a href="/contact.html">Contact Us</a>
+            <div class="footer-col">
+                <h3 class="footer-col-label">Legal</h3>
+                <a href="/privacy.html">Privacy Policy</a>
+                <a href="/terms.html">Terms of Service</a>
+                <a href="/cookies.html">Cookie Policy</a>
             </div>
-            <button
-                type="button"
-                class="mobile-nav-section-btn"
-                data-mobile-section="mobile-product-updates-sub"
-                aria-controls="mobile-product-updates-sub"
-                aria-expanded="false"
-            >
-                Status &amp; Updates
-            </button>
-            <div class="mobile-nav-sub" id="mobile-product-updates-sub">
-                <a href="/changelog.html">Changelog</a>
-                <a href="/roadmap-public.html">Roadmap</a>
-                <a href="/status.html">Status Page</a>
+            <div class="footer-col">
+                <h3 class="footer-col-label">Compare</h3>
+                <a href="/compare/crosslist.html">Crosslist</a>
+                <a href="/compare/crosslist-magic.html">Crosslist Magic</a>
+                <a href="/compare/flyp.html">Flyp</a>
+                <a href="/compare/list-perfectly.html">List Perfectly</a>
+                <a href="/compare/nifty.html">Nifty</a>
+                <a href="/compare/oneshop.html">OneShop</a>
+                <a href="/compare/primelister.html">Primelister</a>
+                <a href="/compare/vendoo.html">Vendoo</a>
             </div>
-            <div class="mobile-nav-actions">
-                <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
-                <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
-            </div>
-        </nav>
-
-        <div class="layout">
-            <aside class="sidebar" aria-label="Page navigation">
-                <p class="sidebar-label">On this page</p>
-                <nav aria-label="On this page">
-                    <a href="#prerequisites">Prerequisites</a>
-                    <a href="#setup">Setup</a>
-                    <a href="#running">Running locally</a>
-                    <a href="#key-commands">Key commands</a>
-                    <a href="#structure">Project structure</a>
-                    <a href="#next-steps">Next steps</a>
-                </nav>
-            </aside>
-
-            <main class="content" id="main-content">
-                <div class="page-hero">
-                    <h1>Developer Setup Guide</h1>
-                    <p>
-                        Get a local VaultLister 3.0 instance running in under five minutes. No accounts or cloud
-                        services required for the core experience.
-                    </p>
-                </div>
-
-                <!-- Prerequisites -->
-                <section class="section" id="prerequisites" aria-label="Prerequisites">
-                    <h2>Prerequisites</h2>
-                    <ul class="prereq-list">
-                        <li class="prereq-item">
-                            <span class="prereq-badge badge-required">Required</span>
-                            <div class="prereq-info">
-                                <strong>Bun 1.3+</strong>
-                                <span
-                                    >Runtime and package manager. Install via
-                                    <code>curl -fsSL https://bun.sh/install | bash</code> or see
-                                    <a href="https://bun.sh" target="_blank" rel="noopener">bun.sh</a>.</span
-                                >
-                            </div>
-                        </li>
-                        <li class="prereq-item">
-                            <span class="prereq-badge badge-required">Required</span>
-                            <div class="prereq-info">
-                                <strong>Git 2.x</strong>
-                                <span>For cloning and version control.</span>
-                            </div>
-                        </li>
-                        <li class="prereq-item">
-                            <span class="prereq-badge badge-optional">Optional</span>
-                            <div class="prereq-info">
-                                <strong>Docker 24+</strong>
-                                <span
-                                    >Only needed for production deployment or running the full containerized
-                                    stack.</span
-                                >
-                            </div>
-                        </li>
-                        <li class="prereq-item">
-                            <span class="prereq-badge badge-optional">Optional</span>
-                            <div class="prereq-info">
-                                <strong>Playwright browsers</strong>
-                                <span
-                                    >Required only if you want to test marketplace automation bots. Install after
-                                    <code>bun install</code> by running <code>bunx playwright install</code>.</span
-                                >
-                            </div>
-                        </li>
-                    </ul>
-                </section>
-
-                <!-- Setup -->
-                <section class="section" id="setup" aria-label="Setup">
-                    <h2>Setup</h2>
-                    <ol class="steps">
-                        <li class="step">
-                            <h3>Clone the repository</h3>
-                            <pre><code>git clone https://github.com/Vaultifacts/VaultLister-3.0.git
-cd VaultLister-3.0</code></pre>
-                        </li>
-                        <li class="step">
-                            <h3>Create your <code>.env</code> file</h3>
-                            <p>
-                                Copy the example file and set a strong value for <code>JWT_SECRET</code>. All other
-                                values are optional for local development.
-                            </p>
-                            <pre><code>cp .env.example .env</code></pre>
-                            <div class="notice" role="note">
-                                Open <code>.env</code> in your editor and set <code>JWT_SECRET</code> to any random 32+
-                                character string before starting the server.
-                            </div>
-                        </li>
-                        <li class="step">
-                            <h3>Install dependencies</h3>
-                            <pre><code>bun install</code></pre>
-                        </li>
-                        <li class="step">
-                            <h3>Initialize the database</h3>
-                            <pre><code>bun run db:init</code></pre>
-                            <p>
-                                Initializes the PostgreSQL database with all tables, migrations, and seed data including
-                                the demo account.
-                            </p>
-                        </li>
-                    </ol>
-                </section>
-
-                <!-- Running -->
-                <section class="section" id="running" aria-label="Running locally">
-                    <h2>Running locally</h2>
-                    <ol class="steps">
-                        <li class="step">
-                            <h3>Start the development server</h3>
-                            <pre><code>bun run dev</code></pre>
-                            <p>
-                                The server starts on <strong>port 3000</strong> by default. File changes to backend
-                                routes and frontend pages hot-reload automatically.
-                            </p>
-                        </li>
-                        <li class="step">
-                            <h3>Open the app</h3>
-                            <p>Navigate to:</p>
-                            <pre><code>http://localhost:3000</code></pre>
-                        </li>
-                    </ol>
-                </section>
-
-                <!-- Key commands -->
-
-                <!-- Key commands -->
-                <section class="section" id="key-commands" aria-label="Key commands">
-                    <h2>Key commands</h2>
-                    <table class="cmd-table" aria-label="Available npm and bun scripts">
-                        <thead>
-                            <tr>
-                                <th scope="col">Command</th>
-                                <th scope="col">Description</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><code>bun run dev</code></td>
-                                <td>Start dev server with hot reload on port 3000</td>
-                            </tr>
-                            <tr>
-                                <td><code>bun run dev:bg</code></td>
-                                <td>Start dev server in the background</td>
-                            </tr>
-                            <tr>
-                                <td><code>bun run test:unit</code></td>
-                                <td>Run unit tests (Bun:test)</td>
-                            </tr>
-                            <tr>
-                                <td><code>bun run test:e2e</code></td>
-                                <td>Run end-to-end tests (Playwright)</td>
-                            </tr>
-                            <tr>
-                                <td><code>bun run test:all</code></td>
-                                <td>Run all tests in sequence</td>
-                            </tr>
-                            <tr>
-                                <td><code>bun run build</code></td>
-                                <td>Production build — bundle and minify assets</td>
-                            </tr>
-                            <tr>
-                                <td><code>bun run lint</code></td>
-                                <td>Syntax check all source files</td>
-                            </tr>
-                            <tr>
-                                <td><code>bun run db:reset</code></td>
-                                <td>Wipe and re-seed the local database</td>
-                            </tr>
-                            <tr>
-                                <td><code>bun scripts/help.js</code></td>
-                                <td>List all available scripts with descriptions</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </section>
-
-                <!-- Project structure -->
-                <section class="section" id="structure" aria-label="Project structure">
-                    <h2>Project structure</h2>
-                    <div class="tree" role="region" aria-label="Project directory structure">
-                        <span class="dir">vaultlister-3/</span>
-                        ├── <span class="dir">src/</span> │ ├── <span class="dir">backend/</span> │ │ ├──
-                        <span class="dir">routes/</span>
-                        <span class="comment"># API route handlers — one file per domain</span> │ │ └──
-                        <span class="dir">middleware/</span>
-                        <span class="comment"># Auth, CSRF, rate limiting, security headers</span> │ ├──
-                        <span class="dir">frontend/</span> │ │ ├── app.js
-                        <span class="comment"># SPA entry point, store, router</span> │ │ ├──
-                        <span class="dir">pages/</span> <span class="comment"># Lazy-loaded route pages</span> │ │ ├──
-                        <span class="dir">handlers/</span>
-                        <span class="comment"># Event handlers grouped by domain</span> │ │ └──
-                        <span class="dir">components/</span> <span class="comment"># Reusable UI components</span> │ └──
-                        <span class="dir">shared/</span> │ ├── <span class="dir">ai/</span>
-                        <span class="comment"># Anthropic SDK wrappers — never call SDK directly</span> │ └──
-                        <span class="dir">automations/</span>
-                        <span class="comment"># Playwright bots for marketplace automations</span> ├──
-                        <span class="dir">public/</span> <span class="comment"># Static files served at root</span> ├──
-                        <span class="dir">scripts/</span>
-                        <span class="comment"># Dev utilities — session-start, session-end, etc.</span> ├──
-                        <span class="dir">data/</span>
-                        <span class="comment"># Database backups and audit logs (git-ignored)</span> ├──
-                        <span class="dir">chrome-extension/</span>
-                        <span class="comment"># Chromium extension source</span> ├── .env.example
-                        <span class="comment"># Copy to .env and fill in values</span> └── CLAUDE.md
-                        <span class="comment"># Project instructions for AI agents</span>
-                    </div>
-                </section>
-
-                <!-- Next steps -->
-                <section class="section" id="next-steps" aria-label="Next steps">
-                    <h2>Next steps</h2>
-                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.6rem">
-                        <li style="font-size: 0.875rem; display: flex; align-items: center; gap: 0.6rem">
-                            <span style="color: var(--brand); font-size: 1rem" aria-hidden="true">&#8594;</span>
-                            Read
-                            <a
-                                href="/platforms.html"
-                                aria-label="Marketplaces"
-                                style="color: #92400e; text-decoration: underline; font-weight: 500"
-                                >Platform Integration Status</a
-                            >
-                            — see which marketplaces are ready to connect
-                        </li>
-                        <li style="font-size: 0.875rem; display: flex; align-items: center; gap: 0.6rem">
-                            <span style="color: var(--brand); font-size: 1rem" aria-hidden="true">&#8594;</span>
-                            Read
-                            <a
-                                href="/er-diagram.html"
-                                style="color: #92400e; text-decoration: underline; font-weight: 500"
-                                >Database ER Diagram</a
-                            >
-                            — understand the data model before writing queries
-                        </li>
-                        <li style="font-size: 0.875rem; display: flex; align-items: center; gap: 0.6rem">
-                            <span style="color: var(--brand); font-size: 1rem" aria-hidden="true">&#8594;</span>
-                            Read
-                            <a
-                                href="/api-docs.html"
-                                style="color: #92400e; text-decoration: underline; font-weight: 500"
-                                >API Documentation</a
-                            >
-                            — full reference for all endpoints
-                        </li>
-                        <li style="font-size: 0.875rem; display: flex; align-items: center; gap: 0.6rem">
-                            <span style="color: var(--brand); font-size: 1rem" aria-hidden="true">&#8594;</span>
-                            Read
-                            <a
-                                href="../CONTRIBUTING.md"
-                                style="color: #92400e; text-decoration: underline; font-weight: 500"
-                                >CONTRIBUTING.md</a
-                            >
-                            — contribution guidelines, branch naming, and code conventions
-                        </li>
-                    </ul>
-                </section>
-            </main>
-        </div>
-
-        <footer class="footer" aria-label="Footer">
-            <div class="footer-social-bar">
-                <a href="/" class="footer-logo"
-                    ><img
-                        src="/assets/logo/lockups/horizontal-512.svg"
-                        alt="VaultLister"
-                        width="144"
-                        height="36"
-                        style="display: block"
-                /></a>
-                <div class="footer-social-links">
-                    <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"
-                        ><svg
-                            aria-hidden="true"
-                            width="22"
-                            height="22"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                        >
-                            <rect x="2" y="2" width="20" height="20" rx="5" />
-                            <circle cx="12" cy="12" r="5" />
-                            <circle cx="17.5" cy="6.5" r="1.5" /></svg
-                    ></a>
-                    <a href="https://www.facebook.com/profile.php?id=61570865723233" aria-label="Facebook"
-                        ><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></svg
-                    ></a>
-                    <a href="https://x.com/VaultListerCo" aria-label="X"
-                        ><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                            <path
-                                d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
-                            /></svg
-                    ></a>
-                    <a href="https://www.tiktok.com/@vaultlister.co" aria-label="TikTok"
-                        ><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                            <path
-                                d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.92a8.24 8.24 0 0 0 4.83 1.56v-3.5a4.84 4.84 0 0 1-1.07-.29z"
-                            /></svg
-                    ></a>
-                    <a href="https://www.reddit.com/user/VaultLister/" aria-label="Reddit"
-                        ><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                            <path
-                                d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"
-                            /></svg
-                    ></a>
-                    <a href="https://www.youtube.com/@VaultLister" aria-label="YouTube"
-                        ><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                            <path
-                                d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"
-                            /></svg
-                    ></a>
-                </div>
-            </div>
-            <div class="footer-inner">
-                <nav aria-label="Footer navigation">
-                    <div class="footer-cols">
-                        <div class="footer-col">
-                            <h3 class="footer-col-label">Resources</h3>
-                            <a href="/blog/index.html">Blog</a>
-                            <a href="/changelog.html">Changelog</a>
-                            <a href="/documentation.html">Documentation</a>
-                            <a href="/faq.html">FAQs</a>
-                            <a href="/help.html">Help Center</a>
-                        </div>
-                        <div class="footer-col">
-                            <h3 class="footer-col-label">Company</h3>
-                            <a href="/about.html">About Us</a>
-                            <a href="/documentation.html#media-kit">Media Kit</a>
-                            <a href="/affiliate.html">Affiliate Program</a>
-                        </div>
-                        <div class="footer-col">
-                            <h3 class="footer-col-label">Legal</h3>
-                            <a href="/privacy.html">Privacy Policy</a>
-                            <a href="/terms.html">Terms of Service</a>
-                            <a href="/cookies.html">Cookie Policy</a>
-                        </div>
-                        <div class="footer-col">
-                            <h3 class="footer-col-label">Compare</h3>
-                            <a href="/compare/crosslist.html">Crosslist</a>
-                            <a href="/compare/crosslist-magic.html">Crosslist Magic</a>
-                            <a href="/compare/flyp.html">Flyp</a>
-                            <a href="/compare/list-perfectly.html">List Perfectly</a>
-                            <a href="/compare/nifty.html">Nifty</a>
-                            <a href="/compare/oneshop.html">OneShop</a>
-                            <a href="/compare/primelister.html">Primelister</a>
-                            <a href="/compare/vendoo.html">Vendoo</a>
-                        </div>
-                    </div>
-                </nav>
+        </div></nav>
                 <div class="footer-bottom">
-                    <p>© 2026 VaultLister, Inc. All rights reserved.</p>
-                </div>
+            <p>© 2026 VaultLister, Inc. All rights reserved.</p>
             </div>
-        </footer>
+    </div>
+</footer>
 
-        <!-- Cookie Consent Banner -->
-        <div
-            id="cookie-banner"
-            aria-hidden="true"
-            role="region"
-            aria-label="Cookie consent"
-            style="
-                display: none;
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                z-index: 9999;
-                background: #18181b;
-                color: #fef3c7;
-                padding: 1rem 1.5rem;
-                align-items: center;
-                justify-content: space-between;
-                gap: 1rem;
-                flex-wrap: wrap;
-                box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.18);
-                font-family: Inter, system-ui, sans-serif;
-                font-size: 0.9rem;
-            "
-        >
-            <p style="margin: 0; flex: 1; min-width: 200px">
-                We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are
-                used.
-            </p>
-            <div style="display: flex; gap: 0.625rem; flex-shrink: 0">
-                <button
-                    type="button"
-                    id="cookie-decline"
-                    style="
-                        min-height: 44px;
-                        padding: 0.5rem 1.125rem;
-                        border-radius: 0.5rem;
-                        border: 1.5px solid rgba(224, 231, 255, 0.4);
-                        background: transparent;
-                        color: #fef3c7;
-                        font-size: 0.875rem;
-                        font-weight: 600;
-                        cursor: pointer;
-                    "
-                >
-                    Decline
-                </button>
-                <button
-                    type="button"
-                    id="cookie-accept"
-                    style="
-                        min-height: 44px;
-                        padding: 0.5rem 1.25rem;
-                        border-radius: 0.5rem;
-                        border: none;
-                        background: linear-gradient(135deg, #b45309, #92400e);
-                        color: #fff;
-                        font-size: 0.875rem;
-                        font-weight: 600;
-                        cursor: pointer;
-                    "
-                >
-                    Accept
-                </button>
-            </div>
-        </div>
-        <script>
-            (function () {
-                var banner = document.getElementById('cookie-banner');
-                if (!banner) return;
-                if (localStorage.getItem('cookie_consent')) {
-                    banner.style.display = 'none';
-                    return;
+<!-- Cookie Consent Banner -->
+<div id="cookie-banner" role="region" aria-label="Cookie consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#18181B;color:#fef3c7;padding:1rem 1.5rem;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;">
+    <p style="margin:0;flex:1;min-width:200px;">We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are used.</p>
+    <div style="display:flex;gap:0.625rem;flex-shrink:0;">
+        <button type="button" id="cookie-decline" style="min-height:44px;padding:0.5rem 1.125rem;border-radius:0.5rem;border:1.5px solid rgba(224,231,255,0.4);background:transparent;color:#fef3c7;font-size:0.875rem;font-weight:600;cursor:pointer;">Decline</button>
+        <button type="button" id="cookie-accept" style="min-height:44px;padding:0.5rem 1.25rem;border-radius:0.5rem;border:none;background:linear-gradient(135deg,#b45309,#92400e);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;">Accept</button>
+    </div>
+</div>
+<script>
+(function() {
+    var banner = document.getElementById('cookie-banner');
+    if (!banner) return;
+    if (localStorage.getItem('cookie_consent')) { banner.style.display = 'none'; return; }
+    banner.style.display = 'flex';
+    document.getElementById('cookie-accept').addEventListener('click', function() {
+        localStorage.setItem('cookie_consent', 'accepted');
+        if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'granted' });
+        banner.style.display = 'none';
+    });
+    document.getElementById('cookie-decline').addEventListener('click', function() {
+        localStorage.setItem('cookie_consent', 'declined');
+        if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'denied' });
+        banner.style.display = 'none';
+    });
+})();
+
+// Desktop dropdown toggle
+document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var menuId = btn.getAttribute('data-dropdown');
+        var menu = document.getElementById(menuId);
+        if (!menu) return;
+        var isOpen = menu.classList.contains('open');
+        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('inert', ''); });
+        document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
+        if (!isOpen) {
+            menu.classList.add('open');
+            menu.removeAttribute('inert');
+            btn.setAttribute('aria-expanded', 'true');
+        }
+    });
+});
+
+// Close all dropdowns on outside click
+document.addEventListener('click', function() {
+    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('inert', ''); });
+    document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
+});
+
+// Prevent dropdown menu clicks from closing immediately
+document.querySelectorAll('.nav-dropdown-menu').forEach(function(menu) {
+    menu.addEventListener('click', function(e) { e.stopPropagation(); });
+});
+
+// Mobile hamburger toggle
+var hamburger = document.querySelector('.nav-hamburger');
+var mobileDrawer = document.getElementById('mobile-nav-drawer');
+if (hamburger && mobileDrawer) {
+    hamburger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var isOpen = mobileDrawer.classList.toggle('open');
+        hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+    document.addEventListener('click', function(e) {
+        if (!mobileDrawer.contains(e.target) && !hamburger.contains(e.target)) {
+            mobileDrawer.classList.remove('open');
+            hamburger.setAttribute('aria-expanded', 'false');
+        }
+    });
+}
+
+// Mobile expandable sections
+document.querySelectorAll('.mobile-nav-section-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var subId = btn.getAttribute('data-mobile-section');
+        var sub = document.getElementById(subId);
+        if (!sub) return;
+        var isOpen = sub.classList.toggle('open');
+        btn.classList.toggle('open', isOpen);
+        btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+});
+
+// Close mobile drawer when a link inside it is clicked
+if (mobileDrawer) {
+    mobileDrawer.querySelectorAll('a').forEach(function(a) {
+        a.addEventListener('click', function() {
+            mobileDrawer.classList.remove('open');
+            if (hamburger) { hamburger.setAttribute('aria-expanded', 'false'); }
+        });
+    });
+}
+
+// Lang selector
+(function() {
+    var LANGS = {
+        en: { code: "EN" },
+        es: { code: "ES" },
+        fr: { code: "FR" },
+        de: { code: "DE" },
+        it: { code: "IT" },
+        pt: { code: "PT" },
+        ja: { code: "JA" },
+        zh: { code: "ZH" },
+        ko: { code: "KO" },
+        ar: { code: "AR" }
+    };
+    function setLang(lang) {
+        var info = LANGS[lang] || LANGS["en"];
+        var codeEl = document.getElementById("current-lang-code");
+        if (codeEl) codeEl.textContent = info.code;
+        document.querySelectorAll(".lang-option").forEach(function(btn) {
+            btn.classList.toggle("active", btn.getAttribute("data-lang") === lang);
+        });
+        try { localStorage.setItem("vaultlister_locale", lang); } catch(e) {}
+    }
+    function detectLang() {
+        try {
+            var stored = localStorage.getItem("vaultlister_locale");
+            if (stored && LANGS[stored]) return stored;
+        } catch(e) {}
+        var nav = (navigator.language || "").toLowerCase();
+        var base = nav.split("-")[0];
+        return LANGS[base] ? base : "en";
+    }
+    document.addEventListener("DOMContentLoaded", function() {
+        var btn = document.querySelector(".lang-btn");
+        var dropdown = document.getElementById("lang-dropdown");
+        if (!btn || !dropdown) return;
+        setLang(detectLang());
+        btn.addEventListener("click", function(e) {
+            e.stopPropagation();
+            var open = dropdown.classList.toggle("open");
+            btn.setAttribute("aria-expanded", open ? "true" : "false");
+        });
+        document.addEventListener("click", function(e) {
+            if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove("open");
+                btn.setAttribute("aria-expanded", "false");
+            }
+        });
+        dropdown.querySelectorAll(".lang-option").forEach(function(opt) {
+            opt.addEventListener("click", function() {
+                setLang(opt.getAttribute("data-lang"));
+                dropdown.classList.remove("open");
+                btn.setAttribute("aria-expanded", "false");
+            });
+        });
+    });
+})();
+
+// Currency selector
+(function() {
+    var saved = localStorage.getItem('vl_currency') || 'CAD';
+    var el = document.getElementById('current-currency-code');
+    if (el) el.textContent = saved;
+    document.querySelectorAll('.currency-option').forEach(function(btn) {
+        if (btn.dataset.currency === saved) btn.classList.add('active');
+        btn.addEventListener('click', function() {
+            var c = this.dataset.currency;
+            localStorage.setItem('vl_currency', c);
+            document.querySelectorAll('.currency-option').forEach(function(b){ b.classList.remove('active'); });
+            this.classList.add('active');
+            var codeEl = document.getElementById('current-currency-code');
+            if (codeEl) codeEl.textContent = c;
+            var dd = document.getElementById('currency-dropdown');
+            if (dd) dd.classList.remove('open');
+        });
+    });
+    var btn = document.querySelector('.currency-btn');
+    if (btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var dd = document.getElementById('currency-dropdown');
+            dd.classList.toggle('open');
+            btn.setAttribute('aria-expanded', dd.classList.contains('open'));
+        });
+    }
+    document.addEventListener('click', function() {
+        var dd = document.getElementById('currency-dropdown');
+        if (dd) { dd.classList.remove('open'); }
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+    });
+})();
+</script>
+<script>
+(function() {
+    var hasCurrency = !!localStorage.getItem('vl_currency');
+    var hasLang = !!localStorage.getItem('vaultlister_locale');
+    if (hasCurrency && hasLang) return;
+    fetch('/api/geo')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            var cc = d.country_code || '';
+            if (!hasCurrency) {
+                var CURR = {CA:'CAD',US:'USD',GB:'GBP',AU:'AUD',NZ:'AUD',
+                    FR:'EUR',DE:'EUR',IT:'EUR',ES:'EUR',NL:'EUR',BE:'EUR',
+                    AT:'EUR',FI:'EUR',IE:'EUR',PT:'EUR',GR:'EUR',LU:'EUR',
+                    SK:'EUR',SI:'EUR',EE:'EUR',LV:'EUR',LT:'EUR',CY:'EUR',MT:'EUR'};
+                var curr = CURR[cc];
+                if (curr) {
+                    var btn = document.querySelector('.currency-option[data-currency="' + curr + '"]');
+                    if (btn) btn.click();
                 }
-                banner.style.display = 'flex';
-                document.getElementById('cookie-accept').addEventListener('click', function () {
-                    localStorage.setItem('cookie_consent', 'accepted');
-                    if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'granted' });
-                    banner.style.display = 'none';
-                });
-                document.getElementById('cookie-decline').addEventListener('click', function () {
-                    localStorage.setItem('cookie_consent', 'declined');
-                    if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'denied' });
-                    banner.style.display = 'none';
-                });
-            })();
-
-            // Desktop dropdown toggle
-            document.querySelectorAll('.nav-dropdown-btn').forEach(function (btn) {
-                btn.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                    var menuId = btn.getAttribute('data-dropdown');
-                    var menu = document.getElementById(menuId);
-                    if (!menu) return;
-                    var isOpen = menu.classList.contains('open');
-                    document.querySelectorAll('.nav-dropdown-menu').forEach(function (m) {
-                        m.classList.remove('open');
-                        m.setAttribute('inert', '');
-                    });
-                    document.querySelectorAll('.nav-dropdown-btn').forEach(function (b) {
-                        b.setAttribute('aria-expanded', 'false');
-                    });
-                    if (!isOpen) {
-                        menu.classList.add('open');
-                        menu.removeAttribute('inert');
-                        btn.setAttribute('aria-expanded', 'true');
-                    }
-                });
-            });
-
-            // Close all dropdowns on outside click
-            document.addEventListener('click', function () {
-                document.querySelectorAll('.nav-dropdown-menu').forEach(function (m) {
-                    m.classList.remove('open');
-                    m.setAttribute('inert', '');
-                });
-                document.querySelectorAll('.nav-dropdown-btn').forEach(function (b) {
-                    b.setAttribute('aria-expanded', 'false');
-                });
-            });
-
-            // Prevent dropdown menu clicks from closing immediately
-            document.querySelectorAll('.nav-dropdown-menu').forEach(function (menu) {
-                menu.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                });
-            });
-
-            // Mobile hamburger toggle
-            var hamburger = document.querySelector('.nav-hamburger');
-            var mobileDrawer = document.getElementById('mobile-nav-drawer');
-            if (hamburger && mobileDrawer) {
-                hamburger.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                    var isOpen = mobileDrawer.classList.toggle('open');
-                    hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-                });
-                document.addEventListener('click', function (e) {
-                    if (!mobileDrawer.contains(e.target) && !hamburger.contains(e.target)) {
-                        mobileDrawer.classList.remove('open');
-                        hamburger.setAttribute('aria-expanded', 'false');
-                    }
-                });
             }
-
-            // Mobile expandable sections
-            document.querySelectorAll('.mobile-nav-section-btn').forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    var subId = btn.getAttribute('data-mobile-section');
-                    var sub = document.getElementById(subId);
-                    if (!sub) return;
-                    var isOpen = sub.classList.toggle('open');
-                    btn.classList.toggle('open', isOpen);
-                    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-                });
-            });
-
-            // Close mobile drawer when a link inside it is clicked
-            if (mobileDrawer) {
-                mobileDrawer.querySelectorAll('a').forEach(function (a) {
-                    a.addEventListener('click', function () {
-                        mobileDrawer.classList.remove('open');
-                        if (hamburger) {
-                            hamburger.setAttribute('aria-expanded', 'false');
-                        }
-                    });
-                });
-            }
-
-            // Lang selector
-            (function () {
-                var LANGS = {
-                    en: { code: 'EN' },
-                    es: { code: 'ES' },
-                    fr: { code: 'FR' },
-                    de: { code: 'DE' },
-                    it: { code: 'IT' },
-                    pt: { code: 'PT' },
-                    ja: { code: 'JA' },
-                    zh: { code: 'ZH' },
-                    ko: { code: 'KO' },
-                    ar: { code: 'AR' },
+            if (!hasLang) {
+                var LANG = {
+                    CA:'en', US:'en', GB:'en', AU:'en', NZ:'en', IE:'en',
+                    FR:'fr', BE:'fr', CH:'fr', LU:'fr',
+                    DE:'de', AT:'de',
+                    IT:'it', ES:'es', MX:'es', AR:'es', CO:'es', CL:'es',
+                    PT:'pt', BR:'pt',
+                    JP:'ja', CN:'zh', TW:'zh', HK:'zh',
+                    KR:'ko', SA:'ar', AE:'ar', EG:'ar', MA:'ar'
                 };
-                function setLang(lang) {
-                    var info = LANGS[lang] || LANGS['en'];
-                    var codeEl = document.getElementById('current-lang-code');
-                    if (codeEl) codeEl.textContent = info.code;
-                    document.querySelectorAll('.lang-option').forEach(function (btn) {
-                        btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
-                    });
-                    try {
-                        localStorage.setItem('vaultlister_locale', lang);
-                    } catch (e) {}
+                var nav = (navigator.language || '').toLowerCase();
+                var lang = (cc === 'CA' && nav.startsWith('fr')) ? 'fr' : LANG[cc];
+                if (lang) {
+                    var btn = document.querySelector('.lang-option[data-lang="' + lang + '"]');
+                    if (btn) btn.click();
                 }
-                function detectLang() {
-                    try {
-                        var stored = localStorage.getItem('vaultlister_locale');
-                        if (stored && LANGS[stored]) return stored;
-                    } catch (e) {}
-                    var nav = (navigator.language || '').toLowerCase();
-                    var base = nav.split('-')[0];
-                    return LANGS[base] ? base : 'en';
-                }
-                document.addEventListener('DOMContentLoaded', function () {
-                    var btn = document.querySelector('.lang-btn');
-                    var dropdown = document.getElementById('lang-dropdown');
-                    if (!btn || !dropdown) return;
-                    setLang(detectLang());
-                    btn.addEventListener('click', function (e) {
-                        e.stopPropagation();
-                        var open = dropdown.classList.toggle('open');
-                        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-                    });
-                    document.addEventListener('click', function (e) {
-                        if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
-                            dropdown.classList.remove('open');
-                            btn.setAttribute('aria-expanded', 'false');
-                        }
-                    });
-                    dropdown.querySelectorAll('.lang-option').forEach(function (opt) {
-                        opt.addEventListener('click', function () {
-                            setLang(opt.getAttribute('data-lang'));
-                            dropdown.classList.remove('open');
-                            btn.setAttribute('aria-expanded', 'false');
-                        });
-                    });
-                });
-            })();
-
-            // Currency selector
-            (function () {
-                var saved = localStorage.getItem('vl_currency') || 'CAD';
-                var el = document.getElementById('current-currency-code');
-                if (el) el.textContent = saved;
-                document.querySelectorAll('.currency-option').forEach(function (btn) {
-                    if (btn.dataset.currency === saved) btn.classList.add('active');
-                    btn.addEventListener('click', function () {
-                        var c = this.dataset.currency;
-                        localStorage.setItem('vl_currency', c);
-                        document.querySelectorAll('.currency-option').forEach(function (b) {
-                            b.classList.remove('active');
-                        });
-                        this.classList.add('active');
-                        var codeEl = document.getElementById('current-currency-code');
-                        if (codeEl) codeEl.textContent = c;
-                        var dd = document.getElementById('currency-dropdown');
-                        if (dd) dd.classList.remove('open');
-                    });
-                });
-                var btn = document.querySelector('.currency-btn');
-                if (btn) {
-                    btn.addEventListener('click', function (e) {
-                        e.stopPropagation();
-                        var dd = document.getElementById('currency-dropdown');
-                        dd.classList.toggle('open');
-                        btn.setAttribute('aria-expanded', dd.classList.contains('open'));
-                    });
-                }
-                document.addEventListener('click', function () {
-                    var dd = document.getElementById('currency-dropdown');
-                    if (dd) {
-                        dd.classList.remove('open');
-                    }
-                    if (btn) btn.setAttribute('aria-expanded', 'false');
-                });
-            })();
-        </script>
-        <script>
-            (function () {
-                var hasCurrency = !!localStorage.getItem('vl_currency');
-                var hasLang = !!localStorage.getItem('vaultlister_locale');
-                if (hasCurrency && hasLang) return;
-                fetch('/api/geo')
-                    .then(function (r) {
-                        return r.json();
-                    })
-                    .then(function (d) {
-                        var cc = d.country_code || '';
-                        if (!hasCurrency) {
-                            var CURR = {
-                                CA: 'CAD',
-                                US: 'USD',
-                                GB: 'GBP',
-                                AU: 'AUD',
-                                NZ: 'AUD',
-                                FR: 'EUR',
-                                DE: 'EUR',
-                                IT: 'EUR',
-                                ES: 'EUR',
-                                NL: 'EUR',
-                                BE: 'EUR',
-                                AT: 'EUR',
-                                FI: 'EUR',
-                                IE: 'EUR',
-                                PT: 'EUR',
-                                GR: 'EUR',
-                                LU: 'EUR',
-                                SK: 'EUR',
-                                SI: 'EUR',
-                                EE: 'EUR',
-                                LV: 'EUR',
-                                LT: 'EUR',
-                                CY: 'EUR',
-                                MT: 'EUR',
-                            };
-                            var curr = CURR[cc];
-                            if (curr) {
-                                var btn = document.querySelector('.currency-option[data-currency="' + curr + '"]');
-                                if (btn) btn.click();
-                            }
-                        }
-                        if (!hasLang) {
-                            var LANG = {
-                                CA: 'en',
-                                US: 'en',
-                                GB: 'en',
-                                AU: 'en',
-                                NZ: 'en',
-                                IE: 'en',
-                                FR: 'fr',
-                                BE: 'fr',
-                                CH: 'fr',
-                                LU: 'fr',
-                                DE: 'de',
-                                AT: 'de',
-                                IT: 'it',
-                                ES: 'es',
-                                MX: 'es',
-                                AR: 'es',
-                                CO: 'es',
-                                CL: 'es',
-                                PT: 'pt',
-                                BR: 'pt',
-                                JP: 'ja',
-                                CN: 'zh',
-                                TW: 'zh',
-                                HK: 'zh',
-                                KR: 'ko',
-                                SA: 'ar',
-                                AE: 'ar',
-                                EG: 'ar',
-                                MA: 'ar',
-                            };
-                            var nav = (navigator.language || '').toLowerCase();
-                            var lang = cc === 'CA' && nav.startsWith('fr') ? 'fr' : LANG[cc];
-                            if (lang) {
-                                var btn = document.querySelector('.lang-option[data-lang="' + lang + '"]');
-                                if (btn) btn.click();
-                            }
-                        }
-                    })
-                    .catch(function () {});
-            })();
-        </script>
-        <script src="/public-auth-nav.js" defer></script>
-    </body>
+            }
+        })
+        .catch(function() {});
+})();
+</script>
+<script src="/public-auth-nav.js" defer></script>
+</body>
 </html>

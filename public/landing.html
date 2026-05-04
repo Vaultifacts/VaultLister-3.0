@@ -1,51 +1,46 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
     <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta
             name="description"
-            content="VaultLister — The zero-cost multi-channel reselling platform. List to 7 live marketplaces, automate your closet, and grow your reselling business with AI."
-        />
-        <meta name="theme-color" content="#18181B" />
+            content="VaultLister — The zero-cost multi-channel reselling platform. List to 7 live marketplaces, automate your closet, and grow your reselling business with AI.">
+        <meta name="theme-color" content="#18181B">
         <!-- Open Graph -->
-        <meta property="og:title" content="VaultLister - Multi-Channel Reselling Platform" />
-        <meta property="og:description" content="List once. Sell everywhere. Never oversell again." />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://vaultlister.com" />
-        <meta property="og:image" content="https://vaultlister.com/assets/logo/lockups/horizontal-2048.png" />
-        <meta property="og:site_name" content="VaultLister" />
+        <meta property="og:title" content="VaultLister - Multi-Channel Reselling Platform">
+        <meta property="og:description" content="List once. Sell everywhere. Never oversell again.">
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="https://vaultlister.com">
+        <meta property="og:image" content="https://vaultlister.com/assets/logo/lockups/horizontal-2048.png">
+        <meta property="og:site_name" content="VaultLister">
         <!-- Twitter Card -->
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="VaultLister - Multi-Channel Reselling Platform" />
-        <meta name="twitter:description" content="List once. Sell everywhere. Never oversell again." />
-        <meta name="twitter:image" content="https://vaultlister.com/assets/logo/lockups/horizontal-2048.png" />
-        <link rel="canonical" href="https://vaultlister.com/" />
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="VaultLister - Multi-Channel Reselling Platform">
+        <meta name="twitter:description" content="List once. Sell everywhere. Never oversell again.">
+        <meta name="twitter:image" content="https://vaultlister.com/assets/logo/lockups/horizontal-2048.png">
+        <link rel="canonical" href="https://vaultlister.com/">
         <title>VaultLister — Multi-Channel Reselling Made Simpler</title>
-        <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png" />
-        <link rel="apple-touch-icon" href="/assets/logo/app/app_icon_180.png" />
-        <link rel="manifest" href="/manifest.webmanifest" />
+        <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png">
+        <link rel="apple-touch-icon" href="/assets/logo/app/app_icon_180.png">
+        <link rel="manifest" href="/manifest.webmanifest">
         <!-- Google Analytics (GA4) with Consent Mode -->
         <script>
             var GA_MEASUREMENT_ID = 'G-LXETN4PYRM';
             window.dataLayer = window.dataLayer || [];
-            window.gtag =
-                window.gtag ||
-                function () {
-                    window.dataLayer.push(arguments);
-                };
-            window.loadGoogleAnalytics =
-                window.loadGoogleAnalytics ||
-                function () {
-                    if (window.__vaultListerGaLoaded) return;
-                    window.__vaultListerGaLoaded = true;
-                    var script = document.createElement('script');
-                    script.async = true;
-                    script.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(GA_MEASUREMENT_ID);
-                    document.head.appendChild(script);
-                    window.gtag('js', new Date());
-                    window.gtag('config', GA_MEASUREMENT_ID);
-                };
+            window.gtag = window.gtag || function () {
+                window.dataLayer.push(arguments);
+            };
+            window.loadGoogleAnalytics = window.loadGoogleAnalytics || function () {
+                if (window.__vaultListerGaLoaded) return;
+                window.__vaultListerGaLoaded = true;
+                var script = document.createElement('script');
+                script.async = true;
+                script.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(GA_MEASUREMENT_ID);
+                document.head.appendChild(script);
+                window.gtag('js', new Date());
+                window.gtag('config', GA_MEASUREMENT_ID);
+            };
             function scheduleGoogleAnalytics() {
                 if ('requestIdleCallback' in window) {
                     window.requestIdleCallback(window.loadGoogleAnalytics, { timeout: 3000 });
@@ -619,9 +614,7 @@
                 padding: 0.45rem 1rem;
                 cursor: pointer;
                 text-decoration: none;
-                transition:
-                    color 0.15s,
-                    border-color 0.15s;
+                transition: color 0.15s, border-color 0.15s;
             }
 
             .feature-see-all:hover {
@@ -1536,8 +1529,8 @@
                 animation: vl-pulse 2s ease-in-out infinite;
             }
         </style>
-        <link rel="stylesheet" href="/styles/public-base.css" />
-        <link rel="preload" href="/assets/logo/lockups/horizontal-512.png" as="image" type="image/png" />
+        <link rel="stylesheet" href="/styles/public-base.css">
+        <link rel="preload" href="/assets/logo/lockups/horizontal-512.png" as="image" type="image/png">
     </head>
     <body>
         <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -1552,8 +1545,7 @@
                     height="87"
                     fetchpriority="high"
                     decoding="sync"
-                    style="display: block"
-                />
+                    style="display: block">
             </a>
             <div class="nav-links">
                 <div class="nav-dropdown">
@@ -1634,13 +1626,7 @@
                     </div>
                 </div>
             </div>
-            <button
-                type="button"
-                class="nav-hamburger"
-                aria-label="Open menu"
-                aria-expanded="false"
-                aria-controls="mobile-nav-drawer"
-            >
+            <button type="button" class="nav-hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav-drawer">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -1655,8 +1641,7 @@
                         aria-haspopup="listbox"
                     >
                         <span id="current-currency-code">CAD</span>
-                        <svg
-                            aria-hidden="true"
+                        <svg aria-hidden="true"
                             width="12"
                             height="12"
                             viewBox="0 0 24 24"
@@ -1668,21 +1653,11 @@
                         </svg>
                     </button>
                     <div class="currency-dropdown" id="currency-dropdown" role="listbox" aria-label="Select currency">
-                        <button type="button" class="currency-option" data-currency="CAD" data-symbol="$" role="option">
-                            $ CAD
-                        </button>
-                        <button type="button" class="currency-option" data-currency="USD" data-symbol="$" role="option">
-                            $ USD
-                        </button>
-                        <button type="button" class="currency-option" data-currency="GBP" data-symbol="£" role="option">
-                            £ GBP
-                        </button>
-                        <button type="button" class="currency-option" data-currency="EUR" data-symbol="€" role="option">
-                            € EUR
-                        </button>
-                        <button type="button" class="currency-option" data-currency="AUD" data-symbol="$" role="option">
-                            $ AUD
-                        </button>
+                        <button type="button" class="currency-option" data-currency="CAD" data-symbol="$" role="option">$ CAD</button>
+                        <button type="button" class="currency-option" data-currency="USD" data-symbol="$" role="option">$ USD</button>
+                        <button type="button" class="currency-option" data-currency="GBP" data-symbol="£" role="option">£ GBP</button>
+                        <button type="button" class="currency-option" data-currency="EUR" data-symbol="€" role="option">€ EUR</button>
+                        <button type="button" class="currency-option" data-currency="AUD" data-symbol="$" role="option">$ AUD</button>
                     </div>
                 </div>
                 <div class="lang-selector">
@@ -1694,8 +1669,7 @@
                         aria-haspopup="listbox"
                     >
                         <span class="lang-code" id="current-lang-code">EN</span>
-                        <svg
-                            aria-hidden="true"
+                        <svg aria-hidden="true"
                             width="12"
                             height="12"
                             viewBox="0 0 24 24"
@@ -1841,13 +1815,13 @@
                                         <div class="mock-hero-text">Good evening!</div>
                                         <div class="mock-hero-stats">
                                             <div class="mock-hero-stat">
-                                                C$247<br /><span style="opacity: 0.7; font-size: 0.7em">Revenue</span>
+                                                C$247<br><span style="opacity: 0.7; font-size: 0.7em">Revenue</span>
                                             </div>
                                             <div class="mock-hero-stat">
-                                                12<br /><span style="opacity: 0.7; font-size: 0.7em">Sales</span>
+                                                12<br><span style="opacity: 0.7; font-size: 0.7em">Sales</span>
                                             </div>
                                             <div class="mock-hero-stat">
-                                                3<br /><span style="opacity: 0.7; font-size: 0.7em">New</span>
+                                                3<br><span style="opacity: 0.7; font-size: 0.7em">New</span>
                                             </div>
                                         </div>
                                     </div>
@@ -1922,8 +1896,7 @@
                                         height="80"
                                         loading="lazy"
                                         decoding="async"
-                                        alt="eBay"
-                                    />
+                                        alt="eBay">
                                 </div>
                             </div>
                             <span class="vinyl-name">eBay (CA)</span>
@@ -1939,8 +1912,7 @@
                                         height="80"
                                         loading="lazy"
                                         decoding="async"
-                                        alt="Shopify"
-                                    />
+                                        alt="Shopify">
                                 </div>
                             </div>
                             <span class="vinyl-name">Shopify (CA)</span>
@@ -1956,8 +1928,7 @@
                                         height="80"
                                         loading="lazy"
                                         decoding="async"
-                                        alt="Poshmark"
-                                    />
+                                        alt="Poshmark">
                                 </div>
                             </div>
                             <span class="vinyl-name">Poshmark (CA)</span>
@@ -1973,8 +1944,7 @@
                                         height="80"
                                         loading="lazy"
                                         decoding="async"
-                                        alt="Depop"
-                                    />
+                                        alt="Depop">
                                 </div>
                             </div>
                             <span class="vinyl-name">Depop (CA)</span>
@@ -1990,11 +1960,10 @@
                                         height="80"
                                         loading="lazy"
                                         decoding="async"
-                                        alt="Facebook"
-                                    />
+                                        alt="Facebook">
                                 </div>
                             </div>
-                            <span class="vinyl-name">Facebook<br aria-hidden="true" />Marketplace (CA)</span>
+                            <span class="vinyl-name">Facebook<br aria-hidden="true">Marketplace (CA)</span>
                             <span class="vinyl-live-dot" aria-hidden="true"></span>
                         </div>
                         <div class="vinyl-wrapper" role="img" aria-label="Whatnot — live marketplace">
@@ -2007,8 +1976,7 @@
                                         height="80"
                                         loading="lazy"
                                         decoding="async"
-                                        alt="Whatnot"
-                                    />
+                                        alt="Whatnot">
                                 </div>
                             </div>
                             <span class="vinyl-name">Whatnot (CA)</span>
@@ -2024,8 +1992,7 @@
                                         height="80"
                                         loading="lazy"
                                         decoding="async"
-                                        alt="Grailed"
-                                    />
+                                        alt="Grailed">
                                 </div>
                             </div>
                             <span class="vinyl-name">Grailed (CA)</span>
@@ -2044,8 +2011,7 @@
                                         height="80"
                                         loading="lazy"
                                         decoding="async"
-                                        alt="Kijiji"
-                                    />
+                                        alt="Kijiji">
                                 </div>
                                 <span class="vinyl-soon-badge">Soon</span>
                             </div>
@@ -2061,8 +2027,7 @@
                                         height="80"
                                         loading="lazy"
                                         decoding="async"
-                                        alt="Etsy"
-                                    />
+                                        alt="Etsy">
                                 </div>
                                 <span class="vinyl-soon-badge">Soon</span>
                             </div>
@@ -2078,8 +2043,7 @@
                                         height="80"
                                         loading="lazy"
                                         decoding="async"
-                                        alt="Mercari"
-                                    />
+                                        alt="Mercari">
                                 </div>
                                 <span class="vinyl-soon-badge">Soon</span>
                             </div>
@@ -2095,8 +2059,7 @@
                                         height="80"
                                         loading="lazy"
                                         decoding="async"
-                                        alt="Vinted"
-                                    />
+                                        alt="Vinted">
                                 </div>
                                 <span class="vinyl-soon-badge">Soon</span>
                             </div>
@@ -2257,9 +2220,7 @@
                         </div>
                     </div>
                     <div class="feature-group-footer">
-                        <a href="/pricing.html" class="feature-see-all"
-                            >See all features <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9" /></svg
-                        ></a>
+                        <a href="/pricing.html" class="feature-see-all">See all features <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></a>
                     </div>
                 </div>
 
@@ -2313,9 +2274,7 @@
                         </div>
                     </div>
                     <div class="feature-group-footer">
-                        <a href="/pricing.html" class="feature-see-all"
-                            >See all features <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9" /></svg
-                        ></a>
+                        <a href="/pricing.html" class="feature-see-all">See all features <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></a>
                     </div>
                 </div>
 
@@ -2373,9 +2332,7 @@
                         </div>
                     </div>
                     <div class="feature-group-footer">
-                        <a href="/pricing.html" class="feature-see-all"
-                            >See all features <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9" /></svg
-                        ></a>
+                        <a href="/pricing.html" class="feature-see-all">See all features <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></a>
                     </div>
                 </div>
 
@@ -2430,9 +2387,7 @@
                         </div>
                     </div>
                     <div class="feature-group-footer">
-                        <a href="/pricing.html" class="feature-see-all"
-                            >See all features <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9" /></svg
-                        ></a>
+                        <a href="/pricing.html" class="feature-see-all">See all features <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></a>
                     </div>
                 </div>
             </section>
@@ -2474,12 +2429,10 @@
                         height="36"
                         loading="lazy"
                         decoding="async"
-                        style="display: block"
-                /></a>
+                        style="display: block"></a>
                 <div class="footer-social-links">
                     <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"
-                        ><svg
-                            aria-hidden="true"
+                        ><svg aria-hidden="true"
                             width="22"
                             height="22"
                             viewBox="0 0 24 24"
@@ -2524,44 +2477,42 @@
                 </div>
             </div>
             <div class="footer-inner">
-                <nav aria-label="Footer navigation">
-                    <div class="footer-cols">
-                        <div class="footer-col">
-                            <h3 class="footer-col-label">Resources</h3>
-                            <a href="/blog/index.html">Blog</a>
-                            <a href="/changelog.html">Changelog</a>
-                            <a href="/documentation.html">Documentation</a>
-                            <a href="/faq.html">FAQs</a>
-                            <a href="/glossary.html">Glossary</a>
-                            <a href="/help.html">Help Center</a>
-                        </div>
-                        <div class="footer-col">
-                            <h3 class="footer-col-label">Company</h3>
-                            <a href="/about.html">About Us</a>
-                            <a href="/documentation.html#media-kit">Media Kit</a>
-                            <a href="/affiliate.html">Affiliate Program</a>
-                        </div>
-                        <div class="footer-col">
-                            <h3 class="footer-col-label">Legal</h3>
-                            <a href="/privacy.html">Privacy Policy</a>
-                            <a href="/terms.html">Terms of Service</a>
-                            <a href="/cookies.html">Cookie Policy</a>
-                        </div>
-                        <div class="footer-col">
-                            <h3 class="footer-col-label">Compare</h3>
-                            <a href="/compare/closo.html">Closo</a>
-                            <a href="/compare/crosslist.html">Crosslist</a>
-                            <a href="/compare/crosslist-magic.html">Crosslist Magic</a>
-                            <a href="/compare/flyp.html">Flyp</a>
-                            <a href="/compare/list-perfectly.html">List Perfectly</a>
-                            <a href="/compare/nifty.html">Nifty</a>
-                            <a href="/compare/oneshop.html">OneShop</a>
-                            <a href="/compare/primelister.html">Primelister</a>
-                            <a href="/compare/selleraider.html">SellerAider</a>
-                            <a href="/compare/vendoo.html">Vendoo</a>
-                        </div>
+                <nav aria-label="Footer navigation"><div class="footer-cols">
+                    <div class="footer-col">
+                        <h3 class="footer-col-label">Resources</h3>
+                        <a href="/blog/index.html">Blog</a>
+                        <a href="/changelog.html">Changelog</a>
+                        <a href="/documentation.html">Documentation</a>
+                        <a href="/faq.html">FAQs</a>
+                        <a href="/glossary.html">Glossary</a>
+                        <a href="/help.html">Help Center</a>
                     </div>
-                </nav>
+                    <div class="footer-col">
+                        <h3 class="footer-col-label">Company</h3>
+                        <a href="/about.html">About Us</a>
+                        <a href="/documentation.html#media-kit">Media Kit</a>
+                        <a href="/affiliate.html">Affiliate Program</a>
+                    </div>
+                    <div class="footer-col">
+                        <h3 class="footer-col-label">Legal</h3>
+                        <a href="/privacy.html">Privacy Policy</a>
+                        <a href="/terms.html">Terms of Service</a>
+                        <a href="/cookies.html">Cookie Policy</a>
+                    </div>
+                    <div class="footer-col">
+                        <h3 class="footer-col-label">Compare</h3>
+                        <a href="/compare/closo.html">Closo</a>
+                        <a href="/compare/crosslist.html">Crosslist</a>
+                        <a href="/compare/crosslist-magic.html">Crosslist Magic</a>
+                        <a href="/compare/flyp.html">Flyp</a>
+                        <a href="/compare/list-perfectly.html">List Perfectly</a>
+                        <a href="/compare/nifty.html">Nifty</a>
+                        <a href="/compare/oneshop.html">OneShop</a>
+                        <a href="/compare/primelister.html">Primelister</a>
+                        <a href="/compare/selleraider.html">SellerAider</a>
+                        <a href="/compare/vendoo.html">Vendoo</a>
+                    </div>
+                </div></nav>
                 <div class="footer-bottom">
                     <p>© 2026 VaultLister, Inc. All rights reserved.</p>
                 </div>
@@ -2571,7 +2522,6 @@
         <!-- Cookie Consent Banner -->
         <div
             id="cookie-banner"
-            aria-hidden="true"
             role="region"
             aria-label="Cookie consent"
             style="
@@ -2645,15 +2595,13 @@
                 banner.style.display = 'flex';
                 document.getElementById('cookie-accept').addEventListener('click', function () {
                     localStorage.setItem('cookie_consent', 'accepted');
-                    if (typeof window.gtag === 'function')
-                        window.gtag('consent', 'update', { analytics_storage: 'granted' });
+                    if (typeof window.gtag === 'function') window.gtag('consent', 'update', { analytics_storage: 'granted' });
                     if (typeof window.loadGoogleAnalytics === 'function') window.loadGoogleAnalytics();
                     banner.style.display = 'none';
                 });
                 document.getElementById('cookie-decline').addEventListener('click', function () {
                     localStorage.setItem('cookie_consent', 'declined');
-                    if (typeof window.gtag === 'function')
-                        window.gtag('consent', 'update', { analytics_storage: 'denied' });
+                    if (typeof window.gtag === 'function') window.gtag('consent', 'update', { analytics_storage: 'denied' });
                     banner.style.display = 'none';
                 });
             })();
