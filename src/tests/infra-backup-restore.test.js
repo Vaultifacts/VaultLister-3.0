@@ -3,21 +3,36 @@
 // Categories: Backup/DR (PostgreSQL pg_dump based)
 
 import { describe, expect, test } from 'bun:test';
-import { readFileSync, existsSync } from 'node:fs';
-import { join } from 'path';
 
-const ROOT = join(import.meta.dir, '../../');
+function projectFile(path) {
+    return Bun.file(new URL(`../../${path}`, import.meta.url));
+}
+
+async function sourceExists(path) {
+    return projectFile(path).exists();
+}
+
+async function readSource(path) {
+    const file = projectFile(path);
+    return (await file.exists()) ? file.text() : '';
+}
+
+const backupExists = await sourceExists('scripts/pg-backup.js');
+const backupSrc = await readSource('scripts/pg-backup.js');
+const restoreExists = await sourceExists('scripts/pg-restore.js');
+const restoreSrc = await readSource('scripts/pg-restore.js');
+const postDeployCheckExists = await sourceExists('scripts/post-deploy-check.mjs');
+const verifierExists = await sourceExists('scripts/verify-railway-deploy.mjs');
+const verifierSrc = await readSource('scripts/verify-railway-deploy.mjs');
+const deployWorkflowSrc = await readSource('.github/workflows/deploy.yml');
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // pg-backup Script Validation
 // ═══════════════════════════════════════════════════════════════════════════════
 
 describe('pg-backup script validation', () => {
-    const backupPath = join(ROOT, 'scripts/pg-backup.js');
-    const backupSrc = existsSync(backupPath) ? readFileSync(backupPath, 'utf-8') : '';
-
     test('scripts/pg-backup.js exists', () => {
-        expect(existsSync(backupPath)).toBe(true);
+        expect(backupExists).toBe(true);
     });
 
     test('pg-backup.js uses pg_dump', () => {
@@ -35,11 +50,8 @@ describe('pg-backup script validation', () => {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 describe('pg-restore script validation', () => {
-    const restorePath = join(ROOT, 'scripts/pg-restore.js');
-    const restoreSrc = existsSync(restorePath) ? readFileSync(restorePath, 'utf-8') : '';
-
     test('scripts/pg-restore.js exists', () => {
-        expect(existsSync(restorePath)).toBe(true);
+        expect(restoreExists).toBe(true);
     });
 
     test('pg-restore.js uses psql or pg_restore', () => {
@@ -61,10 +73,6 @@ describe('pg-restore script validation', () => {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 describe('Backup retention policy (M19)', () => {
-    const backupSrc = existsSync(join(ROOT, 'scripts/pg-backup.js'))
-        ? readFileSync(join(ROOT, 'scripts/pg-backup.js'), 'utf-8')
-        : '';
-
     test('pg-backup.js enforces local backup retention', () => {
         expect(backupSrc).toContain('cleanupOldBackups');
         expect(backupSrc).toContain('keepCount');
@@ -81,7 +89,7 @@ describe('Backup retention policy (M19)', () => {
 
 describe('Post-deploy check script', () => {
     test('scripts/post-deploy-check.mjs exists', () => {
-        expect(existsSync(join(ROOT, 'scripts/post-deploy-check.mjs'))).toBe(true);
+        expect(postDeployCheckExists).toBe(true);
     });
 });
 
@@ -90,13 +98,8 @@ describe('Post-deploy check script', () => {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 describe('Railway deploy verification script', () => {
-    const verifierPath = join(ROOT, 'scripts/verify-railway-deploy.mjs');
-    const deployWorkflowPath = join(ROOT, '.github/workflows/deploy.yml');
-    const verifierSrc = existsSync(verifierPath) ? readFileSync(verifierPath, 'utf-8') : '';
-    const deployWorkflowSrc = existsSync(deployWorkflowPath) ? readFileSync(deployWorkflowPath, 'utf-8') : '';
-
     test('scripts/verify-railway-deploy.mjs exists', () => {
-        expect(existsSync(verifierPath)).toBe(true);
+        expect(verifierExists).toBe(true);
     });
 
     test('verifier reads Railway status JSON', () => {
