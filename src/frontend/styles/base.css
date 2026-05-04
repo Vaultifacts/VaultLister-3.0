@@ -351,7 +351,7 @@ select:focus-visible {
     color: #f59e0b !important;
 }
 .sidebar .nav-section-title {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 .sidebar-brand {
     display: flex;
@@ -905,11 +905,11 @@ body.dark-mode .consolidated-tab.active {
 
 .sidebar-user-plan {
     font-size: 12px;
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 .sidebar-user-chevron {
-    color: #9ca3af;
+    color: var(--text-muted);
     font-size: 11px;
     transition: transform 0.15s ease;
 }
@@ -2652,7 +2652,7 @@ body.dark-mode .dropdown-item:hover {
 }
 
 body.dark-mode .dropdown-item svg {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
     stroke: #9ca3af !important;
 }
 
@@ -2667,7 +2667,7 @@ body.dark-mode .dropdown-divider {
 
 /* Dark mode dropdown header text */
 body.dark-mode .dropdown-menu [style*='font-weight: 600'] {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 
 /* ============================================
@@ -3112,7 +3112,7 @@ body.dark-mode .tab-pane {
 }
 
 body.dark-mode .tab-pane p {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 
 body.dark-mode .tab-pane input {
@@ -3338,7 +3338,7 @@ body.dark-mode .media-preview-item {
     display: block;
     padding: 7px 20px 7px 48px;
     font-size: 13px;
-    color: #9ca3af;
+    color: var(--text-muted);
     text-decoration: none;
     transition:
         background 0.15s,

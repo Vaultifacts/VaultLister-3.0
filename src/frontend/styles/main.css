@@ -1,4 +1,5 @@
 /* VaultLister — CSS entry point. Edit sub-files, not this file. */
+@import './a11y-colors.css?v=00897a24';
 @import './variables.css?v=00897a24';
 @import './base.css?v=00897a24';
 @import './features.css?v=00897a24';

@@ -458,7 +458,7 @@ body.dark-mode .editor-section-title {
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background: #f59e0b;
+    background: var(--brand-amber-bg);
     cursor: pointer;
     transition: background 0.15s;
 }
@@ -471,7 +471,7 @@ body.dark-mode .editor-section-title {
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background: #f59e0b;
+    background: var(--brand-amber-bg);
     cursor: pointer;
     border: none;
     transition: background 0.15s;
@@ -713,7 +713,7 @@ body.dark-mode .editor-control input[type='range'] {
 }
 
 .chat-message.user .chat-message-bubble {
-    background: #f59e0b;
+    background: var(--brand-amber-bg);
     color: white;
 }
 
@@ -736,7 +736,7 @@ body.dark-mode .editor-control input[type='range'] {
 }
 
 .chat-quick-action-btn:hover {
-    background: #f59e0b;
+    background: var(--brand-amber-bg);
     color: white;
     border-color: #f59e0b;
 }
@@ -824,7 +824,7 @@ body.dark-mode .editor-control input[type='range'] {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: #f59e0b;
+    background: var(--brand-amber-bg);
     color: white;
     border: none;
     font-size: 1.25rem;
@@ -860,7 +860,7 @@ body.dark-mode .editor-control input[type='range'] {
 }
 
 .dark-mode .chat-message.user .chat-message-bubble {
-    background: #f59e0b;
+    background: var(--brand-amber-bg);
     color: white;
 }
 
@@ -882,7 +882,7 @@ body.dark-mode .editor-control input[type='range'] {
 }
 
 .dark-mode .chat-quick-action-btn:hover {
-    background: #f59e0b;
+    background: var(--brand-amber-bg);
     color: white;
 }
 
@@ -1872,7 +1872,7 @@ body.dark-mode .vault-buddy-fab .buddy-avatar {
 }
 
 .dark-mode .vault-buddy-tab {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 .dark-mode .vault-buddy-tab:hover {
@@ -1889,7 +1889,7 @@ body.dark-mode .vault-buddy-fab .buddy-avatar {
 }
 
 .dark-mode .vault-buddy-home p {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 .dark-mode .vault-buddy-home-section {
@@ -1929,11 +1929,11 @@ body.dark-mode .vault-buddy-fab .buddy-avatar {
 }
 
 .dark-mode .vault-buddy-chat-item p {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 .dark-mode .vault-buddy-no-chats {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 .dark-mode .vault-buddy-chat-back {
@@ -3325,7 +3325,7 @@ body.dark-mode .receipt-dropzone-content h3 {
 }
 
 body.dark-mode .receipt-dropzone-content p {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 
 body.dark-mode .receipt-dropzone-content svg {
@@ -6125,7 +6125,7 @@ body.dark-mode .calendar-event:not([class*='calendar-event-']) {
 }
 
 body.dark-mode .calendar-more {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 
 /* Receipt Parser - Button and form visibility */
@@ -6141,7 +6141,7 @@ body.dark-mode .receipt-item:hover {
 
 body.dark-mode .receipt-item .text-gray-600,
 body.dark-mode .receipt-item .text-gray-500 {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 
 body.dark-mode .receipt-details {
@@ -6181,7 +6181,7 @@ body.dark-mode [class*='dropzone'] * {
 /* Size Charts - Tab text visibility */
 body.dark-mode .size-chart-tabs .tab,
 body.dark-mode [data-page='size-charts'] .tab {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 
 body.dark-mode .size-chart-tabs .tab:hover,
@@ -6282,7 +6282,7 @@ body.dark-mode [name='timeline'] {
 
 /* Financials - Tab visibility improvements */
 body.dark-mode .financials-tabs .tab {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 
 body.dark-mode .financials-tabs .tab.active {
@@ -6292,7 +6292,7 @@ body.dark-mode .financials-tabs .tab.active {
 
 /* Image Vault - Folder icons and grid icon visibility */
 body.dark-mode .folder-item svg {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
     stroke: #9ca3af !important;
 }
 
@@ -6335,7 +6335,7 @@ body.dark-mode .transaction-filter-row input {
 /* Modal improvements for dark mode */
 body.dark-mode .modal .text-gray-600,
 body.dark-mode .modal .text-gray-500 {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 
 body.dark-mode .modal .bg-gray-50,
@@ -6404,7 +6404,7 @@ body.dark-mode .empty-state-title {
 }
 
 body.dark-mode .empty-state-description {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 /* Skeleton Loader Component */
@@ -6556,7 +6556,7 @@ body.dark-mode .page-loader-spinner {
 }
 
 body.dark-mode .page-loader-message {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 /* Tooltip Component */
@@ -6703,7 +6703,7 @@ body.dark-mode .tooltip-wrapper[data-tooltip-position='right']::after {
 }
 
 body.dark-mode .breadcrumb-link {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 body.dark-mode .breadcrumb-link:hover {
@@ -6748,7 +6748,7 @@ body.dark-mode .confirm-dialog-title {
 }
 
 body.dark-mode .confirm-dialog-message {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 /* Danger Button */
@@ -6930,7 +6930,7 @@ body.dark-mode .toast-close {
 }
 
 body.dark-mode .toast-close:hover {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 /* Table Enhancements */
@@ -7184,7 +7184,7 @@ body.dark-mode .global-search-item.selected {
 
 body.dark-mode .global-search-item-icon {
     background: #374151;
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 body.dark-mode .global-search-item-title {
@@ -7819,7 +7819,7 @@ body.dark-mode .activity-title {
 }
 
 body.dark-mode .activity-description {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 /* ============================================

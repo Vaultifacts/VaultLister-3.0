@@ -212,12 +212,38 @@ _P3 — Polish_
 
 _Clean checks (no issues)_: All 52 pages have 1 `<h1>`, `lang="en"`, charset, viewport. Zero empty links, console.log, http:// links, missing alt. Forms work. ARIA nav correct. Responsive breakpoints at 480/560/600/768/900px. robots.txt, manifest, favicon all OK.
 
+**NEW TASK LIST (scanned 2026-05-04)**
+
+_P0 — CI / Working Tree_
+- [ ] Commit uncommitted a11y CSS color work (13 modified + 1 new file) — WCAG contrast fixes replacing hardcoded hex with CSS vars + stylelint ban rule
+- [ ] Push unpushed commits (CI lint fix `cf858a6e` + open-items refresh `1e5582ab`) to close #515
+
+_P1 — Code Quality / Observability_
+- [ ] Wire signal-emitter imports in 5 platform sync files (facebook, poshmark, whatnot, grailed, mercari) — `signalEmitter.js` exists, already used by 4 other syncs
+- [ ] CR-4: Add `EASYPOST_API_KEY` to Railway — routes return 503 without it (requires user)
+- [ ] CR-10: Configure OAuth credentials for remaining 8 platforms (requires user)
+
+_P2 — Security / Refactor_
+- [ ] CSP hardening — DOMPurify `ADD_ATTR` allows inline event handlers (`utils.js:66`)
+- [ ] R-001: Extract remaining 15 inline handlers from `server.js` (2,087 lines)
+- [ ] R-011: Split `auth.js` (1,153 lines, 6 concern domains)
+- [ ] R-012: Split `database.js` (640 lines, 7+ responsibilities)
+- [ ] R-015: Authorization/ownership audit across all routes — coverage UNKNOWN
+- [ ] R-029: Map full auth-session coupling lifecycle
+- [ ] Playwright version sync — root 1.59.1 vs worker 1.58.2 (confirm which Railway uses)
+
+_P2 — Site Audit (24 findings from session 8)_
+See "SITE AUDIT" section above — 2 P0, 7 P1, 5 P2, 10 P3.
+
+_P3 — Backlog_
+- [ ] Chrome Extension — 7 unchecked items in `chrome-extension/README.md`
+- [ ] Facebook OAuth Compliance — 42 unchecked items in `docs/FACEBOOK_OAUTH_COMPLIANCE.md`
+- [ ] Sentry setup (User Feedback, Logs, Profiling, Session Replay, MCP Monitors, AI Agents) — 6 deferred items
+
 **PRE-EXISTING**
 0. Use `docs/OPEN_ITEMS.md` as the active task backlog — REMAINING_WORK_EXECUTION_SHEET_2026-04-21.md is historical evidence only.
 0. [OPTIONAL] Richer sale path test — sale with non-zero payment_fee + packaging_cost + inventory-linked item; verify all 5 ledger rows fire.
 0. [WATCH] Financial regression: (a) no accounting-statement labels reintroduced, (b) new ledger paths don't skip non-zero amounts, (c) no tax schema/copy creep, (d) no duplicate rows on retry/edit.
-1. CR-4: EasyPost shipping integration — OPEN / NOT VERIFIED
-2. CR-10: Connect flows for remaining platforms — Depop 503, Poshmark/Mercari/Grailed/Whatnot unverified
 
 **TRACKING SYSTEM (remaining flaws to address)**
 - Renew `ADD_TO_PROJECT_TOKEN` GitHub secret — project boards not updating (all 3 recent workflow runs failed)

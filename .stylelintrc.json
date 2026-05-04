@@ -36,7 +36,13 @@
         "declaration-property-value-no-unknown": null,
         "media-feature-name-value-no-unknown": null,
         "function-url-quotes": null,
-        "value-keyword-case": null
+        "value-keyword-case": null,
+        "declaration-property-value-disallowed-list": [{
+            "color": ["/^#9ca3af$/i", "/^#d97706$/i"],
+            "background-color": ["/^#f59e0b$/i"]
+        }, {
+            "message": "This color fails WCAG AA contrast. Use --text-muted or --brand-amber from a11y-colors.css."
+        }]
 
     },
     "ignoreFiles": [

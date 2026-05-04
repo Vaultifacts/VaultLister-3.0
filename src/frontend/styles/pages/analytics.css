@@ -1069,7 +1069,7 @@ body.dark-mode .transaction-tag.sourcing {
 
 .funnel-stage-vertical:nth-child(1) {
     width: 100%;
-    background: #f59e0b;
+    background: var(--brand-amber-bg);
 }
 .funnel-stage-vertical:nth-child(2) {
     width: 85%;

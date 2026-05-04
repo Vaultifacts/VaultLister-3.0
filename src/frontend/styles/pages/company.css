@@ -1347,7 +1347,7 @@ body.dark-mode .stat-value {
 }
 
 body.dark-mode .stat-label {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 body.dark-mode .about-section {
@@ -1365,7 +1365,7 @@ body.dark-mode .section-title {
 }
 
 body.dark-mode .mission-text p {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 body.dark-mode .value-card {
@@ -1502,7 +1502,7 @@ body.dark-mode .legal-toc {
 }
 
 body.dark-mode .toc-link {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 body.dark-mode .toc-link:hover {
@@ -1529,11 +1529,11 @@ body.dark-mode .legal-section .section-header h2 {
 }
 
 body.dark-mode .legal-section .section-body {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 body.dark-mode .legal-list li {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 body.dark-mode .legal-contact-card {

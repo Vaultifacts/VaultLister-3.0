@@ -1115,7 +1115,7 @@ body.dark-mode .followup-buyer-info .buyer-name {
 body.dark-mode .followup-type-btn {
     background: #1f2937;
     border-color: #374151;
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 body.dark-mode .followup-type-btn:hover {
@@ -1132,7 +1132,7 @@ body.dark-mode .followup-type-btn.selected {
 body.dark-mode .preset-date-btn {
     background: #1f2937;
     border-color: #374151;
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 body.dark-mode .preset-date-btn:hover,
@@ -2395,7 +2395,7 @@ body.dark-mode .profit-breakdown {
 }
 
 body.dark-mode .profit-breakdown h5 {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 body.dark-mode .profit-breakdown-row.total {
@@ -2465,7 +2465,7 @@ body.dark-mode .health-stat-icon.stale {
 }
 
 body.dark-mode .health-stat-label {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 body.dark-mode .inventory-hero-categories {
@@ -2562,7 +2562,7 @@ body.dark-mode .tip-content strong {
 /* Offer Expiration Countdown - Dark Mode */
 body.dark-mode .offer-expiry-countdown.normal {
     background: #374151;
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 body.dark-mode .offer-expiry-countdown.warning {

@@ -1,0 +1,6 @@
+/* Accessibility color overrides — WCAG AA contrast replacements */
+:root {
+    --text-muted: #6b7280;
+    --brand-amber: #92400e;
+    --brand-amber-bg: #fef3c7;
+}

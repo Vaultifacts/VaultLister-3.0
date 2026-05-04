@@ -563,7 +563,7 @@ body.dark-mode .import-col-filter-menu label:hover {
 body.dark-mode .import-preview-table th {
     background: #374151 !important;
     border-color: #4b5563 !important;
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 
 body.dark-mode .import-preview-table td {
@@ -1618,7 +1618,7 @@ body.dark-mode .import-preview-table td {
 }
 
 .password-strength[data-strength='3'] .password-strength-bar:nth-child(-n + 3) {
-    background: #f59e0b;
+    background: var(--brand-amber-bg);
 }
 
 .password-strength[data-strength='4'] .password-strength-bar {
@@ -17610,7 +17610,7 @@ body.dark-mode .modal-body div[style*='background: #f9fafb'] {
 
 body.dark-mode .modal-body div[style*='background: #f3f4f6'] {
     background: #374151 !important;
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 
 /* Webhook stats grid dark mode (inline bg:white override) */

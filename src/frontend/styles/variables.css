@@ -274,7 +274,7 @@ body.dark-mode .form-textarea {
 
 body.dark-mode .form-input::placeholder,
 body.dark-mode .form-textarea::placeholder {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 
 body.dark-mode .btn-secondary {
@@ -387,7 +387,7 @@ body.dark-mode .modal .form-input::placeholder,
 body.dark-mode .modal .form-textarea::placeholder,
 body.dark-mode .modal input::placeholder,
 body.dark-mode .modal textarea::placeholder {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 
 body.dark-mode .modal .form-label,
@@ -515,7 +515,7 @@ body.dark-mode .folder-item .badge {
 }
 
 body.dark-mode .folder-item.active .badge {
-    background: #f59e0b !important;
+    background: var(--brand-amber-bg) !important;
     color: #ffffff !important;
 }
 
@@ -536,7 +536,7 @@ body.dark-mode .image-vault-toolbar .form-select {
 }
 
 body.dark-mode .image-vault-toolbar .form-input::placeholder {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 
 body.dark-mode .image-vault-toolbar .form-input:focus,
@@ -586,7 +586,7 @@ body.dark-mode .image-card-thumbnail {
 
 body.dark-mode .image-card-tags .tag {
     background: #374151;
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 body.dark-mode .image-card-actions {
@@ -603,7 +603,7 @@ body.dark-mode .image-detail-meta {
 }
 
 body.dark-mode .image-detail-meta strong {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 
 /* Dark mode - Search bar */
@@ -616,11 +616,11 @@ body.dark-mode .search-bar input {
 }
 
 body.dark-mode .search-bar input::placeholder {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 
 body.dark-mode .search-bar svg {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 
 /* Dark mode - Icon buttons (grid/list view) */
@@ -676,7 +676,7 @@ body.dark-mode .notification-item [style*='font-weight: 600'] {
 }
 
 body.dark-mode .notification-item [style*='color: var(--gray-600)'] {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 
 body.dark-mode .notification-item [style*='color: var(--gray-400)'] {
@@ -684,7 +684,7 @@ body.dark-mode .notification-item [style*='color: var(--gray-400)'] {
 }
 
 body.dark-mode .notification-item .btn-ghost {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 
 body.dark-mode .notification-item .btn-ghost:hover {
@@ -698,7 +698,7 @@ body.dark-mode .tabs {
 }
 
 body.dark-mode .tab {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 
 body.dark-mode .tab:hover {
@@ -771,7 +771,7 @@ body.dark-mode .page-title {
 }
 
 body.dark-mode .page-description {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 
 /* Dark mode - Orders status labels */
@@ -842,11 +842,11 @@ body.dark-mode .transaction-filters input {
 
 /* Dark mode - Text visibility fixes */
 body.dark-mode .text-gray-500 {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 
 body.dark-mode .text-gray-600 {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 
 body.dark-mode .text-gray-700 {
@@ -873,7 +873,7 @@ body.dark-mode .text-sm {
 }
 
 body.dark-mode .text-xs {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 
 /* Dark mode - Dropdown menus */
@@ -1082,7 +1082,7 @@ body.dark-mode .receipt-dropzone-content h3 {
 }
 
 body.dark-mode .receipt-dropzone-content p {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 
 /* Dark mode - Inventory selected popup buttons (need visible border) */
@@ -1170,7 +1170,7 @@ body.dark-mode .modal[data-modal-type='template'] select {
 
 body.dark-mode .template-modal .form-input::placeholder,
 body.dark-mode [class*='template'] .modal .form-input::placeholder {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 
 /* Dark mode - Template selection modal buttons */
@@ -1190,11 +1190,11 @@ body.dark-mode .modal-body button.text-left .font-semibold {
 
 body.dark-mode .modal-body button.text-left .text-gray-600,
 body.dark-mode .modal-body button.text-left .text-gray-500 {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 
 body.dark-mode .modal-body .text-gray-500 {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 
 /* Dark mode - Input focus states in modals */
@@ -1237,7 +1237,7 @@ body.dark-mode .modal .form-label {
 
 body.dark-mode .modal .form-hint,
 body.dark-mode .modal .text-xs {
-    color: #9ca3af !important;
+    color: var(--text-muted) !important;
 }
 
 /* Dark mode - Dropzone in modals */

@@ -518,7 +518,7 @@ body.dark-mode .settings-avatar-edit:hover {
 body.dark-mode .channel-btn {
     background: #374151;
     border-color: #4b5563;
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 .channel-btn:hover {
@@ -1182,7 +1182,7 @@ body.dark-mode .cleanup-preview-count {
 
 body.dark-mode .cleanup-preview-count.zero {
     background: #374151;
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 /* ==========================================
@@ -2009,7 +2009,7 @@ body.dark-mode .whats-new-item {
 body.dark-mode .vote-button {
     background: #374151;
     border-color: #4b5563;
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 .vote-button:hover {
@@ -2648,7 +2648,7 @@ body.dark-mode .subscribe-icon {
    ========================================== */
 
 body.dark-mode .settings-tab {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 body.dark-mode .settings-tab:hover {

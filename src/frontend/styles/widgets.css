@@ -295,7 +295,7 @@ body.dark-mode .dim-weight-display {
     background: var(--info);
 }
 .age-bar.aging {
-    background: #f59e0b;
+    background: var(--brand-amber-bg);
 }
 .age-bar.stale {
     background: #f97316;
@@ -622,7 +622,7 @@ body.dark-mode .note-footer {
 }
 
 body.dark-mode .note-btn {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 body.dark-mode .note-btn:hover {
@@ -953,7 +953,7 @@ body.dark-mode .price-drop-btn:hover {
 }
 
 body.dark-mode .drop-price {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 /* ============================================
@@ -2235,7 +2235,7 @@ body.dark-mode .restock-list {
 
 body.dark-mode .restock-header {
     background: #374151;
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 body.dark-mode .restock-item {
@@ -2353,7 +2353,7 @@ body.dark-mode .restock-summary .stat-value {
 }
 
 .customer-row.vip .customer-rank {
-    background: #f59e0b;
+    background: var(--brand-amber-bg);
     color: white;
 }
 
@@ -2827,7 +2827,7 @@ body.dark-mode .highlight-card.best {
 
 body.dark-mode .highlight-card.worst {
     background: #4b5563;
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 body.dark-mode .highlight-icon {
@@ -2839,7 +2839,7 @@ body.dark-mode .quarter-card {
 }
 
 body.dark-mode .quarter-name {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 /* ========================================
@@ -2939,7 +2939,7 @@ body.dark-mode .lookup-hint {
 }
 
 body.dark-mode .lookup-section-title {
-    color: #9ca3af;
+    color: var(--text-muted);
     border-bottom-color: #4b5563;
 }
 
@@ -3182,7 +3182,7 @@ body.dark-mode .return-stat-value {
 }
 
 body.dark-mode .return-stat-label {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 body.dark-mode .return-benchmark {
@@ -3365,7 +3365,7 @@ body.dark-mode .fee-calc-input label {
 }
 
 body.dark-mode .input-prefix {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 body.dark-mode .fee-platform-card {
@@ -3391,7 +3391,7 @@ body.dark-mode .platform-fee {
 }
 
 body.dark-mode .platform-note {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 body.dark-mode .fee-breakdown {
@@ -4407,7 +4407,7 @@ body.dark-mode .platform-usage-section {
    Calendar Expiration & Shipping Events
    ============================================ */
 .calendar-legend-dot.expirations {
-    background: #f59e0b;
+    background: var(--brand-amber-bg);
 }
 
 .calendar-event-expiration {
@@ -5210,7 +5210,7 @@ body.dark-mode .recent-item-title {
     flex-shrink: 0;
 }
 body.dark-mode .mini-pnl-label {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 .mini-pnl-bar-track {
     flex: 1;
@@ -5437,7 +5437,7 @@ body.dark-mode .offers-urgency-item.urgent {
 }
 .changelog-type-fix {
     background: rgba(245, 158, 11, 0.12);
-    color: #d97706;
+    color: var(--brand-amber);
     border: 1px solid rgba(245, 158, 11, 0.3);
 }
 .changelog-type-security {
@@ -5614,7 +5614,7 @@ body.dark-mode .offers-urgency-item.urgent {
 }
 .notification-type-offer {
     background: rgba(245, 158, 11, 0.12);
-    color: #d97706;
+    color: var(--brand-amber);
 }
 .notification-type-shipping {
     background: rgba(245, 158, 11, 0.12);
@@ -6269,7 +6269,7 @@ body.dark-mode .offers-urgency-item.urgent {
 }
 
 .service-status-dot.warning {
-    background: #f59e0b;
+    background: var(--brand-amber-bg);
     box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
 }
 

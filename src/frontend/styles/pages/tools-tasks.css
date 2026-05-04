@@ -2766,7 +2766,7 @@ body.dark-mode .conversion-result-card.selected {
 }
 
 body.dark-mode .conversion-result-country {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 body.dark-mode .conversion-result-size {
@@ -2791,7 +2791,7 @@ body.dark-mode .weekly-chart-bar .bar-value {
 }
 
 body.dark-mode .weekly-chart-bar .bar-label {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 body.dark-mode .weekly-stat-card {
@@ -2885,7 +2885,7 @@ body.dark-mode .timeline-event {
 }
 
 body.dark-mode .timeline-event-time {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 body.dark-mode .timeline-event-title {
@@ -2893,7 +2893,7 @@ body.dark-mode .timeline-event-title {
 }
 
 body.dark-mode .timeline-event-description {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 /* This Week panel improved visibility */
@@ -2902,7 +2902,7 @@ body.dark-mode .week-preview-label {
 }
 
 body.dark-mode .week-day-name {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 body.dark-mode .week-day-number {
