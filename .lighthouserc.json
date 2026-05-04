@@ -2,7 +2,7 @@
     "ci": {
         "collect": {
             "url": [
-                "http://localhost:3000",
+                "http://localhost:3000/landing.html",
                 "http://localhost:3000/pricing.html",
                 "http://localhost:3000/contact.html",
                 "http://localhost:3000/about.html",
