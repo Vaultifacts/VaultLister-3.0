@@ -183,52 +183,49 @@
 - [Plans & Billing] ✅ VERIFIED LIVE — Settings chunk has `7 platform`, no `9 platform`. Live pricing.html and landing.html both show 7.
 - [Account] ✅ VERIFIED LIVE — Password autocomplete attributes correct.
 
-**SITE AUDIT — 24 VERIFIED FINDINGS (2026-05-03 session 8, chrome + source-code verified)**
+**SITE AUDIT — 24 FINDINGS (session 8) — RE-VERIFIED session 9 (2026-05-04): 21 already fixed, 3 open**
 
-_P0 — Broken / Wrong_
-- [ ] 4 dead "See all features" links → `/features.html` doesn't exist (landing.html:2251/2305/2363/2418)
-- [ ] Free plan "7 platforms" in card vs "5" in comparison table (pricing.html:548 vs :678)
+_P0 — Broken / Wrong_ (ALL FIXED)
+- [x] "See all features" links — already point to /pricing.html
+- [x] Free plan pricing — card (line 555) and table (line 685) both say "7"
 
-_P1 — Functional / SEO / Security Impact_
-- [ ] All static HTML pages missing security headers (CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy) — only SPA has them. Root cause: serveStatic() in server.js:510-515 doesn't apply securityHeadersConfig. Static pages can be iframe-embedded by any site.
-- [ ] `Facebook<br>Marketplace` screen reader concatenation (landing.html:1994, platforms.html:645)
-- [ ] Announcement banner `hidden` overridden by CSS `display:flex` — close button (tabIndex:0) in keyboard tab order (index.html:156, components-library.css:17361)
-- [ ] Auth pages (login/register/forgot/reset) show no page title (router.js:472-499 PAGE_TITLES map missing entries)
-- [ ] og:image uses SVG on landing:15, platforms:17, ebay-sneaker blog:113 — Twitter/Facebook don't support SVG social cards
-- [ ] No canonical tags on any page except 3 blog posts (depop-y2k, whatnot, ebay-sneaker)
-- [ ] Duplicate content: `/` and `/landing.html` both in sitemap.xml (:16), no canonical to disambiguate
+_P1 — Functional / SEO / Security Impact_ (ALL FIXED)
+- [x] Static HTML security headers — server.js:510-519 applies CSP, X-Frame-Options, HSTS, X-Content-Type-Options, Referrer-Policy
+- [x] Facebook `<br>` — already has `aria-hidden="true"`
+- [x] Announcement banner — base CSS is `display:none`, not flex. `hidden` attr works. LOW RISK.
+- [x] Auth page titles — login/register/forgot-password/reset-password all in PAGE_TITLES
+- [x] og:image SVG — all use horizontal-2048.png
+- [x] Canonical tags — 51 files have rel="canonical"
+- [x] Duplicate `/` vs `/landing.html` — only `/` in sitemap
 
-_P2 — SEO / Discoverability_
-- [ ] 67 FAQ items with zero JSON-LD FAQPage schema (faq.html — grep `ld+json` returns no matches)
-- [ ] Non-existent `.html` URLs return HTTP 200 soft 404 (server.js SPA catch-all)
-- [ ] 3 orphaned pages in sitemap with zero internal links: compare/closo.html, compare/selleraider.html, glossary.html
-- [ ] about.html missing from sitemap.xml — real content page linked from every footer
-- [ ] 42 of 52 public HTML pages have zero Open Graph tags — no social card previews when shared
-- [ ] 13 target="_blank" links missing rel="noopener noreferrer" (documentation.html×10, ai-info×1, blog/index×2)
+_P2 — SEO / Discoverability_ (2 OPEN)
+- [x] FAQ JSON-LD — FAQPage schema at faq.html:1015
+- [ ] **Soft 404** — non-existent `.html` URLs return HTTP 200 (server.js SPA catch-all)
+- [ ] **3 orphaned sitemap pages** with zero internal links: compare/closo.html, compare/selleraider.html, glossary.html
+- [x] about.html in sitemap — already at sitemap.xml:76
+- [x] Open Graph tags — all 52 public HTML pages have og:title/description/image
+- [x] rel="noopener noreferrer" — all target="_blank" links already have it
 
-_P3 — Polish_
-- [ ] Dead CSS `.trust-section`, `.trust-card`, `.pricing-teaser` — zero HTML elements use them (landing.html:649/664/1179)
-- [ ] Blog/changelog dates use `<span>` not `<time datetime>` (blog/index.html:483, changelog.html:690+)
-- [ ] documentation.html meta description says "Legal" but title says "Documentation" (:8 vs :11)
-- [ ] changelog.html meta description only 47 chars (:6)
-- [ ] Missing `twitter:image` and `og:site_name` on landing.html
-- [ ] Missing `apple-touch-icon` and `manifest` link on landing.html
-- [ ] "More articles coming soon" placeholder (blog/index.html:558)
-- [ ] TODO comment in status.html CSS (:288) — visible in page source
-- [ ] 4 content pages missing favicon link tag (changelog, api-changelog, api-docs, rate-limits)
+_P3 — Polish_ (ALL FIXED)
+- [x] Dead CSS classes removed
+- [x] Blog dates `<time>` — fixed session 9 (d588006e)
+- [x] documentation.html meta — says "Documentation" (not "Legal")
+- [x] changelog.html meta — full description present
+- [x] twitter:image + og:site_name on landing — present
+- [x] apple-touch-icon + manifest on landing — present
+- [x] "More articles coming soon" — removed
+- [x] TODO in status.html — removed
+- [x] 4 pages missing favicon — all have favicon link
 
-_Clean checks (no issues)_: All 52 pages have 1 `<h1>`, `lang="en"`, charset, viewport. Zero empty links, console.log, http:// links, missing alt. Forms work. ARIA nav correct. Responsive breakpoints at 480/560/600/768/900px. robots.txt, manifest, favicon all OK.
+**REMAINING TASK LIST (updated 2026-05-04 session 9)**
 
-**NEW TASK LIST (scanned 2026-05-04)**
+_P0 — CI / Working Tree_ (ALL DONE)
+- [x] a11y CSS color work committed (6c22b9fd)
+- [x] All commits pushed to origin (d588006e is HEAD)
 
-_P0 — CI / Working Tree_
-- [ ] Commit uncommitted a11y CSS color work (13 modified + 1 new file) — WCAG contrast fixes replacing hardcoded hex with CSS vars + stylelint ban rule
-- [ ] Push unpushed commits (CI lint fix `cf858a6e` + open-items refresh `1e5582ab`) to close #515
-
-_P1 — Code Quality / Observability_
-- [ ] Wire signal-emitter imports in 5 platform sync files (facebook, poshmark, whatnot, grailed, mercari) — `signalEmitter.js` exists, already used by 4 other syncs
-- [ ] CR-4: Add `EASYPOST_API_KEY` to Railway — routes return 503 without it (requires user)
-- [ ] CR-10: Configure OAuth credentials for remaining 8 platforms (requires user)
+_P1 — External Blockers (requires user)_
+- [ ] CR-4: Add `EASYPOST_API_KEY` to Railway
+- [ ] CR-10: Configure OAuth credentials for remaining 8 platforms
 
 _P2 — Security / Refactor_
 - [ ] CSP hardening — DOMPurify `ADD_ATTR` allows inline event handlers (`utils.js:66`)
@@ -239,8 +236,9 @@ _P2 — Security / Refactor_
 - [ ] R-029: Map full auth-session coupling lifecycle
 - [ ] Playwright version sync — root 1.59.1 vs worker 1.58.2 (confirm which Railway uses)
 
-_P2 — Site Audit (24 findings from session 8)_
-See "SITE AUDIT" section above — 2 P0, 7 P1, 5 P2, 10 P3.
+_P2 — Site Audit (ALL DONE)_
+- [x] Soft 404 — ALREADY FIXED (server.js:1244-1249 returns 404 for non-existent .html URLs)
+- [x] Orphaned sitemap pages — ALREADY FIXED (all 3 linked from faq.html + landing.html footers)
 
 _P3 — Backlog_
 - [ ] Chrome Extension — 7 unchecked items in `chrome-extension/README.md`
