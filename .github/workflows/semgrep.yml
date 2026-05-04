@@ -30,7 +30,12 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Run Semgrep CI
-        run: semgrep ci --sarif --output semgrep.sarif
+        # Avoid a known false positive on the pinned SonarSource action commit.
+        run: >
+          semgrep ci
+          --exclude-rule generic.secrets.security.detected-sonarqube-docs-api-key.detected-sonarqube-docs-api-key
+          --sarif
+          --output semgrep.sarif
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 
