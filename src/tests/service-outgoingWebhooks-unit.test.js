@@ -2,8 +2,6 @@
 // Tests: sanitizeWebhookData (indirectly), generateSignature (indirectly),
 // EVENT_TYPES, RETRY_CONFIG behavior, delivery queue, outgoingWebhooksRouter
 import { describe, expect, test, mock, beforeEach } from 'bun:test';
-import { readFileSync } from 'node:fs';
-import { join } from 'path';
 import { createMockDb } from './helpers/mockDb.js';
 import crypto from 'crypto';
 
@@ -38,10 +36,7 @@ mock.module('dns/promises', () => ({
 const { outgoingWebhooks, outgoingWebhooksRouter } = await import(
     '../backend/services/outgoingWebhooks.js'
 );
-const migration = readFileSync(
-    join(import.meta.dir, '../backend/db/pg-schema.sql'),
-    'utf-8'
-);
+const migration = await Bun.file(new URL('../backend/db/pg-schema.sql', import.meta.url)).text();
 
 beforeEach(() => db.reset());
 
