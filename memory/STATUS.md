@@ -173,6 +173,42 @@
 - [Plans & Billing] ✅ VERIFIED LIVE — Settings chunk has `7 platform`, no `9 platform`. Live pricing.html and landing.html both show 7.
 - [Account] ✅ VERIFIED LIVE — Password autocomplete attributes correct.
 
+**SITE AUDIT — 24 VERIFIED FINDINGS (2026-05-03 session 8, chrome + source-code verified)**
+
+_P0 — Broken / Wrong_
+- [ ] 4 dead "See all features" links → `/features.html` doesn't exist (landing.html:2251/2305/2363/2418)
+- [ ] Free plan "7 platforms" in card vs "5" in comparison table (pricing.html:548 vs :678)
+
+_P1 — Functional / SEO / Security Impact_
+- [ ] All static HTML pages missing security headers (CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy) — only SPA has them. Root cause: serveStatic() in server.js:510-515 doesn't apply securityHeadersConfig. Static pages can be iframe-embedded by any site.
+- [ ] `Facebook<br>Marketplace` screen reader concatenation (landing.html:1994, platforms.html:645)
+- [ ] Announcement banner `hidden` overridden by CSS `display:flex` — close button (tabIndex:0) in keyboard tab order (index.html:156, components-library.css:17361)
+- [ ] Auth pages (login/register/forgot/reset) show no page title (router.js:472-499 PAGE_TITLES map missing entries)
+- [ ] og:image uses SVG on landing:15, platforms:17, ebay-sneaker blog:113 — Twitter/Facebook don't support SVG social cards
+- [ ] No canonical tags on any page except 3 blog posts (depop-y2k, whatnot, ebay-sneaker)
+- [ ] Duplicate content: `/` and `/landing.html` both in sitemap.xml (:16), no canonical to disambiguate
+
+_P2 — SEO / Discoverability_
+- [ ] 67 FAQ items with zero JSON-LD FAQPage schema (faq.html — grep `ld+json` returns no matches)
+- [ ] Non-existent `.html` URLs return HTTP 200 soft 404 (server.js SPA catch-all)
+- [ ] 3 orphaned pages in sitemap with zero internal links: compare/closo.html, compare/selleraider.html, glossary.html
+- [ ] about.html missing from sitemap.xml — real content page linked from every footer
+- [ ] 42 of 52 public HTML pages have zero Open Graph tags — no social card previews when shared
+- [ ] 13 target="_blank" links missing rel="noopener noreferrer" (documentation.html×10, ai-info×1, blog/index×2)
+
+_P3 — Polish_
+- [ ] Dead CSS `.trust-section`, `.trust-card`, `.pricing-teaser` — zero HTML elements use them (landing.html:649/664/1179)
+- [ ] Blog/changelog dates use `<span>` not `<time datetime>` (blog/index.html:483, changelog.html:690+)
+- [ ] documentation.html meta description says "Legal" but title says "Documentation" (:8 vs :11)
+- [ ] changelog.html meta description only 47 chars (:6)
+- [ ] Missing `twitter:image` and `og:site_name` on landing.html
+- [ ] Missing `apple-touch-icon` and `manifest` link on landing.html
+- [ ] "More articles coming soon" placeholder (blog/index.html:558)
+- [ ] TODO comment in status.html CSS (:288) — visible in page source
+- [ ] 4 content pages missing favicon link tag (changelog, api-changelog, api-docs, rate-limits)
+
+_Clean checks (no issues)_: All 52 pages have 1 `<h1>`, `lang="en"`, charset, viewport. Zero empty links, console.log, http:// links, missing alt. Forms work. ARIA nav correct. Responsive breakpoints at 480/560/600/768/900px. robots.txt, manifest, favicon all OK.
+
 **PRE-EXISTING**
 0. Use `docs/OPEN_ITEMS.md` as the active task backlog — REMAINING_WORK_EXECUTION_SHEET_2026-04-21.md is historical evidence only.
 0. [OPTIONAL] Richer sale path test — sale with non-zero payment_fee + packaging_cost + inventory-linked item; verify all 5 ledger rows fire.
