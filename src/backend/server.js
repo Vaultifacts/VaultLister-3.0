@@ -333,6 +333,8 @@ async function main() {
         '/api/settings',
         '/api/admin',
         '/api/sync',
+        '/api/goals',
+        '/api/budget',
     ];
 
     // Parse JSON body
