@@ -1,7 +1,15 @@
 {
     "ci": {
         "collect": {
-            "url": ["http://localhost:3000", "http://localhost:3000/pricing.html", "http://localhost:3000/contact.html"],
+            "url": [
+                "http://localhost:3000",
+                "http://localhost:3000/pricing.html",
+                "http://localhost:3000/contact.html",
+                "http://localhost:3000/about.html",
+                "http://localhost:3000/faq.html",
+                "http://localhost:3000/terms.html",
+                "http://localhost:3000/privacy.html"
+            ],
             "numberOfRuns": 1,
             "settings": {
                 "preset": "desktop",
@@ -10,10 +18,10 @@
         },
         "assert": {
             "assertions": {
-                "categories:performance": ["warn", { "minScore": 0.7 }],
-                "categories:accessibility": ["error", { "minScore": 0.8 }],
-                "categories:best-practices": ["warn", { "minScore": 0.8 }],
-                "categories:seo": ["warn", { "minScore": 0.8 }]
+                "categories:performance": ["warn", { "minScore": 0.9 }],
+                "categories:accessibility": ["error", { "minScore": 0.9 }],
+                "categories:best-practices": ["warn", { "minScore": 0.9 }],
+                "categories:seo": ["warn", { "minScore": 0.9 }]
             }
         },
         "upload": {
