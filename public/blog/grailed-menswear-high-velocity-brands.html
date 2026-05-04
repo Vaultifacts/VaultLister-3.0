@@ -1,0 +1,957 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="description"
+            content="Learn how to cross-list 50 inventory items in under an hour using VaultLister's bulk listing workflow — photo import, AI descriptions, and one-click publishing."
+        />
+        <meta name="theme-color" content="#18181B" />
+        <title>High-Velocity Menswear Brands on Grailed: What to Source in 2026 — VaultLister Blog</title>
+        <meta property="og:title" content="How to Cross-List 50 Items in Under an Hour with VaultLister" />
+        <meta
+            property="og:description"
+            content="A step-by-step walkthrough of VaultLister's bulk listing workflow — from photo import to publishing across 7 live marketplaces simultaneously."
+        />
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content="https://vaultlister.com/blog/how-to-cross-list-50-items.html" />
+        <meta property="og:site_name" content="VaultLister" />
+    <link rel="alternate" type="application/rss+xml" title="VaultLister Blog" href="/blog/feed.xml">
+        <meta property="og:image" content="https://vaultlister.com/assets/logo/lockups/horizontal-2048.png" />
+                <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="Cross-List 50 Items in Under an Hour — VaultLister">
+        <meta name="twitter:description" content="Learn how to cross-list 50 inventory items in under an hour using VaultLister">
+        <meta name="twitter:image" content="https://vaultlister.com/assets/logo/lockups/horizontal-2048.png">
+        <link rel="canonical" href="https://vaultlister.com/blog/how-to-cross-list-50-items.html" />
+        <!-- Google Analytics (GA4) with Consent Mode -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+                dataLayer.push(arguments);
+            }
+            gtag('consent', 'default', {
+                analytics_storage: localStorage.getItem('cookie_consent') === 'accepted' ? 'granted' : 'denied',
+            });
+            gtag('js', new Date());
+            gtag('config', 'G-LXETN4PYRM');
+        </script>
+        <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png" />
+        <style>
+            main {
+                flex: 1;
+            }
+
+            /* ---- Article layout ---- */
+            .article-wrapper {
+                max-width: 720px;
+                margin: 0 auto;
+                padding: 3rem 2rem 5rem;
+            }
+
+            .article-meta {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                font-size: 0.8125rem;
+                color: var(--gray-400);
+                margin-bottom: 1.5rem;
+            }
+            .article-meta .dot {
+                width: 3px;
+                height: 3px;
+                border-radius: 50%;
+                background: var(--gray-300);
+                display: inline-block;
+            }
+
+            .blog-tag {
+                display: inline-block;
+                font-size: 0.7rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.07em;
+                color: var(--amber-700);
+                background: var(--amber-50);
+                border: 1px solid var(--amber-200);
+                padding: 0.2rem 0.55rem;
+                border-radius: 99px;
+                margin-bottom: 0.75rem;
+            }
+
+            article h1 {
+                font-size: clamp(1.75rem, 4vw, 2.5rem);
+                font-weight: 800;
+                letter-spacing: -0.03em;
+                line-height: 1.15;
+                color: var(--gray-900);
+                margin-bottom: 1rem;
+            }
+
+            article h2 {
+                font-size: 1.375rem;
+                font-weight: 700;
+                letter-spacing: -0.02em;
+                color: var(--gray-900);
+                margin-top: 2.5rem;
+                margin-bottom: 0.75rem;
+            }
+
+            article p {
+                font-size: 1.0625rem;
+                color: var(--gray-700);
+                line-height: 1.75;
+                margin-bottom: 1.25rem;
+            }
+
+            article ul,
+            article ol {
+                font-size: 1.0625rem;
+                color: var(--gray-700);
+                line-height: 1.75;
+                margin-bottom: 1.25rem;
+                padding-left: 1.5rem;
+            }
+
+            article li {
+                margin-bottom: 0.4rem;
+            }
+
+            .article-divider {
+                border: none;
+                border-top: 1px solid var(--gray-200);
+                margin: 2.5rem 0;
+            }
+
+            .article-hero-img {
+                width: 100%;
+                height: 220px;
+                background: linear-gradient(135deg, #fef3c7, #fde68a);
+                border-radius: 14px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 4rem;
+                margin-bottom: 2rem;
+            }
+
+            /* ---- CTA box ---- */
+            .cta-box {
+                background: linear-gradient(135deg, var(--amber-50), #fff8e1);
+                border: 1.5px solid var(--amber-200);
+                border-radius: 14px;
+                padding: 2rem 2rem;
+                text-align: center;
+                margin-top: 3rem;
+            }
+            .cta-box h3 {
+                font-size: 1.375rem;
+                font-weight: 800;
+                color: var(--gray-900);
+                margin-bottom: 0.5rem;
+                margin-top: 0;
+            }
+            .cta-box p {
+                color: var(--gray-600);
+                margin-bottom: 1.25rem;
+                font-size: 1rem;
+            }
+
+            /* ---- Back link ---- */
+            .back-link {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.35rem;
+                font-size: 0.875rem;
+                color: var(--gray-500);
+                text-decoration: none;
+                margin-bottom: 2rem;
+            }
+            .back-link:hover {
+                color: var(--gray-700);
+            }
+
+            /* Lang selector */
+            .lang-selector {
+                position: relative;
+            }
+            .lang-btn {
+                background: transparent;
+                color: #fff;
+                display: flex;
+                align-items: center;
+                gap: 0.25rem;
+                cursor: pointer;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 0.5rem;
+                padding: 0.4rem 0.75rem;
+                font-size: 0.875rem;
+                font-weight: 500;
+                transition:
+                    border-color 0.15s,
+                    background 0.15s;
+            }
+            .lang-btn:hover {
+                border-color: rgba(255, 255, 255, 0.4);
+                background: rgba(255, 255, 255, 0.08);
+            }
+            .lang-dropdown {
+                display: none;
+                position: absolute;
+                top: calc(100% + 6px);
+                right: 0;
+                background: #27272a;
+                border: 1px solid #3f3f46;
+                border-radius: 0.5rem;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+                z-index: 100;
+                min-width: 160px;
+                padding: 0.25rem;
+            }
+            .lang-dropdown.open {
+                display: flex;
+                flex-direction: column;
+            }
+            .lang-option {
+                text-align: left;
+                padding: 0.5rem 1rem;
+                background: transparent;
+                border: none;
+                color: #fff;
+                cursor: pointer;
+                font-size: 0.875rem;
+                border-radius: 0.375rem;
+                white-space: nowrap;
+            }
+            .lang-option:hover {
+                background: #3f3f46;
+            }
+            .lang-option.active {
+                color: #f59e0b;
+            }
+
+            .skip-link {
+                position: absolute;
+                left: -9999px;
+                top: auto;
+                width: 1px;
+                height: 1px;
+                overflow: hidden;
+            }
+            .skip-link:focus {
+                position: static;
+                width: auto;
+                height: auto;
+                padding: 0.5rem 1rem;
+                background: var(--amber-500);
+                color: #fff;
+                font-weight: 700;
+                border-radius: 4px;
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                *,
+                *::before,
+                *::after {
+                    transition: none !important;
+                    animation: none !important;
+                }
+            }
+
+            .article-toc {
+                background: var(--gray-50);
+                border: 1px solid var(--gray-200);
+                border-radius: 10px;
+                padding: 1rem 1.5rem;
+                margin: 1.5rem 0 2rem;
+            }
+            .article-toc ol {
+                margin: 0;
+                padding-left: 1.25rem;
+            }
+            .article-toc li {
+                margin: 0.35rem 0;
+                font-size: 0.925rem;
+            }
+            .article-toc a {
+                color: var(--gray-600);
+                text-decoration: none;
+            }
+            .article-toc a:hover {
+                color: var(--amber-600);
+                text-decoration: underline;
+            }
+
+            @media (prefers-color-scheme: dark) {
+                body {
+                    background: #0f172a;
+                    color: #e2e8f0;
+                }
+                .article-card,
+                .cta-box {
+                    background: #1e293b;
+                    border-color: #334155;
+                }
+                a {
+                    color: #60a5fa;
+                }
+                .article-toc {
+                    background: #1e293b;
+                    border-color: #334155;
+                }
+                code {
+                    background: #1e293b;
+                }
+            }
+        </style>
+        <link
+            rel="preload"
+            href="/styles/public-base.css"
+            as="style"
+            onload="
+                this.onload = null;
+                this.rel = 'stylesheet';
+            "
+        />
+        <noscript><link rel="stylesheet" href="/styles/public-base.css" /></noscript>
+    </head>
+    <body>
+        <a class="skip-link" href="#article-main">Skip to content</a>
+
+        <!-- Navigation -->
+        <nav class="nav" aria-label="Main navigation">
+            <a class="nav-logo" href="/"
+                ><img
+                    src="/assets/logo/lockups/horizontal-2048.svg"
+                    alt="VaultLister"
+                    width="300"
+                    height="75"
+                    style="display: block"
+            /></a>
+            <div class="nav-links">
+                <div class="nav-dropdown">
+                    <button
+                        type="button"
+                        class="nav-link nav-dropdown-btn"
+                        data-target="dropdown-features"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                    >
+                        Features &#9662;
+                    </button>
+                    <div class="nav-dropdown-menu" id="dropdown-features" role="menu" inert>
+                        <a href="/#cross-listing" role="menuitem">Cross-Listing</a>
+                        <a href="/#inventory-management" role="menuitem">Inventory Management</a>
+                        <a href="/#sale-purchase-sync" role="menuitem">Sale &amp; Purchase Sync</a>
+                        <a href="/#analytics" role="menuitem">Analytics</a>
+                        <a href="/#offer-management" role="menuitem">Offer Management</a>
+                        <a href="/#marketplace-sharing" role="menuitem">Marketplace Sharing</a>
+                        <a href="/#bulk-actions" role="menuitem">Bulk Actions</a>
+                        <a href="/#photo-tools" role="menuitem">Photo Tools</a>
+                        <a href="/#ai-listing-generation" role="menuitem">AI Listing Generation</a>
+                        <a href="/#financial-management" role="menuitem">Financial Management</a>
+                        <a href="/#productivity-tools" role="menuitem">Productivity Tools</a>
+                    </div>
+                </div>
+                <a class="nav-link" href="/platforms.html">Marketplaces</a>
+                <a class="nav-link" href="/pricing.html">Pricing</a>
+                <div class="nav-dropdown">
+                    <button
+                        type="button"
+                        class="nav-link nav-dropdown-btn"
+                        data-target="dropdown-resources"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                    >
+                        Resources &#9662;
+                    </button>
+                    <div class="nav-dropdown-menu" id="dropdown-resources" role="menu" inert>
+                        <a href="/learning.html" role="menuitem">Learning</a>
+                        <a href="/documentation.html" role="menuitem">Documentation</a>
+                        <a href="/blog/index.html" role="menuitem">Blog</a>
+                        <a href="/affiliate.html" role="menuitem">Affiliate Program</a>
+                    </div>
+                </div>
+                <div class="nav-dropdown">
+                    <button
+                        type="button"
+                        class="nav-link nav-dropdown-btn"
+                        data-target="dropdown-feedback"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                    >
+                        Feedback &amp; Support &#9662;
+                    </button>
+                    <div class="nav-dropdown-menu" id="dropdown-feedback" role="menu" inert>
+                        <a href="/help.html" role="menuitem">Help Center</a>
+                        <a href="/faq.html" role="menuitem">FAQs</a>
+                        <a href="/request-feature.html" role="menuitem">Request a Feature</a>
+                        <a href="/contact.html#contact-form" role="menuitem">Report a Bug</a>
+                        <a href="/contact.html" role="menuitem">Contact Us</a>
+                    </div>
+                </div>
+                <div class="nav-dropdown">
+                    <button
+                        type="button"
+                        class="nav-link nav-dropdown-btn"
+                        data-target="dropdown-product-updates"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                    >
+                        Status &amp; Updates &#9662;
+                    </button>
+                    <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu" inert>
+                        <a href="/changelog.html" role="menuitem">Changelog</a>
+                        <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
+                        <a href="/status.html" role="menuitem">Status Page</a>
+                    </div>
+                </div>
+            </div>
+            <div class="nav-actions">
+                <div class="currency-selector">
+                    <button
+                        type="button"
+                        class="currency-btn"
+                        title="Change currency"
+                        aria-expanded="false"
+                        aria-haspopup="listbox"
+                    >
+                        <span id="current-currency-code">CAD</span>
+                        <svg aria-hidden="true"
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path d="M6 9l6 6 6-6" />
+                        </svg>
+                    </button>
+                    <div class="currency-dropdown" id="currency-dropdown" role="listbox" aria-label="Select currency">
+                        <button type="button" class="currency-option" data-currency="CAD" data-symbol="$" role="option">$ CAD</button>
+                        <button type="button" class="currency-option" data-currency="USD" data-symbol="$" role="option">$ USD</button>
+                        <button type="button" class="currency-option" data-currency="GBP" data-symbol="£" role="option">£ GBP</button>
+                        <button type="button" class="currency-option" data-currency="EUR" data-symbol="€" role="option">€ EUR</button>
+                        <button type="button" class="currency-option" data-currency="AUD" data-symbol="$" role="option">$ AUD</button>
+                    </div>
+                </div>
+                <div class="lang-selector">
+                    <button
+                        type="button"
+                        class="lang-btn"
+                        title="Change language"
+                        aria-expanded="false"
+                        aria-haspopup="listbox"
+                    >
+                        <span class="lang-code" id="current-lang-code">EN</span>
+                        <svg aria-hidden="true"
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path d="M6 9l6 6 6-6" />
+                        </svg>
+                    </button>
+                    <div class="lang-dropdown" id="lang-dropdown" role="listbox" aria-label="Select language">
+                        <button type="button" class="lang-option" data-lang="en" role="option">English</button>
+                        <button type="button" class="lang-option" data-lang="es" role="option">Spanish</button>
+                        <button type="button" class="lang-option" data-lang="fr" role="option">French</button>
+                        <button type="button" class="lang-option" data-lang="de" role="option">German</button>
+                        <button type="button" class="lang-option" data-lang="it" role="option">Italian</button>
+                        <button type="button" class="lang-option" data-lang="pt" role="option">Portuguese</button>
+                        <button type="button" class="lang-option" data-lang="ja" role="option">Japanese</button>
+                        <button type="button" class="lang-option" data-lang="zh" role="option">Chinese</button>
+                        <button type="button" class="lang-option" data-lang="ko" role="option">Korean</button>
+                        <button type="button" class="lang-option" data-lang="ar" role="option">Arabic</button>
+                    </div>
+                </div>
+                <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
+                <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
+            </div>
+        </nav>
+
+        <main id="article-main">
+            <div class="article-wrapper">
+                <a class="back-link" href="/blog/index.html" aria-label="Blog"
+                    ><span aria-hidden="true">&#8592;</span> Blog</a
+                >
+
+                <div class="article-hero-img" aria-hidden="true">&#128087;</div>
+
+                <span class="blog-tag" aria-hidden="true">Guide</span>
+                <article>
+        <h1>High-Velocity Menswear Brands on Grailed: What to Source in 2026</h1>
+        <div class="article-meta">
+            <span>VaultLister Team</span>
+            <span class="dot"></span>
+            <time datetime="2026-05-04">May 2026</time>
+            <span class="dot"></span>
+            <span>8 min read</span>
+        </div>
+
+        <nav class="article-toc" aria-label="Table of contents">
+            <ol><li><a href="#chrome-hearts-high-demand-high-barriers-high-margins">Chrome Hearts: High Demand, High Barriers, High Margins</a></li><li><a href="#rick-owens-volatility-sizing-complexity-loyal-buyers">Rick Owens: Volatility, Sizing Complexity, Loyal Buyers</a></li><li><a href="#balenciaga-trend-sensitivity-saturation-risk-model-specific-demand">Balenciaga: Trend Sensitivity, Saturation Risk, Model-Specific Demand</a></li><li><a href="#carhartt-wip-and-stone-island-utility-workwear-heritage-brand-momentum">Carhartt WIP and Stone Island: Utility, Workwear Heritage, Brand Momentum</a></li><li><a href="#sourcing-strategy-and-platform-coordination">Sourcing Strategy and Platform Coordination</a></li></ol>
+        </nav>
+
+        <p>Grailed moves fast. The platform&#39;s user base—predominantly men aged 18 to 35 with disposable income and strong brand awareness—has specific tastes, and those tastes shift seasonally. If you&#39;re sourcing menswear for resale, you need to know which brands maintain steady demand, which ones spike unpredictably, and which carry real liquidation risk. The five brands covered here represent different demand patterns, margin profiles, and inventory challenges. Understanding the nuances between them is the difference between moving stock in weeks and holding dead weight.</p>
+        <p>This guide focuses on what&#39;s actually selling on Grailed right now, not what&#39;s hyped on Instagram. You&#39;ll learn which brands generate consistent velocity, where pricing floors sit, and what conditions increase your risk. Whether you&#39;re pulling from thrift stores, wholesale lots, or your own closet, this breakdown will help you make smarter acquisition decisions for 2026.</p>
+
+        <hr class="article-divider">
+
+        <h2 id="chrome-hearts-high-demand-high-barriers-high-margins">Chrome Hearts: High Demand, High Barriers, High Margins</h2>
+
+        <p>Chrome Hearts pieces command some of the strongest margins on Grailed, but acquisition is the real bottleneck. The brand&#39;s output is intentionally limited, production is sporadic, and a large share of the secondary market is flooded with fakes. Grailed buyers know this. They look hard at photos, ask questions about provenance, and move cautiously on anything that doesn&#39;t include receipts or clear wear documentation. Your advantage as a reseller is authentication—if you can prove a piece is real, you&#39;re already ahead of 75% of <a href="/blog/using-ai-for-poshmark-listings.html">listings</a>.</p>
+        <p>T-shirts, hoodies, and accessories move faster than outerwear on Chrome Hearts. A legitimate Chrome Hearts sterling silver ring or cross pendant can sell for $800 to $2,000, depending on weight and rarity. Tees typically range $200 to $500. Jackets and outerwear sit longer, partly because sizing is unpredictable and partly because the price elasticity drops sharply above $1,500. The sweet spot is vintage or pre-2015 pieces—these command nostalgia premiums and have cleaner provenance trails.</p>
+        <p>Storage risk is real. Chrome Hearts inventory doesn&#39;t move on goodwill alone. You need either excellent photos with clear lighting, detailed material descriptions, or authenticity documentation. Many resellers underprice Chrome Hearts pieces out of impatience, leaving margin on the table. If you source a piece, give it time—list it with granular detail, price it conservatively but not desperately, and expect a 2 to 4-week sell cycle for mid-tier pieces. Rush pricing kills your profit.</p>
+        <p>Seasonal demand peaks in fall and winter. Chrome Hearts has cultural weight in streetwear-forward communities, and visibility spikes when those communities are most active. Spring and summer see softer demand unless you&#39;re moving lightweight pieces like rings or sunglasses. Plan your acquisition and listing timing around this cycle.</p>
+
+        <hr class="article-divider">
+
+        <h2 id="rick-owens-volatility-sizing-complexity-loyal-buyers">Rick Owens: Volatility, Sizing Complexity, Loyal Buyers</h2>
+
+        <p>Rick Owens is the chameleon of this list. Demand varies wildly by silhouette, color, and collection era. A DRKSHDW cargo pant in black moves reliably. A flight jacket in bone or a Stüssy collaboration piece can sit for months or vanish in days, depending on current hype cycles. The brand&#39;s cult following means the right piece finds its buyer, but the wrong piece languishes. You need to research not just the brand, but the specific item within the brand&#39;s catalog.</p>
+        <p>Sizing on Rick Owens is notoriously odd. The brand&#39;s aesthetic emphasizes exaggeration—dropped shoulders, extended sleeves, unconventional proportions. A size medium might fit like a small; an XL might fit like a standard large. Buyers on Grailed know this and hunt for pieces in their true size, not their label size. Your listing must include actual measurements: shoulder width, sleeve length, torso length, inseam. Without these, you&#39;ll field endless questions and face refunds. The effort pays off because a properly sized piece sells fast.</p>
+        <p>Price range spans dramatically. Basic DRKSHDW essentials (pants, hoodies) range $150 to $400. Mainline Rick Owens pieces, especially leather jackets or structured outerwear, start at $500 and can exceed $3,000. Collaboration pieces and rare items push higher. The danger is overpaying for something that looked good in hand but has limited appeal on the secondary market. Before sourcing, cross-reference sold listings on Grailed. Track what actually moved, not what&#39;s currently listed at inflated prices.</p>
+        <p>Condition documentation matters more than you think. Rick Owens pieces often show wear in ways that don&#39;t affect wearability but scare off buyers—scuffs on leather, fading on fabrics, thread fraying on seams. Photograph these honestly and price accordingly. Buyers appreciate transparency and will pay a small premium for condition clarity versus paying full price and returning items because they weren&#39;t warned about character marks.</p>
+
+        <hr class="article-divider">
+
+        <h2 id="balenciaga-trend-sensitivity-saturation-risk-model-specific-demand">Balenciaga: Trend Sensitivity, Saturation Risk, Model-Specific Demand</h2>
+
+        <p>Balenciaga menswear moves differently than women&#39;s. Sneakers dominate the secondary market—Triple S, Track, Speed Runner—but resale saturation is dense. Hundreds of listings exist at any moment. Your margin depends on finding underpriced stock or rare colorways. Standard colorways in mid-tier condition move slowly. Rare or sold-out colorways move faster but require competitive pricing to overcome skepticism about authenticity.</p>
+        <p>Balenciaga&#39;s DTC pricing fluctuates with seasonal sales and boutique discounts. Retail often drops 30% to 50% during sale periods. Buyers know this and price their purchases accordingly. If you&#39;re sourcing retail Balenciaga pieces, you&#39;re competing against discounted retail. You need either older stock with no current retail equivalent, rare colorways, or pieces from collections too old to be available at retail. New-season mainline pieces struggle because the brand&#39;s own sales underprice the secondary market.</p>
+        <p>Outerwear, knitwear, and accessories fare better than basics. A Balenciaga bomber or oversized hoodie can command $400 to $800 if the condition is clean and the sizing is generous. Caps and bags move with less friction because they&#39;re one-size items. Trousers and layering pieces sit unless they&#39;re part of a discontinued collection or represent a particularly visually striking design. Study the archive before sourcing—understand which Balenciaga seasons maintain demand versus which have cycled out of interest.</p>
+        <p>Authentication is an ongoing concern. Balenciaga has been heavily counterfeited, and Grailed buyers are appropriately cautious. Tags, stitching, and internal labels matter. If you can&#39;t vouch for authenticity with confidence, don&#39;t list it. A return or complaint will torpedo your reputation faster than passing on a questionable piece. When in doubt, source from known retailers, consignment shops with strong curation, or personal collections from trusted networks.</p>
+
+        <hr class="article-divider">
+
+        <h2 id="carhartt-wip-and-stone-island-utility-workwear-heritage-brand-momentum">Carhartt WIP and Stone Island: Utility, Workwear Heritage, Brand Momentum</h2>
+
+        <p>Carhartt WIP and Stone Island occupy similar territory: heritage workwear with serious brand credibility, strong European bases, and consistent demand from buyers who understand the technical and cultural value. Unlike luxury brands, these move on utility and durability, not exclusivity. A Carhartt WIP jacket in good condition will find a buyer reliably. A rare Stone Island ghost piece or archived colorway can become a small gold mine. The margin is narrower than Chrome Hearts, but velocity is higher and audience is broader.</p>
+        <p>Carhartt WIP&#39;s appeal lies in its simplicity and versatility. Chore coats, work pants, jackets in canvas or duck fabric sell across seasons. Rare colorways and deadstock from older seasons—especially from overseas Carhartt WIP drops—command premiums. Stone Island&#39;s appeal is technical. Buyers recognize specific colorways (like the archived off-white garment-dyed pieces from the early 2000s), understand the brand&#39;s innovation in fabric research, and will pay for authentic examples. Both brands reward collectors and builders of workwear-focused wardrobes.</p>
+        <p>Condition tolerance differs here. A Carhartt WIP piece with patina, creasing, or fade tells a story and often adds value rather than subtracting it. Stone Island benefits from the same logic—wear-in builds narrative. What matters is structural integrity and functionality. Holes, stains that won&#39;t wash, or broken zippers are deal-breakers. Everything else is fair game. Price accordingly: a worn Carhartt piece might sell for 60% of retail, while a very worn Stone Island might hold 70% because the brand&#39;s reputation for durability is part of its appeal.</p>
+
+        <hr class="article-divider">
+
+        <h2 id="sourcing-strategy-and-platform-coordination">Sourcing Strategy and Platform Coordination</h2>
+
+        <p>Grailed is a single-channel sale point for many resellers, but you shouldn&#39;t think of it that way. If a Chrome Hearts piece doesn&#39;t sell within four weeks on Grailed, move it to Depop or Vestiaire Collective. If a Carhartt WIP piece lingers, list it on eBay where the audience is broader and less brand-conscious. Multi-channel sourcing and listing strategies maximize your chances of moving inventory before it becomes sunk cost. Using a cross-listing tool like VaultLister simplifies this—you can sync one listing across platforms and remove it everywhere once it sells, rather than managing multiple platform interfaces and risking oversells.</p>
+        <p>Price your Grailed listings to move, not to anchor. Many resellers use Grailed as a pricing reference and undershoot what they could list at. Instead, research sold comps, price 10% below market, and expect to move the item in 1 to 3 weeks. The holding cost—platform fees, storage, mental overhead—adds up. A $500 piece that sells in 10 days is far better than a $550 piece that sits for 60. Speed compounds: faster turnover means capital available for new acquisitions, which generates more sales cycles and more margin capture across time.</p>
+        <p>Seasonal sourcing maps to seasonal demand. In spring and summer, source lightweight pieces: tees, pants, lightweight jackets, accessories. In fall and winter, focus on outerwear, knitwear, and heavier essentials. This doesn&#39;t mean ignore off-season pieces—it means price them conservatively and don&#39;t overbuy. If you&#39;re building a consistent reselling operation, <a href="/blog/how-to-cross-list-50-items.html">cross-listing 50 items in under an hour</a> becomes your operational standard, not an occasional optimization. The faster you can list, the faster you can test market conditions and adjust.</p>
+
+        <hr class="article-divider">
+
+        <h2>Conclusion</h2>
+
+        <p>These five brands represent different risk and reward profiles. Chrome Hearts offers the highest margins but requires authentication skill and patience. Rick Owens rewards specialists who understand the brand&#39;s silhouettes and sizing complexity. Balenciaga moves volume but requires careful sourcing to avoid saturation. Carhartt WIP and Stone Island provide steadier velocity and broader appeal. Your sourcing strategy should mix these profiles—anchor your inventory with reliable movers like Carhartt and Stone Island, supplement with mid-tier brands like Balenciaga, and layer in higher-margin plays when you source strong Chrome Hearts or Rick Owens pieces.</p>
+        <p>The common thread across all five is documentation. Clear photos, detailed measurements, honest condition assessment, and provenance where applicable drive conversions. Grailed buyers are sophisticated; they reward precision and punish vagueness. As you plan your 2026 sourcing, focus on finding underpriced inventory from reliable sources, documenting it thoroughly, and pricing it to move. Your profit comes from volume and velocity, not from holding inventory hoping for a dream offer. Stack these brands, master your listing game, and let the platform do its work.</p>
+
+        <div class="cta-box">
+            <h3>Start Sourcing Smarter for Grailed</h3>
+            <p>Build a consistent menswear reselling operation by tracking your inventory across Grailed and other channels. VaultLister helps you list once and sync everywhere, so you can focus on sourcing the right pieces.</p>
+            <a class="btn btn-primary" href="/?app=1#register">Get Started Free</a>
+        </div>
+
+        <section class="article-faqs" style="margin-top:3rem;padding-top:2rem;border-top:1px solid var(--gray-200);">
+            <h2>Frequently Asked Questions</h2>
+            <details style="margin-bottom:1rem;"><summary style="font-weight:600;cursor:pointer;padding:0.5rem 0;">Which of these brands has the fastest sell-through on Grailed?</summary><p style="margin:0.75rem 0 0.5rem;padding-left:1rem;">Carhartt WIP and Stone Island typically move fastest because they appeal to a broad audience and carry strong brand credibility without exclusivity barriers. Chrome Hearts and Rick Owens move slower on volume but faster per-listing if you price correctly. Balenciaga varies by item—sneakers move faster than outerwear.</p></details>
+            <details style="margin-bottom:1rem;"><summary style="font-weight:600;cursor:pointer;padding:0.5rem 0;">How do I avoid overpaying for Rick Owens inventory?</summary><p style="margin:0.75rem 0 0.5rem;padding-left:1rem;">Research sold listings on Grailed, not current asking prices. Track what actually moved in the last 30 to 60 days at what price points. Cross-reference multiple sales before making an acquisition decision. Avoid paying retail or near-retail for current-season pieces; focus on older collections and rare items with documented secondary-market demand.</p></details>
+            <details style="margin-bottom:1rem;"><summary style="font-weight:600;cursor:pointer;padding:0.5rem 0;">Are Chrome Hearts pieces worth sourcing if I can&#39;t prove authentication?</summary><p style="margin:0.75rem 0 0.5rem;padding-left:1rem;">No. The authentication barrier is too high and buyer skepticism is too strong. If you can&#39;t provide receipts, detailed wear documentation, or third-party authentication, the margin you lose to pricing discounts will exceed whatever profit you hoped to capture. Source only when you&#39;re confident in provenance.</p></details>
+            <details style="margin-bottom:1rem;"><summary style="font-weight:600;cursor:pointer;padding:0.5rem 0;">Should I list these brands only on Grailed or across multiple platforms?</summary><p style="margin:0.75rem 0 0.5rem;padding-left:1rem;">Start on Grailed because the audience aligns with these brands, but don&#39;t stop there. If something doesn&#39;t move in 3 to 4 weeks, move it to Depop, Vestiaire Collective, or eBay. &lt;a href=&quot;/blog/using-ai-for-poshmark-listings.html&quot;&gt;Write better descriptions across platforms&lt;/a&gt; and use multi-channel tools to sync inventory and avoid oversells.</p></details>
+        </section>
+
+        <section class="related-articles" style="margin-top:3rem;padding-top:2rem;border-top:1px solid var(--gray-200);">
+            <h2 style="font-size:1.5rem;margin-bottom:1.25rem;">Keep Reading</h2>
+            <div class="blog-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;">
+            <a class="blog-card" href="/blog/depop-y2k-vintage-what-sells.html">
+                <div class="blog-card-img bg3" aria-hidden="true">&#128187;</div>
+                <div class="blog-card-body">
+                    <span class="blog-tag">Strategy</span>
+                    <h3 style="font-size:1.1rem;font-weight:700;margin:0.5rem 0;">Depop in 2026: Which Y2K and Vintage Items Actually Sell</h3>
+                </div>
+            </a>
+            <a class="blog-card" href="/blog/using-ai-for-poshmark-listings.html">
+                <div class="blog-card-img bg1" aria-hidden="true">&#128218;</div>
+                <div class="blog-card-body">
+                    <span class="blog-tag">Guide</span>
+                    <h3 style="font-size:1.1rem;font-weight:700;margin:0.5rem 0;">Using AI to Write Better Poshmark Listings (Without Sounding Robotic)</h3>
+                </div>
+            </a>
+            <a class="blog-card" href="/blog/poshmark-closet-sharing-2026.html">
+                <div class="blog-card-img bg1" aria-hidden="true">&#128218;</div>
+                <div class="blog-card-body">
+                    <span class="blog-tag">Guide</span>
+                    <h3 style="font-size:1.1rem;font-weight:700;margin:0.5rem 0;">Poshmark Closet Sharing in 2026: What Actually Works</h3>
+                </div>
+            </a>
+            </div>
+        </section>
+    </article>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer" aria-label="Footer">
+            <div class="footer-inner">
+                <div class="footer-social-bar">
+                    <a href="/" class="footer-logo"
+                        ><img
+                            src="/assets/logo/lockups/horizontal-512.svg"
+                            alt="VaultLister"
+                            width="144"
+                            height="36"
+                            style="display: block"
+                    /></a>
+                    <div class="footer-social-links">
+                        <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"
+                            ><svg aria-hidden="true"
+                                width="22"
+                                height="22"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <rect x="2" y="2" width="20" height="20" rx="5" />
+                                <circle cx="12" cy="12" r="5" />
+                                <circle cx="17.5" cy="6.5" r="1.5" /></svg
+                        ></a>
+                        <a href="https://www.facebook.com/profile.php?id=61570865723233" aria-label="Facebook"
+                            ><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></svg
+                        ></a>
+                        <a href="https://x.com/VaultListerCo" aria-label="X"
+                            ><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+                                /></svg
+                        ></a>
+                        <a href="https://www.tiktok.com/@vaultlister.co" aria-label="TikTok"
+                            ><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.92a8.24 8.24 0 0 0 4.83 1.56v-3.5a4.84 4.84 0 0 1-1.07-.29z"
+                                /></svg
+                        ></a>
+                        <a href="https://www.reddit.com/user/VaultLister/" aria-label="Reddit"
+                            ><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"
+                                /></svg
+                        ></a>
+                    </div>
+                </div>
+                <nav aria-label="Footer navigation"><div class="footer-cols">
+                    <div class="footer-col">
+                        <h3 class="footer-col-label">Resources</h3>
+                        <a href="/blog/index.html">Blog</a>
+                        <a href="/changelog.html">Changelog</a>
+                        <a href="/documentation.html">Documentation</a>
+                        <a href="/faq.html">FAQs</a>
+                        <a href="/help.html">Help Center</a>
+                    </div>
+                    <div class="footer-col">
+                        <h3 class="footer-col-label">Company</h3>
+                        <a href="/about.html">About Us</a>
+                        <a href="/documentation.html#media-kit">Media Kit</a>
+                        <a href="/affiliate.html">Affiliate Program</a>
+                    </div>
+                    <div class="footer-col">
+                        <h3 class="footer-col-label">Legal</h3>
+                        <a href="/privacy.html">Privacy Policy</a>
+                        <a href="/terms.html">Terms of Service</a>
+                        <a href="/cookies.html">Cookie Policy</a>
+                    </div>
+                    <div class="footer-col">
+                        <h3 class="footer-col-label">Compare</h3>
+                        <a href="/compare/crosslist.html">Crosslist</a>
+                        <a href="/compare/crosslist-magic.html">Crosslist Magic</a>
+                        <a href="/compare/flyp.html">Flyp</a>
+                        <a href="/compare/list-perfectly.html">List Perfectly</a>
+                        <a href="/compare/nifty.html">Nifty</a>
+                        <a href="/compare/oneshop.html">OneShop</a>
+                        <a href="/compare/primelister.html">Primelister</a>
+                        <a href="/compare/vendoo.html">Vendoo</a>
+                    </div>
+                </div></nav>
+                <div class="footer-bottom">
+                    <p>© 2026 VaultLister, Inc. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+
+        <script>
+            (function () {
+                document.querySelectorAll('.nav-dropdown-btn').forEach(function (btn) {
+                    btn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        var targetId = this.dataset.target;
+                        var menu = document.getElementById(targetId);
+                        if (!menu) return;
+                        var isOpen = menu.classList.contains('open');
+                        document.querySelectorAll('.nav-dropdown-menu').forEach(function (m) {
+                            m.classList.remove('open');
+                            m.setAttribute('inert', '');
+                        });
+                        document.querySelectorAll('.nav-dropdown-btn').forEach(function (b) {
+                            b.setAttribute('aria-expanded', 'false');
+                        });
+                        if (!isOpen) {
+                            menu.classList.add('open');
+                            menu.removeAttribute('inert');
+                            btn.setAttribute('aria-expanded', 'true');
+                        }
+                    });
+                });
+                document.addEventListener('click', function () {
+                    document.querySelectorAll('.nav-dropdown-menu').forEach(function (m) {
+                        m.classList.remove('open');
+                        m.setAttribute('inert', '');
+                    });
+                    document.querySelectorAll('.nav-dropdown-btn').forEach(function (b) {
+                        b.setAttribute('aria-expanded', 'false');
+                    });
+                });
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape') {
+                        document.querySelectorAll('.nav-dropdown-menu').forEach(function (m) {
+                            m.classList.remove('open');
+                            m.setAttribute('inert', '');
+                        });
+                        document.querySelectorAll('.nav-dropdown-btn').forEach(function (b) {
+                            b.setAttribute('aria-expanded', 'false');
+                        });
+                    }
+                });
+            })();
+        </script>
+
+        <div
+            id="cookie-banner"
+            role="region"
+            aria-label="Cookie consent"
+            style="
+                display: none;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 9999;
+                background: #18181b;
+                color: #fef3c7;
+                padding: 1rem 1.5rem;
+                align-items: center;
+                justify-content: space-between;
+                gap: 1rem;
+                flex-wrap: wrap;
+                box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.18);
+                font-family: Inter, system-ui, sans-serif;
+                font-size: 0.9rem;
+            "
+        >
+            <p style="margin: 0; flex: 1; min-width: 200px">
+                We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are
+                used.
+            </p>
+            <div style="display: flex; gap: 0.625rem; flex-shrink: 0">
+                <button
+                    type="button"
+                    id="cookie-decline"
+                    style="
+                        min-height: 44px;
+                        padding: 0.5rem 1.125rem;
+                        border-radius: 0.5rem;
+                        border: 1.5px solid rgba(224, 231, 255, 0.4);
+                        background: transparent;
+                        color: #fef3c7;
+                        font-size: 0.875rem;
+                        font-weight: 600;
+                        cursor: pointer;
+                    "
+                >
+                    Decline
+                </button>
+                <button
+                    type="button"
+                    id="cookie-accept"
+                    style="
+                        min-height: 44px;
+                        padding: 0.5rem 1.25rem;
+                        border-radius: 0.5rem;
+                        border: none;
+                        background: linear-gradient(135deg, #b45309, #92400e);
+                        color: #fff;
+                        font-size: 0.875rem;
+                        font-weight: 600;
+                        cursor: pointer;
+                    "
+                >
+                    Accept
+                </button>
+            </div>
+        </div>
+        <script>
+            (function () {
+                var banner = document.getElementById('cookie-banner');
+                if (!banner) return;
+                if (localStorage.getItem('cookie_consent')) {
+                    banner.style.display = 'none';
+                    return;
+                }
+                banner.style.display = 'flex';
+                document.getElementById('cookie-accept').addEventListener('click', function () {
+                    localStorage.setItem('cookie_consent', 'accepted');
+                    if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'granted' });
+                    banner.style.display = 'none';
+                });
+                document.getElementById('cookie-decline').addEventListener('click', function () {
+                    localStorage.setItem('cookie_consent', 'declined');
+                    if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'denied' });
+                    banner.style.display = 'none';
+                });
+            })();
+
+            // Lang selector
+            (function () {
+                var LANGS = {
+                    en: { code: 'EN' },
+                    es: { code: 'ES' },
+                    fr: { code: 'FR' },
+                    de: { code: 'DE' },
+                    it: { code: 'IT' },
+                    pt: { code: 'PT' },
+                    ja: { code: 'JA' },
+                    zh: { code: 'ZH' },
+                    ko: { code: 'KO' },
+                    ar: { code: 'AR' },
+                };
+                function setLang(lang) {
+                    var info = LANGS[lang] || LANGS['en'];
+                    var codeEl = document.getElementById('current-lang-code');
+                    if (codeEl) codeEl.textContent = info.code;
+                    document.querySelectorAll('.lang-option').forEach(function (btn) {
+                        btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+                    });
+                    try {
+                        localStorage.setItem('vaultlister_locale', lang);
+                    } catch (e) {}
+                }
+                function detectLang() {
+                    try {
+                        var stored = localStorage.getItem('vaultlister_locale');
+                        if (stored && LANGS[stored]) return stored;
+                    } catch (e) {}
+                    var nav = (navigator.language || '').toLowerCase();
+                    var base = nav.split('-')[0];
+                    return LANGS[base] ? base : 'en';
+                }
+                document.addEventListener('DOMContentLoaded', function () {
+                    var btn = document.querySelector('.lang-btn');
+                    var dropdown = document.getElementById('lang-dropdown');
+                    if (!btn || !dropdown) return;
+                    setLang(detectLang());
+                    btn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        var open = dropdown.classList.toggle('open');
+                        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                    });
+                    document.addEventListener('click', function (e) {
+                        if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
+                            dropdown.classList.remove('open');
+                            btn.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+                    dropdown.querySelectorAll('.lang-option').forEach(function (opt) {
+                        opt.addEventListener('click', function () {
+                            setLang(opt.getAttribute('data-lang'));
+                            dropdown.classList.remove('open');
+                            btn.setAttribute('aria-expanded', 'false');
+                        });
+                    });
+                });
+            })();
+        </script>
+        <button
+            type="button"
+            id="back-to-top"
+            aria-label="Back to top"
+            style="
+                display: none;
+                position: fixed;
+                bottom: 2rem;
+                right: 2rem;
+                z-index: 50;
+                width: 2.5rem;
+                height: 2.5rem;
+                border-radius: 50%;
+                background: var(--amber-500);
+                color: #fff;
+                border: none;
+                cursor: pointer;
+                font-size: 1.25rem;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            "
+        >
+            ↑
+        </button>
+        <script>
+            (function () {
+                var btn = document.getElementById('back-to-top');
+                window.addEventListener('scroll', function () {
+                    btn.style.display = window.scrollY > 500 ? 'flex' : 'none';
+                });
+                btn.addEventListener('click', function () {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            })();
+
+            // Currency selector
+            (function () {
+                var saved = localStorage.getItem('vl_currency') || 'CAD';
+                var el = document.getElementById('current-currency-code');
+                if (el) el.textContent = saved;
+                document.querySelectorAll('.currency-option').forEach(function (btn) {
+                    if (btn.dataset.currency === saved) btn.classList.add('active');
+                    btn.addEventListener(
+                        'click',
+                        function () {
+                            var c = this.dataset.currency;
+                            localStorage.setItem('vl_currency', c);
+                            document.querySelectorAll('.currency-option').forEach(function (b) {
+                                b.classList.remove('active');
+                            });
+                            this.classList.add('active');
+                            var codeEl = document.getElementById('current-currency-code');
+                            if (codeEl) codeEl.textContent = c;
+                            var dd = document.getElementById('currency-dropdown');
+                            if (dd) dd.classList.remove('open');
+                        }.bind(this),
+                    );
+                });
+                var btn = document.querySelector('.currency-btn');
+                if (btn) {
+                    btn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        var dd = document.getElementById('currency-dropdown');
+                        dd.classList.toggle('open');
+                        btn.setAttribute('aria-expanded', dd.classList.contains('open'));
+                    });
+                }
+                document.addEventListener('click', function () {
+                    var dd = document.getElementById('currency-dropdown');
+                    if (dd) {
+                        dd.classList.remove('open');
+                    }
+                    if (btn) btn.setAttribute('aria-expanded', 'false');
+                });
+            })();
+        </script>
+        <script src="/public-auth-nav.js" defer></script>
+    </body>
+</html>
